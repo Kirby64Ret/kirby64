@@ -661,17 +661,11 @@ extern void *D_80188B10_ovl5;
 extern void *D_80188B30_ovl5;
 void func_800ACB7C(SPObj *);
 
-#ifdef NON_MATCHING
-/* 5/129: every instruction is right; the whole local block sits 8 bytes high
-   (sp48 at 0x50/sp44 at 0x4C where the ROM has 0x48/0x44) with the frame
-   already the ROM's 0x60. Leading `s32 pad0; s32 pad1;` grows the frame to
-   0x68 instead of moving the block down, so the residue is the fixed part of
-   IDO's frame base, not the local list. */
 void func_8017B35C_ovl5(GObj *arg0) {
-    Unk16Ptrs sp48 = D_801888B0_ovl5;
-    void *sp44;
     SPObj *sp;
     s32 prev = D_8018ED04_ovl5;
+    Unk16Ptrs sp48 = D_801888B0_ovl5;
+    void *sp44;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
@@ -705,9 +699,6 @@ void func_8017B35C_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B35C_ovl5.s")
-#endif
 
 typedef union Unk20Ptrs {
     void *unk0[5];

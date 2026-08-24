@@ -1095,24 +1095,20 @@ void func_801686E4_ovl5(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
-// FACTORY: 69/73, verify.py-confirmed. `r` lands at 0x1C, the ROM puts
-// it at 0x18 (one dead word of frame reserved between it and sp20).
-// Re-measured this pass: a pad local either before or after `r` grows
-// the frame from 0x30 to 0x38 (14/73, worse in both positions) instead
-// of filling the hole in place -- the reserved word is not reachable
-// by a declared pad here. Floor.
-extern f32 D_8018D6F0_ovl5;
-extern char D_8018D61C_ovl5[];
-s32 func_8016A61C_ovl5(s32, s32);
-Vector *func_8016596C_ovl5(Vector *, s32);
-f32 random_soft_f32(void);
-s32 random_soft_s32_range(s32);
-
+/* The random_soft_f32() roll is NOT a declared local: the ROM spills it to
+   the compiler-temp word at 0x18(sp), below the declared Vector at 0x20.
+   Naming it `f32 r` puts it at 0x1C and no pad reaches the hole. Writing the
+   roll as the LEFT-hand subexpression is what makes IDO evaluate that call
+   first and spill it, which is the whole match. */
 f32 func_80168804_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
+    extern f32 D_8018D6F0_ovl5;
+    extern char D_8018D61C_ovl5[];
+    s32 func_8016A61C_ovl5(s32, s32);
+    Vector *func_8016596C_ovl5(Vector *, s32);
+    f32 random_soft_f32(void);
+    s32 random_soft_s32_range(s32);
     s32 v;
     Vector sp20;
-    f32 r;
 
     v = func_8016A61C_ovl5(arg1, arg2);
     if (v == 0x29A) {
@@ -1122,19 +1118,14 @@ f32 func_80168804_ovl5(GObj *arg0, s32 arg1, s32 arg2) {
     switch (arg2) {
     case 0:
     case 1:
-        r = random_soft_f32();
-        return (f32) random_soft_s32_range(2) * -1.0f * (r * 75.0f) + sp20.z;
+        return (random_soft_f32() * 75.0f) * ((f32) random_soft_s32_range(2) * -1.0f) + sp20.z;
     case 2:
     case 3:
-        r = random_soft_f32();
-        return (f32) random_soft_s32_range(2) * -1.0f * (r * 75.0f) + sp20.x;
+        return (random_soft_f32() * 75.0f) * ((f32) random_soft_s32_range(2) * -1.0f) + sp20.x;
     default:
         utilPrintf(D_8018D61C_ovl5, arg2);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168804_ovl5.s")
-#endif
 
 s32 func_80168928_ovl5(s32 arg0, s32 arg1, f32 arg2) {
     Vector sp1C;

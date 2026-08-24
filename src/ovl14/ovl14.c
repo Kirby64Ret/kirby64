@@ -1678,11 +1678,22 @@ s32 func_801DF01C_ovl14(f32 arg0) {
 
 
 #ifdef NON_MATCHING
-/* FACTORY: 8/161, frame temp slot 0x28 vs 0x24 + one-slot FP temp rotation */
+/* FACTORY: 4/161 (verify.py prints 5; one is a PHANTOM -- the
+   D_801E3054_ovl14 string is reported as `<.rodata>+0xB4` because the
+   measurement runs on a scratch COPY and verify.py derives the rodata base
+   from the file's PATH. ovl14.o's .rodata links at 0x801E2FA0, so +0xB4 IS
+   D_801E3054_ovl14 and that byte is already right; scored on the real path
+   it does not appear.)
+   The frame temp slot 0x28-vs-0x24 half of the old 8/161 residue is SOLVED by
+   the trailing `s32 pad` below: later declarations take the lower addresses,
+   so a dead word declared LAST is what lifts the compiler's own temp onto the
+   ROM's slot. Remaining 4 are a one-slot FP temp rotation ($f0/$f8 on the
+   func_800F9888 argument, $f8/$f10 on the copy pair) -- permuter food. */
 s32 func_801DF290_ovl14(void) {
     s32 track;
     s32 temp;
     struct Ovl14TrackPosition sp30;
+    s32 pad;
 
     track = request_track_general(0x1A, 0xE, 0x50);
     if ((track >= 0x1E) || (track == -1)) {

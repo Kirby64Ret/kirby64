@@ -2958,11 +2958,17 @@ extern f32 D_80126CF4[];
 // register allocation here, not the +8 anomaly itself -- reverted, no net
 // gain over the documented 10/95. Left guarded.
 #ifdef NON_MATCHING
-/* FACTORY: 10/95, left un-guarded when its lane was terminated. */
+/* FACTORY: 8/95 (verify.py prints 9 on a scratch copy; one is a PHANTOM
+   own-.rodata note that resolves to the right symbol on the real path).
+   Was 10; the trailing dead `s32 pad` below is worth 2 -- later declarations
+   take the lower stack addresses, so a dead word declared LAST lifts the
+   compiler's temps onto the ROM's slots. */
 void func_801173F4(s32 arg0) {
     u8 *sp24 = ((struct GObj *) arg0)->unk4C;
     s32 sp20 = ((struct GObj *) arg0)->objId;
     f32 sp1C = D_80126CF4[D_800E77A0[sp20]];
+    s32 pad;
+
     func_800B4924((struct GObj *) arg0);
     if ((gEntitiesNextPosYArray[sp20] - D_800EA6E0[sp20]) < sp1C) {
         gEntitiesNextPosYArray[sp20] = D_800EA6E0[sp20] + sp1C;

@@ -994,14 +994,10 @@ extern f32 D_8018AB10_ovl5[];
 extern f32 D_8018AB18_ovl5[];
 void func_800ACB7C(SPObj *);
 
-#ifdef NON_MATCHING
-/* 2/111: the local block sits 4 bytes high (ROM array at 0x40, this at 0x44);
-   frame size is right. */
 void func_80185608_ovl5(GObj *arg0) {
-    s32 pad0;
-    Unk28Ptrs sp40 = D_8018A58C_ovl5;
     SPObj *sp;
     s32 idx;
+    Unk28Ptrs sp40 = D_8018A58C_ovl5;
 
     D_800DEF90[omCurrentObj->objId] = NULL;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
@@ -1025,9 +1021,6 @@ void func_80185608_ovl5(GObj *arg0) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_13/func_80185608_ovl5.s")
-#endif
 
 extern struct UnkStruct8015C740 D_8018AB20_ovl5;
 extern struct UnkStruct8015C740 D_8018AB40_ovl5;

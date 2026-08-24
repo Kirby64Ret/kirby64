@@ -243,8 +243,19 @@ def load_secbase(cfile):
 
     Resolving the section base closes both. The offset is then an absolute
     address and gets compared like any named symbol.
+
+    THE BASE COMES FROM THE PATH, so a caller scoring a SCRATCH COPY (which is
+    what measure_seeds.py and any splice-and-measure harness does) gets no base
+    at all and every migrated reference comes back as a diff. That is not
+    cosmetic: it inflated func_800F8728 to 1/63 when the real answer was MATCH
+    and the ROM built byte-exact, and it inflates func_801E05A8_ovl15 from its
+    true 2 to 9. Set VERIFY_SECBASE_SRC to the ORIGINAL src/<seg>/<name>.c path
+    when the file being compiled is a copy.
     """
     SECBASE.clear()
+    cfile = os.environ.get('VERIFY_SECBASE_SRC') or cfile
+    if not cfile.startswith('src/') or not cfile.endswith('.c'):
+        return
     name = cfile[len('src/'):-2]
     seg = name.split('/')[0]
     y = open('kirby64.yaml').read()

@@ -82,8 +82,15 @@ def score(path, func, orig):
     # ORIGINAL directory as well. Without this every draft in a file with a
     # sibling include reported "did not compile alone" and was silently left
     # unmeasured.
+    # VERIFY_SECBASE_SRC: verify.py derives this TU's .rodata VRAM base from
+    # the file's PATH, so a scratch copy resolves none and EVERY migrated
+    # rodata reference is counted as a diff. Measured: func_800F8728 scored
+    # 1/63 that way and MATCH on the real path (it un-guarded byte-exact), and
+    # func_801E05A8_ovl15's true residue is 2, not the 9 reported. Hand
+    # verify.py the original path so those references resolve.
     env = dict(os.environ, VERIFY_EXTRA_INC=os.path.dirname(
-        os.path.abspath(orig)) or '.')
+        os.path.abspath(orig)) or '.',
+        VERIFY_SECBASE_SRC=os.path.relpath(os.path.abspath(orig), REPO))
     r = subprocess.run([sys.executable, VERIFY, path, func],
                        capture_output=True, text=True, env=env)
     txt = r.stdout + r.stderr

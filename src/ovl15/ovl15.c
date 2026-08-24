@@ -860,12 +860,13 @@ void func_801DCB64_ovl15(s32 arg0) {
    4-byte offset that no local arrangement reaches.  The FP names rotate with it
    ($f2/$f16/$f14 -> $f16/$f14/$f2).  Permuter food. */
 #ifdef NON_MATCHING
+/* 19/165 (was 21): the second dead word `pad0` was costing 2 -- measured by
+   deleting each pad in turn. One dead word is right, two is not. */
 void func_801DCDA8_ovl15(s32 arg0) {
     Vector sp4C;
     Vector sp40;
     f32 span;
     s32 idx;
-    s32 pad0;
     s32 pad1;
 
     idx = D_800E7880[omCurrentObj->objId] - 7;

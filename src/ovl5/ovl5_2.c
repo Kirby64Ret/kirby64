@@ -2376,7 +2376,22 @@ s32 func_801609D0_ovl5(s32 arg0) {
    worse. Ruled out: if/else-if chain (1/21, identical residue to the
    switch); switch with case 0xB split into its own arm plus explicit
    default (11/22, worse -- duplicates the compare chain instead).
-   Measured true residue: 1/21 (verify.py). */
+   Measured true residue: 1/21 (verify.py).
+
+   DIAGNOSIS, and it is a SPLAT task, not a source one. The "dead epilogue"
+   is almost certainly a separate EMPTY FUNCTION that splat merged into this
+   symbol because nothing names it. Evidence: this file has the same 8-byte
+   `jr $ra; nop` tail INSIDE .size on func_80160A20_ovl5 (0x80160A70, next
+   real function at 0x80160A78) and func_801613C0_ovl5 (0x80161424, next at
+   0x8016142C) -- two 16-byte-aligned 2-word blocks, exactly what
+   `void stub(void) {}` compiles to, and LEVERS' padding-trap class (c).
+   Adding `func_80160A70_ovl5 = 0x80160A70; // type:func` and
+   `func_80161424_ovl5 = 0x80161424; // type:func` to tools/symbol_addrs.txt
+   and re-splitting would cut both listings at the right boundary and make
+   both functions plain 20-/25-word matches plus two one-line stubs. A
+   re-split rewrites every listing under every running lane, so it needs a
+   quiet tree -- hence coordinator, not lane. Do NOT chase this from C: no
+   spelling reaches it, three lanes have now confirmed that. */
 s32 func_80160A20_ovl5(s32 arg0) {
     switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
         case 4:
@@ -2586,17 +2601,27 @@ f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
 extern f32 D_800EA6E0[];
 
 #ifdef NON_MATCHING
-/* FACTORY: 52/60, verify.py-confirmed. The two 8-byte struct locals
-   sit 4 bytes high (frame-layout anomaly; total frame IS the ROM's
-   0x38, only the struct base differs by 4), and the two index addu
-   pairs are emitted in the other order. Re-measured this pass: a pad
-   local declared first or last both grow the frame to 0x40 (15/60,
-   worse in both positions) instead of closing the 4-byte gap in
-   place. Floor. */
+/* FACTORY: 4/60 differ (measured this pass, was 8/60). The stack half of
+   the old residue is SOLVED: the struct block sat 4 bytes high because all
+   three f32 scalars were declared AFTER the structs. LEVERS lever 32 --
+   scalars declared BEFORE a run of structs slide the whole block down, 4
+   bytes each. Measured here: 0 scalars before -> sp2C/sp24 at 0x30/0x28;
+   3 before -> 0x24/0x1C; exactly ONE before -> the ROM's 0x2C/0x24, frame
+   0x38. (A pad local, which the previous note reached for, only grows the
+   frame -- it is a declaration-ORDER knob, not a size knob.)
+   Remaining 4: the two index `addu` pairs are issued arg1-before-arg0 by
+   the ROM's scheduler and arg0-before-arg1 here; the register assignment
+   is already identical, only the two adjacent independent instructions are
+   transposed. Swept this pass and rejected: swapping the a/b assignment
+   order (7/60 -- it also swaps the $f2/$f12 roles, since the
+   first-assigned float takes $f2 and the ROM's $f2 is the arg0 value);
+   naming both indices in locals read arg1-first (fixes the first pair but
+   costs 8 bytes of frame, 5/60); naming only arg1's index (7/60, frame
+   0x40). Adjacent-instruction transposition -- permuter food. */
 s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
+    f32 r;
     RacerSetup sp2C;
     RacerSetup sp24;
-    f32 r;
     f32 a;
     f32 b;
 
@@ -2614,11 +2639,13 @@ s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
 #endif
 #ifdef NON_MATCHING
-/* FACTORY: 25/26, dead-epilogue residue (verify.py-confirmed). ROM's
-   listing tail carries a genuinely unreachable second `jr $ra; nop`
-   epilogue after this function's real return; no C shape emits a
-   trailing dead epilogue like this -- same class as func_80160A20_ovl5
-   above. Ruled out: nothing else to try, this is structural. */
+/* FACTORY: 1/26 differ, dead-epilogue residue (verify.py-confirmed).
+   Same class as func_80160A20_ovl5 above and the same diagnosis: the
+   trailing `jr $ra; nop` at 0x80161424 is an unnamed EMPTY FUNCTION that
+   splat folded into this symbol (the next real function starts at
+   0x8016142C). Fix is a tools/symbol_addrs.txt entry plus a re-split, on a
+   quiet tree -- see the long note on func_80160A20_ovl5. Structural, not a
+   source shape. */
 s32 func_801613C0_ovl5(s32 arg0, s32 arg1) {
     if (D_800EA6E0[D_8018E030_ovl5[arg0]] < D_800EA6E0[D_8018E030_ovl5[arg1]]) {
         return arg0;

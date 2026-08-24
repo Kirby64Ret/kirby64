@@ -1292,6 +1292,21 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 // this pass: dropping the pad local (2 locals instead of 3) keeps the frame
 // wrong AND breaks the spill slots (6/61 -- sw/lw offsets all off by 4 twice).
 // The states never meet; frame anomaly not closable by pad sweeping here.
+//
+// NEW MEASUREMENT (this pass), and it names the real residue. Declaring
+// `s32 temp = D_8018ECA8_ovl5[arg0];` FIRST and `Unk801875F0 *p;` second,
+// with no pad, scores 4/61 and gets the ROM's frame (0x28), the ROM's
+// `temp` slot (0x24) and the ROM's `addu $t2, $v0, $t1` operand order --
+// all four remaining diffs are the two COMPILER SPILL slots sitting 4 bytes
+// low (a2 at 0x1C/a3 at 0x18 where the ROM has 0x20/0x1C). Both shapes hold
+// three spill words in 0x18..0x24; the ROM leaves the hole at the BOTTOM
+// (0x18) and IDO leaves it at 0x20 here. That is spill-slot allocation
+// order, which no declaration reaches -- declared locals sit ABOVE the
+// spill region. Other shapes measured: p declared first + temp (6/61);
+// temp + a trailing pad (5/61, frame 0x30); temp alone with p inlined
+// (5/61, frame right, both spills 4 low, plus the addu swap).
+// The 2/61 draft below is kept because 2 < 4, but the 4/61 shape above is
+// the better permuter seed if the frame turns out to be the harder half.
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;

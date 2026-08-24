@@ -2173,45 +2173,9 @@ void func_800F8570(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8570.s")
 #endif
 
-#ifdef MIPS_TO_C
-/* FACTORY: 61/63 instructions match (2 diffs). Everything is exact --
- * frame 0x38, argument homes, both calls, the late_rodata 0.1f, every
- * branch -- except the slot of the one f32 local `sp20`, which IDO
- * puts at 0x24 where the ROM has 0x20 (the ROM leaves the 4-byte hole
- * at 0x24 instead). Every way of reaching 28 bytes of declared locals
- * was measured and all of them push the frame to 0x40 instead of
- * moving the hole: a 4-byte pad between the Vector and sp20, an
- * f32[2] in sp20's place, and widening the Vector to f32[4] with the
- * call taking &v[1]. Two levers DID land and must be kept: the two
- * symbol reads in the sp34 expression have to be written in the
- * REVERSE of the ROM's evaluation order (D_800E5F90 first in source
- * so D_80129114 is evaluated first and takes $t6) -- worth 7 diffs --
- * and the final accumulate must be spelled `(...) + *sp1C`, not
- * `*sp1C + (...)`, to get `add.s $f18,$f8,$f10`. */
-f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
-    extern void *D_80129114;
-    extern s32 D_800E5F90[];
-    extern f32 D_800E6BD0[];
-    void *sp34;
-    Vector sp28;
-    f32 sp20;
-    f32 *sp1C;
-
-    sp34 = *(void **) (D_800E5F90[arg0] * 0x10
-                       + (u8 *) *(void **) ((u8 *) D_80129114 + 4) + 4);
-    sp1C = &D_800E6BD0[arg0];
-    func_8001E344(&sp28, sp34, *sp1C);
-    sp20 = 1.0f / sqrtf((sp28.x * sp28.x) + (sp28.z * sp28.z));
-    sp28.x = sp28.x * sp20;
-    sp28.z = sp28.z * sp20;
-    sp20 = (sp28.x * arg1) + (sp28.z * arg2);
-    *sp1C = ((sp20 / *(f32 *) ((u8 *) sp34 + 0xC)) * 0.1f) + *sp1C;
-    func_800F8570(arg0);
-    return sp20;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: convert a moving-platform world delta into track progress for
- * entity arg0, from the m2c sketch above with the node access respelled
+ * entity arg0, from the matched N64 body below with the node access respelled
  * for the NATIVE records (see the func_800F78E4 arm). Projects the XZ
  * delta onto the normalized track tangent, advances D_800E6BD0 by the
  * projected distance, and returns it (ovl1_8's func_800B531C stores it as
@@ -2234,7 +2198,42 @@ f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
     return dist;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F8728.s")
+/* Matched. Two levers are load-bearing and must be kept: the two symbol reads
+ * in the sp34 expression are written in the REVERSE of the ROM's evaluation
+ * order (D_800E5F90 first in source, so D_80129114 is evaluated first and
+ * takes $t6) -- worth 7 words -- and the final accumulate is spelled
+ * `(...) + *sp1C`, not `*sp1C + (...)`, for `add.s $f18,$f8,$f10`.
+ * The last two words came from the declaration list: `f32 sp20` DECLARED
+ * LAST puts it at the ROM's 0x20 and leaves the 4-byte hole at 0x24. The
+ * previous note here concluded the hole was unreachable after sweeping pads
+ * and wider aggregates; it is a declaration-ORDER knob, not a size knob.
+ * (A splice-and-measure harness that scores a scratch COPY will still print
+ * 1/63 here: verify.py derives the .rodata base from the file's PATH, so on a
+ * copy the 0.1f load reads as `<.rodata>+0x80` instead of D_80128790.
+ * ovl2_2.o's .rodata links at 0x80128710, so +0x80 IS D_80128790. Scored on
+ * the real path verify.py prints MATCH; measure_seeds.py now passes
+ * VERIFY_SECBASE_SRC so it does too.) */
+f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
+    extern void *D_80129114;
+    extern s32 D_800E5F90[];
+    extern f32 D_800E6BD0[];
+    void *sp34;
+    Vector sp28;
+    f32 *sp1C;
+    f32 sp20;
+
+    sp34 = *(void **) (D_800E5F90[arg0] * 0x10
+                       + (u8 *) *(void **) ((u8 *) D_80129114 + 4) + 4);
+    sp1C = &D_800E6BD0[arg0];
+    func_8001E344(&sp28, sp34, *sp1C);
+    sp20 = 1.0f / sqrtf((sp28.x * sp28.x) + (sp28.z * sp28.z));
+    sp28.x = sp28.x * sp20;
+    sp28.z = sp28.z * sp20;
+    sp20 = (sp28.x * arg1) + (sp28.z * arg2);
+    *sp1C = ((sp20 / *(f32 *) ((u8 *) sp34 + 0xC)) * 0.1f) + *sp1C;
+    func_800F8570(arg0);
+    return sp20;
+}
 #endif
 
 f32 func_800F8824(Vector *vec, f32 angle) {
