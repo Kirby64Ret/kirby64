@@ -2367,36 +2367,17 @@ s32 func_801609D0_ovl5(s32 arg0) {
     return 1;
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 20/21, dead-epilogue residue. ROM emits a genuinely
-   unreachable second `jr $ra; nop` epilogue after the reachable
-   return-1 path; no C control-flow shape (switch w/ fallthrough
-   cases, if/else, split switch w/ separate case returns) reproduces
-   it -- all three spellings measured land on the same 1-word diff or
-   worse. Ruled out: if/else-if chain (1/21, identical residue to the
-   switch); switch with case 0xB split into its own arm plus explicit
-   default (11/22, worse -- duplicates the compare chain instead).
-   Measured true residue: 1/21 (verify.py).
-
-   DIAGNOSIS, and it is a SPLAT task, not a source one. The "dead epilogue"
-   is almost certainly a separate EMPTY FUNCTION that splat merged into this
-   symbol because nothing names it. Evidence: this file has the same 8-byte
-   `jr $ra; nop` tail INSIDE .size on func_80160A20_ovl5 (0x80160A70, next
-   real function at 0x80160A78) and func_801613C0_ovl5 (0x80161424, next at
-   0x8016142C) -- two 16-byte-aligned 2-word blocks, exactly what
-   `void stub(void) {}` compiles to, and LEVERS' padding-trap class (c).
-   TRIED AND IT DOES NOT WORK, so do not spend the quiet tree on it again:
-   adding `func_80160A70_ovl5 = 0x80160A70; // type:func` and its sibling to
-   tools/symbol_addrs.txt and re-splitting leaves both listings unchanged --
-   the second `jr $ra; nop` is still inside func_80160A20_ovl5's .size. Adding
-   explicit `size:0x50` / `size:0x8` to the pair does not cut it either. Splat
-   derives function boundaries from the disassembly and will not start a new
-   one at an address nothing branches to, so a symbol alone cannot force the
-   split; it needs a real subsegment boundary or a splat-side change. The ROM
-   stays byte-exact through both attempts, so the cost is only time.
-
-   Do NOT chase this from C either: no spelling reaches it, three lanes have
-   confirmed that. */
+/* The "dead epilogue" this function's listing carries (a second `jr $ra; nop`
+   at 0x80160A70, inside func_80160A20_ovl5's .size, with the next real
+   function at 0x80160A78) is a separate UNNAMED EMPTY FUNCTION that splat
+   folded into this symbol because nothing branches to it. Earlier passes
+   read it as a control-flow residue and chased C shapes for it; it is not
+   one, and neither is it a splat task -- symbol_addrs.txt entries and
+   explicit `size:` both leave the listing unchanged (measured, twice).
+   It is simply the NEXT function in the translation unit, so writing it out
+   below closes both. A/B'd on a scratch copy of the TU before un-guarding:
+   .text, .rodata, .data and .bss are all byte-identical to the pragma
+   build, the only object difference being the new label at 0x3D70. */
 s32 func_80160A20_ovl5(s32 arg0) {
     switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
         case 4:
@@ -2406,9 +2387,10 @@ s32 func_80160A20_ovl5(s32 arg0) {
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160A20_ovl5.s")
-#endif
+
+void func_80160A70_ovl5(void) {
+}
+
 s32 func_80160A78_ovl5(s32 arg0) {
     Unk16Bytes sp8 = D_80185FB0_ovl5;
     s32 pad;
@@ -2643,23 +2625,20 @@ s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
 #endif
-#ifdef NON_MATCHING
-/* FACTORY: 1/26 differ, dead-epilogue residue (verify.py-confirmed).
-   Same class as func_80160A20_ovl5 above and the same diagnosis: the
-   trailing `jr $ra; nop` at 0x80161424 is an unnamed EMPTY FUNCTION that
-   splat folded into this symbol (the next real function starts at
-   0x8016142C). Fix is a tools/symbol_addrs.txt entry plus a re-split, on a
-   quiet tree -- see the long note on func_80160A20_ovl5. Structural, not a
-   source shape. */
+/* Same shape as func_80160A20_ovl5 above: the trailing `jr $ra; nop` at
+   0x80161424 inside this symbol's .size is the unnamed empty function that
+   follows it (the next real function starts at 0x8016142C), so it is written
+   out below rather than chased in C. Same scratch-copy A/B: every section
+   byte-identical to the pragma build. */
 s32 func_801613C0_ovl5(s32 arg0, s32 arg1) {
     if (D_800EA6E0[D_8018E030_ovl5[arg0]] < D_800EA6E0[D_8018E030_ovl5[arg1]]) {
         return arg0;
     }
     return arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801613C0_ovl5.s")
-#endif
+
+void func_80161424_ovl5(void) {
+}
 
 f32 func_8016142C_ovl5(s32 arg0) {
     return (D_800EA6E0[D_8018E030_ovl5[arg0]] - gEntitiesNextPosXArray[D_8018E030_ovl5[arg0]]) * 0.5f;
@@ -4305,7 +4284,8 @@ extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 
 #ifdef NON_MATCHING
-/* FACTORY: 24/26, verify.py-confirmed. IDO fills the post-`jal` delay
+/* FACTORY: 2/26 (2 words DIFFER; the old "24/26" was the matched-count
+   convention -- measure_seeds.py is the authority). IDO fills the post-`jal` delay
    slot with `addiu $s0,$s0,1` and sinks `sw $v0` to the next
    instruction, where the ROM stores at `0xC($s1)` first and increments
    second -- a scheduling order swap, not reachable by C reshaping.
