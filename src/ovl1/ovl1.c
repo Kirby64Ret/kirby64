@@ -5317,7 +5317,11 @@ s32 arg1;
  * func_800A22A8/func_800A22D4 below pass a third argument the function
  * never reads, so it must not expose a two-arg prototype (and the ROM's
  * `andi $a0, 0xFFFF` + dead home store is the same IDO promoted-short
- * prologue func_800A2440's note describes). */
+ * prologue func_800A2440's note describes).
+ * MEASURED: rewriting this head as `void func_800A2080(s32 arg0, s32 arg1)`
+ * fails the PC build with `too many arguments to function 'func_800A2080'`
+ * at both call sites (ovl1.c:5403 and :5407, i.e. inside func_800A22A8 and
+ * func_800A22D4). The K&R form stays. */
 void func_800A2080(arg0, arg1)
 s32 arg0;
 s32 arg1;
@@ -5476,13 +5480,9 @@ void func_800A238C(f32 arg0, f32 arg1, f32 arg2) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_800A238C.s")
 #endif
 
-// K&R definition with a u16 first parameter: the ROM's dead `sw $a0, 0x0($sp)`
-// home store plus the `andi $a0, $a0, 0xFFFF` truncation is IDO's K&R
-// promoted-short prologue.
-void func_800A2440(arg0, arg1)
-u16 arg0;
-s32 arg1;
-{
+// The ROM's dead `sw $a0, 0x0($sp)` home store plus the
+// `andi $a0, $a0, 0xFFFF` truncation is IDO's promoted-short prologue.
+void func_800A2440(u16 arg0, s32 arg1) {
     UnkParticle *p;
 
     p = D_800D69C8[arg1];
@@ -5505,11 +5505,8 @@ s32 arg1;
     }
 }
 
-// Clone of func_800A2440; see the K&R note there.
-void func_800A24C4(arg0, arg1)
-u16 arg0;
-s32 arg1;
-{
+// Clone of func_800A2440; see the promoted-short note there.
+void func_800A24C4(u16 arg0, s32 arg1) {
     UnkParticle *p;
 
     p = D_800D69C8[arg1];

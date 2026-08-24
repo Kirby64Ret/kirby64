@@ -926,9 +926,18 @@ void func_801DD17C_ovl17(void) {
 
 /* FACTORY: 0/97 words differ -- byte-exact MATCH -- but PADDING-TRAPPED:
  * un-guarding this shortens ovl17.c by 16 bytes and breaks the ROM. Its
- * listing carries three trailing nops past the .size, and it is the last
- * function in its subsegment, so converting it needs a `pad` subsegment in
- * kirby64.yaml plus the matching kirby.ld edit in the SAME commit.
+ * listing carries three trailing nops past the .size.
+ * CORRECTION (measured 2026-08-24): it is NOT the last function in its
+ * subsegment, and a `pad` subsegment is therefore the WRONG remedy. The
+ * `c` subsegment is [0x2263D0, ovl17/ovl17] and runs to 0x228B10; this
+ * function's nops end at ROM 0x228630 and func_801DD440_ovl17 -- already
+ * plain C in this same file -- starts right there. An INTERIOR nop tail
+ * marks an OBJECT boundary (padtrap.py "UPDATE 2"), and the residue is
+ * exactly align16(0x801DD434) - 0x801DD434 = 12, which is the signature
+ * padtrap.py names for "splitting is the WHOLE fix". So the conversion is:
+ * split ovl17.c into ovl17.c + ovl17b.c at func_801DD440_ovl17 and cut the
+ * yaml subsegment at 0x228630, exactly as ovl15/ovl15b is cut. kirby.ld's
+ * SUBALIGN(16) then emits the fill and a `pad` entry would DOUBLE it.
  * Re-measured 2026-08-23: scoring it in a scratch copy reports 3/97, but all
  * three are the anonymous-.rodata artifact verify.py hits when SECBASE cannot
  * be resolved outside src/ -- D_801E5520_ovl17 is this TU's .rodata base and

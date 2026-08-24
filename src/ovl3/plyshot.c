@@ -4422,22 +4422,15 @@ void func_80164320_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80164320_ovl3.s")
 #endif
-#ifdef NON_MATCHING
-/* 69/111: logic decoded and every instruction lines up -- the whole diff is a
-   one-instruction shift from the extra `sw $s0, 0x18($sp)`. The ROM uses NO
-   callee-saved register at all: it spills `h` to 0x1C($sp) and re-reads
-   omCurrentObj->objId. IDO instead parks objId then `h` in $s0.
-   Swept: s32 vs f32** for h, `volatile` on the pointer and on the pointee,
-   leading and trailing pad locals, an explicit id local. Prototype knobs on
-   func_80152070_ovl3/func_80155D50_ovl3/func_80111A04 all collide with the
-   file's later declarations and do not compile. */
-extern char D_801912EC_ovl3[];
-extern f32 D_80193C64_ovl3[][4];
-extern f32 D_80198700_ovl3[][4];
-extern s32 D_80193D64_ovl3[];
-extern s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-
+/* The declarations stay INSIDE the body on purpose: at file scope they would
+   be visible to every function below, and this file declares
+   func_80152070_ovl3 in-body in three other places. */
 void func_801644EC_ovl3(s32 arg0) {
+    extern char D_801912EC_ovl3[];
+    extern f32 D_80193C64_ovl3[][4];
+    extern f32 D_80198700_ovl3[][4];
+    extern s32 D_80193D64_ovl3[];
+    extern s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
     f32 **h;
 
     if (D_8012E860 != 0) {
@@ -4460,9 +4453,6 @@ void func_801644EC_ovl3(s32 arg0) {
         func_800B1900(((u16 *) omCurrentObj)[1]);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801644EC_ovl3.s")
-#endif
 void func_801646A4_ovl3(s32 arg0) {
 
     D_800EA520[omCurrentObj->objId] = 0;
