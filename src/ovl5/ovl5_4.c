@@ -2883,27 +2883,25 @@ s32 func_8016CA4C_ovl5(s32 arg0) {
     return count;
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 2/26 (2 words DIFFER; the old "24/26" was the matched-count
-   convention -- measure_seeds.py is the authority). IDO fills the post-`jal`
-   slot with `addiu $s0,$s0,1` and sinks `sw $v0` to the next instruction,
-   where the ROM stores at `0xC($s1)` first and increments second -- a
-   scheduling order swap, not reachable by C reshaping. Re-swept this pass
-   and all worse or equal: the empty `if` before the store (6/26, it also
-   swaps which symbol gets $s1), `i != 4` (2/26, identical), a `while` form
-   and a `do/while` (5/26 each, the preheader reorders), and a named temp for
-   the call result (4/26, the store sinks past both increments). The empty `if`
-   reproduces the ROM's dead $s2 induction over D_8018E3C8_ovl5.
-   Clone twins with the identical residue: func_801649CC_ovl5,
-   func_80176108_ovl5. */
-void func_8016CB14_ovl5(void) {
-    s32 i;
-
-    for (i = 0; i < 4; i++) { D_800D7178[i].unkC = func_8016CA4C_ovl5(i); if (D_8018E3C8_ovl5[i] != 0) {} }
+/* Clone of the matched func_80176108_ovl5 in ovl5_5.c. The old note here
+   called the last 2 words an unreachable scheduling swap; they are not. The
+   ROM's dead induction is a DOUBLY nested empty `if` -- the inner
+   `if ((!i) && (!i)) {}` is what makes IDO keep the `sw` before the counter
+   increment. Copying the donor's spelling verbatim: 2/26 -> MATCH. */
+void func_8016CB14_ovl5(void)
+{
+  s32 i;
+  for (i = 0; i < 4; i++)
+  {
+    D_800D7178[i].unkC = func_8016CA4C_ovl5(i);
+    if (D_8018E3C8_ovl5[i] != 0)
+    {
+      if ((!i) && (!i))
+      {
+      }
+    }
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016CB14_ovl5.s")
-#endif
 
 void func_8016CB7C_ovl5(GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = NULL;

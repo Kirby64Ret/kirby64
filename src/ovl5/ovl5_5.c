@@ -3128,12 +3128,14 @@ void func_80175F50_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80175F50_ovl5.s")
 #endif
 
-/* 2 diffs, and the single physical line is load-bearing (expanded over three
-   lines it is 4): IDO fills the post-`jal` slot with `addiu $s0,$s0,1` and
-   sinks `sw $v0` to `-4($s1)`, where the ROM stores at `0xC($s1)` first. The
-   empty `if` reproduces the ROM's dead $s2 induction over D_8018ECA8_ovl5.
-   Clone twins with the identical residue: func_801649CC_ovl5,
-   func_8016CB14_ovl5. */
+/* MATCH (verify.py, 26/26). The stale note here claimed 2 diffs and blamed a
+   post-`jal` scheduling swap; what actually carries it is the DOUBLY nested
+   empty `if` below -- the inner `if ((!i) && (!i)) {}` is what keeps the `sw`
+   ahead of the counter increment, and it is why the ROM's dead $s2 induction
+   over D_8018ECA8_ovl5 survives. This function is the DONOR for its two clone
+   twins, func_801649CC_ovl5 (ovl5_2.c) and func_8016CB14_ovl5 (ovl5_4.c):
+   both sat at 2/26 for several passes and both closed by copying this
+   spelling verbatim. Do not "tidy" the nesting. */
 void func_80176108_ovl5(void)
 {
   extern s32 D_800D7178[];
@@ -3617,21 +3619,27 @@ void func_800ACB7C(SPObj *);
 void func_8015C804_ovl5(SPObj *, f32, f32);
 void func_80176EC8_ovl5(u8 *, u16 *);
 
-#ifdef NON_MATCHING
-/* Left un-guarded when the container killed this lane mid-stint. */
+/* Exact clone of the matched func_8016EAFC_ovl5 in ovl5_4.c (LEVERS lever 1 --
+   tools/decomp/find_clones.py pairs them on the opcode/register skeleton).
+   Copying that donor's shape verbatim took this from 35/274 to MATCH on the
+   FIRST compile. The two things the old draft had wrong are both the donor's:
+   the four scalars are declared BEFORE the six aggregates and `f32 last` after
+   them (declaration order is the stack layout), and `spobj->xScale` is read
+   into `last` before the `if` instead of inline inside it (LEVERS lever 16 --
+   a pre-branch load needs its own local or IDO leaves a nop in the compare
+   gap and rotates every FP temp after it). */
 void func_80176A80_ovl5(GObj *arg0) {
-    s32 pad0;
-    s32 pad1;
+    struct UnkStruct8015C740 **p;
+    SPObj *spobj;
+    f32 scale;
+    f32 step;
     Unk12Colors spA4 = D_801873C8_ovl5;
     Unk12Colors sp98 = D_801873D4_ovl5;
     Unk12Colors sp8C = D_801873E0_ovl5;
     Unk12Colors sp80 = D_801873EC_ovl5;
     Unk12Colors sp74 = D_801873F8_ovl5;
     Unk12Defs sp68 = D_80187404_ovl5;
-    struct UnkStruct8015C740 **p;
-    SPObj *spobj;
-    f32 scale;
-    f32 step;
+    f32 last;
 
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     omLinkGObjDL(arg0, func_800AD1A0, 0xA, 0x80000000, 0xA);
@@ -3650,8 +3658,9 @@ void func_80176A80_ovl5(GObj *arg0) {
             ohSleep(1);
             scale += 0.25f;
         }
+        last = spobj->xScale;
         if (1.0f < scale) {
-            step = (spobj->xScale - 1.0f) * 0.5f;
+            step = (last - 1.0f) * 0.5f;
             do {
                 spobj->yScale = scale;
                 spobj->xScale = scale;
@@ -3686,9 +3695,6 @@ void func_80176A80_ovl5(GObj *arg0) {
     func_800ACBDC(arg0);
     func_800B1900(omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80176A80_ovl5.s")
-#endif
 
 void func_80176EC8_ovl5(u8 *arg0, u16 *arg1) {
     arg0[0x14] = arg1[0];
