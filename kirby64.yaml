@@ -404,6 +404,9 @@ segments:
     - [0xB2AB0, c, ovl3/ovl3_1]
     - [0xB6A90, c, ovl3/plydemo]
     - [0xBB6D0, c, ovl3/plyshot]
+    # Re-split: the plyshot.c/plyeff.c object boundary, derived below, is
+    # func_80163320_ovl3 (vram 0x80163320 = rom 0xC3D60).
+    - [0xC3D60, c, ovl3/plyeff]
     - [0xC9E70, c, ovl3/ovl3_4]
     - [0xCC9A0, c, ovl3/kirby]
     # Re-split: the real TU boundary, derived below, is func_80179370_ovl3
@@ -416,10 +419,25 @@ segments:
     # six of ovl3's eight object boundaries exactly where the old blob splits
     # already were, and finds two MORE that the file split does not have:
     #
-    #  * plyshot.c is TWO objects. 0xF7A30..0xF7B60 serves func_8015ADF8..
-    #    func_801632B8; 0xF7B60 starts a second [string][floats] cycle serving
-    #    func_801634D4..func_8016858C. One C file cannot emit that shape, so
-    #    only the first half is migrated and the rest stays an asm blob.
+    #  * RESOLVED. plyshot.c was TWO objects, and the second one names itself:
+    #    the string at 0xF7B60 is "Player Effect Request Error![plyeff.cc]\n".
+    #    Re-derived from the ROM (every %hi/%lo pair in ovl3's text resolved to
+    #    its target and attributed to the enclosing function): 0xF7A30 is
+    #    [2 strings ref'd by func_801625B8, func_801632B8][floats climbing
+    #    func_8015ADF8 -> func_80161058][jtbl into func_8016264C]; 0xF7B60
+    #    RESETS AT A STRING (func_801693C4) and restarts the cycle with floats
+    #    climbing func_801634D4 -> func_80167D04 and a jtbl into func_8016858C.
+    #    Every float word in both blocks is accounted for with no crossing
+    #    reference, so the boundary lies in (func_801632B8, func_801634D4].
+    #    func_80163320_ovl3 carries no .rodata of its own; it is placed at the
+    #    head of the second object because it is that object's funclist
+    #    dispatcher -- D_801967F0's 22 entries are exactly func_801634D4..
+    #    func_80167B80 -- mirroring func_8015AC90/D_801966F0 at the head of the
+    #    first, and because ovl1's track table D_800D4FD0 pairs track 0x14 ->
+    #    func_8015AC90 (requested by plyshot.cc's func_801632B8) and track
+    #    0x15 -> func_80163320 (requested by plyeff.cc's func_801693C4).
+    #    src/ovl3/plyeff.c now owns [func_80163320 .. end], rom 0xC3D60, and
+    #    0xF7B60 is dotted .rodata on it instead of an asm blob.
     #  * RESOLVED. The kirby.c/ovl3_6.c file split at 0xDD9A0 was NOT the TU
     #    boundary. Re-derived from the ROM (every %hi/%lo pair in ovl3's text
     #    resolved to its target and attributed to the enclosing function):
@@ -435,7 +453,7 @@ segments:
     - [0xF7850, .rodata, ovl3/ovl3_1]
     - [0xF7920, .rodata, ovl3/plydemo]
     - [0xF7A30, .rodata, ovl3/plyshot]
-    - [0xF7B60, rodata, ovl3/plyshot_2]
+    - [0xF7B60, .rodata, ovl3/plyeff]
     - [0xF7C30, .rodata, ovl3/ovl3_4]
     - [0xF7D10, .rodata, ovl3/kirby]
     - [0xF7FB0, .rodata, ovl3/ovl3_6]
@@ -764,7 +782,35 @@ segments:
     # words come back with no `pad` entry.
     - [0x1E5AA0, c, ovl11/ovl11]
     - [0x1E9F10, c, ovl11/ovl11_2]
-    - [0x1EB3C0, data, ovl11/ovl11]
+    # NOT .data. The blob interleaves named const tables, a string literal
+    # ("reqWhispyJrTrk  Request Error!![boss2.cc]\n") and a float literal
+    # pool -- that is IDO's .rodata in its canonical order [named const
+    # objects][strings][float literals], and there is no .data in ovl11 at
+    # all. It is also TWO objects: every %hi/%lo pair in ovl11's text was
+    # resolved and attributed to its enclosing function, and 0x1EB3C0..
+    # 0x1EB4F8 is referenced only from ovl11.o's text (climbing
+    # func_801DB1E0 -> func_801DE548) while 0x1EB500..0x1EB518 is
+    # referenced only from ovl11_2.o's (func_801DFACC -> func_801E09C4).
+    # The eight zero bytes at 0x1EB4F8 are SUBALIGN(16) fill between them.
+    # ovl11.o's half stays an asm blob and its 11 float-pool entries
+    # (0x801E0C0C..0x801E0C34, one per function from func_801DB34C to
+    # func_801DE548) stay named externs, because the float pool is LAST in
+    # the object: ahead of it sit fifteen named const objects (the eight
+    # FUNCLIST dispatch tables, five Ovl11Color words, the {0..7} index bag)
+    # and the boss2.cc string, and SUBALIGN(16) forbids splitting the
+    # subsegment at 0x801E0C0C. So migrating the floats means migrating all
+    # of it -- defining ~48 function-pointer table entries as
+    # `void (*)(struct GObj *)` in a TU that is live matched C apart from
+    # three pragmas. Payoff measured first and it is zero closures: the two
+    # drafts in ovl11.c sit at 32/136 and 101/119. Worth doing as a data
+    # naming pass, not as a literal conversion.
+    - [0x1EB3C0, rodata, ovl11/ovl11_rodata]
+    # ovl11_2.o's half CANNOT be migrated to a dotted `.rodata` today: its
+    # last symbol D_801E0C54 carries the segment's trailing alignment fill
+    # (0x801E0C58..0x801E0C5F), so splat emits an 11-byte .late_rodata
+    # block into func_801E09C4_ovl11's listing and asm-processor rejects it
+    # with "size must be a multiple of 4". Measured.
+    - [0x1EB500, rodata, ovl11/ovl11_2_rodata]
     - [0x1EB520]
     - {type: bss, vram: 0x801E0C60, name: ovl11/ovl11}
 
