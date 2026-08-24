@@ -2699,7 +2699,7 @@ void func_801E3958_ovl13(GObj *arg0) {
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
-s32 func_801E3A84_ovl13(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_801E3A84_ovl13(struct DObj *arg0, struct DObj *arg1, struct DObj *arg2) {
     struct Ovl13AnimInfo sp38;
     EnemyRecord *sp30;
     s32 *sp28;

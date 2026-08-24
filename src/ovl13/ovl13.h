@@ -45,7 +45,12 @@ void func_801E36D8_ovl13(GObj *);
 void func_801E3778_ovl13(GObj *);
 void func_801E37E8_ovl13(GObj *);
 void func_801E3958_ovl13(GObj *);
-s32 func_801E3A84_ovl13(s32, s32, s32);
+/* The three arguments are DObj nodes, not scalars: every one of the fourteen
+   call sites in code_1F3160.c passes D_800DFBD0[objId][n], which is
+   `struct DObj *` (track_arrays.h). They are stored straight into the
+   animation control block, so its three receiving fields are DObj pointers
+   too. Declared s32 they truncated on LP64. */
+s32 func_801E3A84_ovl13(struct DObj *, struct DObj *, struct DObj *);
 
 
 struct Ovl13AnimInfo {
@@ -61,13 +66,13 @@ struct Ovl13AnimInfo {
 struct Ovl13AnimCmd {
     u32 unk0;
     u32 unk4;
-    s32 unk8;
+    struct DObj *unk8;
     u8 fillerC[0xC];
     f32 unk18;
     u8 filler1C[0x14];
-    s32 unk30;
+    struct DObj *unk30;
     u8 filler34[0x24];
-    s32 unk58;
+    struct DObj *unk58;
 };
 
 struct Ovl13AnimObj {

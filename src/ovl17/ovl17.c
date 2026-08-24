@@ -924,7 +924,6 @@ void func_801DD17C_ovl17(void) {
     D_800D7B2C = cam->viewMtx.lookAt.eye;
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
 /* FACTORY: 0/97 words differ -- byte-exact MATCH -- but PADDING-TRAPPED:
  * un-guarding this shortens ovl17.c by 16 bytes and breaks the ROM. Its
  * listing carries three trailing nops past the .size, and it is the last
@@ -963,98 +962,3 @@ void func_801DD2B0_ovl17(void) {
     D_800D7B20.unk0 = cam->viewMtx.lookAt.at;
     D_800D7B2C = cam->viewMtx.lookAt.eye;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DD2B0_ovl17.s")
-#endif
-
-void func_801DD440_ovl17(struct GObj *arg0) {
-    func_800A9864(0x100EC, 0x23, 0x10);
-    setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], &procMainStub);
-    func_800AA018(0x1067C);
-    func_800AA018(0x1067D);
-    arg0->data.dobj->pos.v.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-    arg0->data.dobj->pos.v.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-    arg0->data.dobj->pos.v.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    arg0->data.dobj->angle.v.x = gEntitiesAngleXArray[omCurrentObj->objId];
-    arg0->data.dobj->angle.v.y = gEntitiesAngleYArray[omCurrentObj->objId];
-    arg0->data.dobj->angle.v.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    arg0->data.dobj->scale.v.x = gEntitiesScaleXArray[omCurrentObj->objId];
-    arg0->data.dobj->scale.v.y = gEntitiesScaleYArray[omCurrentObj->objId];
-    arg0->data.dobj->scale.v.z = gEntitiesScaleZArray[omCurrentObj->objId];
-    ohSleep(0x126);
-    func_800AECC0(0.0f);
-    func_800AED20(0.0f);
-    curObjSleepForever();
-}
-
-void func_801DD60C_ovl17(struct GObj *arg0) {
-    f32 temp_f0;
-
-    temp_f0 = 0.2f;
-    D_800DEF90[omCurrentObj->objId] = &func_800B5094;
-    D_800DDA90[omCurrentObj->objId] = 0x25;
-    D_800E0F10[omCurrentObj->objId] = 0x19;
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
-    func_800A9864(0x100F1, 0x23, 0x10);
-    func_800AA018(0x1068D);
-    func_800AA018(0x1068E);
-    func_800AF27C();
-    func_800B1900((u16) omCurrentObj->objId);
-}
-
-s32 func_800A8234(s32, s32, s32);
-void func_800A22D4(struct GObj *);
-void func_800BC0F0(s32);
-void func_800B4924(struct GObj *);
-
-void func_801DD704_ovl17(struct GObj *arg0) {
-    f32 temp_f0;
-
-    temp_f0 = 0.2f;
-    D_800DEF90[omCurrentObj->objId] = &func_800B4924;
-    gEntitiesScaleXArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleYArray[omCurrentObj->objId] = temp_f0;
-    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f0;
-    D_800DDA90[omCurrentObj->objId] = 0x22;
-    D_800DF150[omCurrentObj->objId] = &func_801DD88C_ovl17;
-    func_800A9864(0x100F3, 0x23, 0x10);
-    func_800AA018(0x10690);
-    func_800AA018(0x10692);
-    D_800E98E0[omCurrentObj->objId] = func_800A8234(0, 0, 0x42);
-    ohSleep(0x82);
-    play_sound(0x264);
-    func_800BC0F0(1);
-    ohSleep(0x20);
-    play_sound(0x266);
-    func_800BC0F0(2);
-    func_800AF27C();
-    if (D_800E98E0[omCurrentObj->objId] != 0) {
-        func_800A22D4((struct GObj *) D_800E98E0[omCurrentObj->objId]);
-    }
-    func_800B1900((u16) omCurrentObj->objId);
-}
-
-void func_801DD88C_ovl17(struct GObj *arg0) {
-    GObj *temp_v1;
-    struct DObj *temp_t7;
-    s32 temp_v0;
-
-    temp_v1 = (GObj *) D_800E98E0[omCurrentObj->objId];
-    temp_t7 = D_800DFBD0[omCurrentObj->objId][5];
-    if (temp_v1 != NULL) {
-        temp_v0 = (s32) temp_v1->unk4C;
-        if (temp_v0 != 0) {
-            func_800B2340((Vector *) (temp_v0 + 4), temp_t7, 0xFFFF);
-        }
-    }
-}
-
-/* ovl17.c's trailing alignment padding: 48 bytes that splat put at the head
- * of ovl17_2. It has to assemble at the END of THIS translation unit, or
- * ovl17_2's .text base is 16 mod 32 and every dead epilogue in it is
- * misaligned (func_801DDB8C_ovl17, func_801DDF6C_ovl17). */
-/* The listing lives in asm_manual/ (committed) because a fresh splat split of
- * the current yaml no longer emits it, and asm/ is gitignored. */
-#pragma GLOBAL_ASM("asm_manual/ovl17/func_801DD8F0_ovl17.s")

@@ -901,7 +901,14 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x70
     subsegments:
+    # ovl17.c was two translation units. func_801DD2B0_ovl17 ends at
+    # 0x228624 with three nops to 0x228630 -- exactly align16(end)-end,
+    # which is an object boundary, not inter-function padding. As one
+    # subsegment those nops sat inside that function's listing and made a
+    # byte-exact body unconvertible. No `pad` is needed: the cut is
+    # already 16-aligned, so `as` supplies the fill.
     - [0x2263D0, c, ovl17/ovl17]
+    - [0x228630, c, ovl17/ovl17b]
     - [0x228B10, c, ovl17/ovl17_2]
     - [0x22BEF0, c, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
