@@ -109,10 +109,14 @@ struct SubSub800E1B50_Unk88_UnkC {
 struct EnemyKindDesc {
     f32 rangeGate;
     u32 pad0;
+    /* No pad after a POINTER field: on LP64 it already fills its whole cell,
+     * and padding it pushes every later field a cell too far. pad4/pad8 used
+     * to sit after onHit/onTouch and displaced animTable from cell 5 to cell
+     * 7, which is what made func_8019F410_ovl7 walk a bogus anim header and
+     * kill the deep run at world select. Only the 4-byte fields -- rangeGate,
+     * unk10, terrainKind -- take a pad. */
     void (*onHit)(GObj *);
-    u32 pad4;
     void (*onTouch)(void);
-    u32 pad8;
     struct SubSub800E1B50_Unk88_UnkC *unkC;
     u32 unk10;
     u32 pad10;
