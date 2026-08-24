@@ -83,6 +83,34 @@ ovl16 19, ovl10 18, ovl2 17, ovl17 16, ovl14 14, ovl19 12.
     This had been sealed three times as a "$f0/$f2 neighbouring-register floor" and swept for a tie-break that does not exist: declaration order, initialisation order, an explicit `f32 zero` local, a zero built from arithmetic or from an `s32`, a third live constant, and reference counts (0.0f with three uses still loses $f0 to a load with two) all reproduce the identical residue. The register order is decided by operand KIND, and nothing else moves it.
     **Check the rodata model before rewriting.** If the symbol lives in an `asm/data/**.rodata.s` blob (an undotted `rodata, X` subsegment) the literal DUPLICATES the ROM's word and shifts the blob — keep the draft guarded and report the split as a coordinator task. If it lives in the function's OWN listing under `.section .late_rodata`, the migration is already done and the rewrite is free.
 
+    **SURVEYED 2026-08-24 -- the four remaining named-literal pools are all
+    BLOCKED by the rodata model, so do not re-cost them:**
+      - `src/ovl11/ovl11.c` (11 candidates, e.g. `D_801E0C0C_ovl11 = 670`).
+        Every one lives in `asm/data/ovl11/ovl11.data.s`, reached by the
+        undotted `[0x1EB3C0, data, ovl11/ovl11]` subsegment. kirby.ld puts that
+        blob in ovl11's DATA region and `build/src/ovl11/ovl11.o(.rodata)` in a
+        separate RODATA region after it, so a literal emitted from C is a NEW
+        word appended past the blob, not a replacement -- the overlay grows.
+        (The blob interleaves `.asciz` strings with the floats, which is what
+        IDO's .rdata looks like: it is mis-typed `data` in the yaml, and fixing
+        that is a splat change, not a source change.)
+      - `src/ovl5/ovl5_4.c` (8) and `src/ovl5/ovl5_3.c` (2) --
+        `rodata, ovl5/ovl5_4_rd` / `ovl5/ovl5_3_rd`, both undotted. kirby64.yaml
+        already carries the reason inline: ovl5_3 and ovl5_4 are ONE translation
+        unit whose strings and late-rodata run interleave, so the block cannot
+        be migrated per file at all. This also blocks `func_80165440_ovl5`,
+        whose ONLY residue (1/116) is its jump table reading its own section
+        where the ROM names `jtbl_8018D658_ovl5`.
+      - `src/ovl5/ovl5_5.c` (1) -- `D_80187A68_ovl5 = 3` is not a pool entry at
+        all: it sits in the ovl5 `.data` blob between a four-float table and a
+        word table, and its one reader spells `200.0f + D_80187A68_ovl5`, which
+        IDO would constant-fold if both were literals. Real data, leave it.
+    A literal is only free where the file has a DOTTED `.rodata, seg/file`
+    subsegment. But CHECK WHAT THE CONSTANT COMPILES TO, not just where the
+    named symbol lives: ovl11's `func_801DD1CC_ovl11` un-guarded byte-exact out
+    of an unmigrated TU because its 0.0f/200.0f/160.0f are lui+mtc1 constants
+    and the object emits no .rodata at all.
+
 
 21. **`mul.s` operand slot IS movable — by operand KIND, not by source order.** Correcting the long-standing "INVARIANT" entry below. With one operand a named local and the other a direct array load, IDO emits `load, local` whichever way the product is spelled (`arr * v` and `v * arr` are byte-identical, measured four times, which is what made it look invariant). Change what the operands ARE and the slot moves: spelling the scale factor as an INLINE ternary instead of through a local flips it to the ROM's `local, load`. Two named locals honour source order. Closed func_8015E8E0_ovl3 at 275/275 (the inline form cost 8 bytes of frame, paid back by shrinking its `pad`).
 

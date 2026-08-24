@@ -987,12 +987,28 @@ void func_801F11A8_ovl10(GObj *arg0) {
    local for the array element, `v +=`, `v = v +`, and the ternary form.
    Re-confirmed 2026-08-23 via direct verify.py: DIFF 1/64, this add.s only.
    `D_800E17D0[objId] + v` (source order swapped again) reproduces the
-   identical 1/64 -- confirms LEVERS.md lever 2's falsification note
-   verbatim ("var + arrayload -- if one operand is a plain local, expect
-   nothing"): IDO canonicalises this specific add.s slot order and no source
-   spelling reaches the ROM's $f0,$f8 order. Same invariant-floor class as
-   the mul.s slot order (lever 84 in the guard-on-the-second-variant list).
-   Good permuter seed. */
+   identical 1/64.
+
+   MEASURED 2026-08-24, and it is NOT the invariant floor the previous note
+   called it -- it is LEVERS lever 21 (operand KIND) with a price attached.
+   Sweep of 14 spellings, all scored on a scratch copy:
+     v + arr / arr + v / inline ternary / unary + / extra parens / cast  1/64
+     pointer-deref of the array element                                34/64
+     -(-arr) via sub                                                   37/64
+     f64 promotion of either side                                   42-43/66
+     objId hoisted to a local                                          19/64
+   but with the array element read into a SECOND NAMED LOCAL, the add.s slot
+   order FLIPS to the ROM's source order -- `add.s $f8, $f0, $f2`, v first --
+   confirming lever 21's "two named locals honour source order" for `+` as
+   well as `*`. It costs 17 other words: the extra named local takes $f2, so
+   the hoisted loop constant 6.2831855f moves $f12 -> $f14 and the loop's
+   element temp moves $f2 -> $f12, renaming every FP register after it
+   (18/64). Tried and did not recover the allocation: declaring the new local
+   first, last, alongside a named `lim` for 6.2831855f, and assigning it
+   before the branch.
+   So the residue is a REGISTER-ALLOCATION cost of the only spelling that
+   fixes the slot, not an unreachable canonicalisation. Exactly what the
+   permuter is for. */
 void func_801F1454_ovl10(struct GObj *arg0) {
     f32 v;
 
@@ -1664,169 +1680,7 @@ void func_801F28AC_ovl10(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 32/674, instruction count exact -- residue is a one-register shift on the
- * light-restore pair ($v0/$v1 in the ROM, $v1/$a0 here) repeated across the arms.
- * Best seed produced in this bloc; hand it to the permuter first.
- * Was previously NOT DRAFTED because its host arm goes through pc_ovl10_gfx /
- * pc_ovl10_lights. Those shims are just the ordinary GBI macros written out: the ROM
- * emits them inline against gDisplayListHeads[n]++, exactly the idiom ovl1_3.c uses.
- * 0xDB060010 = gSPSegment(...,4,...), 0xDB020000 with 0x18 = gSPNumLights(1), and
- * 0xDC08060A / 0xDC08090A = the two gSPLight loads. Restoring the real macros took
- * this straight to 32/674 on the first compile.
- * gDisplayListHeads and the four light symbols are declared IN-BODY because this
- * file keeps them in its PORT-only block; do not hoist them to file scope -- the
- * equivalent move in ovl10_1.c moved a matched function and grew that TU.
- *
- * RESIDUE CHARACTERISED (2026-08-24), and it is ONE cause repeated four times,
- * not 32 independent words. verify.py prints 33; one is a phantom (the
- * jtbl_801F4CF4_ovl10 load reads as `<.rodata>+0x94` when scored on a scratch
- * COPY -- ovl10_5b.o's .rodata base makes that the same address). The other 32
- * are eight sites x four words where the ROM re-materialises D_801F4758_ovl10
- * into $v0 and D_801F4750_ovl10 into $v1 after each renderer call, and IDO
- * picks $v1 and $a0 -- a uniform one-register shift. Everything BEFORE the
- * first renderer call matches, `sw $v0, 0x4($s0)` included, so $v0 is chosen
- * correctly on the first materialisation and only the post-call ones drift:
- * caller-saved permutation, LEVERS "guard on the second variant".
- * Swept and rejected this pass: this function is a jal-sequence near-clone of
- * the MATCHED func_8017CCE0_ovl5 / func_8017D6F8_ovl5 in ovl5_7.c (lever 1),
- * and the only spelling difference is that the donor passes `&D_800BE550`
- * where this passes an array name. Declaring the two stage-light symbols as
- * scalars and taking their address -- and doing the same to all four -- is
- * byte-identical, 32 either way. The donor is not portable here for a second
- * reason: it reuses ONE light pair for both halves of every case, so it never
- * needs the post-call re-materialisation at all. */
-/* Goal-game render callback: per render mode (func_800AB0F4 19..30) sets the
- * track's segment-4 base, swaps in the goal-game light pair
- * D_801F4DA0/D_801F4D98, draws with that mode's renderer, then restores the stage
- * light pair D_801F4758/D_801F4750. Even modes 20..30 render on both display-list
- * heads. N64 spelling: the host build funnels every command through the
- * pc_ovl10_gfx/pc_ovl10_lights shims; the ROM emits the ordinary GBI macros
- * inline against gDisplayListHeads[n]++, which is the idiom the rest of the tree
- * uses (see ovl1_3.c). 0xDB060010 is gSPSegment(...,4,...), 0xDB020000/0x18 is
- * gSPNumLights(1), and 0xDC08060A / 0xDC08090A are the two gSPLight loads. */
-void func_801F2964_ovl10(GObj *arg0) {
-    extern Gfx *gDisplayListHeads[4];
-    extern u8 D_801F4DA0_ovl10[];
-    extern u8 D_801F4D98_ovl10[];
-    extern u32 D_801F4758_ovl10[];
-    extern u32 D_801F4750_ovl10[];
-    switch (func_800AB0F4(arg0)) {
-    case 19:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        func_800AB120(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        break;
-    case 21:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        func_800AB1F0(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        break;
-    case 23:
-    case 25:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        renderDrawDObjFromGObj(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        break;
-    case 27:
-    case 29:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        func_8001585C(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        break;
-    case 20:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
-        func_800AB174(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
-        break;
-    case 22:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
-        func_800AB244(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
-        break;
-    case 24:
-    case 26:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
-        renderDrawObject_TypeD(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
-        break;
-    case 28:
-    case 30:
-        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
-        func_80015BCC(arg0);
-        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
-        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
-        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
-        break;
-    }
-}
-#elif defined(PORT)
+#ifdef PORT
 extern Gfx *gDisplayListHeads[4];
 s32 func_800AB0F4(GObj *);
 void func_800AB120(GObj *);
@@ -1931,6 +1785,158 @@ void func_801F2964_ovl10(GObj *arg0) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F2964_ovl10.s")
+/* Goal-game render callback: per render mode (func_800AB0F4 19..30) sets the
+ * track's segment-4 base, swaps in the goal-game light pair
+ * D_801F4DA0/D_801F4D98, draws with that mode's renderer, then restores the stage
+ * light pair D_801F4758/D_801F4750. Even modes 20..30 render on both display-list
+ * heads. N64 spelling: the host build funnels every command through the
+ * pc_ovl10_gfx/pc_ovl10_lights shims; the ROM emits the ordinary GBI macros
+ * inline against gDisplayListHeads[n]++, which is the idiom the rest of the tree
+ * uses (see ovl1_3.c). 0xDB060010 is gSPSegment(...,4,...), 0xDB020000/0x18 is
+ * gSPNumLights(1), and 0xDC08060A / 0xDC08090A are the two gSPLight loads.
+ *
+ * MATCHED 2026-08-24, 674/674. The residue sealed here as a 32-word
+ * "caller-saved permutation floor" was a MISSING PROTOTYPE, and the note that
+ * called it a floor was measuring the symptom. Every callee of this function is
+ * declared only in the PORT arm below, so in the N64 build each call was an
+ * implicit `int f()`: IDO then treats $v0 as defined by the call and refuses to
+ * allocate it to the next temp, which is exactly the post-call
+ * $v0/$v1 -> $v1/$a0 shift at eight sites. Declaring the nine callees IN-BODY
+ * (spelled as the PORT arm spells them) took 32/674 to MATCH in one compile.
+ * A/B'd before un-guarding: ovl10_5b.o .text 0x3430 both ways, .rodata
+ * byte-identical (the function's jump table and the three trailing pad words
+ * come out the same from C), and verify_rom.py reports all 247 of ovl10's C
+ * functions byte-exact. The declarations stay IN-BODY: hoisting them to file
+ * scope is the move that grew ovl10_1.c (see REFOUND.md). */
+void func_801F2964_ovl10(GObj *arg0) {
+    extern Gfx *gDisplayListHeads[4];
+    extern u8 D_801F4DA0_ovl10[];
+    extern u8 D_801F4D98_ovl10[];
+    extern u32 D_801F4758_ovl10[];
+    extern u32 D_801F4750_ovl10[];
+    s32 func_800AB0F4(GObj *);
+    void func_800AB120(GObj *);
+    void func_800AB174(GObj *);
+    void func_800AB1F0(GObj *);
+    void func_800AB244(GObj *);
+    void renderDrawDObjFromGObj(GObj *);
+    void renderDrawObject_TypeD(GObj *);
+    void func_8001585C(GObj *);
+    void func_80015BCC(GObj *);
+    switch (func_800AB0F4(arg0)) {
+    case 19:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        func_800AB120(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        break;
+    case 21:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        func_800AB1F0(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        break;
+    case 23:
+    case 25:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        renderDrawDObjFromGObj(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        break;
+    case 27:
+    case 29:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        func_8001585C(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        break;
+    case 20:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
+        func_800AB174(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
+        break;
+    case 22:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
+        func_800AB244(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
+        break;
+    case 24:
+    case 26:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
+        renderDrawObject_TypeD(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
+        break;
+    case 28:
+    case 30:
+        gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPSegment(gDisplayListHeads[1]++, 4, gSegment4StartArray[arg0->objId]);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4D98_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4DA0_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4D98_ovl10, 2);
+        func_80015BCC(arg0);
+        gSPNumLights(gDisplayListHeads[0]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[0]++, D_801F4750_ovl10, 2);
+        gSPNumLights(gDisplayListHeads[1]++, NUMLIGHTS_1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4758_ovl10, 1);
+        gSPLight(gDisplayListHeads[1]++, D_801F4750_ovl10, 2);
+        break;
+    }
+}
 #endif
 

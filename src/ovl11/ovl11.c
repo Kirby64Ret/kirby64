@@ -807,27 +807,32 @@ void func_801DD160_ovl11(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
+/* MATCHED 2026-08-24, 41/41, from a 12-word seed whose whole residue was two
+ * dead locals. The draft cached `omCurrentObj->objId` in a `u32 temp_v0` and
+ * kept a separate `s32 temp_v0_2` for the func_801ACD90_ovl7 result; each
+ * reserved a frame word IDO never spilled, putting the frame at 0x38 against
+ * the ROM's 0x30 and moving every sp-relative offset by 8. Inlining the objId
+ * read (LEVERS lever 4) and keeping ONE s32 for the spawned track id is MATCH.
+ * Declaration order is load-bearing the usual way: sp20 must be declared AFTER
+ * sp24 to take the lower address (0x20 vs 0x24) -- swapping them is 7/41, and
+ * putting the s32 anywhere but last is 2-7/41. No .rodata: 0.0f/200.0f/160.0f
+ * are all lui+mtc1 constants, so this un-guards free in a TU whose rodata is
+ * still an unmigrated asm blob. */
 void func_801DD1CC_ovl11(struct GObj *arg0) {
     Vector sp24;
     f32 sp20;
-    s32 temp_v0_2;
-    u32 temp_v0;
+    s32 id;
 
-    temp_v0 = omCurrentObj->objId;
-    sp20 = gEntitiesAngleYArray[temp_v0] + D_800EAA60[temp_v0];
+    sp20 = gEntitiesAngleYArray[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
     sp24.x = 0.0f;
     sp24.y = 200.0f;
     sp24.z = 160.0f;
     lbvector_Rotate(&sp24, 2, sp20);
-    temp_v0_2 = func_801ACD90_ovl7(0x21, 0, &sp24);
-    if (temp_v0_2 != 0) {
-        gEntitiesAngleYArray[temp_v0_2] = sp20;
+    id = func_801ACD90_ovl7(0x21, 0, &sp24);
+    if (id != 0) {
+        gEntitiesAngleYArray[id] = sp20;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11/func_801DD1CC_ovl11.s")
-#endif
 /* func_801DD270_ovl11's parameter is a `struct Ovl11Tbl *`, and this file does
    not define that struct until below func_801DD490_ovl11. Moving the struct up
    would be a file-scope edit (REFOUND forbids it), so the pragma stays here and

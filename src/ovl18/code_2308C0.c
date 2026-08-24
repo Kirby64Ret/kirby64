@@ -338,7 +338,6 @@ void func_8021E858_ovl18(UNUSED s32 arg0) {
     }
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
 /* The per-lane CUE-SCRIPT interpreter. Row `row` of the current table's lane
  * list is a program; D_800E9AA0[objId] is its program counter and the low
  * nibble of each 0x24-byte cue's first byte is the opcode: 0/7 spawn-and-wait
@@ -348,23 +347,38 @@ void func_8021E858_ovl18(UNUSED s32 arg0) {
  * slots to clear) and then retire, 3 retire immediately. Opcodes 8..0xE are
  * the jump table's default and just re-read the pc.
  *
- * FACTORY: 13/230 words DIFFER (12 real -- [122] is only verify.py's
- * anonymous-.rodata artifact for the jump table when scoring a scratch copy).
- * Instruction count is exact and every branch target matches. The residue is
- * two scheduling facts: at both `pc`/`row` reload sites IDO emits the two
- * `addu`s in the opposite order to the ROM (4 diffs; the ROM computes the
- * D_800E98E0 address first but issues the D_800E9AA0 LOAD first, and no source
- * order produces both -- putting `row` first swaps the loads instead), and
- * IDO's 4x unroll of the opcode-4 loop rotates its four lbu/addiu pairs by one
- * (8 diffs).
- * Swept and rejected: `i != 8` (13), `x = x + 1` instead of `x++` (13), an
- * explicit objId local (17).
- * What paid, in order: writing the opcode-4 loop as an INDEXED loop over 8 --
+ * MATCHED 2026-08-24, 230/230, from the 12-word seed the note below describes.
+ * Both remaining residues were source shape, not scheduling luck:
+ *   - The `row`/`pc` reload is ONE pair of assignments at the TOP of the
+ *     while(1), not a copy before the loop plus a copy at the bottom. IDO
+ *     rotates the loop itself and emits the two copies; written that way, with
+ *     `row` first, both the two `addu`s and the two `lw`s land in the ROM's
+ *     order (12 -> 8). Every hand-placed combination of the two copies stays at
+ *     12 or worse (top pc,row = 16; bottom either order = 12).
+ *   - The opcode-4 loop must have NO BRACES. `for (i = 0; i < 8; i++)
+ *     D_8022BCD0_ovl18[i]++;` and the identical braced form compile to
+ *     different schedules: braced, IDO's 4x unroll rotates the four lbu/addiu
+ *     pairs by one (loads 1,2,3,0); unbraced it emits the ROM's 0,1,2,3
+ *     (8 -> MATCH). Also measured, all still 8: `+= 1`, `x = x + 1`,
+ *     `++arr[i]`, `++i`, `i != 8`, `i <= 7`; a u8 temp inside the body is 50.
+ * A/B'd before un-guarding: code_2308C0.o .text 0x2290 both ways and
+ * .rodata byte-identical; a whole-.text word diff against the last full build
+ * shows ONE differing word, the loop bound, where the ROM names the next symbol
+ * D_8022BCD8_ovl18 and IDO writes %lo(D_8022BCD0_ovl18)+8 -- the same linked
+ * address, so the linked byte is identical (LEVERS lever 28 in reverse).
+ * Note the declarations below moved from a PORT-guarded block to file scope
+ * when this un-guarded; that was gated with the same whole-.text diff and moved
+ * nothing.
+ *
+ * Historical, from the 34/230 -> 12/230 pass -- what paid, in order:
+ * writing the opcode-4 loop as an INDEXED loop over 8 --
  * IDO then knows the trip count and unrolls to the ROM's 4-at-a-time walk
  * with no zero-trip guard and no remainder loop, where a pointer walk gets
  * both (238 -> 230 words); naming the masked opcode in a local, which is what
  * makes IDO keep the `sltiu 0x10` range check the ROM has; the two pads that
- * put the frame at the ROM's 0x50; and reading `pc` before `row`. The last
+ * put the frame at the ROM's 0x50. (That pass's "read `pc` before `row`" is
+ * superseded above: with the pair at the top of the loop, `row` goes first.)
+ * The last
  * 34 diffs went when case 0xF was made to FALL THROUGH into case 5 -- the ROM
  * has no branch after its curObjSleepForever(), and neither does case 3.
  *
@@ -407,9 +421,9 @@ s32 arg0;
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8021E858_ovl18;
     ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
     ohSleep(D_8022959C_ovl18[D_8022BC90_ovl18].unk0[D_800E98E0[omCurrentObj->objId]].unk0);
-    pc = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
-    row = D_800E98E0[omCurrentObj->objId];
     while (1) {
+        row = D_800E98E0[omCurrentObj->objId];
+        pc = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
         if (D_8022BCD0_ovl18[row] == 1) {
             curObjSleepForever();
         }
@@ -425,9 +439,7 @@ s32 arg0;
                 ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
                 break;
             case 4:
-                for (i = 0; i < 8; i++) {
-                    D_8022BCD0_ovl18[i]++;
-                }
+                for (i = 0; i < 8; i++) D_8022BCD0_ovl18[i]++;
                 break;
             case 2:
                 ((s32 *) D_800E9AA0)[omCurrentObj->objId] = 0;
@@ -451,13 +463,8 @@ s32 arg0;
                 ((s32 *) D_800E9AA0)[omCurrentObj->objId] += 1;
                 break;
         }
-        pc = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
-        row = D_800E98E0[omCurrentObj->objId];
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_2308C0/func_8021E978_ovl18.s")
-#endif
 
 /* K&R definition is load-bearing: the parameter home slot (sw $a0) is only
  * emitted with a declared parameter, and a prototyped one is rejected by the

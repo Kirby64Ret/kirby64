@@ -456,6 +456,12 @@ loop_22:
 // first and sets 1 only on the fully-taken path, then normalises 0/1 a
 // second time; IDO short-circuits with an optimistic `li $v0,1`.
 // `!= 0`, `? 1 : 0` and an explicit flag local all measure worse (56/78/102).
+// Re-swept 2026-08-24, all four arms rewritten uniformly, nothing below 52:
+// `if (A && B) return 1; return 0;` 89, nested ifs 89, `if(!A) return 0;
+// if(!B) return 0; return 1;` 83, `(A&&B) != 0` 56, `(A&&B) ? 1 : 0` 78,
+// `!(!A || !B)` 52 (byte-identical to `A && B`). The dispatch is a beq CHAIN,
+// not a jump table, and the case BODY order 0,1,3,2 is already the ROM's, so
+// LEVERS lever 21/24 does not apply here. Permuter seed.
 s32 func_80165900_ovl5(s32);
 Vector *func_801659DC_ovl5(Vector *, s32);
 Vector *func_8016596C_ovl5(Vector *, s32);
