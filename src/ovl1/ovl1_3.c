@@ -339,7 +339,11 @@ void *func_800A8564(struct CacheLine *arg0, s32 arg1) {
 #ifndef PORT
 // Nearly matching (28/52 insns identical incl. all structure); remaining diff
 // is a one-slot temp-register rotation in the free path (t8/t9/t0.. vs t7/t8/t9..).
-// K&R definition needed: callers pass 1-4 args for regalloc.
+// K&R definition needed, MEASURED: rewriting the head as
+// `u32 func_800A8578(s32 arg0)` fails the build with "too many arguments to
+// function" at six live call sites in this file -- ovl1_3.c:2705, :2716,
+// :2743, :2749, :2762, :2766 -- which pass the second and third argument
+// purely to leave the values sitting in $a1/$a2. The K&R form stays.
 u32 func_800A8578(arg0)
 s32 arg0;
 {
@@ -386,7 +390,10 @@ s32 arg0;
 #else
 /* Free/deref through the 16-byte PORT header; arena pointers fit the u32
  * link slots, so only the derefs widen (CL). Semantics identical to the
- * NON_MATCHING body above. */
+ * NON_MATCHING body above. K&R definition for the same measured reason as
+ * that body: six live call sites (ovl1_3.c:2705, :2716, :2743, :2749, :2762,
+ * :2766) pass extra arguments, and an ANSI one-parameter head fails the PC
+ * build with "too many arguments to function 'func_800A8578'" at all six. */
 u32 func_800A8578(arg0)
 s32 arg0;
 {

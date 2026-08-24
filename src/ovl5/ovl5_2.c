@@ -2385,13 +2385,18 @@ s32 func_801609D0_ovl5(s32 arg0) {
    real function at 0x80160A78) and func_801613C0_ovl5 (0x80161424, next at
    0x8016142C) -- two 16-byte-aligned 2-word blocks, exactly what
    `void stub(void) {}` compiles to, and LEVERS' padding-trap class (c).
-   Adding `func_80160A70_ovl5 = 0x80160A70; // type:func` and
-   `func_80161424_ovl5 = 0x80161424; // type:func` to tools/symbol_addrs.txt
-   and re-splitting would cut both listings at the right boundary and make
-   both functions plain 20-/25-word matches plus two one-line stubs. A
-   re-split rewrites every listing under every running lane, so it needs a
-   quiet tree -- hence coordinator, not lane. Do NOT chase this from C: no
-   spelling reaches it, three lanes have now confirmed that. */
+   TRIED AND IT DOES NOT WORK, so do not spend the quiet tree on it again:
+   adding `func_80160A70_ovl5 = 0x80160A70; // type:func` and its sibling to
+   tools/symbol_addrs.txt and re-splitting leaves both listings unchanged --
+   the second `jr $ra; nop` is still inside func_80160A20_ovl5's .size. Adding
+   explicit `size:0x50` / `size:0x8` to the pair does not cut it either. Splat
+   derives function boundaries from the disassembly and will not start a new
+   one at an address nothing branches to, so a symbol alone cannot force the
+   split; it needs a real subsegment boundary or a splat-side change. The ROM
+   stays byte-exact through both attempts, so the cost is only time.
+
+   Do NOT chase this from C either: no spelling reaches it, three lanes have
+   confirmed that. */
 s32 func_80160A20_ovl5(s32 arg0) {
     switch (D_800EA520[D_8018E030_ovl5[arg0]]) {
         case 4:

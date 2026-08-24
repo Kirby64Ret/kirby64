@@ -1554,9 +1554,7 @@ extern s32 D_801D9DC8;
  * available to absorb the difference -- $ra is at 0x14 and the outgoing-arg
  * area is 0x00..0x0F. */
 #ifdef NON_MATCHING
-s32 func_801DEC34_ovl14(arg0)
-GObj *arg0;
-{
+s32 func_801DEC34_ovl14(GObj *arg0) {
     struct Ovl14AnimInfo sp18;
 
     func_80111550(omCurrentObj->objId);
@@ -1573,9 +1571,7 @@ GObj *arg0;
 
 /* Same +8 frame block as func_801DEC34_ovl14 above; 2/30. */
 #ifdef NON_MATCHING
-s32 func_801DECAC_ovl14(arg0)
-GObj *arg0;
-{
+s32 func_801DECAC_ovl14(GObj *arg0) {
     struct Ovl14AnimInfo sp18;
 
     func_80111550(omCurrentObj->objId);
