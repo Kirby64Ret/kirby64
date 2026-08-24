@@ -40,13 +40,28 @@ void func_8016F2F0_ovl5(GObj *);
 void func_8016F40C_ovl5(GObj *);
 
 #ifdef NON_MATCHING
-/* FACTORY: 115/116, verify.py-confirmed. The lone residue is
-   `lw $t7, %lo(jtbl_8018D658_ovl5)($at)` vs verify.py's own
-   `lw $t7, 0($at) <.rodata>` -- this TU's rodata is not migrated to a
-   named symbol for the jump table, so verify.py's standalone link
-   cannot resolve it even though the source spelling (switch dispatch
-   over `kind`) is correct. Not a source bug; nothing to fix here
-   without rodata migration for this TU. */
+/* FACTORY: 1/116, and the CODE IS DONE -- this is a rodata-migration block,
+   not a source problem. Measured on a scratch copy of the TU with this one
+   draft un-guarded: .text comes out 0x14A0, byte-identical to the pragma
+   build, and the single verify.py diff is
+   `lw $t7, %lo(jtbl_8018D658_ovl5)($at)` against our own
+   `lw $t7, 0($at) <.rodata>`.
+   What un-guarding actually costs, measured: the object grows a NEW 0x50
+   .rodata section (the 20-entry jump table) that the ROM already carries in
+   asm/data/ovl5/ovl5_3_rd.rodata.s at 0x8018D658, so the segment would gain
+   0x50 bytes and the ROM would break. Do NOT un-guard it.
+   To finish this one (coordinator, quiet tree, kirby64.yaml + build/kirby.ld
+   in one commit): the jtbl sits between the ovl5_4 strings
+   (D_8018D5F0..D_8018D63C, 0x134A60-0x134AC7) and the floats
+   (D_8018D6A8.., 0x134B18..), so the blob has to be split in THREE and
+   `- [0x134AC8, .rodata, ovl5/ovl5_3]` placed between the two halves. The
+   caveat that has to be checked first: IDO gives this object's .rodata
+   16-byte alignment and 0x8018D658 is only 8-aligned, so the link may push
+   the table to 0x8018D660. The yaml's existing comment ("ovl5_3 and ovl5_4
+   are ONE translation unit ... stays an asm blob") is about migrating the
+   WHOLE block per file; migrating just this jump table is a smaller
+   question and is the only thing standing between this function and a
+   closure. */
 void func_80165440_ovl5(GObj *arg0) {
     s32 kind = D_800E98E0[omCurrentObj->objId];
 

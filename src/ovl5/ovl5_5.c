@@ -1295,51 +1295,81 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 // wrong AND breaks the spill slots (6/61 -- sw/lw offsets all off by 4 twice).
 // The states never meet; frame anomaly not closable by pad sweeping here.
 //
-// NEW MEASUREMENT (this pass), and it names the real residue. Declaring
-// `s32 temp = D_8018ECA8_ovl5[arg0];` FIRST and `Unk801875F0 *p;` second,
-// with no pad, scores 4/61 and gets the ROM's frame (0x28), the ROM's
-// `temp` slot (0x24) and the ROM's `addu $t2, $v0, $t1` operand order --
-// all four remaining diffs are the two COMPILER SPILL slots sitting 4 bytes
-// low (a2 at 0x1C/a3 at 0x18 where the ROM has 0x20/0x1C). Both shapes hold
-// three spill words in 0x18..0x24; the ROM leaves the hole at the BOTTOM
-// (0x18) and IDO leaves it at 0x20 here. That is spill-slot allocation
-// order, which no declaration reaches -- declared locals sit ABOVE the
-// spill region. Other shapes measured: p declared first + temp (6/61);
-// temp + a trailing pad (5/61, frame 0x30); temp alone with p inlined
-// (5/61, frame right, both spills 4 low, plus the addu swap).
-// The 2/61 draft below is kept because 2 < 4, but the 4/61 shape above is
-// the better permuter seed if the frame turns out to be the harder half.
+/* FACTORY: 2/61, frame only (0x30 vs the ROM's 0x28) -- every stack offset,
+   register and operand order below is already the ROM's. */
+// FRAME MODEL, derived by measurement this pass (supersedes the sweep notes
+// above; it is decidable, not sweepable). IDO lays the region above `ra`
+// (which sits at 0x14) top-down as
+//     [declared locals, FIRST declaration highest] [compiler temps, first
+//      created highest] [slack]
+// and sizes the frame as align8(0x18 + 4*ndeclared + 4*ntemps). Measured
+// points, all consistent with it:
+//     decls              frame  temp   a2     a3     ntemps
+//     pad,p,temp (below)  0x30  0x24   0x20   0x1C   2     <- 2/61
+//     temp,q,p            0x30  0x2C   0x20   0x1C   2
+//     temp,p              0x28  0x24   0x1C   0x18   2
+//     p,temp              0x28  0x20   0x1C   0x18   2
+//     temp only           0x28  0x24   0x1C   0x18   3
+//     temp,pad            0x30  0x2C   0x20   0x1C   3
+// The ROM is frame 0x28 with 0x24/0x20/0x1C used and 0x18 slack, i.e.
+// ONE declared local and TWO compiler temps. Every shape that gets the two
+// temps right (0x20/0x1C) needs three declared words, which is exactly the
+// +8 frame; every shape with one declared word grows a THIRD compiler temp
+// that takes 0x20 and pushes both spills 4 low. The third temp appears
+// whenever `p` is not a home-slot local -- inlining it, `register`-qualifying
+// it and scoping it to an inner block all produce it (4/61 each, verified).
+// Also rejected this pass: no locals at all (the D_8018ECA8_ovl5 load is NOT
+// hoisted above play_sound, 62/63); a declared `s32 i = arg0` index local
+// (homes arg0 and costs an insn, 58/62); `temp` assigned rather than
+// initialised, and `register s32 temp` (both 5/61).
+// So the residue is one compiler temp too many, which no declaration reaches.
+/* FACTORY: 2/61, frame only. */
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
-    s32 temp = D_8018ECA8_ovl5[arg0];
-    s32 *q;
+    s32 pad;
     Unk801875F0 *p;
+    s32 temp = D_8018ECA8_ovl5[arg0];
 
     play_sound(0xBA);
     D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
     D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
-    q = &D_8018E998_ovl5[arg0];
-    (*q)++;
+    D_8018E998_ovl5[arg0]++;
     p = &D_801875F0_ovl5[temp];
     D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(p->unk4) + p->unk0) * 0.5f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801720D8_ovl5.s")
 #endif
-/* Draft, 5/88: instruction-exact except the frame (0x28 vs ROM 0x20) and one
-   `addu $t7, $v0, $t0` whose operands IDO emits swapped. The frame is the same
-   +8 anomaly as its sibling func_801720D8_ovl5 above and never shrinks: swept
-   0/1/2/3 declared locals in every position, leading/trailing/middle pads, u8
-   pads, pointer vs index for both values -- every pad adds 8, nothing removes
-   it. The addu survived operand swap (re-measured this pass: swapping the
-   call/load operand order made it WORSE, 10/88 -- three more spill sites
-   appear), a temp local for the call result, an explicit (s32)(f32) cast and
-   `/ 2.0f`. Floor. */
+/* FACTORY: 2/88, frame only (0x28 vs the ROM's 0x20). Every other word,
+   including all four stack offsets and the `addu $t7, $v0, $t0` operand order,
+   is the ROM's -- so this is one `addiu $sp` immediate at each end.
+   Improved from 5/88 this pass by declaring BOTH pointers (`q` for the counter
+   and `p` for the D_801875F0_ovl5 record) and using `p->` in the tail: the
+   `p->unk4`/`p->unk0` spelling is what fixes the addu operand order, and
+   declaring `temp` LAST is what puts it at the ROM's 0x1C (later declarations
+   take lower addresses).
+   The frame is DECIDABLE and this is the decision. Measured law for this
+   function: frame = align8(0x18 + 4*ndeclared + 4*ncompiler_temps), declared
+   locals at the top in declaration order, temps below, slack at the bottom.
+   Measured points: 4 decls -> 0x30; 3 decls + 1 temp -> 0x28; 2 decls + 2
+   temps -> 0x28; 1 decl + 3 temps -> 0x28. The ROM is 0x20, i.e. TWO words:
+   `temp` at 0x1C and ONE compiler temp at 0x18 that the ROM reuses for the
+   counter pointer AND, after the join, for the record pointer. Our IDO always
+   spends four words on the same three values: each pointer costs a word
+   whether it is declared (a dead home slot) or inlined (an extra temp), and
+   collapsing both pointers into one variable with a cast does not help
+   (5/88, and it loses the addu). Also rejected: `register` on both pointers
+   (2/88, frame unchanged), inlining either pointer (10-11/88), and no locals
+   at all (92/94 -- the D_8018ECA8_ovl5 load is not hoisted above play_sound).
+   Register-allocation floor; the permuter owns the remaining 8 bytes. */
+/* FACTORY: 2/88, frame only. */
 #ifdef NON_MATCHING
 void func_801721CC_ovl5(s32 arg0) {
-    s32 *q = &D_8018E998_ovl5[arg0];
+    s32 *q;
+    Unk801875F0 *p;
     s32 temp = D_8018ECA8_ovl5[arg0];
 
+    q = &D_8018E998_ovl5[arg0];
     if (*q == 0x50) {
         play_sound(0xBA);
         D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
@@ -1351,7 +1381,8 @@ void func_801721CC_ovl5(s32 arg0) {
         D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
         *q += 2;
     }
-    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(D_801875F0_ovl5[temp].unk4) + D_801875F0_ovl5[temp].unk0) * 0.5f;
+    p = &D_801875F0_ovl5[temp];
+    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(p->unk4) + p->unk0) * 0.5f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801721CC_ovl5.s")
@@ -2473,15 +2504,18 @@ void func_80174368_ovl5(GObj *arg0, s32 arg1) {
 #endif
 
 #ifdef NON_MATCHING
-/* FACTORY: 136/140, verify.py-confirmed. Two one-slot scheduling
+/* FACTORY: 4/140 (4 words DIFFER -- measured with measure_seeds.py, which is
+   the authority; the old note said 136/140 in the matched-count convention).
+   Two one-slot scheduling
    rotations, both in the same window: the ROM interleaves the
    loop-invariant &D_8018E478_ovl5[arg1][arg2] address chain one slot
    AHEAD of `lui $at, 0x4302` (the 130.0f constant) and of
    `lui $at, %hi(gEntitiesNextPosYArray)`; IDO emits both luis one slot
    early. Everything else, frame included, is exact. Swept with no
-   effect: `+ 0.0f` on the Z load (folded away, identical output) and
-   swapping the Y/Z statement order (37/140, much worse). One-slot
-   temp rotation -- floor (LEVERS "guard on the second variant"). */
+   effect: `+ 0.0f` on the Z load (folded away, identical output),
+   swapping the Y/Z statement order (37/140, much worse) and writing the
+   130.0f store as a double literal (lever 7 -- 4/140, byte-identical).
+   One-slot temp rotation -- floor (LEVERS "guard on the second variant"). */
 extern s32 D_80187CC8_ovl5;
 extern s32 D_80187CCC_ovl5;
 extern s32 D_80187CD0_ovl5;
@@ -3676,6 +3710,9 @@ void func_80176EFC_ovl5(void) {
  * the whole control flow are the ROM's; the only residue is a one-step
  * rotation of the temp registers in the D_801877D8_ovl5 address
  * computation (the ROM takes $t7/$t9/$t8 where this takes $t8/$t0/$t9).
+ * Re-measured 5/138 this pass and confirmed a floor: `arg1 << 1` instead of
+ * `arg1 * 2` is byte-identical, and hoisting `f32 *d = &D_801877D8_ovl5[...]`
+ * into an inner block adds a local and moves the whole frame (28/138).
  *
  * This is a from-scratch derivation off the listing, NOT the PORT arm --
  * that arm describes a different function and should not be diffed
@@ -3698,6 +3735,7 @@ void func_80176EFC_ovl5(void) {
  * Unk16Defs is declared inside the body on purpose: the file-scope
  * Unk12Colors/Unk12Defs typedefs above are reused as-is and nothing at
  * file scope is moved or added. */
+/* FACTORY: 5/138, temp-register rotation. */
 #ifdef MIPS_TO_C
 void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
     typedef union Unk16Defs {

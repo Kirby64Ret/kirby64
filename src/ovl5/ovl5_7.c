@@ -174,7 +174,7 @@ s32 func_8017A174_ovl5(s32 arg0, s32 arg1) {
 }
 
 #ifdef NON_MATCHING
-/* 2/101, and the two are a pure scheduling swap: the ROM emits
+/* FACTORY: 2/101, and the two are a pure scheduling swap: the ROM emits
    `addiu $fp,%lo(D_800E9C60)` before `addiu $s6,%lo(D_8018ED38_ovl5)` in the
    loop preheader, IDO the other way round. Both registers, both %hi halves and
    every other instruction are the ROM's.

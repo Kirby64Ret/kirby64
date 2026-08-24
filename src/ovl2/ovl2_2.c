@@ -364,16 +364,16 @@ void func_800F6E0C(void *arg0, UNUSED void *_1, UNUSED void *_2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 205/207 instructions match (2 diffs). Frame, save set,
- * every call, every branch and the whole loop are exact. The residue
- * is one adjacent-instruction schedule swap in the loop preheader:
- * the ROM emits `addiu $fp, %lo(D_800BE504)` then `or $s4,$zero,$zero`
- * and IDO emits them the other way round. Re-measured 2026-08-24: moving
- * `var_s4 = 0` up next to `var_s3 = 0` is not inert, it is WORSE (12/207 --
- * it also pulls `or $s3,$zero` out of the second beqz's delay slot and
- * shifts the gSegment4StartArray index block). Both instructions are loop
- * PREHEADER material -- one a hoisted invariant address, one a real source
- * statement -- so this is a scheduler tie-break, not a source shape.
+/* FACTORY: 2/207 words differ. Frame, save set, every call, every branch and
+ * the whole loop are exact. The residue is ONE adjacent-instruction schedule
+ * swap in the loop preheader: the ROM emits `addiu $fp, %lo(D_800BE504)` then
+ * `or $s4,$zero,$zero`, IDO emits them the other way round. Swept and
+ * rejected: moving `var_s4 = 0` up next to `var_s3 = 0` is WORSE (12/207 --
+ * it also pulls `or $s3,$zero` out of the second beqz's delay slot and shifts
+ * the gSegment4StartArray index block); retyping var_s4 u32 is inert. Both
+ * instructions are loop PREHEADER material -- one a hoisted invariant
+ * address, one a real source statement -- so this is a scheduler tie-break,
+ * not a source shape. Permuter fuel.
  * Lever that DID land: the three-way dispatch
  * must be a `switch`, not an if/else chain -- as if/else IDO emits
  * sequential tests instead of the ROM's beqz/beq $s5/beq $s7 dispatch
@@ -595,7 +595,13 @@ void func_800F7258(s32 arg0) {
  * took 16 diffs to 4.  A named `idx` then took 4 to 2.  Swept without moving it:
  * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
  * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
- * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad. */
+ * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad.
+ * Re-measured 2026-08-24, true residue 2/85. New datum: DROPPING `idx` and
+ * writing `omCurrentObj->objId` inline at both uses does produce the ROM's
+ * in-place shift (`lw $vN` / `sll $vN,$vN,2`), but IDO then picks $v0 for the
+ * whole chain and the score is 4/85 -- all four the same $v0/$v1 rename, the
+ * neighbouring-register floor. Kept the 2/85 spelling; the 4/85 one is the
+ * shape to feed the permuter if the register swap is ever reachable. */
 #ifdef NON_MATCHING
 extern u32 D_800DFA10[];
 void func_800B491C(GObj *);

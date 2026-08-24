@@ -58,14 +58,20 @@ Vector *func_801659DC_ovl5(Vector *, s32);
 #include "main/contpad.h"
 #include "ovl1/game.h"
 
-/* Faithful, not byte-exact (142/146). Every instruction and the frame are
+/* FACTORY: 4/146 (4 words DIFFER; measure_seeds.py is the authority -- the
+   old "142/146" was the matched-count convention). Every instruction and the frame are
    exact; IDO emits the `ldc1 $f20, %lo(D_8018D6C0_ovl5)` before the three
    scale-array `addiu`s where the ROM emits it after them. Swept: the local
    double's declaration position and initialiser form, one-line loop body,
    operand order, an (f64) cast, volatile, a pad local, hoisting the
    assignment above the preceding loop (14), and (re-measured this pass)
    splitting the chained assignment into three separate statements --
-   identical 4/146 residue every time. One-slot scheduling floor. */
+   identical 4/146 residue every time. Added this pass: `v * i` instead of
+   `i * v` is byte-identical, and INLINING D_8018D6C0_ovl5 into the loop
+   (with or without a dead `v`) is catastrophic (106/147 -- the LICM temp
+   takes a callee-saved pair and the whole frame moves), so the named
+   double local is load-bearing. One-slot scheduling floor. */
+/* FACTORY: 4/146, one-slot scheduling. */
 #ifdef NON_MATCHING
 extern s32 D_8018736C_ovl5[];
 extern u8 D_8018E298_ovl5;
@@ -2878,10 +2884,15 @@ s32 func_8016CA4C_ovl5(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* FACTORY: 24/26, verify.py-confirmed. IDO fills the post-`jal` slot
-   with `addiu $s0,$s0,1` and sinks `sw $v0` to the next instruction,
+/* FACTORY: 2/26 (2 words DIFFER; the old "24/26" was the matched-count
+   convention -- measure_seeds.py is the authority). IDO fills the post-`jal`
+   slot with `addiu $s0,$s0,1` and sinks `sw $v0` to the next instruction,
    where the ROM stores at `0xC($s1)` first and increments second -- a
-   scheduling order swap, not reachable by C reshaping. The empty `if`
+   scheduling order swap, not reachable by C reshaping. Re-swept this pass
+   and all worse or equal: the empty `if` before the store (6/26, it also
+   swaps which symbol gets $s1), `i != 4` (2/26, identical), a `while` form
+   and a `do/while` (5/26 each, the preheader reorders), and a named temp for
+   the call result (4/26, the store sinks past both increments). The empty `if`
    reproduces the ROM's dead $s2 induction over D_8018E3C8_ovl5.
    Clone twins with the identical residue: func_801649CC_ovl5,
    func_80176108_ovl5. */

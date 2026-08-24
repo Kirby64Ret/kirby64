@@ -243,7 +243,10 @@ void init_save_file_maybe(s32 fileNum) {
 // Draft, 4/77: only the 4x-unrolled fill body's store order is left -- the ROM
 // emits -0x10/-0xC/-0x8 then -0x4 in the delay slot, IDO rotates it to
 // -0xC/-0x8/-0x4 then -0x10. vu32 on the store (the wave-9 lever) does not move
-// it; do/while and `<` cost the whole loop (64-66 diffs).
+// it; do/while and `<` cost the whole loop (64-66 diffs). Re-measured
+// 2026-08-24 (true residue 4/77): `*p++ = M` and `for (; p != end; p++)` are
+// both byte-for-byte identical to the `*p = M; p++;` form here, so the
+// rotation lives inside IDO's unroller, not in the loop's source shape.
 // Load-bearing: the single leading `s32 pad0;` (frame 0x40, spill at 0x2C -- 0
 // pads gives 0x30 and 2 gives the spill at 0x28), and assigning `p` BEFORE `end`
 // so the ROM's start-then-end pointer order is reproduced.

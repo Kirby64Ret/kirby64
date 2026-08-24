@@ -464,36 +464,25 @@ void func_80112A40(s32 arg0, Vector *arg1, Vector *arg2) {
     }
 }
 
-#ifdef NON_MATCHING
-/* 6/98: every instruction, register and spill slot (0x1C/0x20/0x24/0x28) is
-   exact; the frame is 0x48 against the ROM's 0x40, so only the two top slots
-   (the `pos` spill and arg0's home) differ. Six named locals give seven local
-   words -- five plus IDO's 4-byte anomaly -- where the ROM has five, and
-   L = 0x18 means `L mod 8 == 0`: unreachable by pad locals per the closed form.
-   Dropping any one local rotates the three pointer registers down a slot
-   (a2/a3/t0 for the ROM's a3/t0/t1): scl inlined 50, id inlined 113,
-   pos reused for both angle and scale 51, parameter-reuse for scl 23.
-   The declaration order pz,py,px WITH the chain written *px = *py = *pz is
-   load-bearing -- it is what puts D_800E3050 in $t8 and reverses the base
-   materialisation order; the other three combinations give 12-16.
-   Re-confirmed 2026-08-23: a trailing `s32 pad` (lever 13 position) does NOT
-   close the gap -- it makes it worse (14/98) without even changing the total
-   frame size, so the two top slots are a fixed IDO overhead unreachable by
-   a local-count sweep, not the ordinary +8 align8 anomaly (lever 9). Left
-   guarded. */
+/* Publishes this frame's DObj transform into the entity arrays and records the
+ * per-tick position delta in D_800E3050/3210/33D0.
+ * The three delta slots are written through the ARRAYS, not through named
+ * `f32 *` locals: IDO CSEs each `&D_800E33D0[id]` across the func_800B4924
+ * call and spills it (sp+0x1C/0x20/0x24), which is what the ROM does. Naming
+ * them costs three declared local words and pushes the frame 0x40 -> 0x48.
+ * The `pad` is one of the ROM's own dead local words; it is what puts the
+ * spill block at 0x1C instead of 0x18. */
 void func_80112B4C(struct GObj *arg0) {
     Vector *pos = &arg0->data.dobj->pos.v;
     s32 id = arg0->objId;
-    f32 *pz = &D_800E33D0[id];
-    f32 *py = &D_800E3210[id];
-    f32 *px = &D_800E3050[id];
     Vector *scl;
+    s32 pad;
 
-    *px = *py = *pz = 0.0f;
+    D_800E3050[id] = D_800E3210[id] = D_800E33D0[id] = 0.0f;
     func_800B4924(arg0);
-    *px = pos->x - gEntitiesPosXArray[id];
-    *py = pos->y - gEntitiesPosYArray[id];
-    *pz = pos->z - gEntitiesPosZArray[id];
+    D_800E3050[id] = pos->x - gEntitiesPosXArray[id];
+    D_800E3210[id] = pos->y - gEntitiesPosYArray[id];
+    D_800E33D0[id] = pos->z - gEntitiesPosZArray[id];
     gEntitiesNextPosXArray[id] = pos->x;
     gEntitiesNextPosYArray[id] = pos->y;
     gEntitiesNextPosZArray[id] = pos->z;
@@ -508,9 +497,6 @@ void func_80112B4C(struct GObj *arg0) {
         gEntitiesScaleZArray[id] = scl->z;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_10/func_80112B4C.s")
-#endif
 void func_80112CD4(s32 arg0, f32 arg1[4][4]) {
     f32 sx;
     f32 sy;

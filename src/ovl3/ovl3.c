@@ -537,35 +537,30 @@ s32 func_80151C78_ovl3(void) {
     return 0;
 }
 
-/* FACTORY: 3/118 words differ, and two of those three are one stack offset:
- * the ROM spills `ret` to sp+0x24 across case 1's discarded call, IDO here
- * spills it to sp+0x20. Same frame size (0x28), same saved registers, same
- * order. The third is verify.py resolving the compiler-generated jump table
- * against this file's own .rodata instead of the listing's
- * jtbl_80196DD4_ovl3 symbol, which is a measurement artifact of scoring a
- * draft in isolation rather than a real difference.
+/* The action-transition dispatcher. Every player action tick hands it a small
+ * byte list of transition-predicate ids (0xF-terminated); it calls the
+ * predicates above in order until one requests an action change. Ids 1..9 are
+ * gated on gKirbyState.unk17, id 1's result is discarded, id 10 is a no-op.
  *
- * Recovered from the listing, not from m2c, and three structural findings
- * were needed to get here from 115/119:
- *
+ * Four spellings here are load-bearing and were each measured:
  *   - The loop is INDEX-based, not pointer-based. The ROM zeroes $a1 and does
  *     `addu $s1, $a0, $a1` before the loop -- that is IDO strength-reducing
  *     `cmds[i]` with `i++` into a pointer walk, and its setup still
  *     materialises the initial index. Writing the pointer walk directly costs
  *     112 words; writing `p = &cmds[i]` and caching it costs 90.
- *   - `i` is declared BEFORE `ret`: the ROM zeroes $a1 then $v1.
+ *   - `ret` is DECLARED first (it owns the top local word, sp+0x24, which is
+ *     where the ROM spills it across case 1's discarded call) but `i` is
+ *     ZEROED first (the ROM zeroes $a1 then $v1). That is why the two are
+ *     declared without initialisers and assigned as statements: declaring
+ *     `i` first moves the spill to sp+0x20, and initialising `ret` first
+ *     swaps the two `or $reg,$zero,$zero`.
  *   - Cases 7 and 8 are written in the source in the order 8, then 7.
  *     jtbl_80196DD4_ovl3 entry 6 points at .L80151FC4 (func_8015190C, case 7)
  *     and entry 7 at .L80151FA8 (func_801518E0, case 8), so the two bodies sit
  *     at each other's expected addresses. Emitting them in numeric order
  *     costs 2 extra words.
- *   - The early-out is `break`, not `return ret`. Both are correct C -- the
- *     function returns `ret` either way -- but `return` makes IDO invert the
- *     test to beqzl and branch around, which is 2 words and shifts the tail.
- *
- * This function had a PORT arm and no decompilation attempt at all, which the
- * decomp-first rule forbids. tools/decomp/refound_status.py counted it BARE. */
-#ifdef MIPS_TO_C
+ *   - The early-out is `break`, not `return ret`: `return` makes IDO invert
+ *     the test to beqzl and branch around, which is 2 words. */
 s32 func_80151E94_ovl3(u8 *cmds) {
     s32 func_801517FC_ovl3(void);
     s32 func_80151864_ovl3(void);
@@ -581,9 +576,11 @@ s32 func_80151E94_ovl3(u8 *cmds) {
     s32 func_80151B78_ovl3(void);
     s32 func_80151C78_ovl3(void);
     extern s32 D_800D6B54;
-    s32 i = 0;
-    s32 ret = 0;
+    s32 ret;
+    s32 i;
 
+    i = 0;
+    ret = 0;
     if (D_800D6B54 != 0) {
         return 0;
     }
@@ -656,105 +653,3 @@ s32 func_80151E94_ovl3(u8 *cmds) {
     }
     return ret;
 }
-#elif defined(PORT)
-/* PORT: the action-transition dispatcher, from asm/nonmatchings/ovl3/ovl3/
- * func_80151E94_ovl3.s. Every player action tick hands it a small byte list
- * of transition-predicate ids (0xF-terminated); it calls the compiled
- * predicates above in order until one requests an action change, exactly
- * the jump table's mapping (ids 1..9 are gated on gKirbyState.unk17, id 1's
- * result is discarded like the ROM does, id 10 is a no-op). This is the
- * input -> state-machine wiring: the predicates read gKirbyController and
- * call set_kirby_action. */
-s32 func_80151E94_ovl3(void *arg0) {
-    s32 func_801517FC_ovl3(void);
-    s32 func_80151864_ovl3(void);
-    s32 func_80151938_ovl3(void);
-    s32 func_801518E0_ovl3(void);
-    s32 func_8015190C_ovl3(void);
-    s32 func_80151448_ovl3(void);
-    s32 func_801519D4_ovl3(void);
-    s32 func_80151100_ovl3(void);
-    s32 func_80151160_ovl3(void);
-    s32 func_80151288_ovl3(void);
-    s32 func_80151AF4_ovl3(void);
-    s32 func_80151B78_ovl3(void);
-    s32 func_80151C78_ovl3(void);
-    extern s32 D_800D6B54;
-    u8 *p = arg0;
-    s32 ret = 0;
-    u8 id;
-
-    if (D_800D6B54 != 0) {
-        return 0;
-    }
-    for (id = *p; id != 0xF; id = *(++p)) {
-        switch (id) {
-            case 1:
-                if (gKirbyState.unk17 == 0) {
-                    func_80151100_ovl3();
-                }
-                break;
-            case 2:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_80151160_ovl3();
-                }
-                break;
-            case 3:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_801517FC_ovl3();
-                }
-                break;
-            case 4:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_80151864_ovl3();
-                }
-                break;
-            case 5:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_80151288_ovl3();
-                }
-                break;
-            case 6:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_80151938_ovl3();
-                }
-                break;
-            case 7:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_8015190C_ovl3();
-                }
-                break;
-            case 8:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_801518E0_ovl3();
-                }
-                break;
-            case 9:
-                if (gKirbyState.unk17 == 0) {
-                    ret = func_80151448_ovl3();
-                }
-                break;
-            case 11:
-                ret = func_801519D4_ovl3();
-                break;
-            case 12:
-                ret = func_80151AF4_ovl3();
-                break;
-            case 13:
-                ret = func_80151B78_ovl3();
-                break;
-            case 14:
-                ret = func_80151C78_ovl3();
-                break;
-            default:
-                break;
-        }
-        if (ret != 0) {
-            return ret;
-        }
-    }
-    return ret;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3/func_80151E94_ovl3.s")
-#endif
