@@ -181,8 +181,11 @@ def main():
     # but the un-guard.
     exact = [r for r in all_r if r['diff'] == 'MATCH']
     if exact:
-        print(f'\n== ALREADY BYTE-EXACT: {len(exact)} draft(s) -- un-guard, '
-              f'delete the pragma, done ==')
+        print(f'\n== ALREADY BYTE-EXACT in .text: {len(exact)} draft(s) ==')
+        print('   The instruction stream matches. That does NOT always mean it '
+              'can be\n   un-guarded: a last-function-in-TU or a late_rodata '
+              'pool word can still\n   shorten the object. Read the note, then '
+              'check check_tu_size.py.')
         for r in exact:
             print(f"   {r['func']}  ({r['file']})")
 

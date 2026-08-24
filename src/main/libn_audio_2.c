@@ -549,7 +549,15 @@ void func_8002C790(KSeqPlayer *seqp) {
    converting it leaves libn_audio_2.o 16 bytes short and shifts every segment
    after it. padtrap.py classifies the tail 'benign' because the rule assumes a
    following function in the same section; measured twice against
-   check_tu_size.py, which is the tool that sees the linked result. */
+   check_tu_size.py, which is the tool that sees the linked result.
+
+   TRIED 2026-08-24 and it does NOT work: adding `- [0x2D990, pad]` before
+   libn_audio_2b's subsegment and converting moves 778 bytes across eight runs
+   of the ROM, while check_tu_size still reads 0. The ovl15 shape this imitates
+   -- pad BETWEEN two `c` subsegments, covering real inter-object fill -- does
+   not transfer to fill at the END of an object whose successor already starts
+   on the boundary. Do not repeat it without a different mechanism; the
+   function is eight bytes and is not worth a third attempt. */
 void func_8002C990(N_ALVoice *voice, s16 priority) {
     voice->priority = priority;
 }
