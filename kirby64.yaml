@@ -929,7 +929,10 @@ segments:
     # at 0x801E55B0/0x801E55CC are referenced only from func_801E0B38_ovl17,
     # which is in ovl17_2 -- and that is also the only cut of the two that is
     # 16-byte aligned, which SUBALIGN(16) requires.
+    # The ovl17/ovl17b text split at 0x228630 split this block too:
+    # ovl17.o keeps 0x80 and ovl17b.o owns the last 0x10.
     - [0x230710, .rodata, ovl17/ovl17]
+    - [0x230790, .rodata, ovl17/ovl17b]
     - [0x2307A0, .rodata, ovl17/ovl17_2]
     - [0x230870, .rodata, ovl17/ovl17_3]
     - [0x2308C0]
