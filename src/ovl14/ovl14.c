@@ -1845,16 +1845,7 @@ void func_801DFB00_ovl14(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, D_801E2F1C_ovl14);
 }
 
-/* 63/65: structurally correct (same instruction count, same shapes); IDO uses
- * FOUR saved registers where the ROM uses three. The ROM parks &omCurrentObj in
- * $s0 and then REUSES $s0 for the constant 1 once the address is dead, keeping
- * &D_800E0D50 in $s2 and &D_800E9C60 in $s1; IDO keeps &omCurrentObj live in its
- * own register to the end and takes $s3 for the 1. Tried: rotated `while(cond)`
- * and un-rotated `while(1){if(..)break;}` -- identical 63/65. */
-#ifdef NON_MATCHING
-void func_801DFB48_ovl14(arg0)
-GObj *arg0;
-{
+void func_801DFB48_ovl14(GObj *arg0) {
     extern void func_801129AC(void);
     extern void func_800FA414(s32);
 
@@ -1871,9 +1862,6 @@ GObj *arg0;
     }
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DFB48_ovl14.s")
-#endif
 
 
 void func_801DFC28_ovl14(GObj *arg0) {
