@@ -552,17 +552,23 @@ void func_80216700_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 39/42, pure lwc1 scheduling floor. Everything except a 3-word
- * rotation of the Y[objId]/Z[objId]/Z[0] loads matches byte-exact (regs,
- * subs, muls, adds, epilogue all identical); the ROM schedules the
- * Y[objId] load ahead of the two Z loads, IDO groups them Z[objId],
- * Z[0], Y[objId]. Re-measured this session: swept statement order
- * dx/dy/dz in all rotations tried here (dz,dx,dy = 3, dx,dy,dz = 22) and
- * explicit hoisting of a named y0 local to force the Y[objId] read first
- * (24, worse) -- on top of the file's existing note documenting all 6
- * declaration orders and named-local sqrtf-arg sweeps, none beating 3.
- * This is a register/load-scheduling floor (LEVERS "second variant"
- * class), not a source-spelling residue -- queued for the permuter. */
+/* FACTORY: 3/42 words DIFFER (the old "39/42" was the matched-word count in
+ * the opposite convention -- re-measured 2026-08-24 with measure_seeds.py).
+ * Pure lwc1 scheduling: everything except a 3-word rotation of the
+ * Y[objId]/Z[objId]/Z[0] loads is byte-exact. The ROM loads
+ * Y[objId], Z[objId], Z[0], Y[0]; IDO emits Z[objId], Z[0], Y[objId], Y[0].
+ * Exhaustively swept this session, each on its own compile:
+ *   - all SIX statement orders: dz,dx,dy = 3 (best); dz,dy,dx = 16;
+ *     dy,dx,dz = 20; dx,dz,dy / dx,dy,dz / dy,dz,dx = 22.
+ *   - all SIX declaration orders: INERT, every one scores 3. (The earlier
+ *     note treated declaration order as a swept lever here; it is not one --
+ *     all three locals are register-allocated and the frame is 0x18 with no
+ *     spill, so no declaration can move anything.)
+ *   - seven associations of the sqrtf argument: the ROM's
+ *     (dz*dz) + ((dx*dx) + (dy*dy)) = 3; the two flat/right-rotated forms
+ *     = 4; the rest 16-23.
+ * The muls, subs, adds, the c.le.s tail and the frame are all already exact,
+ * so this is the LEVERS "second variant" load-scheduling class. Permuter. */
 s32 func_8021679C_ovl9(f32 arg0) {
     f32 dz;
     f32 dx;

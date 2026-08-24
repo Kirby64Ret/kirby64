@@ -1118,22 +1118,21 @@ s32 func_801EEB30_ovl10(void) {
 
 extern s32 D_801F3EE0_ovl10;
 
-#ifdef NON_MATCHING
-// 7/36: every instruction is correct; only the frame is 8 bytes too big and
-// the struct sits at 0x20 instead of 0x18. This is the documented
-// "IDO reserves 4 bytes below the local block" anomaly -- IDO computes
-// align8(0x1C + sizeof locals), the ROM align8(0x18 + sizeof locals) -- and
-// with locals of exactly 0x20 the two differ by 8. It is the same blocker as
-// func_801EEF4C_ovl10 below. (Note the sibling func_801EEED4_ovl10 matches
-// only because its `s32 pad` makes locals 0x24, where the two formulas agree;
-// this function has no such local in the ROM, so no source form can close it.)
-// Swept: pad locals before/after the struct (1-2), && vs nested if, and
-// splitting the nested func_80111ECC(func_80111C88(...)) into two statements.
+/* MATCHED, and the "+8 frame anomaly, cannot match" note that used to sit here
+ * was wrong about the cause -- exactly as it was on the clone donors
+ * func_801DEC34_ovl14 / func_801DECAC_ovl14 (ovl14.c), which have the same
+ * five-call skeleton.  The residue was never the struct's size: writing
+ * `func_80111ECC(func_80111C88(...))` as ONE nested call makes IDO reserve a
+ * 4-byte stack temp for the intermediate, which lifts the locals base from
+ * 0x18 to 0x1C and rounds the frame 0x38 -> 0x40.  A named local for the
+ * intermediate costs the same 4 bytes.  Assigning it into the already-homed
+ * PARAMETER costs nothing, and that is the ROM's frame exactly. */
 s32 func_801EEE44_ovl10(GObj *arg0) {
     struct Ovl10AnimInfo sp18;
 
     func_80111550((void *) omCurrentObj->objId);
-    func_80111ECC(func_80111C88(&D_801F3EE0_ovl10, omCurrentObj->objId));
+    arg0 = (GObj *) func_80111C88(&D_801F3EE0_ovl10, omCurrentObj->objId);
+    func_80111ECC(arg0);
     if (func_80110150(&sp18) != 0) {
         if (D_800E8920[sp18.unkC] == 1) {
             func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 3);
@@ -1142,9 +1141,6 @@ s32 func_801EEE44_ovl10(GObj *arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EEE44_ovl10.s")
-#endif
 
 s32 func_801EEED4_ovl10(GObj *arg0) {
     s32 pad;
@@ -1159,17 +1155,17 @@ s32 func_801EEED4_ovl10(GObj *arg0) {
     return 0;
 }
 
-#ifdef NON_MATCHING
-// 7/32: same frame blocker as func_801EEE44_ovl10 -- the ROM puts the 0x20
-// struct at 0x18 with frame 0x38; IDO's base is 4 higher so any local total
-// that yields frame 0x38 starts the block at 0x1C. Also swept: a 0x1C/0x18
-// struct plus a dead `s32 lead[1]` at either end (moves the block, never to
-// 0x18).
+/* MATCHED. Same fix as func_801EEE44_ovl10 above: the nested
+ * `func_80111ECC(func_80111C88(...))` reserves a 4-byte compiler temp that
+ * lifts the locals base off the ROM's 0x18; assigning the intermediate into
+ * the already-homed parameter costs no frame. The old "+8 frame anomaly"
+ * note here was measuring that temp, not the struct's size. */
 s32 func_801EEF4C_ovl10(GObj *arg0) {
     struct Ovl10AnimInfo sp18;
 
     func_80111550((void *) omCurrentObj->objId);
-    func_80111ECC(func_80111C88(&D_801F3F70_ovl10, omCurrentObj->objId));
+    arg0 = (GObj *) func_80111C88(&D_801F3F70_ovl10, omCurrentObj->objId);
+    func_80111ECC(arg0);
     if (func_80110150(&sp18) != 0) {
         func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 5);
         play_sound(0x1EE);
@@ -1177,9 +1173,6 @@ s32 func_801EEF4C_ovl10(GObj *arg0) {
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3b/func_801EEF4C_ovl10.s")
-#endif
 void func_801EEFCC_ovl10(void) {
     s32 temp_a1;
 

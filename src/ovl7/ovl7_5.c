@@ -875,42 +875,35 @@ block_168:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7524_ovl7.s")
 #endif
-#ifdef NON_MATCHING
-// 2 diffs: the compiler spill slot is 0x18($sp), the ROM's is 0x1C. Frame size
-// already matches; declaration order, dummy scalars, dummy arrays/structs and
-// expression reshaping were all swept without moving it.
-// Re-measured: a local that gets a stack HOME does move the spill to 0x1C --
-// s32[1], u8[1], u8[4], s16[2] and struct{s32} all do it -- but every one of
-// them also grows the frame 0x30 -> 0x38, and the step is 8 bytes for any size
-// from 1 to 4, so the memory-local area is rounded to 8 and no 4-byte local can
-// buy the slot for free. Scalars in registers do not count toward the frame at
-// all (3 scalars and 4 scalars both give 0x30), so the 0x14 of slack above the
-// spill is not named-local space. Nesting the sqrtf call inside the
-// func_800A52F0 argument list (3 diffs) only reorders the reload of
-// omCurrentObj. The 0x18 slot in the ROM is therefore not a named local; it
-// looks like a second compiler temp slot or an 8-aligned temp area, neither of
-// which source shape reaches.
+/* MATCHED 2026-08-24. The two-word residue sealed here (the compiler spill at
+ * 0x18($sp) where the ROM has 0x1C) was NOT reachable by adding a pad, and the
+ * old note was right that every pad grows the frame -- but it was looking in
+ * the wrong direction. Measured on this function, with n = the number of
+ * DECLARED scalars (register-allocated ones included, they are not free):
+ *     frame     = align8(0x1C + 4n + 4)
+ *     spill slot = frame - 4n - 8
+ * so n=4 gives frame 0x30 / spill 0x18 and n=5 gives 0x38 / 0x1C -- which is
+ * why every pad moved the spill and the frame together. n=3 gives the ROM's
+ * 0x30 / 0x1C. The fix was therefore to DELETE a declaration, not add one:
+ * temp_f0's last read is inside the sqrtf argument, so the sqrt result reuses
+ * it and the separate temp_f4 disappears. */
 s32 func_801A8BAC_ovl7(void) {
     f32 temp_f0;
     f32 temp_f2;
-    f32 temp_f4;
     s32 temp_a0;
 
     temp_a0 = D_800E0D50[omCurrentObj->objId];
     if (D_800E6F50[omCurrentObj->objId].originOffset < 50.0f) {
         temp_f0 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[temp_a0];
         temp_f2 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[temp_a0];
-        temp_f4 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
-        D_80198820_ovl3 = -func_800A52F0(gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[temp_a0] + 28.0f), temp_f4);
+        temp_f0 = sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
+        D_80198820_ovl3 = -func_800A52F0(gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[temp_a0] + 28.0f), temp_f0);
     }
     if (D_800E6F50[omCurrentObj->objId].originOffset < 26.0f) {
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A8BAC_ovl7.s")
-#endif
 // m2c draft, measured 171/205 diffs
 #ifdef NON_MATCHING
 void func_801A8CDC_ovl7(GObj *arg0) {
