@@ -860,7 +860,19 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * align8(0x1C + L) = 0x40 needs L in {0x20, 0x24}: with sizeof sp20 == 0x20
  * that is the struct plus AT MOST one 4-byte local, and the function needs the
  * entry, the anim pointer and the struct all live at once. Good permuter
- * seed. */
+ * seed.
+ *
+ * 2026-08-24, re-measured 7/43 and the frame model above is now understood
+ * one level deeper, from the func_801DEC34_ovl14 closure in src/ovl14/ovl14.c:
+ * IDO's locals base is 0x18 (right above $ra at 0x14) and the frame is
+ * align8(0x18 + L), where L counts declared locals AND any stack temp the
+ * compiler reserves for itself. Writing `f(g(x))` as one nested call reserves
+ * such a temp; assigning the intermediate into an already-homed PARAMETER
+ * costs nothing and is what matched both ovl14 siblings. That escape does not
+ * work here: this function's only parameter, arg0, is still live at the point
+ * the anim pointer is needed, so there is no homed slot to borrow. The two
+ * remaining shapes to try are a caller-side change (a second parameter that
+ * the ROM's callers already pass) or the permuter. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
     struct EnemyRecord *sp1C;
     struct Ovl16AnimObj *temp_v0;
@@ -904,7 +916,15 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
  * and a third K&R parameter all fail: IDO gives every named local a word here
  * (sp20's address is taken) and homes every parameter of a 3-parameter
  * definition. The two halves of the fix are mutually exclusive. Good
- * permuter seed. */
+ * permuter seed.
+ *
+ * 2026-08-24: both halves re-measured and both claims hold -- reusing sp1C is
+ * 6/61 (all six the $a0/$a1 swap plus the extra `move a0,a1` at word 51), a
+ * separate `struct Ovl16AnimObj *obj` local is 10/61 with EVERY register
+ * correct and all ten diffs the frame 0x40 -> 0x48 and its sp offsets. The
+ * parameter-as-scratch trick that closed func_801DEC34_ovl14 /
+ * func_801DECAC_ovl14 in src/ovl14/ovl14.c does not reach here either: arg0
+ * and arg1 are both still live where the anim pointer is assigned. */
 s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
     struct Ovl16AnimInfo sp20;
     void *sp1C;

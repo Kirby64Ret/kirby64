@@ -1023,7 +1023,12 @@ s32 func_801DF01C_ovl14(f32);
    Swept and rejected for the FP rotation: `(f32) -n * rate`, `rate * -n`,
    the literal `-10 * rate` (65/236), a second `s32 m = -10` local (that one
    costs its own stack word, frame 0x58), and pads declared first instead of
-   last (identical). */
+   last (identical). Swept again 2026-08-24, all 15/236: a `void
+   func_800FB914(s32);` prototype (the lever that closed func_801DD590_ovl14
+   in this file), swapping the `n`/`rate` initialisation order, and
+   parenthesising `(-n) * rate`. This function's late_rodata pool is only two
+   words (0.05f, 65535.0f) with no repeated value, so it is NOT the shared
+   float-literal CSE that closed func_801E8F74_ovl9 either. */
 void func_801DDE60_ovl14(GObj *arg0) {
     s32 i;
     s32 n;
@@ -1678,12 +1683,14 @@ s32 func_801DF01C_ovl14(f32 arg0) {
 
 
 #ifdef NON_MATCHING
-/* FACTORY: 4/161 (verify.py prints 5; one is a PHANTOM -- the
-   D_801E3054_ovl14 string is reported as `<.rodata>+0xB4` because the
-   measurement runs on a scratch COPY and verify.py derives the rodata base
-   from the file's PATH. ovl14.o's .rodata links at 0x801E2FA0, so +0xB4 IS
-   D_801E3054_ovl14 and that byte is already right; scored on the real path
-   it does not appear.)
+/* FACTORY: 4/161, re-measured 2026-08-24 with VERIFY_SECBASE_SRC pointing at
+   the real path -- the phantom the old note describes does not appear, so 4
+   is the whole residue and both remaining pairs are FP register names.
+   Also swept 2026-08-24 and all 4/161: writing the func_800F9888 argument as
+   `(f32)(temp-1) * 40.0f * D_800E6A10[i]` (IDO reorders it back to the array
+   as the left operand either way), `40.0f * (f32)(temp-1)` inside (8/161) and
+   dropping the (f32) cast (17/161). The ROM puts the outer product in $f0 and
+   IDO in $f8; nothing about the source spelling of that expression moves it.
    The frame temp slot 0x28-vs-0x24 half of the old 8/161 residue is SOLVED by
    the trailing `s32 pad` below: later declarations take the lower addresses,
    so a dead word declared LAST is what lifts the compiler's own temp onto the

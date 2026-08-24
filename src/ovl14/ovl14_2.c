@@ -791,9 +791,20 @@ void func_801E2610_ovl14(GObj *arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 10/103: the parameter is homed where the ROM homes nothing, and IDO
-   materialises %hi(gEntityGObjProcessArray) above the branch where the ROM
-   materialises %hi(func_801A3E80_ovl7). */
+/* FACTORY: 10/103, re-measured 2026-08-24. The listing has NO `sw $a0` at
+   all, so the ROM's definition takes no parameter -- src/ovl14/ovl14_2.h's
+   `void func_801E2834_ovl14(GObj *arg0);` is a wrong prototype, not just a
+   matching detail. Measured both ways: keeping the parameter is 10/103 (the
+   home store at word 4 displaces the ROM's `nop` at word 12, so the counts
+   still agree and the two streams re-sync at word 13); changing the header to
+   `void func_801E2834_ovl14();` and the definition to `(void)` drops the home
+   store but comes out 102 words and 93 diffs, because IDO then materialises
+   %hi(gEntityGObjProcessArray) above the branch where the ROM materialises
+   %hi(func_801A3E80_ovl7). So the prototype fix is necessary but not
+   sufficient; whoever finishes this needs the argument-evaluation order of
+   `assign_new_process_entry(gEntityGObjProcessArray[objId],
+   func_801A3E80_ovl7)` to put the SECOND argument's %hi first, and the header
+   change must then be A/B'd across every TU that includes ovl14_2.h. */
 extern u32 D_8012BCA0;
 extern s32 D_801CA738_ovl7;
 extern s32 func_801117BC(s32 *, u32);
