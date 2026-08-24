@@ -406,7 +406,9 @@ segments:
     - [0xBB6D0, c, ovl3/plyshot]
     - [0xC9E70, c, ovl3/ovl3_4]
     - [0xCC9A0, c, ovl3/kirby]
-    - [0xDD9A0, c, ovl3/ovl3_6] # TODO: reassess split
+    # Re-split: the real TU boundary, derived below, is func_80179370_ovl3
+    # (vram 0x80179370 = rom 0xD9DB0), NOT the old 0xDD9A0 file split.
+    - [0xD9DB0, c, ovl3/ovl3_6]
     - [0xF0D50, data, ovl3/ovl3]
     # Each object emits its .rodata as [strings][floats+jump tables], so a new
     # object starts wherever the referencing-function address resets AT A
@@ -418,13 +420,17 @@ segments:
     #    func_801632B8; 0xF7B60 starts a second [string][floats] cycle serving
     #    func_801634D4..func_8016858C. One C file cannot emit that shape, so
     #    only the first half is migrated and the rest stays an asm blob.
-    #  * the kirby.c/ovl3_6.c file split at 0xDD9A0 is NOT the TU boundary
-    #    (the yaml has said "reassess" since it was written). The real one is
-    #    near func_80179370_ovl3: the block at 0xF7FB0 opens with the string
-    #    "data over %d\n" (func_8017D430, ovl3_6) and its float run then climbs
-    #    from func_80179370 -- which is in kirby.c -- to func_8018F368 with no
-    #    reset. So kirby.c's own object is only 0xF7D10..0xF7FB0, and the tail
-    #    it shares with ovl3_6 stays an asm blob until the C files are re-split.
+    #  * RESOLVED. The kirby.c/ovl3_6.c file split at 0xDD9A0 was NOT the TU
+    #    boundary. Re-derived from the ROM (every %hi/%lo pair in ovl3's text
+    #    resolved to its target and attributed to the enclosing function):
+    #    kirby.o's block 0xF7D10..0xF7FB0 is referenced by a strictly climbing
+    #    run func_8016BF60 -> func_80179130; the very next word, 0xF7FB0, is
+    #    the string "data over %d\n" referenced by func_8017D430 -- a RESET AT
+    #    A STRING, i.e. a new object -- and the float run that follows it
+    #    restarts at func_80179370 and climbs unbroken to func_8018F368.
+    #    So the second object is [func_80179370 .. end of ovl3_6], and
+    #    src/ovl3/{kirby,ovl3_6}.c were re-split at func_80179370 (0xD9DB0) so
+    #    that one C file emits it. 0xF7FB0 is now dotted .rodata on ovl3_6.
     - [0xF7810, .rodata, ovl3/ovl3]
     - [0xF7850, .rodata, ovl3/ovl3_1]
     - [0xF7920, .rodata, ovl3/plydemo]
@@ -432,7 +438,7 @@ segments:
     - [0xF7B60, rodata, ovl3/plyshot_2]
     - [0xF7C30, .rodata, ovl3/ovl3_4]
     - [0xF7D10, .rodata, ovl3/kirby]
-    - [0xF7FB0, rodata, ovl3/kirby_2]
+    - [0xF7FB0, .rodata, ovl3/ovl3_6]
     - [0xF8630]
     - {type: bss, vram: 0x80197bf0, name: ovl3/ovl3}
 

@@ -120,6 +120,2365 @@ void func_8018D460_ovl3(s32, s32, f32);
 void func_8018F2B4_ovl3(s32, s32, f32);
 s32 func_8019F234_ovl7(s32);
 
+/* The ability-charge blob. Hoisted here from just above func_8017EA0C_ovl3
+   because the func_80179370_ovl3 arms below (moved in from kirby.c when ovl3
+   was re-split at the true object boundary) address the same symbol by byte
+   offset, and two views of one extern do not coexist in a TU. No N64-compiled
+   code in this file reads it -- every use is inside a guarded arm -- so the
+   hoist is inert for the ROM (sha1 verified). */
+typedef struct Unk80198830 {
+    u8 pad0[8];
+    s16 unk8;
+    s16 unkA;
+} Unk80198830;
+
+extern Unk80198830 D_80198830_ovl3;
+
+#ifdef MIPS_TO_C
+/* FACTORY: 4/303, whole-function callee-saved permutation (same floor class documented across this cluster). Also gives D_80198830_ovl3 a local extern (its file-scope declaration sits inside an earlier #ifdef PORT block). Queued for the permuter. */
+/* PORT: the ability lunge coroutine (track action 0x21), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_80179370_ovl3.s (via m2c, floats
+ * re-derived against kirby_2.rodata). Arms the current ability, freezes
+ * both physics tracks, plays the windup pair 0x20182/0x20183, then seeds
+ * the lunge: duration and voice come from the pair table D_80196D80_ovl3
+ * indexed by the charge word D_80198832_ovl3, the hit effect
+ * func_800A8100(1,1,0x21) rides the body DObj, and the dash runs at
+ * 8.5 (water-halved 4.25) with 0.5 forward drift under loop pair
+ * 0x20184/0x20185. It then sleeps down the D_800E9720 counter (a
+ * scripted-control grab freezes the dash instead), recovers through
+ * 0x20186/0x20187, and unless scripted stops the track, burns one charge
+ * (D_80198830_ovl3 halfwords: count at +2, cooldown 0x1E at +0), calls
+ * the ability-spend hook func_8011D614, triples the leftover drift out
+ * of water and plays the skid pair 0x20188/0x20189 before parking.
+ *
+ * Port notes: D_80192794_ovl3 is the two-slot pointer table (native
+ * void*[] in the PC data) matching the other D_800E0490 stores; the
+ * D_80196D80_ovl3 lookup is pair-indexed (N64 stride 8 = two u32s);
+ * D_80198830_ovl3's halfwords keep this file's *(s16 *) spelling into
+ * the u8[4] blob; the redundant ABS ladder m2c unrolls is just the
+ * positive dash speed; unk15C takes (u32)(uintptr_t); func_800A8100
+ * goes through the usual pointer cast for its DObj argument. */
+void func_80179370_ovl3(s32 arg0) {
+    extern f32 *D_80192794_ovl3[];
+    extern u8 D_801904B0_ovl3[];
+    extern u32 D_80196D80_ovl3[];
+    extern s16 D_80198832_ovl3;
+    extern u8 D_80198830_ovl3[];
+    f32 spd;
+    s32 id;
+    s32 pre;
+
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk4C = 0;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 0x21;
+    D_800E0490[id] = D_80192794_ovl3;
+    gKirbyState.unk15C = (u32) (uintptr_t) D_801904B0_ovl3;
+    D_800E3750[id] = 0.0f;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    D_800E6690[id] = 0.0f;
+    D_800E64D0[id] = D_800E6690[id];
+    D_800E6850[id] = 65535.0f;
+    func_80122F08(0x2000A);
+    gKirbyState.unk154 = 2;
+    func_801230E8(0x20182, 0x20183, 1);
+    id = omCurrentObj->objId;
+    D_800E9720[id] = D_80196D80_ovl3[D_80198832_ovl3 * 2];
+    play_sound(D_80196D80_ovl3[D_80198832_ovl3 * 2 + 1]);
+    gKirbyState.unk4C = ((s32 (*)(s32, s32, s32, struct DObj *)) func_800A8100)(
+        1, 1, 0x21, D_800DFBD0[omCurrentObj->objId][2]);
+    id = omCurrentObj->objId;
+    if (!(D_800E8AE0[id] & 6)) {
+        spd = 8.5f;
+    } else {
+        spd = 4.25f;
+    }
+    D_800E64D0[id] = spd * D_800E6A10[id];
+    D_800E6690[id] = D_800E6A10[id] * 0.5f;
+    D_800E6850[id] = spd;
+    func_801230E8(0x20184, 0x20185, 0);
+    for (;;) {
+        if (gKirbyState.unk17 != 0) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+            break;
+        }
+        id = omCurrentObj->objId;
+        pre = D_800E9720[id];
+        D_800E9720[id] = pre - 1;
+        if (pre == 0) {
+            break;
+        }
+        ohSleep(1);
+    }
+    func_8011E0E8();
+    func_801230E8(0x20186, 0x20187, 1);
+    if (gKirbyState.unk17 != 0) {
+        id = omCurrentObj->objId;
+        D_800E6690[id] = 0.0f;
+        D_800E64D0[id] = D_800E6690[id];
+        D_800E6850[id] = 65535.0f;
+        gKirbyState.abilityInUse = 0;
+    } else {
+        func_80120A28();
+        gKirbyState.abilityInUse = 0;
+        if (*(s16 *) &D_80198830_ovl3[2] > 0) {
+            *(s16 *) &D_80198830_ovl3[2] -= 1;
+        }
+        *(s16 *) &D_80198830_ovl3[0] = 0x1E;
+        func_8011D614();
+        id = omCurrentObj->objId;
+        if (!(D_800E8AE0[id] & 6)) {
+            D_800E6690[id] *= 3.0f;
+        }
+        func_801230E8(0x20188, 0x20189, 1);
+    }
+    gKirbyState.unk30 += 1;
+    curObjSleepForever();
+}
+#elif defined(PORT)
+/* PORT: the ability lunge coroutine (track action 0x21), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_80179370_ovl3.s (via m2c, floats
+ * re-derived against kirby_2.rodata). Arms the current ability, freezes
+ * both physics tracks, plays the windup pair 0x20182/0x20183, then seeds
+ * the lunge: duration and voice come from the pair table D_80196D80_ovl3
+ * indexed by the charge word D_80198832_ovl3, the hit effect
+ * func_800A8100(1,1,0x21) rides the body DObj, and the dash runs at
+ * 8.5 (water-halved 4.25) with 0.5 forward drift under loop pair
+ * 0x20184/0x20185. It then sleeps down the D_800E9720 counter (a
+ * scripted-control grab freezes the dash instead), recovers through
+ * 0x20186/0x20187, and unless scripted stops the track, burns one charge
+ * (D_80198830_ovl3 halfwords: count at +2, cooldown 0x1E at +0), calls
+ * the ability-spend hook func_8011D614, triples the leftover drift out
+ * of water and plays the skid pair 0x20188/0x20189 before parking.
+ *
+ * Port notes: D_80192794_ovl3 is the two-slot pointer table (native
+ * void*[] in the PC data) matching the other D_800E0490 stores; the
+ * D_80196D80_ovl3 lookup is pair-indexed (N64 stride 8 = two u32s);
+ * D_80198830_ovl3's halfwords keep this file's *(s16 *) spelling into
+ * the u8[4] blob; the redundant ABS ladder m2c unrolls is just the
+ * positive dash speed; unk15C takes (u32)(uintptr_t); func_800A8100
+ * goes through the usual pointer cast for its DObj argument. */
+void func_80179370_ovl3(s32 arg0) {
+    extern f32 *D_80192794_ovl3[];
+    extern u8 D_801904B0_ovl3[];
+    extern u32 D_80196D80_ovl3[];
+    extern s16 D_80198832_ovl3;
+    u8 *chargeBlk = (u8 *) &D_80198830_ovl3;
+    f32 spd;
+    s32 id;
+    s32 pre;
+
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk4C = 0;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    id = omCurrentObj->objId;
+    D_800DDFD0[id] = 0x21;
+    D_800E0490[id] = D_80192794_ovl3;
+    gKirbyState.unk15C = (u32) (uintptr_t) D_801904B0_ovl3;
+    D_800E3750[id] = 0.0f;
+    D_800E3210[id] = D_800E3750[id];
+    D_800E3C90[id] = 65535.0f;
+    D_800E6690[id] = 0.0f;
+    D_800E64D0[id] = D_800E6690[id];
+    D_800E6850[id] = 65535.0f;
+    func_80122F08(0x2000A);
+    gKirbyState.unk154 = 2;
+    func_801230E8(0x20182, 0x20183, 1);
+    id = omCurrentObj->objId;
+    D_800E9720[id] = D_80196D80_ovl3[D_80198832_ovl3 * 2];
+    play_sound(D_80196D80_ovl3[D_80198832_ovl3 * 2 + 1]);
+    gKirbyState.unk4C = ((s32 (*)(s32, s32, s32, struct DObj *)) func_800A8100)(
+        1, 1, 0x21, D_800DFBD0[omCurrentObj->objId][2]);
+    id = omCurrentObj->objId;
+    if (!(D_800E8AE0[id] & 6)) {
+        spd = 8.5f;
+    } else {
+        spd = 4.25f;
+    }
+    D_800E64D0[id] = spd * D_800E6A10[id];
+    D_800E6690[id] = D_800E6A10[id] * 0.5f;
+    D_800E6850[id] = spd;
+    func_801230E8(0x20184, 0x20185, 0);
+    for (;;) {
+        if (gKirbyState.unk17 != 0) {
+            id = omCurrentObj->objId;
+            D_800E6690[id] = 0.0f;
+            D_800E64D0[id] = D_800E6690[id];
+            D_800E6850[id] = 65535.0f;
+            break;
+        }
+        id = omCurrentObj->objId;
+        pre = D_800E9720[id];
+        D_800E9720[id] = pre - 1;
+        if (pre == 0) {
+            break;
+        }
+        ohSleep(1);
+    }
+    func_8011E0E8();
+    func_801230E8(0x20186, 0x20187, 1);
+    if (gKirbyState.unk17 != 0) {
+        id = omCurrentObj->objId;
+        D_800E6690[id] = 0.0f;
+        D_800E64D0[id] = D_800E6690[id];
+        D_800E6850[id] = 65535.0f;
+        gKirbyState.abilityInUse = 0;
+    } else {
+        func_80120A28();
+        gKirbyState.abilityInUse = 0;
+        if (*(s16 *) &chargeBlk[2] > 0) {
+            *(s16 *) &chargeBlk[2] -= 1;
+        }
+        *(s16 *) &chargeBlk[0] = 0x1E;
+        func_8011D614();
+        id = omCurrentObj->objId;
+        if (!(D_800E8AE0[id] & 6)) {
+            D_800E6690[id] *= 3.0f;
+        }
+        func_801230E8(0x20188, 0x20189, 1);
+    }
+    gKirbyState.unk30 += 1;
+    curObjSleepForever();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80179370_ovl3.s")
+#endif
+
+extern char D_801910F0_ovl3[];
+extern f32 D_800EC9E4;
+extern s32 D_800D6FAC;
+
+void func_8017982C_ovl3(s32 arg0) {
+    if (func_800AA888(0x20007) == 0) {
+        func_80153AD4_ovl3();
+        gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - D_800EC9E4;
+        D_800E8920[omCurrentObj->objId] = 0;
+    } else {
+        func_80153984_ovl3();
+        func_801217B8();
+    }
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+        return;
+    }
+    if (gKirbyState.horizontalCollision != 0) {
+        D_800E64D0[omCurrentObj->objId] = 0.0;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        if (gKirbyController.buttonHeld & 0x300) {
+            if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (gKirbyController.buttonHeld & 0x100)) ||
+                ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (gKirbyController.buttonHeld & 0x200))) {
+                D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 10.5f : 5.25f);
+            } else {
+                D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 6.5f : 3.25f);
+            }
+        } else {
+            D_800E6850[omCurrentObj->objId] = ABSF(((D_800E8AE0[omCurrentObj->objId] & 6) == 0) ? 8.5f : 4.25f);
+        }
+        func_80111C4C(func_80111A04(D_801910F0_ovl3, omCurrentObj->objId));
+        return;
+    }
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        if (gKirbyController.buttonHeld & 0x300) {
+            set_kirby_action_1(1, 3);
+        }
+        return;
+    }
+    if (D_800D6FAC != 0) {
+        return;
+    }
+    if ((gKirbyController.buttonPressed & 0x8000) == 0) {
+        return;
+    }
+    if (gKirbyState.floatTimer == 0) {
+        return;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        set_kirby_action_1(0x17, 0x1B);
+    } else {
+        gKirbyState.unk44 = 0;
+        set_kirby_action_1(0xC, 9);
+    }
+}
+
+#ifdef MIPS_TO_C
+/* FACTORY: 36/422, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* PORT: the stone-form coroutine (track action 0x22), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_80179C28_ovl3.s (via m2c, floats from
+ * kirby_2.rodata). First entry (ability not yet armed) sets up the
+ * transform: water-scaled drop timer unk16, phase words unk3C/unk44 = -1,
+ * and if airborne an optional full freeze on B+Up (0x4400) plus the
+ * -0.980665 drop curve, latches the facing sign into D_800E98E0, plays
+ * the transform sound 0x11C and pair 0x2018C/0x2018D, then arms phase 1.
+ * Re-entries dispatch on unk44: phase 1 is the falling stone (slam sound
+ * 0x121 when it lands still moving or on a slope via func_800F8824);
+ * phases 0/2 run the grounded roll loop -- roll voice 0x2018F, impact
+ * process func_8017A2C0_ovl3 on the hit track, looping anim 0x20191
+ * while sliding (sleeping while grounded below the 0.785 spin threshold
+ * or still moving), settling into the idle blend 0x2018E with a 0x1E
+ * settle counter, and restarting the roll whenever the track gets
+ * re-accelerated -- ending with the stop voice 0x20190 and parking the
+ * counter at -1; phase 3 pops Kirby out (particle 0x30 at +20y, sound
+ * 0x11D, pair 0x2018A/0x2018B) and disarms the ability.
+ *
+ * Port notes: m2c's `arg0->unk3C->unk10` is arg0->data.dobj->firstChild;
+ * func_800AA5C4's third argument bits 0x40C00000 are 6.0f;
+ * func_800F8824's first argument is the Vector behind the u32 handle
+ * unk124 (cast through uintptr_t); unk15C takes (u32)(uintptr_t);
+ * func_8017A2C0_ovl3 is forward-declared -- it is defined later in this
+ * TU with exactly the D_800DF310 slot signature. */
+void func_80179C28_ovl3(GObj *arg0) {
+    extern u8 D_80190518_ovl3[];
+    s32 id;
+    f32 vel;
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk7 = 0;
+        gKirbyState.unkA = 0;
+        gKirbyState.unk40 = 0.0f;
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            gKirbyState.unk16 = 0x20;
+        } else {
+            gKirbyState.unk16 = 0x10;
+        }
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x22;
+        gKirbyState.unk3C = -1;
+        gKirbyState.unk44 = -1;
+        id = omCurrentObj->objId;
+        if (D_800E8920[id] == 0) {
+            if ((gKirbyController.buttonHeld & 0x4400) == 0x4400) {
+                D_800E6690[id] = 0.0f;
+                D_800E64D0[id] = D_800E6690[id];
+                D_800E6850[id] = 65535.0f;
+                D_800E3910[id] = 0.0f;
+                D_800E3590[id] = D_800E3910[id];
+                D_800E33D0[id] = D_800E3910[id];
+                D_800E3050[id] = D_800E3910[id];
+                D_800E3E50[id] = 65535.0f;
+                D_800E3AD0[id] = D_800E3E50[id];
+            }
+            D_800E3210[id] = 0.0f;
+            D_800E3750[id] = -0.980665f;
+            D_800E3C90[id] = 18.0f;
+        }
+        D_800E98E0[id] = (s32) D_800E6A10[id];
+        play_sound(0x11C);
+        func_80122F08(0x20007);
+        gKirbyState.unk15C = (u32) (uintptr_t) D_80190518_ovl3;
+        func_801230E8(0x2018C, 0x2018D, 1);
+        gKirbyState.unk44 = 1;
+        gKirbyState.unk3C = 1;
+    }
+    switch (gKirbyState.unk44) {
+        case 1:
+            id = omCurrentObj->objId;
+            D_800EA6E0[id] = 0.0f;
+            func_80122F08(0x2000C);
+            gKirbyState.unk154 = 1;
+            gKirbyState.unk40 = 0.0f;
+            if ((D_800E8920[id] != 0)
+                && ((D_800E64D0[id] != 0.0f)
+                    || (func_800F8824((Vector *) (uintptr_t) gKirbyState.unk124,
+                                      D_800E17D0[id]) != 0.0f))) {
+                play_sound(0x121);
+            }
+            break;
+        case 0:
+        case 2:
+            id = omCurrentObj->objId;
+            D_800EA8A0[id] = 0.0f;
+            D_800E9720[id] = 0;
+            func_80122F08(0x2000B);
+            gKirbyState.unk154 = 2;
+            func_800AA154(0x2018F);
+        restart:
+            func_800AA018(0x20191);
+            D_800DF310[omCurrentObj->objId] = func_8017A2C0_ovl3;
+            for (;;) {
+                id = omCurrentObj->objId;
+                vel = D_800E64D0[id];
+                if ((vel != 0.0f) || (D_800E6850[id] != 0.0f)) {
+                    if ((D_800E8920[id] != 0)
+                        && (!(0.785f < D_800EA8A0[id]) || (vel != 0.0f))) {
+                        ohSleep(1);
+                        continue;
+                    }
+                    break;
+                }
+                /* the roll has fully stopped: settle into the idle blend */
+                D_800E9720[id] = 0x1E;
+                func_800AA5C4(0x2018E, 0x2000B, 6.0f);
+                if (func_800AA368(arg0->data.dobj->firstChild) == 0) {
+                    for (;;) {
+                        id = omCurrentObj->objId;
+                        if (D_800E6850[id] != 0.0f) {
+                            goto restart;
+                        }
+                        if (D_800E8920[id] == 0) {
+                            goto stopped;
+                        }
+                        ohSleep(1);
+                        if (func_800AA368(arg0->data.dobj->firstChild) != 0) {
+                            break;
+                        }
+                    }
+                }
+                func_800AA018(0x2018E);
+                for (;;) {
+                    id = omCurrentObj->objId;
+                    if (D_800E6850[id] != 0.0f) {
+                        goto restart;
+                    }
+                    if ((D_800E8920[id] == 0)
+                        || (!(gKirbyState.isTurning & 1) && (D_800E9720[id] == 0))) {
+                        goto stopped;
+                    }
+                    ohSleep(1);
+                }
+            }
+        stopped:
+            func_800AA154(0x20190);
+            D_800E9720[omCurrentObj->objId] = -1;
+            break;
+        case 3:
+            id = omCurrentObj->objId;
+            gEntitiesAngleXArray[id] = 0.0f;
+            func_80120A28();
+            play_sound(0x11D);
+            func_800A7F74(2, 1, 0x30, gEntitiesNextPosXArray[id],
+                          gEntitiesNextPosYArray[id] + 20.0f, gEntitiesNextPosZArray[id]);
+            func_8011D614();
+            func_801230E8(0x2018A, 0x2018B, 1);
+            gKirbyState.abilityInUse = 0;
+            gKirbyState.unk30 += 1;
+            break;
+    }
+    curObjSleepForever();
+}
+#elif defined(PORT)
+/* PORT: the stone-form coroutine (track action 0x22), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_80179C28_ovl3.s (via m2c, floats from
+ * kirby_2.rodata). First entry (ability not yet armed) sets up the
+ * transform: water-scaled drop timer unk16, phase words unk3C/unk44 = -1,
+ * and if airborne an optional full freeze on B+Up (0x4400) plus the
+ * -0.980665 drop curve, latches the facing sign into D_800E98E0, plays
+ * the transform sound 0x11C and pair 0x2018C/0x2018D, then arms phase 1.
+ * Re-entries dispatch on unk44: phase 1 is the falling stone (slam sound
+ * 0x121 when it lands still moving or on a slope via func_800F8824);
+ * phases 0/2 run the grounded roll loop -- roll voice 0x2018F, impact
+ * process func_8017A2C0_ovl3 on the hit track, looping anim 0x20191
+ * while sliding (sleeping while grounded below the 0.785 spin threshold
+ * or still moving), settling into the idle blend 0x2018E with a 0x1E
+ * settle counter, and restarting the roll whenever the track gets
+ * re-accelerated -- ending with the stop voice 0x20190 and parking the
+ * counter at -1; phase 3 pops Kirby out (particle 0x30 at +20y, sound
+ * 0x11D, pair 0x2018A/0x2018B) and disarms the ability.
+ *
+ * Port notes: m2c's `arg0->unk3C->unk10` is arg0->data.dobj->firstChild;
+ * func_800AA5C4's third argument bits 0x40C00000 are 6.0f;
+ * func_800F8824's first argument is the Vector behind the u32 handle
+ * unk124 (cast through uintptr_t); unk15C takes (u32)(uintptr_t);
+ * func_8017A2C0_ovl3 is forward-declared -- it is defined later in this
+ * TU with exactly the D_800DF310 slot signature. */
+void func_80179C28_ovl3(GObj *arg0) {
+    extern void func_8017A2C0_ovl3(s32, s32, f32);
+    extern u8 D_80190518_ovl3[];
+    s32 id;
+    f32 vel;
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk7 = 0;
+        gKirbyState.unkA = 0;
+        gKirbyState.unk40 = 0.0f;
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            gKirbyState.unk16 = 0x20;
+        } else {
+            gKirbyState.unk16 = 0x10;
+        }
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x22;
+        gKirbyState.unk3C = -1;
+        gKirbyState.unk44 = -1;
+        id = omCurrentObj->objId;
+        if (D_800E8920[id] == 0) {
+            if ((gKirbyController.buttonHeld & 0x4400) == 0x4400) {
+                D_800E6690[id] = 0.0f;
+                D_800E64D0[id] = D_800E6690[id];
+                D_800E6850[id] = 65535.0f;
+                D_800E3910[id] = 0.0f;
+                D_800E3590[id] = D_800E3910[id];
+                D_800E33D0[id] = D_800E3910[id];
+                D_800E3050[id] = D_800E3910[id];
+                D_800E3E50[id] = 65535.0f;
+                D_800E3AD0[id] = D_800E3E50[id];
+            }
+            D_800E3210[id] = 0.0f;
+            D_800E3750[id] = -0.980665f;
+            D_800E3C90[id] = 18.0f;
+        }
+        D_800E98E0[id] = (s32) D_800E6A10[id];
+        play_sound(0x11C);
+        func_80122F08(0x20007);
+        gKirbyState.unk15C = (u32) (uintptr_t) D_80190518_ovl3;
+        func_801230E8(0x2018C, 0x2018D, 1);
+        gKirbyState.unk44 = 1;
+        gKirbyState.unk3C = 1;
+    }
+    switch (gKirbyState.unk44) {
+        case 1:
+            id = omCurrentObj->objId;
+            D_800EA6E0[id] = 0.0f;
+            func_80122F08(0x2000C);
+            gKirbyState.unk154 = 1;
+            gKirbyState.unk40 = 0.0f;
+            if ((D_800E8920[id] != 0)
+                && ((D_800E64D0[id] != 0.0f)
+                    || (func_800F8824((Vector *) (uintptr_t) gKirbyState.unk124,
+                                      D_800E17D0[id]) != 0.0f))) {
+                play_sound(0x121);
+            }
+            break;
+        case 0:
+        case 2:
+            id = omCurrentObj->objId;
+            D_800EA8A0[id] = 0.0f;
+            D_800E9720[id] = 0;
+            func_80122F08(0x2000B);
+            gKirbyState.unk154 = 2;
+            func_800AA154(0x2018F);
+        restart:
+            func_800AA018(0x20191);
+            D_800DF310[omCurrentObj->objId] = func_8017A2C0_ovl3;
+            for (;;) {
+                id = omCurrentObj->objId;
+                vel = D_800E64D0[id];
+                if ((vel != 0.0f) || (D_800E6850[id] != 0.0f)) {
+                    if ((D_800E8920[id] != 0)
+                        && (!(0.785f < D_800EA8A0[id]) || (vel != 0.0f))) {
+                        ohSleep(1);
+                        continue;
+                    }
+                    break;
+                }
+                /* the roll has fully stopped: settle into the idle blend */
+                D_800E9720[id] = 0x1E;
+                func_800AA5C4(0x2018E, 0x2000B, 6.0f);
+                if (func_800AA368(arg0->data.dobj->firstChild) == 0) {
+                    for (;;) {
+                        id = omCurrentObj->objId;
+                        if (D_800E6850[id] != 0.0f) {
+                            goto restart;
+                        }
+                        if (D_800E8920[id] == 0) {
+                            goto stopped;
+                        }
+                        ohSleep(1);
+                        if (func_800AA368(arg0->data.dobj->firstChild) != 0) {
+                            break;
+                        }
+                    }
+                }
+                func_800AA018(0x2018E);
+                for (;;) {
+                    id = omCurrentObj->objId;
+                    if (D_800E6850[id] != 0.0f) {
+                        goto restart;
+                    }
+                    if ((D_800E8920[id] == 0)
+                        || (!(gKirbyState.isTurning & 1) && (D_800E9720[id] == 0))) {
+                        goto stopped;
+                    }
+                    ohSleep(1);
+                }
+            }
+        stopped:
+            func_800AA154(0x20190);
+            D_800E9720[omCurrentObj->objId] = -1;
+            break;
+        case 3:
+            id = omCurrentObj->objId;
+            gEntitiesAngleXArray[id] = 0.0f;
+            func_80120A28();
+            play_sound(0x11D);
+            func_800A7F74(2, 1, 0x30, gEntitiesNextPosXArray[id],
+                          gEntitiesNextPosYArray[id] + 20.0f, gEntitiesNextPosZArray[id]);
+            func_8011D614();
+            func_801230E8(0x2018A, 0x2018B, 1);
+            gKirbyState.abilityInUse = 0;
+            gKirbyState.unk30 += 1;
+            break;
+    }
+    curObjSleepForever();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80179C28_ovl3.s")
+#endif
+
+void func_8017A2C0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
+    s32 temp;
+
+    if (arg1 == 0) {
+        if (arg2 != 0.0f) {
+            if (D_800E8920[omCurrentObj->objId] != 0) {
+                temp = func_80123170();
+                func_800FB914(1);
+                play_sound(0x120);
+                if (temp != -1) {
+                    func_800A7F74(5, 1, temp, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+                }
+            }
+        }
+    }
+}
+
+#ifdef MIPS_TO_C
+/* FACTORY: 28/821, whole-function callee-saved permutation (same floor class documented across this cluster, jump table included). Queued for the permuter. */
+/* PORT: the stone-form (action 0x22) per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017A390_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). Runs the tick prologue and water-scaled
+ * anim speed, fires the landing thud (voice stop + 0x11E, or 0x149 when
+ * already un-stoning) with the terrain particle when func_80121828's
+ * fall test trips, tracks the held direction into D_800E98E0, and
+ * decides un-stoning (scripted grab, or B once the unk16 drop timer has
+ * run out -- B during the drop just arms unkA). Un-stoning snaps facing
+ * to the held direction and re-derives the yaw through func_8011E374.
+ * Phase 1 rolls: slope from the floor normal (rec[0].norm) drives the
+ * drift/cap formula scaled by the terrain accel table (func_80120AF8),
+ * gravel particles fly every 3rd frame above speed 6 (3 in water), the
+ * spin angle unk40 integrates speed*4deg into the wheel DObj's pitch
+ * (mirrored by facing through the D_800D7238 scratch), thudding 0x121
+ * each full turn, and a held direction below speed 2 on flat ground
+ * drops back to phase 0. Phase 0 idles: airborne hops to the falling
+ * phase 2, a stopped track burns the settle counter with the turn poll
+ * func_80121C90 (a held direction shoves 0.25 drift), a moving track
+ * re-derives |slope| and either stays settled (< 0.785, with the turn
+ * latch func_801219C8 + gravity) or frees the cap to keep sliding, the
+ * expired counter arming the roll. Phase 2 falls back to 0 on landing
+ * or rolls once the counter parks. Phase 3 (un-stoned) runs the flash
+ * hitbox D_80193A68_ovl3 and palette anim until the coroutine finishes,
+ * then the exit hook func_8011D67C. While the ability is armed the
+ * stone hitbox D_80193204_ovl3 and its palette run every tick, and a
+ * phase change re-triggers the coroutine process (func_8016C510_ovl3).
+ *
+ * Port notes: the plylib helpers func_8011E374 / func_801219C8 /
+ * func_80121C90 / func_801231D8 / func_80123240 / func_80120AF8(Vector*)
+ * are void-arg (or single-arg) on PC -- every extra argument m2c prints
+ * is a leftover register; func_80121828's raw bit constants are 18.0f /
+ * 9.0f; the floor normal reads (m2c's `D_8012BCA8.unk4` and
+ * `D_8012BCA0->unkC`, both N64 base+0xC) are D_8012BCA8[1] per the
+ * ported convention (rec[0].norm behind the pc_bss_whole alias);
+ * `&D_800D71E8 + 0x50` is the f32 scratch D_800D7238;
+ * `D_800DFBD0[...]->unk4->unk30` is DObj list entry [1]'s angle.v.x. */
+void func_8017A390_ovl3(s32 arg0) {
+    /* NOT hoisted to file scope: the NON_MATCHING draft of
+     * func_80175FA0_ovl3 calls func_80120AF8 with two arguments, and the
+     * tree's gcc lint pass builds that arm (-DNON_MATCHING). It only
+     * compiles while no prototype is in scope there, so this one stays
+     * where m2c put it. Definition: src/ovl2/plylib.c:51, one Vector *. */
+    void func_80120AF8(Vector *);
+    extern Vector *D_8012BCA8[];
+    extern u32 D_800BE4EC;
+    extern f32 D_800D7238;
+    extern char D_80191134_ovl3[];
+    extern char D_80191178_ovl3[];
+    extern u8 D_80193204_ovl3[];
+    extern u8 D_80193A68_ovl3[];
+    Vector accel;
+    f32 animSpd;
+    f32 slope;
+    f32 base;
+    f32 fric;
+    f32 f;
+    s32 bail = 0;
+    s32 wrapped;
+    s32 cnt;
+    s32 snd;
+    s32 id;
+
+    func_80153984_ovl3();
+    if (!(D_800E8AE0[omCurrentObj->objId] & 6)) {
+        animSpd = 1.25f;
+    } else {
+        animSpd = 1.0f;
+    }
+    func_800AECC0(animSpd);
+    func_800AED20(animSpd);
+    if (func_80121828(-0.980665f, 18.0f, -0.980665f, 9.0f) != 0) {
+        if (gKirbyState.unk44 != 3) {
+            func_800FB914(2);
+            func_800BB468(0, 0);
+            play_sound(0x11E);
+        } else {
+            play_sound(0x149);
+        }
+        snd = func_801231D8();
+        if (snd != -1) {
+            id = omCurrentObj->objId;
+            func_800A7F74(5, 1, snd, gEntitiesNextPosXArray[id],
+                          gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+        }
+    }
+    if (gKirbyController.buttonHeld & 0x300) {
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800E98E0[omCurrentObj->objId] = 1;
+        } else {
+            D_800E98E0[omCurrentObj->objId] = -1;
+        }
+    }
+    if (gKirbyState.unk17 != 0) {
+        bail = 1;
+    } else if (gKirbyState.unk16 == 0) {
+        if (gKirbyController.buttonPressed & 0x4000) {
+            bail = 1;
+        } else if (gKirbyState.unkA == 4) {
+            bail = 1;
+        }
+    } else if (gKirbyController.buttonPressed & 0x4000) {
+        gKirbyState.unkA = 4;
+    }
+    if ((bail != 0) && (gKirbyState.unk44 != 3)) {
+        gKirbyState.unk44 = 3;
+        id = omCurrentObj->objId;
+        D_800E6A10[id] = (f32) D_800E98E0[id];
+        f = func_8011E374();
+        gEntitiesAngleYArray[omCurrentObj->objId] = f;
+        D_800E17D0[omCurrentObj->objId] = f;
+        if (gKirbyState.unk17 != 0) {
+            gKirbyState.isTurning &= ~1;
+        }
+        goto phase_check;
+    }
+    switch (gKirbyState.unk44) {
+        case 1:
+            id = omCurrentObj->objId;
+            gEntitiesAngleYArray[id] = D_800E17D0[id];
+            if (D_800E8920[id] == 0) {
+                func_80120A28();
+            } else {
+                func_80120AF8(&accel);
+                id = omCurrentObj->objId;
+                D_800EA6E0[id] = -func_800F8824(D_8012BCA8[1], D_800E17D0[id]);
+                slope = D_800EA6E0[id];
+                if (((slope > 0.0f) && (D_800E6A10[id] == -1.0f))
+                    || ((slope < 0.0f) && (D_800E6A10[id] == 1.0f))) {
+                    base = -0.1f * accel.y;
+                } else {
+                    base = 0.1f * accel.y;
+                }
+                if (slope == 0.0f) {
+                    fric = 0.0f;
+                } else if (!(D_800E8AE0[id] & 6)) {
+                    fric = 2.0f;
+                } else {
+                    fric = 1.0f;
+                }
+                D_800E6690[id] = (ABSF(slope) * 10.0f * base) + base;
+                f = (ABSF(slope) * 4.0f * fric) + fric;
+                D_800E6850[id] = ABSF(f);
+                id = omCurrentObj->objId;
+                f = ABSF(D_800E64D0[id]);
+                if (!(D_800E8AE0[id] & 6)) {
+                    base = 6.0f;
+                } else {
+                    base = 3.0f;
+                }
+                if ((base < f) && ((D_800BE4EC % 3U) == 0)) {
+                    snd = func_80123240();
+                    if (snd != -1) {
+                        id = omCurrentObj->objId;
+                        func_800A7F74(5, 1, snd, gEntitiesNextPosXArray[id],
+                                      gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+                    }
+                }
+            }
+            id = omCurrentObj->objId;
+            if (D_800E64D0[id] != 0.0f) {
+                wrapped = 0;
+                gKirbyState.unk40 += (D_800E64D0[id] * 4.0f * 3.1415927f) / 180.0f;
+                if (gKirbyState.unk40 < 0.0f) {
+                    wrapped = 1;
+                    gKirbyState.unk40 += 6.2831855f;
+                } else if (gKirbyState.unk40 >= 6.2831855f) {
+                    wrapped = 1;
+                    gKirbyState.unk40 -= 6.2831855f;
+                }
+                id = omCurrentObj->objId;
+                if ((D_800E8920[id] != 0) && (wrapped != 0)) {
+                    if (ABSF(D_800E64D0[id]) > 1.0f) {
+                        play_sound(0x121);
+                    }
+                }
+                id = omCurrentObj->objId;
+                if (D_800E6A10[id] == -1.0f) {
+                    D_800D7238 = -gKirbyState.unk40;
+                } else {
+                    D_800D7238 = gKirbyState.unk40;
+                }
+                D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800D7238;
+            }
+            id = omCurrentObj->objId;
+            if ((D_800EA6E0[id] == 0.0f) && (D_800E8920[id] != 0)
+                && (gKirbyController.buttonHeld & 0x300)) {
+                if (ABSF(D_800E64D0[id]) <= 2.0f) {
+                    gKirbyState.unk44 = 0;
+                    if (gKirbyController.buttonHeld & 0x100) {
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
+                    } else {
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
+                    }
+                }
+            }
+            break;
+        case 0:
+            id = omCurrentObj->objId;
+            if (D_800E8920[id] != 0) {
+                if ((D_800E64D0[id] == 0.0f) && (D_800E6850[id] == 0.0f)) {
+                    cnt = D_800E9720[id];
+                    if (cnt != 0) {
+                        if (cnt > 0) {
+                            D_800E9720[id] = cnt - 1;
+                            if (func_80121C90() != 0) {
+                                id = omCurrentObj->objId;
+                                D_800E6690[id] = D_800E6A10[id] * 0.25f;
+                                D_800E6850[id] = 2.0f;
+                            } else if (!(gKirbyState.isTurning & 1)) {
+                                if (func_80121194() != 0) {
+                                    gKirbyState.isTurning |= 1;
+                                }
+                            }
+                        } else {
+                            gKirbyState.unk44 = 1;
+                        }
+                    }
+                } else {
+                    if (func_800F8824(D_8012BCA8[1], D_800E17D0[id]) < 0.0f) {
+                        D_800EA8A0[omCurrentObj->objId] =
+                            -func_800F8824(D_8012BCA8[1], D_800E17D0[omCurrentObj->objId]);
+                    } else {
+                        D_800EA8A0[omCurrentObj->objId] =
+                            func_800F8824(D_8012BCA8[1], D_800E17D0[omCurrentObj->objId]);
+                    }
+                    id = omCurrentObj->objId;
+                    if (D_800EA8A0[id] < 0.785f) {
+                        func_801219C8();
+                        func_8011ED68();
+                        if (D_800E9720[omCurrentObj->objId] < 0) {
+                            gKirbyState.unk3C = -1;
+                            gKirbyState.unk44 = 0;
+                        }
+                    } else {
+                        D_800E6850[id] = 0.0f;
+                        if (D_800E9720[omCurrentObj->objId] < 0) {
+                            gKirbyState.unk44 = 1;
+                        }
+                    }
+                }
+                break;
+            }
+            gKirbyState.unk44 = 2;
+            gKirbyState.unk3C = 2;
+            /* fallthrough: the fresh airborne phase runs its check now */
+        case 2:
+            id = omCurrentObj->objId;
+            if (D_800E8920[id] != 0) {
+                gKirbyState.unk3C = -1;
+                gKirbyState.unk44 = 0;
+            } else if (D_800E9720[id] < 0) {
+                gKirbyState.unk44 = 1;
+            }
+            break;
+        case 3:
+            if (gKirbyState.unk30 == 0) {
+                func_8015449C_ovl3(D_80193A68_ovl3, 0);
+                func_80111C4C(func_80111A04(D_80191178_ovl3, omCurrentObj->objId));
+                return;
+            }
+            func_8011D67C();
+            return;
+        default:
+            break;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        func_80111C4C(func_80111A04(D_80191134_ovl3, omCurrentObj->objId));
+        func_8015449C_ovl3(D_80193204_ovl3, 0);
+    }
+phase_check:
+    if (gKirbyState.unk3C != gKirbyState.unk44) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                 func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
+#elif defined(PORT)
+/* PORT: the stone-form (action 0x22) per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017A390_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). Runs the tick prologue and water-scaled
+ * anim speed, fires the landing thud (voice stop + 0x11E, or 0x149 when
+ * already un-stoning) with the terrain particle when func_80121828's
+ * fall test trips, tracks the held direction into D_800E98E0, and
+ * decides un-stoning (scripted grab, or B once the unk16 drop timer has
+ * run out -- B during the drop just arms unkA). Un-stoning snaps facing
+ * to the held direction and re-derives the yaw through func_8011E374.
+ * Phase 1 rolls: slope from the floor normal (rec[0].norm) drives the
+ * drift/cap formula scaled by the terrain accel table (func_80120AF8),
+ * gravel particles fly every 3rd frame above speed 6 (3 in water), the
+ * spin angle unk40 integrates speed*4deg into the wheel DObj's pitch
+ * (mirrored by facing through the D_800D7238 scratch), thudding 0x121
+ * each full turn, and a held direction below speed 2 on flat ground
+ * drops back to phase 0. Phase 0 idles: airborne hops to the falling
+ * phase 2, a stopped track burns the settle counter with the turn poll
+ * func_80121C90 (a held direction shoves 0.25 drift), a moving track
+ * re-derives |slope| and either stays settled (< 0.785, with the turn
+ * latch func_801219C8 + gravity) or frees the cap to keep sliding, the
+ * expired counter arming the roll. Phase 2 falls back to 0 on landing
+ * or rolls once the counter parks. Phase 3 (un-stoned) runs the flash
+ * hitbox D_80193A68_ovl3 and palette anim until the coroutine finishes,
+ * then the exit hook func_8011D67C. While the ability is armed the
+ * stone hitbox D_80193204_ovl3 and its palette run every tick, and a
+ * phase change re-triggers the coroutine process (func_8016C510_ovl3).
+ *
+ * Port notes: the plylib helpers func_8011E374 / func_801219C8 /
+ * func_80121C90 / func_801231D8 / func_80123240 / func_80120AF8(Vector*)
+ * are void-arg (or single-arg) on PC -- every extra argument m2c prints
+ * is a leftover register; func_80121828's raw bit constants are 18.0f /
+ * 9.0f; the floor normal reads (m2c's `D_8012BCA8.unk4` and
+ * `D_8012BCA0->unkC`, both N64 base+0xC) are D_8012BCA8[1] per the
+ * ported convention (rec[0].norm behind the pc_bss_whole alias);
+ * `&D_800D71E8 + 0x50` is the f32 scratch D_800D7238;
+ * `D_800DFBD0[...]->unk4->unk30` is DObj list entry [1]'s angle.v.x. */
+void func_8017A390_ovl3(s32 arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    /* NOT hoisted to file scope: the NON_MATCHING draft of
+     * func_80175FA0_ovl3 calls func_80120AF8 with two arguments, and the
+     * tree's gcc lint pass builds that arm (-DNON_MATCHING). It only
+     * compiles while no prototype is in scope there, so this one stays
+     * where m2c put it. Definition: src/ovl2/plylib.c:51, one Vector *. */
+    void func_80120AF8(Vector *);
+    extern Vector *D_8012BCA8[];
+    extern u32 D_800BE4EC;
+    extern f32 D_800D7238;
+    extern char D_80191134_ovl3[];
+    extern char D_80191178_ovl3[];
+    extern u8 D_80193204_ovl3[];
+    extern u8 D_80193A68_ovl3[];
+    Vector accel;
+    f32 animSpd;
+    f32 slope;
+    f32 base;
+    f32 fric;
+    f32 f;
+    s32 bail = 0;
+    s32 wrapped;
+    s32 cnt;
+    s32 snd;
+    s32 id;
+
+    func_80153984_ovl3();
+    if (!(D_800E8AE0[omCurrentObj->objId] & 6)) {
+        animSpd = 1.25f;
+    } else {
+        animSpd = 1.0f;
+    }
+    func_800AECC0(animSpd);
+    func_800AED20(animSpd);
+    if (func_80121828(-0.980665f, 18.0f, -0.980665f, 9.0f) != 0) {
+        if (gKirbyState.unk44 != 3) {
+            func_800FB914(2);
+            func_800BB468(0, 0);
+            play_sound(0x11E);
+        } else {
+            play_sound(0x149);
+        }
+        snd = func_801231D8();
+        if (snd != -1) {
+            id = omCurrentObj->objId;
+            func_800A7F74(5, 1, snd, gEntitiesNextPosXArray[id],
+                          gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+        }
+    }
+    if (gKirbyController.buttonHeld & 0x300) {
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800E98E0[omCurrentObj->objId] = 1;
+        } else {
+            D_800E98E0[omCurrentObj->objId] = -1;
+        }
+    }
+    if (gKirbyState.unk17 != 0) {
+        bail = 1;
+    } else if (gKirbyState.unk16 == 0) {
+        if (gKirbyController.buttonPressed & 0x4000) {
+            bail = 1;
+        } else if (gKirbyState.unkA == 4) {
+            bail = 1;
+        }
+    } else if (gKirbyController.buttonPressed & 0x4000) {
+        gKirbyState.unkA = 4;
+    }
+    if ((bail != 0) && (gKirbyState.unk44 != 3)) {
+        gKirbyState.unk44 = 3;
+        id = omCurrentObj->objId;
+        D_800E6A10[id] = (f32) D_800E98E0[id];
+        f = func_8011E374();
+        gEntitiesAngleYArray[omCurrentObj->objId] = f;
+        D_800E17D0[omCurrentObj->objId] = f;
+        if (gKirbyState.unk17 != 0) {
+            gKirbyState.isTurning &= ~1;
+        }
+        goto phase_check;
+    }
+    switch (gKirbyState.unk44) {
+        case 1:
+            id = omCurrentObj->objId;
+            gEntitiesAngleYArray[id] = D_800E17D0[id];
+            if (D_800E8920[id] == 0) {
+                func_80120A28();
+            } else {
+                func_80120AF8(&accel);
+                id = omCurrentObj->objId;
+                D_800EA6E0[id] = -func_800F8824(D_8012BCA8[1], D_800E17D0[id]);
+                slope = D_800EA6E0[id];
+                if (((slope > 0.0f) && (D_800E6A10[id] == -1.0f))
+                    || ((slope < 0.0f) && (D_800E6A10[id] == 1.0f))) {
+                    base = -0.1f * accel.y;
+                } else {
+                    base = 0.1f * accel.y;
+                }
+                if (slope == 0.0f) {
+                    fric = 0.0f;
+                } else if (!(D_800E8AE0[id] & 6)) {
+                    fric = 2.0f;
+                } else {
+                    fric = 1.0f;
+                }
+                D_800E6690[id] = (ABSF(slope) * 10.0f * base) + base;
+                f = (ABSF(slope) * 4.0f * fric) + fric;
+                D_800E6850[id] = ABSF(f);
+                id = omCurrentObj->objId;
+                f = ABSF(D_800E64D0[id]);
+                if (!(D_800E8AE0[id] & 6)) {
+                    base = 6.0f;
+                } else {
+                    base = 3.0f;
+                }
+                if ((base < f) && ((D_800BE4EC % 3U) == 0)) {
+                    snd = func_80123240();
+                    if (snd != -1) {
+                        id = omCurrentObj->objId;
+                        func_800A7F74(5, 1, snd, gEntitiesNextPosXArray[id],
+                                      gEntitiesNextPosYArray[id], gEntitiesNextPosZArray[id]);
+                    }
+                }
+            }
+            id = omCurrentObj->objId;
+            if (D_800E64D0[id] != 0.0f) {
+                wrapped = 0;
+                gKirbyState.unk40 += (D_800E64D0[id] * 4.0f * 3.1415927f) / 180.0f;
+                if (gKirbyState.unk40 < 0.0f) {
+                    wrapped = 1;
+                    gKirbyState.unk40 += 6.2831855f;
+                } else if (gKirbyState.unk40 >= 6.2831855f) {
+                    wrapped = 1;
+                    gKirbyState.unk40 -= 6.2831855f;
+                }
+                id = omCurrentObj->objId;
+                if ((D_800E8920[id] != 0) && (wrapped != 0)) {
+                    if (ABSF(D_800E64D0[id]) > 1.0f) {
+                        play_sound(0x121);
+                    }
+                }
+                id = omCurrentObj->objId;
+                if (D_800E6A10[id] == -1.0f) {
+                    D_800D7238 = -gKirbyState.unk40;
+                } else {
+                    D_800D7238 = gKirbyState.unk40;
+                }
+                D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800D7238;
+            }
+            id = omCurrentObj->objId;
+            if ((D_800EA6E0[id] == 0.0f) && (D_800E8920[id] != 0)
+                && (gKirbyController.buttonHeld & 0x300)) {
+                if (ABSF(D_800E64D0[id]) <= 2.0f) {
+                    gKirbyState.unk44 = 0;
+                    if (gKirbyController.buttonHeld & 0x100) {
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
+                    } else {
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
+                    }
+                }
+            }
+            break;
+        case 0:
+            id = omCurrentObj->objId;
+            if (D_800E8920[id] != 0) {
+                if ((D_800E64D0[id] == 0.0f) && (D_800E6850[id] == 0.0f)) {
+                    cnt = D_800E9720[id];
+                    if (cnt != 0) {
+                        if (cnt > 0) {
+                            D_800E9720[id] = cnt - 1;
+                            if (func_80121C90() != 0) {
+                                id = omCurrentObj->objId;
+                                D_800E6690[id] = D_800E6A10[id] * 0.25f;
+                                D_800E6850[id] = 2.0f;
+                            } else if (!(gKirbyState.isTurning & 1)) {
+                                if (func_80121194() != 0) {
+                                    gKirbyState.isTurning |= 1;
+                                }
+                            }
+                        } else {
+                            gKirbyState.unk44 = 1;
+                        }
+                    }
+                } else {
+                    if (func_800F8824(D_8012BCA8[1], D_800E17D0[id]) < 0.0f) {
+                        D_800EA8A0[omCurrentObj->objId] =
+                            -func_800F8824(D_8012BCA8[1], D_800E17D0[omCurrentObj->objId]);
+                    } else {
+                        D_800EA8A0[omCurrentObj->objId] =
+                            func_800F8824(D_8012BCA8[1], D_800E17D0[omCurrentObj->objId]);
+                    }
+                    id = omCurrentObj->objId;
+                    if (D_800EA8A0[id] < 0.785f) {
+                        func_801219C8();
+                        func_8011ED68();
+                        if (D_800E9720[omCurrentObj->objId] < 0) {
+                            gKirbyState.unk3C = -1;
+                            gKirbyState.unk44 = 0;
+                        }
+                    } else {
+                        D_800E6850[id] = 0.0f;
+                        if (D_800E9720[omCurrentObj->objId] < 0) {
+                            gKirbyState.unk44 = 1;
+                        }
+                    }
+                }
+                break;
+            }
+            gKirbyState.unk44 = 2;
+            gKirbyState.unk3C = 2;
+            /* fallthrough: the fresh airborne phase runs its check now */
+        case 2:
+            id = omCurrentObj->objId;
+            if (D_800E8920[id] != 0) {
+                gKirbyState.unk3C = -1;
+                gKirbyState.unk44 = 0;
+            } else if (D_800E9720[id] < 0) {
+                gKirbyState.unk44 = 1;
+            }
+            break;
+        case 3:
+            if (gKirbyState.unk30 == 0) {
+                func_8015449C_ovl3(D_80193A68_ovl3, 0);
+                func_80111C4C(func_80111A04(D_80191178_ovl3, omCurrentObj->objId));
+                return;
+            }
+            func_8011D67C();
+            return;
+        default:
+            break;
+    }
+    if (gKirbyState.abilityInUse != 0) {
+        func_80111C4C(func_80111A04(D_80191134_ovl3, omCurrentObj->objId));
+        func_8015449C_ovl3(D_80193204_ovl3, 0);
+    }
+phase_check:
+    if (gKirbyState.unk3C != gKirbyState.unk44) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                 func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017A390_ovl3.s")
+#endif
+
+extern s32 func_800A8234(s32, s32, s32);
+extern s32 func_801693C4_ovl3(s32);
+extern f32 D_801975C8_ovl3;
+extern f32 D_801975CC_ovl3;
+extern f32 D_801975D0_ovl3;
+extern f32 D_801975D4_ovl3;
+
+#ifdef NON_MATCHING
+/* 205/215: same instruction COUNT and same shape, but the ROM hoists three
+   loop-invariants this C does not -- the constant 1 into $s7 and
+   D_801975D0_ovl3 / 0.0f into $f22 / $f24 -- so the frame is 0x10 smaller
+   and everything renumbers. Swept: `while (unk17 == 0)` vs
+   `while (1) { if (unk17 != 0) break; }`. */
+void func_8017B068_ovl3(GObj *arg0) {
+    f32 temp;
+
+    gKirbyState.unk44 = 0;
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk48 = 1;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800DDFD0[omCurrentObj->objId] = 0x23;
+    func_80120A28();
+    D_800EAA60[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = 0.0f;
+    D_800EA6E0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        D_800EAC20[omCurrentObj->objId] = D_801975C8_ovl3;
+    } else {
+        D_800EAC20[omCurrentObj->objId] = D_801975CC_ovl3;
+    }
+    func_80122F08(0x2000D);
+    gKirbyState.unk154 = 2;
+    gKirbyState.unk4C = func_800A8234(2, 1, 0x31);
+    gKirbyState.unk50 = func_800A8234(2, 1, 0x32);
+    func_8011DC04(0xBC);
+    func_800AA018(0x20192);
+    while (1) {
+        if (gKirbyState.unk17 != 0) {
+            break;
+        }
+        if (gKirbyState.unk44 == 0) {
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unk44 = 1;
+            }
+            temp = D_800EA6E0[omCurrentObj->objId];
+        } else if (D_800E6A10[omCurrentObj->objId] == D_800EAA60[omCurrentObj->objId]) {
+            if (D_800EA8A0[omCurrentObj->objId] < D_800EAC20[omCurrentObj->objId]) {
+                break;
+            }
+            temp = D_800EA6E0[omCurrentObj->objId];
+        } else {
+            temp = D_800EA6E0[omCurrentObj->objId];
+            if ((temp <= D_801975D4_ovl3) && (D_801975D4_ovl3 <= D_800EA8A0[omCurrentObj->objId])) {
+                break;
+            }
+        }
+        D_800EA8A0[omCurrentObj->objId] = temp;
+        D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] - D_800EAC20[omCurrentObj->objId];
+        if (D_800EA6E0[omCurrentObj->objId] < 0.0f) {
+            D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_801975D0_ovl3;
+        }
+        D_800DFBD0[omCurrentObj->objId][1]->scale.v.x = D_800EA6E0[omCurrentObj->objId];
+        ohSleep(1);
+    }
+    func_8011E0E8();
+    func_8011DC5C();
+    gKirbyState.abilityInUse = 0;
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017B068_ovl3.s")
+#endif
+
+#ifdef MIPS_TO_C
+/* FACTORY: 16/242, whole-function callee-saved permutation (same floor
+ * class documented in ovl3_1.c/plyshot.c -- correct instruction count
+ * and control flow, near-total register-naming/frame mismatch, -0x40
+ * vs -0x38 frame). Queued for the permuter. */
+/* PORT: the needle-spike hold per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s (via m2c). While the
+ * shared countdown at D_8012E7E8+8 runs it keeps the tick prologue going,
+ * sets the spin step D_800EAC20 (pi/10, water-halved), runs the body
+ * hitbox D_801911E0_ovl3 on DObj [2] through the ability-anim helper,
+ * mirrors DObj [1]'s yaw +/- pi/2 by facing into the D_800D7238 scratch
+ * for the aimed hitbox func_80154578_ovl3(D_80193B34_ovl3), and drags the
+ * two spike-effect generators (handles at D_8012E80C / +4) so their
+ * emitters follow the hand DObjs [14] and [9] (position via func_800B2340,
+ * velocity via func_800B26D8); grounded with the D_8012E7FC+8 latch clear
+ * it applies gravity and buffers the held direction into D_800EAA60.
+ * When the countdown ends it snaps facing to the buffered direction
+ * (flipping yaw by pi for -1) and runs the action-exit hook func_8011D67C.
+ *
+ * Port notes: the generator handles are 32-bit pointer cells written by
+ * plylib's compiled func_800A8100 stores (all game-visible memory sits
+ * below 4 GiB, same treatment as PC_KIRBY_SHADOW above); the local
+ * PcNeedleGen/PcNeedleEmitter mirror ovl1_2_2.c's LP64 node layout (xf at
+ * +0x58, emitter vectors at +0x8/+0x14, locked there by pc_gennode_check).
+ * m2c's `->unk8/unk24/unk38/unk4` DObj-list reads are entries [2]/[9]/
+ * [14]/[1] (4-byte N64 pointers); 0x3F800000 is 1.0f. */
+void func_8017B3C4_ovl3(s32 arg0) {
+    typedef struct PcNeedleEmitter {
+        /* 0x00 */ struct PcNeedleEmitter *next;
+        /* 0x08 */ Vector pos;
+        /* 0x14 */ Vector vel;
+    } PcNeedleEmitter;
+    typedef struct PcNeedleGen {
+        /* 0x00 */ u8 pad0[0x58];
+        /* 0x58 */ PcNeedleEmitter *xf;
+    } PcNeedleGen;
+    extern f32 D_800D7238;
+    extern s32 D_8012E80C;
+    extern u8 D_801911E0_ovl3[];
+    extern u8 D_80193B34_ovl3[];
+    PcNeedleGen *gen;
+    Vector sp2C;
+    s32 id;
+
+    func_80153984_ovl3();
+    func_801217B8();
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
+        id = omCurrentObj->objId;
+        D_800E6A10[id] = D_800EAA60[id];
+        if (D_800E6A10[id] == -1.0f) {
+            D_800E17D0[id] += 3.1415927f;
+        }
+        func_8011D67C();
+        return;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8AE0[id] & 6) {
+        D_800EAC20[id] = 0.15707964f;
+    } else {
+        D_800EAC20[id] = 0.31415927f;
+    }
+    func_8016854C_ovl3((s32) (uintptr_t) D_801911E0_ovl3,
+                       (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2], 1.0f);
+    D_800D7238 = D_800DFBD0[omCurrentObj->objId][1]->angle.v.y;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        D_800D7238 += 1.5707964f;
+    } else {
+        D_800D7238 -= 1.5707964f;
+    }
+    func_80154578_ovl3(D_80193B34_ovl3, 0, D_800D7238);
+    if (*(u32 *) ((u8 *) &D_8012E80C + 0) != 0) {
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 0);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 4);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+    }
+    if ((D_800E8920[omCurrentObj->objId] != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
+        func_8011ED68();
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800EAA60[omCurrentObj->objId] = 1.0f;
+        } else if (gKirbyController.buttonHeld & 0x200) {
+            D_800EAA60[omCurrentObj->objId] = -1.0f;
+        }
+    }
+}
+#elif defined(PORT)
+/* PORT: the needle-spike hold per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s (via m2c). While the
+ * shared countdown at D_8012E7E8+8 runs it keeps the tick prologue going,
+ * sets the spin step D_800EAC20 (pi/10, water-halved), runs the body
+ * hitbox D_801911E0_ovl3 on DObj [2] through the ability-anim helper,
+ * mirrors DObj [1]'s yaw +/- pi/2 by facing into the D_800D7238 scratch
+ * for the aimed hitbox func_80154578_ovl3(D_80193B34_ovl3), and drags the
+ * two spike-effect generators (handles at D_8012E80C / +4) so their
+ * emitters follow the hand DObjs [14] and [9] (position via func_800B2340,
+ * velocity via func_800B26D8); grounded with the D_8012E7FC+8 latch clear
+ * it applies gravity and buffers the held direction into D_800EAA60.
+ * When the countdown ends it snaps facing to the buffered direction
+ * (flipping yaw by pi for -1) and runs the action-exit hook func_8011D67C.
+ *
+ * Port notes: the generator handles are 32-bit pointer cells written by
+ * plylib's compiled func_800A8100 stores (all game-visible memory sits
+ * below 4 GiB, same treatment as PC_KIRBY_SHADOW above); the local
+ * PcNeedleGen/PcNeedleEmitter mirror ovl1_2_2.c's LP64 node layout (xf at
+ * +0x58, emitter vectors at +0x8/+0x14, locked there by pc_gennode_check).
+ * m2c's `->unk8/unk24/unk38/unk4` DObj-list reads are entries [2]/[9]/
+ * [14]/[1] (4-byte N64 pointers); 0x3F800000 is 1.0f. */
+void func_8017B3C4_ovl3(s32 arg0) {
+    typedef struct PcNeedleEmitter {
+        /* 0x00 */ struct PcNeedleEmitter *next;
+        /* 0x08 */ Vector pos;
+        /* 0x14 */ Vector vel;
+    } PcNeedleEmitter;
+    typedef struct PcNeedleGen {
+        /* 0x00 */ u8 pad0[0x58];
+        /* 0x58 */ PcNeedleEmitter *xf;
+    } PcNeedleGen;
+    extern f32 D_800D7238;
+    extern s32 D_8012E7E8;
+    extern u8 D_801911E0_ovl3[];
+    extern u8 D_80193B34_ovl3[];
+    PcNeedleGen *gen;
+    Vector sp2C;
+    s32 id;
+
+    func_80153984_ovl3();
+    func_801217B8();
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
+        id = omCurrentObj->objId;
+        D_800E6A10[id] = D_800EAA60[id];
+        if (D_800E6A10[id] == -1.0f) {
+            D_800E17D0[id] += 3.1415927f;
+        }
+        func_8011D67C();
+        return;
+    }
+    id = omCurrentObj->objId;
+    if (D_800E8AE0[id] & 6) {
+        D_800EAC20[id] = 0.15707964f;
+    } else {
+        D_800EAC20[id] = 0.31415927f;
+    }
+    func_8016854C_ovl3((s32) (uintptr_t) D_801911E0_ovl3,
+                       (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2], 1.0f);
+    D_800D7238 = D_800DFBD0[omCurrentObj->objId][1]->angle.v.y;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        D_800D7238 += 1.5707964f;
+    } else {
+        D_800D7238 -= 1.5707964f;
+    }
+    func_80154578_ovl3(D_80193B34_ovl3, 0, D_800D7238);
+    if (*(u32 *) ((u8 *) &D_8012E80C + 0) != 0) {
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 0);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 4);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+    }
+    if ((D_800E8920[omCurrentObj->objId] != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
+        func_8011ED68();
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800EAA60[omCurrentObj->objId] = 1.0f;
+        } else if (gKirbyController.buttonHeld & 0x200) {
+            D_800EAA60[omCurrentObj->objId] = -1.0f;
+        }
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s")
+#endif
+
+void func_8017B78C_ovl3(GObj *arg0) {
+    extern f32 *D_801928BC_ovl3[];
+    extern u8 D_80190358_ovl3[];
+    extern void func_8011DC30(s32);
+
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk3C = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800DDFD0[omCurrentObj->objId] = 0x24;
+    D_800E0490[omCurrentObj->objId] = D_801928BC_ovl3;
+    gKirbyState.unk15C = (u32) D_80190358_ovl3;
+    func_80122F08(0x2000E);
+    gKirbyState.unk154 = 2;
+    if (D_800E8920[omCurrentObj->objId] == 1) {
+        D_800E6690[omCurrentObj->objId] = 0;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        gKirbyState.isTurning |= 0x4000;
+    }
+    func_8011DC04(0x139);
+    func_8011DC30(0x26E);
+    func_800AA154(0x20193);
+    func_800AA154(0x20194);
+    func_800AA154(0x20195);
+    gKirbyState.abilityInUse = 0;
+    gKirbyState.unk7 = 0;
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+
+#ifdef NON_MATCHING
+/* FACTORY: 9/285, constant-materialisation SCHEDULING floor -- measured
+   2026-08-23. Every diff traces to ONE constant: the ROM schedules
+   `addiu $t6, zero, 1` (the literal for `gKirbyState.unk3C = 1;`) mid-block,
+   right after the D_800E6690[objId]=0.0f swc1 store and an objId reload,
+   well BEFORE its actual use several instructions later; IDO here
+   schedules the equivalent `li $t4, 1` at the very TOP of the block,
+   before even the sll/addu/swc1 sequence for D_800E6690. That one-slot
+   shift then cascades into a register-name rotation in the isTurning |=
+   0x4000 store (t4/t5/t6 -> t5/t6/t7-shaped). Swept: moving the
+   `gKirbyState.unk3C = 1;` statement earlier in the block, right after the
+   D_800E6690 pair (much worse -- 33/285, forks completely different
+   scheduling for every remaining store) and mid-block between D_800E3210
+   and D_800E3C90 (also worse -- 16/285). Same class as the constant-
+   scheduling floor on func_8016DA14_ovl3 above in this file -- pure IDO
+   scheduling choice, not a source spelling. Good permuter seed. */
+extern char D_80191224_ovl3[];
+extern f32 D_801975F0_ovl3;
+extern f32 D_801975F4_ovl3;
+extern f32 D_801975F8_ovl3;
+extern f32 D_801975FC_ovl3;
+extern f32 D_80197600_ovl3;
+extern f32 D_80197604_ovl3;
+extern s32 func_80155838_ovl3(Vector *, f32, s32);
+extern s32 func_80121658(void);
+
+void func_8017B8F4_ovl3(s32 arg0) {
+    s32 flag;
+    Vector sp38;
+    s32 pad;
+    f32 temp;
+    f32 absv;
+    f32 res;
+
+    flag = 0;
+    D_800E98E0[omCurrentObj->objId] = D_800E8AE0[omCurrentObj->objId];
+    func_80153AD4_ovl3();
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - D_800EC9E4;
+    if (gKirbyState.horizontalCollision != 0) {
+        flag = 1;
+    } else {
+        sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+        sp38.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        sp38.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+        if (func_80155838_ovl3(&sp38, 20.0f, 4) != 0) {
+            flag = 1;
+        } else {
+            sp38.y = sp38.y + 40.0f;
+            if (func_80155838_ovl3(&sp38, 20.0f, 4) != 0) {
+                flag = 1;
+            }
+        }
+    }
+    if ((flag != 0) || (gKirbyState.ceilingCollisionNext != 0)) {
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = D_801975F0_ovl3;
+        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        D_800E3C90[omCurrentObj->objId] = D_801975F4_ovl3;
+        gKirbyState.unk3C = 1;
+        gKirbyState.isTurning |= 0x4000;
+    } else if ((gKirbyState.ceilingCollisionNext == 0) && (flag == 0)) {
+        gKirbyState.unk3C = 0;
+    }
+    if (gKirbyState.unk3C == 0) {
+        if (func_80121658() != 0) {
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = D_801975F8_ovl3;
+            play_sound(0x13E);
+            gKirbyState.isTurning = gKirbyState.isTurning | 0x4000;
+        }
+    }
+    if (gKirbyState.unk30 != 0) {
+        func_8011DC5C();
+        func_8011D67C();
+        gKirbyState.isTurning = gKirbyState.isTurning & ~0x4000;
+        return;
+    }
+    func_80111C4C(func_80111A04(D_80191224_ovl3, omCurrentObj->objId));
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        return;
+    }
+    if (gKirbyState.unk3C != 0) {
+        return;
+    }
+    temp = D_800E64D0[omCurrentObj->objId] * 1.5f;
+    absv = ABSF(temp);
+    if (gKirbyState.unk7 != 0) {
+        res = D_801975FC_ovl3;
+    } else {
+        res = ((absv < 2.0f) ? 3.0f : absv) * D_80197600_ovl3 / 180.0f;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        res = res * 0.5f;
+        if (D_800E98E0[omCurrentObj->objId] & 6) {
+            D_800E6690[omCurrentObj->objId] = D_80197604_ovl3;
+            D_800E6850[omCurrentObj->objId] = 0.0f;
+        }
+    }
+    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = D_800DFBD0[omCurrentObj->objId][1]->angle.v.x + res;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017B8F4_ovl3.s")
+#endif
+
+extern s32 D_800E9720[];
+
+void func_8017BD68_ovl3(GObj *arg0) {
+    extern u32 D_800DFA10[];
+
+    gKirbyState.unk30 = 0;
+    gKirbyState.unk3C = 0;
+    gKirbyState.unk7 = 0;
+    func_8011CF58();
+    gKirbyState.abilityInUse = gKirbyState.ability;
+    D_800DDFD0[omCurrentObj->objId] = 0x25;
+    D_800E9720[omCurrentObj->objId] = 0;
+    func_80120A28();
+    func_801632B8_ovl3(1);
+    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    func_801230E8(0x20019, 0x2001A, 0);
+    while (1) {
+        if (gKirbyState.unk17 != 0) {
+            break;
+        }
+        if (D_800E9720[omCurrentObj->objId] >= 4) {
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                break;
+            }
+            if (func_800AF230() != 0) {
+                break;
+            }
+        }
+        D_800E9720[omCurrentObj->objId]++;
+        ohSleep(1);
+    }
+    gKirbyState.unk3C = gKirbyState.unk3C + 1;
+    func_801230E8(0x2001B, 0x2001C, 1);
+    gKirbyState.abilityInUse = 0;
+    gKirbyState.unk30 = gKirbyState.unk30 + 1;
+    curObjSleepForever();
+}
+
+
+void func_8017BEF4_ovl3(s32 arg0) {
+    func_80153984_ovl3();
+    func_801217B8();
+    if (gKirbyState.unk30 != 0) {
+        func_8011D67C();
+    }
+}
+
+#ifdef NON_MATCHING
+/* Left live by a lane mid-work, at 31/178 insns. Draft kept. */
+void func_8017BF34_ovl3(GObj *arg0) {
+    extern f32 *D_801926E8_ovl3[];
+    extern u8 D_80190358_ovl3[];
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk7 = 0;
+        gKirbyState.unk7C = 0.0f;
+        gKirbyState.unk80 = gKirbyState.unk7C;
+        gKirbyState.unkA = 0;
+        if (D_800E8AE0[omCurrentObj->objId] & 6) {
+            gKirbyState.unk16 = 0x14;
+        } else {
+            gKirbyState.unk16 = 0xA;
+        }
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x26;
+        D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
+        gKirbyState.unk15C = (u32) D_80190358_ovl3;
+        gKirbyState.unk154 = 2;
+        func_80120A28();
+        gKirbyState.unk78 = -D_800E6A10[omCurrentObj->objId];
+        func_801693C4_ovl3(6);
+        func_8011DC04(0x56);
+        gKirbyState.unk3C = 0;
+        gKirbyState.unk44 = 0;
+        func_801230E8(0x20077, 0x20078, 1);
+        if (gKirbyController.buttonHeld & 0x300) {
+            gKirbyState.unk44 = gKirbyState.unk3C = 2;
+        } else {
+            gKirbyState.unk44 = gKirbyState.unk3C = 1;
+        }
+    }
+    switch (gKirbyState.unk44) {
+    case 1:
+        func_801230E8(0x20079, 0x2007A, 1);
+        curObjSleepForever();
+    case 2:
+        if (func_801210B4() == 1) {
+            D_800E6690[omCurrentObj->objId] = 0.25f;
+            D_800E6850[omCurrentObj->objId] = 2.0f;
+        } else {
+            D_800E6690[omCurrentObj->objId] = -0.25f;
+            D_800E6850[omCurrentObj->objId] = 2.0f;
+        }
+        func_801230E8(0x20085, 0x20086, 0);
+        curObjSleepForever();
+    case 3:
+    default:
+        func_8011DC5C();
+        gKirbyState.abilityInUse = 0;
+        gKirbyState.unk78 = D_800E6A10[omCurrentObj->objId];
+        func_801230E8(0x2007B, 0x2007C, 1);
+        gKirbyState.unk30 = gKirbyState.unk30 + 1;
+        curObjSleepForever();
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017BF34_ovl3.s")
+#endif
+
+extern s32 func_80120CCC(f32, f32);         /* src/ovl2/plylib.c:3569 */
+
+void func_8017C1FC_ovl3(s32 arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+
+    func_80153984_ovl3();
+    func_8011CF58();
+    func_801217B8();
+    if (gKirbyState.unk44 == 3) {
+        if (gKirbyState.unk30 != 0) {
+            func_8011D67C();
+        }
+    } else if (gKirbyState.unk17 != 0) {
+        gKirbyState.unk44 = 3;
+    } else {
+        switch (gKirbyState.unk44) {
+        case 1:
+            if (gKirbyController.buttonHeld & 0x300) {
+                gKirbyState.unk44 = 2;
+            } else if (gKirbyState.unk16 == 0) {
+                if (!(gKirbyController.buttonHeld & 0x4000)) {
+                    gKirbyState.unk44 = 3;
+                } else if (gKirbyState.unkA == 4) {
+                    gKirbyState.unk44 = 3;
+                }
+            } else if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            break;
+        case 2:
+            if (0.0f == D_800E64D0[omCurrentObj->objId]) {
+                gKirbyState.unk44 = 1;
+            } else if (gKirbyState.unk16 == 0) {
+                if (!(gKirbyController.buttonHeld & 0x4000)) {
+                    gKirbyState.unk44 = 3;
+                } else if (gKirbyState.unkA == 4) {
+                    gKirbyState.unk44 = 3;
+                }
+            } else if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            func_8011ED68();
+            break;
+        default:
+            if (!(gKirbyController.buttonHeld & 0x4000)) {
+                gKirbyState.unkA = 4;
+            }
+            break;
+        }
+    }
+    func_80120CCC(0.31415927f, 1.5707964f);
+    if (gKirbyState.unk44 != gKirbyState.unk3C) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
+
+#ifdef MIPS_TO_C
+/* FACTORY: 25/440, whole-function callee-saved permutation (same floor class documented across this cluster, jump table included). Queued for the permuter. */
+/* PORT: the mounted-friend ride coroutine (track action 0x27), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017C418_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). First entry arms the ability: clears the
+ * jump bookkeeping, stops the track, plays the mount pair 0x2019E/0x2019F
+ * on voice 0x2000F, seats phase 4 (grounded) or 7 (airborne), resolves
+ * the rider model slot via func_801632B8_ovl3 (2 for ability 7, else
+ * 0xB) into D_800EBBE0 and clears the D_80198834_ovl3 latch. Re-entries
+ * animate the current phase: 4 idles (simple hold under scripted pace or
+ * in water, otherwise an idle/alt crossfade machine driven by unk150 and
+ * the D_800E9C60 first-tick flag, re-blending on each turn edge); 5
+ * walks (drift 0.25 toward func_801210B4's direction, hold 0x2019D); 6
+ * jumps (water hop 8.5 with sound 0x10B, else func_80123144(17) with
+ * 0xF7, holding 0x2019A until the rise slows past unkCC, then the fall
+ * blend 0x2019B seats phase 7); 7 falls (water/air gravity, hold
+ * 0x20198); 8 skids (hold 0x2019C); 2 dismounts with the poof
+ * func_800A8100(2,1,0xF) on DObj [2], 1 with the break sound 0x32, both
+ * (and any other phase) then unwind the ability and play the dismount
+ * pair (0x201A0/0x201A1 for phase 1, else 0x201A2/0x201A3).
+ *
+ * Port notes: func_800A8100 keeps the DObj-width pointer cast
+ * (`->unk8` = list entry [2]); each phase parks in curObjSleepForever
+ * like the ROM (the case labels that follow are the jump table's layout,
+ * never reached by fallthrough). */
+void func_8017C418_ovl3(s32 arg0) {
+    extern s32 D_80198834_ovl3;
+    s32 id;
+    u8 mode;
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk7 = 0;
+        gKirbyState.isFullJump = 0;
+        gKirbyState.jumpHeight = 0;
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x27;
+        gKirbyState.unk44 = 0;
+        gKirbyState.unk3C = 0;
+        func_80120A28();
+        func_801230E8(0x2019E, 0x2019F, 1);
+        func_80122F08(0x2000F);
+        if (D_800E8920[omCurrentObj->objId] != 0) {
+            gKirbyState.unk3C = 4;
+            gKirbyState.unk44 = 4;
+        } else {
+            gKirbyState.unk3C = 7;
+            gKirbyState.unk44 = 7;
+        }
+        if (gKirbyState.ability == 7) {
+            D_800EBBE0[omCurrentObj->objId] = func_801632B8_ovl3(2);
+        } else {
+            D_800EBBE0[omCurrentObj->objId] = func_801632B8_ovl3(0xB);
+        }
+        D_80198834_ovl3 = 0;
+    }
+    switch (gKirbyState.unk44) {
+        case 4:
+            id = omCurrentObj->objId;
+            if ((gKirbyState.unk150 == 0) || (D_800E8AE0[id] & 6)) {
+                func_800AA78C(0x20199, 0x2000F, 3.0f);
+                func_800AA018(0x20199);
+                curObjSleepForever();
+            }
+            D_800E9C60[omCurrentObj->objId] = 0;
+            for (;;) {
+                mode = gKirbyState.unk150;
+                id = omCurrentObj->objId;
+                if (mode == 2) {
+                    D_800E9AA0[id].as_u32 = 1;
+                } else {
+                    D_800E9AA0[id].as_u32 = 0;
+                }
+                if (D_800E9C60[id] != 0) {
+                    if (D_800E9AA0[id].as_u32 == 0) {
+                        func_800AA78C(0x20196, 0x2000F, 3.0f);
+                    } else {
+                        func_800AA78C(0x20197, 0x2000F, 3.0f);
+                    }
+                    mode = gKirbyState.unk150;
+                } else {
+                    D_800E9C60[id] += 1;
+                }
+                if (mode == 2) {
+                    func_800AA018(0x20196);
+                } else {
+                    func_800AA018(0x20197);
+                }
+                while (!(gKirbyState.isTurning & 1)) {
+                    ohSleep(1);
+                }
+            }
+        case 5:
+            id = omCurrentObj->objId;
+            if (func_801210B4() == 1) {
+                D_800E6690[id] = 0.25f;
+                D_800E6850[id] = 2.0f;
+            } else {
+                D_800E6690[id] = -0.25f;
+                D_800E6850[id] = 2.0f;
+            }
+            func_800AA78C(0x2019D, 0x2000F, 3.0f);
+            func_800AA018(0x2019D);
+            curObjSleepForever();
+            break;
+        case 6:
+            id = omCurrentObj->objId;
+            D_800E8920[id] = 0;
+            if ((D_800E8AE0[id] & 6) == 6) {
+                play_sound(0x10B);
+                gKirbyState.unkCC = 4.0f;
+                D_800E3210[id] = 8.5f;
+                D_800E3750[id] = -0.4f;
+                D_800E3C90[id] = 8.5f;
+            } else {
+                play_sound(0xF7);
+                gKirbyState.unkCC = 8.0f;
+                D_800E3210[id] = func_80123144(17.0f);
+                D_800E3750[id] = -0.980665f;
+                D_800E3C90[id] = 16.0f;
+            }
+            func_800AA018(0x2019A);
+            while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+                ohSleep(1);
+            }
+            gKirbyState.isFullJump += 1;
+            func_800AA154(0x2019B);
+            gKirbyState.unk3C = 7;
+            gKirbyState.unk44 = 7;
+            gKirbyState.isFullJump = 0;
+            gKirbyState.jumpHeight = 0;
+            /* fallthrough into the fall hold, like the ROM */
+        case 7:
+            id = omCurrentObj->objId;
+            D_800E8920[id] = 0;
+            if (D_800E8AE0[id] & 6) {
+                D_800E3750[id] = -0.4f;
+                D_800E3C90[id] = 1.0f;
+            } else {
+                D_800E3750[id] = -0.980665f;
+                D_800E3C90[id] = 16.0f;
+            }
+            func_800AA78C(0x20198, 0x2000F, 3.0f);
+            func_800AA018(0x20198);
+            curObjSleepForever();
+            break;
+        case 8:
+            func_800AA018(0x2019C);
+            curObjSleepForever();
+            break;
+        case 2:
+            ((void (*)(s32, s32, s32, struct DObj *)) func_800A8100)(
+                2, 1, 0xF, D_800DFBD0[omCurrentObj->objId][2]);
+            /* fallthrough */
+        case 1:
+            play_sound(0x32);
+            /* fallthrough */
+        default:
+            func_8011CF58();
+            gKirbyState.abilityInUse = 0;
+            func_80122F08(0x20007);
+            if (gKirbyState.unk44 == 1) {
+                func_801230E8(0x201A0, 0x201A1, 1);
+            } else {
+                func_801230E8(0x201A2, 0x201A3, 1);
+            }
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+    }
+}
+#elif defined(PORT)
+/* PORT: the mounted-friend ride coroutine (track action 0x27), from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017C418_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). First entry arms the ability: clears the
+ * jump bookkeeping, stops the track, plays the mount pair 0x2019E/0x2019F
+ * on voice 0x2000F, seats phase 4 (grounded) or 7 (airborne), resolves
+ * the rider model slot via func_801632B8_ovl3 (2 for ability 7, else
+ * 0xB) into D_800EBBE0 and clears the D_80198834_ovl3 latch. Re-entries
+ * animate the current phase: 4 idles (simple hold under scripted pace or
+ * in water, otherwise an idle/alt crossfade machine driven by unk150 and
+ * the D_800E9C60 first-tick flag, re-blending on each turn edge); 5
+ * walks (drift 0.25 toward func_801210B4's direction, hold 0x2019D); 6
+ * jumps (water hop 8.5 with sound 0x10B, else func_80123144(17) with
+ * 0xF7, holding 0x2019A until the rise slows past unkCC, then the fall
+ * blend 0x2019B seats phase 7); 7 falls (water/air gravity, hold
+ * 0x20198); 8 skids (hold 0x2019C); 2 dismounts with the poof
+ * func_800A8100(2,1,0xF) on DObj [2], 1 with the break sound 0x32, both
+ * (and any other phase) then unwind the ability and play the dismount
+ * pair (0x201A0/0x201A1 for phase 1, else 0x201A2/0x201A3).
+ *
+ * Port notes: func_800A8100 keeps the DObj-width pointer cast
+ * (`->unk8` = list entry [2]); each phase parks in curObjSleepForever
+ * like the ROM (the case labels that follow are the jump table's layout,
+ * never reached by fallthrough). */
+void func_8017C418_ovl3(s32 arg0) {
+    extern s32 D_80198834_ovl3;
+    s32 id;
+    u8 mode;
+
+    if (gKirbyState.abilityInUse == 0) {
+        gKirbyState.unk30 = 0;
+        gKirbyState.unk7 = 0;
+        gKirbyState.isFullJump = 0;
+        gKirbyState.jumpHeight = 0;
+        func_8011CF58();
+        gKirbyState.abilityInUse = gKirbyState.ability;
+        D_800DDFD0[omCurrentObj->objId] = 0x27;
+        gKirbyState.unk44 = 0;
+        gKirbyState.unk3C = 0;
+        func_80120A28();
+        func_801230E8(0x2019E, 0x2019F, 1);
+        func_80122F08(0x2000F);
+        if (D_800E8920[omCurrentObj->objId] != 0) {
+            gKirbyState.unk3C = 4;
+            gKirbyState.unk44 = 4;
+        } else {
+            gKirbyState.unk3C = 7;
+            gKirbyState.unk44 = 7;
+        }
+        if (gKirbyState.ability == 7) {
+            D_800EBBE0[omCurrentObj->objId] = func_801632B8_ovl3(2);
+        } else {
+            D_800EBBE0[omCurrentObj->objId] = func_801632B8_ovl3(0xB);
+        }
+        D_80198834_ovl3 = 0;
+    }
+    switch (gKirbyState.unk44) {
+        case 4:
+            id = omCurrentObj->objId;
+            if ((gKirbyState.unk150 == 0) || (D_800E8AE0[id] & 6)) {
+                func_800AA78C(0x20199, 0x2000F, 3.0f);
+                func_800AA018(0x20199);
+                curObjSleepForever();
+            }
+            D_800E9C60[omCurrentObj->objId] = 0;
+            for (;;) {
+                mode = gKirbyState.unk150;
+                id = omCurrentObj->objId;
+                if (mode == 2) {
+                    D_800E9AA0[id].as_u32 = 1;
+                } else {
+                    D_800E9AA0[id].as_u32 = 0;
+                }
+                if (D_800E9C60[id] != 0) {
+                    if (D_800E9AA0[id].as_u32 == 0) {
+                        func_800AA78C(0x20196, 0x2000F, 3.0f);
+                    } else {
+                        func_800AA78C(0x20197, 0x2000F, 3.0f);
+                    }
+                    mode = gKirbyState.unk150;
+                } else {
+                    D_800E9C60[id] += 1;
+                }
+                if (mode == 2) {
+                    func_800AA018(0x20196);
+                } else {
+                    func_800AA018(0x20197);
+                }
+                while (!(gKirbyState.isTurning & 1)) {
+                    ohSleep(1);
+                }
+            }
+        case 5:
+            id = omCurrentObj->objId;
+            if (func_801210B4() == 1) {
+                D_800E6690[id] = 0.25f;
+                D_800E6850[id] = 2.0f;
+            } else {
+                D_800E6690[id] = -0.25f;
+                D_800E6850[id] = 2.0f;
+            }
+            func_800AA78C(0x2019D, 0x2000F, 3.0f);
+            func_800AA018(0x2019D);
+            curObjSleepForever();
+            break;
+        case 6:
+            id = omCurrentObj->objId;
+            D_800E8920[id] = 0;
+            if ((D_800E8AE0[id] & 6) == 6) {
+                play_sound(0x10B);
+                gKirbyState.unkCC = 4.0f;
+                D_800E3210[id] = 8.5f;
+                D_800E3750[id] = -0.4f;
+                D_800E3C90[id] = 8.5f;
+            } else {
+                play_sound(0xF7);
+                gKirbyState.unkCC = 8.0f;
+                D_800E3210[id] = func_80123144(17.0f);
+                D_800E3750[id] = -0.980665f;
+                D_800E3C90[id] = 16.0f;
+            }
+            func_800AA018(0x2019A);
+            while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+                ohSleep(1);
+            }
+            gKirbyState.isFullJump += 1;
+            func_800AA154(0x2019B);
+            gKirbyState.unk3C = 7;
+            gKirbyState.unk44 = 7;
+            gKirbyState.isFullJump = 0;
+            gKirbyState.jumpHeight = 0;
+            /* fallthrough into the fall hold, like the ROM */
+        case 7:
+            id = omCurrentObj->objId;
+            D_800E8920[id] = 0;
+            if (D_800E8AE0[id] & 6) {
+                D_800E3750[id] = -0.4f;
+                D_800E3C90[id] = 1.0f;
+            } else {
+                D_800E3750[id] = -0.980665f;
+                D_800E3C90[id] = 16.0f;
+            }
+            func_800AA78C(0x20198, 0x2000F, 3.0f);
+            func_800AA018(0x20198);
+            curObjSleepForever();
+            break;
+        case 8:
+            func_800AA018(0x2019C);
+            curObjSleepForever();
+            break;
+        case 2:
+            ((void (*)(s32, s32, s32, struct DObj *)) func_800A8100)(
+                2, 1, 0xF, D_800DFBD0[omCurrentObj->objId][2]);
+            /* fallthrough */
+        case 1:
+            play_sound(0x32);
+            /* fallthrough */
+        default:
+            func_8011CF58();
+            gKirbyState.abilityInUse = 0;
+            func_80122F08(0x20007);
+            if (gKirbyState.unk44 == 1) {
+                func_801230E8(0x201A0, 0x201A1, 1);
+            } else {
+                func_801230E8(0x201A2, 0x201A3, 1);
+            }
+            gKirbyState.unk30 += 1;
+            curObjSleepForever();
+            break;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017C418_ovl3.s")
+#endif
+
+#ifdef MIPS_TO_C
+/* FACTORY: 55/283, whole-function callee-saved permutation (same floor class documented across ovl3_1.c/plyshot.c/ovl3_6.c -- correct instruction count and control flow including the jump table, near-total register-naming mismatch). Queued for the permuter. */
+/* PORT: the mounted-friend ride (action 0x27) per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017CAF8_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). Snapshots the pace word unk150 into
+ * D_800EA520, runs the tick prologue (and, outside the jump phase, the
+ * shared input poll func_801217B8), and bails through the exit hook when
+ * the coroutine finished or a scripted grab hits. Otherwise it steps the
+ * ride's phase machine: 4 (idle) leaves for walk on a held direction
+ * (func_80121C90), jump on A, or fall when the ground vanishes, and
+ * re-kicks the coroutine when the pace word changed mid-idle; 5 (walk)
+ * drops to idle when the track stops, jumps on A, falls off ledges,
+ * latches the turn edge once settled and applies gravity; 6 (rise) polls
+ * the turn edge, caps at ceilings into the fall phase and applies the
+ * short-hop cut (func_8011EBD4) until full jump; 7 (fall) lands into the
+ * skid phase 8 and latches the turn edge; 8 (skid) resumes walking,
+ * jumping, or idling per func_800AF230. Every path then runs the shared
+ * tail: with the D_80198834_ovl3 latch up and the ability armed, the
+ * rider hitbox func_8011D858(D_80192330_ovl3, rider slot, 1.0f) throws
+ * the machine into the break phase 1, and any phase change re-arms the
+ * coroutine process func_8016C510_ovl3.
+ *
+ * Port notes: func_80121C90 and func_801219C8 are void-arg on PC (m2c's
+ * 6U is a leftover register); func_8011D858 takes three arguments (the
+ * trailing &gKirbyState is leftover $a3) and 0x3F800000 is 1.0f. */
+void func_8017CAF8_ovl3(s32 arg0) {
+    extern s32 D_80198834_ovl3;
+    extern u32 D_80192330_ovl3[];
+    s32 next;
+    s32 id;
+
+    D_800EA520[omCurrentObj->objId] = gKirbyState.unk150;
+    func_80153984_ovl3();
+    func_8011CF58();
+    if (gKirbyState.unk44 != 6) {
+        func_801217B8();
+    }
+    if ((gKirbyState.unk30 != 0) || (gKirbyState.unk17 != 0)) {
+        func_8011D67C();
+        gKirbyState.abilityInUse = 0;
+        return;
+    }
+    next = gKirbyState.unk44;
+    switch (next) {
+        case 4:
+            if (func_80121C90() != 0) {
+                gKirbyState.unk44 = 5;
+            } else if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 6;
+            } else if (D_800E8920[omCurrentObj->objId] == 0) {
+                gKirbyState.unk44 = 7;
+            }
+            id = omCurrentObj->objId;
+            if ((gKirbyState.unk150 != D_800EA520[id]) && (gKirbyState.turnDirection == 0)) {
+                assign_new_process_entry(gEntityGObjProcessArray[id], func_8016C510_ovl3);
+            }
+            break;
+        case 5:
+            if (!(gKirbyState.isTurning & 1)) {
+                id = omCurrentObj->objId;
+                if (D_800E64D0[id] == 0.0f) {
+                    next = 4;
+                    gKirbyState.unk44 = next;
+                } else if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 6;
+                    next = 6;
+                } else if (D_800E8920[id] == 0) {
+                    next = 7;
+                    gKirbyState.unk44 = next;
+                }
+            }
+            if (gKirbyState.unk3C == next) {
+                func_801219C8();
+            }
+            func_8011ED68();
+            break;
+        case 6:
+            if (!(gKirbyState.isTurning & 1) && (func_80121194() != 0)) {
+                gKirbyState.isTurning |= 1;
+            }
+            if (gKirbyState.ceilingCollisionNext != 0) {
+                D_800E3210[omCurrentObj->objId] = 0.0f;
+                gKirbyState.unk44 = 7;
+            }
+            if (gKirbyState.isFullJump == 0) {
+                func_8011EBD4();
+            }
+            func_801219C8();
+            func_8011ED68();
+            break;
+        case 7:
+            if (!(gKirbyState.isTurning & 1) && (D_800E8920[omCurrentObj->objId] != 0)) {
+                next = 8;
+                gKirbyState.unk44 = 8;
+            }
+            if (gKirbyState.unk3C == next) {
+                func_801219C8();
+            }
+            func_8011ED68();
+            break;
+        case 8:
+            if (D_800E64D0[omCurrentObj->objId] != 0.0f) {
+                gKirbyState.unk44 = 5;
+            } else if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 6;
+            } else if (func_800AF230() != 0) {
+                gKirbyState.unk44 = 4;
+            }
+            break;
+        default:
+            break;
+    }
+    if ((D_80198834_ovl3 != 0) && (gKirbyState.abilityInUse != 0)
+        && (func_8011D858(D_80192330_ovl3, D_800EBBE0[omCurrentObj->objId], 1.0f) != 0)) {
+        gKirbyState.unk44 = 1;
+    }
+    if (gKirbyState.unk3C != gKirbyState.unk44) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                 func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
+#elif defined(PORT)
+/* PORT: the mounted-friend ride (action 0x27) per-tick handler, from
+ * asm/nonmatchings/ovl3/ovl3_6/func_8017CAF8_ovl3.s (via m2c with the
+ * kirby_2.rodata jump table). Snapshots the pace word unk150 into
+ * D_800EA520, runs the tick prologue (and, outside the jump phase, the
+ * shared input poll func_801217B8), and bails through the exit hook when
+ * the coroutine finished or a scripted grab hits. Otherwise it steps the
+ * ride's phase machine: 4 (idle) leaves for walk on a held direction
+ * (func_80121C90), jump on A, or fall when the ground vanishes, and
+ * re-kicks the coroutine when the pace word changed mid-idle; 5 (walk)
+ * drops to idle when the track stops, jumps on A, falls off ledges,
+ * latches the turn edge once settled and applies gravity; 6 (rise) polls
+ * the turn edge, caps at ceilings into the fall phase and applies the
+ * short-hop cut (func_8011EBD4) until full jump; 7 (fall) lands into the
+ * skid phase 8 and latches the turn edge; 8 (skid) resumes walking,
+ * jumping, or idling per func_800AF230. Every path then runs the shared
+ * tail: with the D_80198834_ovl3 latch up and the ability armed, the
+ * rider hitbox func_8011D858(D_80192330_ovl3, rider slot, 1.0f) throws
+ * the machine into the break phase 1, and any phase change re-arms the
+ * coroutine process func_8016C510_ovl3.
+ *
+ * Port notes: func_80121C90 and func_801219C8 are void-arg on PC (m2c's
+ * 6U is a leftover register); func_8011D858 takes three arguments (the
+ * trailing &gKirbyState is leftover $a3) and 0x3F800000 is 1.0f. */
+void func_8017CAF8_ovl3(s32 arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
+    extern s32 D_80198834_ovl3;
+    extern u32 D_80192330_ovl3[];
+    s32 next;
+    s32 id;
+
+    D_800EA520[omCurrentObj->objId] = gKirbyState.unk150;
+    func_80153984_ovl3();
+    func_8011CF58();
+    if (gKirbyState.unk44 != 6) {
+        func_801217B8();
+    }
+    if ((gKirbyState.unk30 != 0) || (gKirbyState.unk17 != 0)) {
+        func_8011D67C();
+        gKirbyState.abilityInUse = 0;
+        return;
+    }
+    next = gKirbyState.unk44;
+    switch (next) {
+        case 4:
+            if (func_80121C90() != 0) {
+                gKirbyState.unk44 = 5;
+            } else if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 6;
+            } else if (D_800E8920[omCurrentObj->objId] == 0) {
+                gKirbyState.unk44 = 7;
+            }
+            id = omCurrentObj->objId;
+            if ((gKirbyState.unk150 != D_800EA520[id]) && (gKirbyState.turnDirection == 0)) {
+                assign_new_process_entry(gEntityGObjProcessArray[id], func_8016C510_ovl3);
+            }
+            break;
+        case 5:
+            if (!(gKirbyState.isTurning & 1)) {
+                id = omCurrentObj->objId;
+                if (D_800E64D0[id] == 0.0f) {
+                    next = 4;
+                    gKirbyState.unk44 = next;
+                } else if (gKirbyController.buttonPressed & 0x8000) {
+                    gKirbyState.unk44 = 6;
+                    next = 6;
+                } else if (D_800E8920[id] == 0) {
+                    next = 7;
+                    gKirbyState.unk44 = next;
+                }
+            }
+            if (gKirbyState.unk3C == next) {
+                func_801219C8();
+            }
+            func_8011ED68();
+            break;
+        case 6:
+            if (!(gKirbyState.isTurning & 1) && (func_80121194() != 0)) {
+                gKirbyState.isTurning |= 1;
+            }
+            if (gKirbyState.ceilingCollisionNext != 0) {
+                D_800E3210[omCurrentObj->objId] = 0.0f;
+                gKirbyState.unk44 = 7;
+            }
+            if (gKirbyState.isFullJump == 0) {
+                func_8011EBD4();
+            }
+            func_801219C8();
+            func_8011ED68();
+            break;
+        case 7:
+            if (!(gKirbyState.isTurning & 1) && (D_800E8920[omCurrentObj->objId] != 0)) {
+                next = 8;
+                gKirbyState.unk44 = 8;
+            }
+            if (gKirbyState.unk3C == next) {
+                func_801219C8();
+            }
+            func_8011ED68();
+            break;
+        case 8:
+            if (D_800E64D0[omCurrentObj->objId] != 0.0f) {
+                gKirbyState.unk44 = 5;
+            } else if (gKirbyController.buttonPressed & 0x8000) {
+                gKirbyState.unk44 = 6;
+            } else if (func_800AF230() != 0) {
+                gKirbyState.unk44 = 4;
+            }
+            break;
+        default:
+            break;
+    }
+    if ((D_80198834_ovl3 != 0) && (gKirbyState.abilityInUse != 0)
+        && (func_8011D858(D_80192330_ovl3, D_800EBBE0[omCurrentObj->objId], 1.0f) != 0)) {
+        gKirbyState.unk44 = 1;
+    }
+    if (gKirbyState.unk3C != gKirbyState.unk44) {
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId],
+                                 func_8016C510_ovl3);
+        gKirbyState.unk3C = gKirbyState.unk44;
+    }
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017CAF8_ovl3.s")
+#endif
+
+
 #ifdef MIPS_TO_C
 /* FACTORY: 27/308, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming, the goto done: label is a shared cleanup path, not a ladder) so it seals verbatim. Queued for the permuter. */
 /* PORT: the ability dash-attack coroutine (track action 0x28, model
@@ -722,10 +3081,6 @@ void func_8017DAD8_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-extern f32 D_8019767C_ovl3;
-extern f32 D_80197680_ovl3;
-extern f32 D_80197684_ovl3;
-extern f32 D_80197688_ovl3;
 extern u8 D_80191508_ovl3[];
 extern u8 D_80193250_ovl3[];
 
@@ -743,9 +3098,9 @@ void func_8017DBB8_ovl3(s32 arg0) {
         return;
     }
     if (D_800E8AE0[omCurrentObj->objId] & 6) {
-        flag = func_80120CCC(D_8019767C_ovl3, D_80197680_ovl3);
+        flag = func_80120CCC(0.13089970f, 1.5707964f);
     } else {
-        flag = func_80120CCC(D_80197684_ovl3, D_80197688_ovl3);
+        flag = func_80120CCC(0.2617994f, 1.5707964f);
     }
     if (gKirbyState.unk4C != 0) {
         p = (s32 *) gKirbyState.unk4C;
@@ -797,11 +3152,6 @@ void func_8017DBB8_ovl3(s32 arg0) {
     }
 }
 
-extern f32 D_8019768C_ovl3;
-extern f32 D_80197690_ovl3;
-extern f32 D_80197694_ovl3;
-extern f32 D_80197698_ovl3;
-extern f32 D_8019769C_ovl3;
 
 void func_8017DF60_ovl3(s32 arg0) {
     f32 step;
@@ -809,20 +3159,20 @@ void func_8017DF60_ovl3(s32 arg0) {
 
     if (arg0 != 0) {
         if ((D_800E8AE0[omCurrentObj->objId] & 6) == 0) {
-            step = D_8019768C_ovl3;
+            step = 0.13089970f;
         } else {
-            step = D_80197690_ovl3;
+            step = 0.06544985f;
         }
-        limit = D_80197694_ovl3;
+        limit = 1.5707964f;
         D_800EA6E0[omCurrentObj->objId] = step + D_800EA6E0[omCurrentObj->objId];
         if (limit < D_800EA6E0[omCurrentObj->objId]) {
             D_800EA6E0[omCurrentObj->objId] = limit;
         }
     } else {
         if ((D_800E8AE0[omCurrentObj->objId] & 6) == 0) {
-            step = D_80197698_ovl3;
+            step = 0.13089970f;
         } else {
-            step = D_8019769C_ovl3;
+            step = 0.06544985f;
         }
         D_800EA6E0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] - step;
         if (D_800EA6E0[omCurrentObj->objId] <= 0.0f) {
@@ -877,14 +3227,26 @@ void func_8017E1EC_ovl3(s32 arg0) {
     }
 }
 
-/* 3/178: exact except that the ROM's scheduler sinks the `lim` load past the
-   two loop-invariant base addiu's (gEntitiesAngleXArray, gKirbyController)
-   and IDO emits it first. Swept: declaration order, one-line form, blank
-   line, moving the assignment across func_800AA018 and into the loop. */
 extern u8 D_801905E8_ovl3[];
 extern f32 D_801976A0_ovl3;
 extern f32 D_801976A4_ovl3;
 
+#ifdef NON_MATCHING
+/* FACTORY: 2/180 -- two redundant `lui $at, %hi(gKirbyState)`, for the two
+   swc1 stores to unk40 that the ROM addresses off the $s0 it already holds.
+   MEASURED, and it is a consequence of the 0xF7FB0 rodata migration, not a
+   defect in the body: with D_801976A0/A4 spelled as the EXTERNS above (the
+   pre-migration shape, where the symbols came from the kirby_2 asm blob)
+   this function matched EXACTLY. Writing them as the literals those pool
+   entries are costs those two `lui`s; defining them as same-object
+   `const f32` puts them in .data and still scores 3/178 (the ROM's
+   scheduler sinks the `lim` load past the two loop-invariant base addiu's
+   for gEntitiesAngleXArray/gKirbyController). A migrated TU can only emit
+   .rodata as function literals, so this one keeps its pragma and lets splat
+   own D_801976A0/A4 -- that is also what defines them for the arm below.
+   Swept: declaration order and position, initialisers at declaration, const,
+   `+=` for the unk40 update, the assignments before the func_800AA018 call,
+   inlining `step`. */
 void func_8017E284_ovl3(s32 arg0)
 {
   int new_var;
@@ -910,7 +3272,8 @@ void func_8017E284_ovl3(s32 arg0)
   D_800E9720[omCurrentObj->objId] = 0;
   func_800AA018(0x201B2);
   step = D_801976A0_ovl3;
- lim = D_801976A4_ovl3; while (1) {
+  lim = D_801976A4_ovl3;
+  while (1) {
     if (gKirbyState.unk17 != 0)
     {
       break;
@@ -951,6 +3314,10 @@ void func_8017E284_ovl3(s32 arg0)
   gKirbyState.unk30 += 1;
   curObjSleepForever();
 }
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017E284_ovl3.s")
+#endif
+
 #ifdef MIPS_TO_C
 /* FACTORY: 29/303, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
 /* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
@@ -1205,13 +3572,6 @@ void func_8017E54C_ovl3(s32 arg0) {
    already word-exact, so the literal only adds the unmigrated-rodata diff;
    see the note on func_80180818_ovl3). ABS() vs ABSF() (lever 3): no change.
    Good permuter seed. */
-typedef struct Unk80198830 {
-    u8 pad0[8];
-    s16 unk8;
-    s16 unkA;
-} Unk80198830;
-
-extern Unk80198830 D_80198830_ovl3;
 extern f32 D_801976B8_ovl3;
 extern f32 D_801976BC_ovl3;
 extern f32 D_80196D98_ovl3[];
@@ -2436,13 +4796,7 @@ phase_check:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017F988_ovl3.s")
 #endif
 
-#ifdef NON_MATCHING
-/* FACTORY: 1/208 -- and the ONE remaining word is the rodata MODEL, not the
-   code. See "THE $f0/$f2 RULE IS NOT A REGISTER FLOOR" below; DO NOT UN-GUARD
-   until ovl3's kirby_2 rodata blob is migrated, or IDO's literal duplicates
-   the ROM's word and shifts the whole blob.
-
-   THE $f0/$f2 RULE IS NOT A REGISTER FLOOR -- SOLVED 2026-08-24.
+/* MATCHED. THE $f0/$f2 RULE IS NOT A REGISTER FLOOR -- SOLVED 2026-08-24.
    The old note here said IDO "always hands $f0 to the memory-LOADED float and
    $f2 to the `mtc1 $zero` one", and swept declaration order, initialisation
    order, an explicit `f32 zero` local, a third constant and a computed zero
@@ -2471,16 +4825,14 @@ phase_check:
    loaded (105/208). Reference counts do not decide it either: measured
    standalone, 0.0f with three uses still loses $f0 to a load with two.
 
-   THE REMAINING WORD IS A SPLAT TASK, NOT A SOURCE TASK. kirby64.yaml keeps
+   THE LAST WORD WAS A SPLAT TASK, AND IT IS DONE. kirby64.yaml used to keep
    0xF7FB0 as `rodata, ovl3/kirby_2` -- an UNMIGRATED blob -- because the
-   kirby.c/ovl3_6.c file split at 0xDD9A0 is not the real TU boundary (the yaml
-   says so itself). build/kirby.ld places build/src/ovl3/ovl3_6.o(.rodata)
-   immediately BEFORE that blob, so a literal emitted from this C file lands at
-   0xF7FB0 and pushes every word of the blob up by 4. Closing this function for
-   real needs the ovl3 re-split (kirby.c + ovl3_6.c retiled at the true object
-   boundary near func_80179370_ovl3) so that ovl3_6.c owns 0xF7FB0.. as a
-   dotted `.rodata` subsegment and emits these literals itself. Until then this
-   stays guarded at 1/208. */
+   kirby.c/ovl3_6.c file split at 0xDD9A0 was not the real TU boundary, so a
+   literal emitted from this C file landed at 0xF7FB0 and pushed every word of
+   the blob up by 4. The two files have since been retiled at the true object
+   boundary (func_80179370_ovl3, rom 0xD9DB0) and 0xF7FB0 is a dotted
+   `.rodata, ovl3/ovl3_6` subsegment this file owns, so the literal lands on
+   the ROM's own word. 1/208 -> MATCH. */
 extern f32 *D_801926E8_ovl3[];
 extern u8 D_801906D8_ovl3[];
 extern void func_80122F08(s32);
@@ -2543,9 +4895,6 @@ void func_80180818_ovl3(s32 arg0) {
     gKirbyState.unk30 = gKirbyState.unk30 + 1;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80180818_ovl3.s")
-#endif
 
 #ifdef MIPS_TO_C
 /* FACTORY: 29/302, whole-function callee-saved permutation (same floor class documented across this cluster). Body already met the quality bar as drafted (ANSI prototypes, real control flow/naming) so it seals verbatim. Queued for the permuter. */
@@ -3316,8 +5665,6 @@ done:
 extern f32 D_80191860_ovl3[];
 extern f32 D_80194B28_ovl3[][4];
 extern u8 D_80194C28_ovl3[];
-extern f32 D_80197744_ovl3;
-extern f32 D_80197748_ovl3;
 extern s32 func_80152124_ovl3(f32 (*)[4], f32 (*)[4], u8, f32, f32, f32);
 
 void func_80181CFC_ovl3(s32 arg0) {
@@ -3362,7 +5709,7 @@ void func_80181CFC_ovl3(s32 arg0) {
         func_8015449C_ovl3(D_80194C28_ovl3, 0);
         func_80111C4C(res);
     }
-    func_80120CCC(D_80197744_ovl3, D_80197748_ovl3);
+    func_80120CCC(0.19634955f, 1.5707964f);
 }
 
 #ifdef MIPS_TO_C
@@ -4837,7 +7184,6 @@ void func_80183A1C_ovl3(s32 arg0) {
 
 extern f32 *D_801929B4_ovl3[];
 extern u8 D_80190358_ovl3[];
-extern f32 D_801977AC_ovl3;
 extern void func_8011DC30(s32);
 
 void func_80183E38_ovl3(s32 arg0) {
@@ -4854,7 +7200,7 @@ void func_80183E38_ovl3(s32 arg0) {
     if (D_800E8920[omCurrentObj->objId] == 1) {
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-        D_800E6850[omCurrentObj->objId] = D_801977AC_ovl3;
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
         gKirbyState.isTurning |= 0x4000;
     }
     func_8011DC04(0x13B);
@@ -5216,8 +7562,6 @@ void func_80184538_ovl3(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_80184538_ovl3.s")
 #endif
-extern f32 D_801977D4_ovl3;
-extern f32 D_801977D8_ovl3;
 
 void func_801848A4_ovl3(s32 arg0) {
     s32 kind;
@@ -5262,7 +7606,7 @@ void func_801848A4_ovl3(s32 arg0) {
             ((u8 **) D_800DFBD0[omCurrentObj->objId][2])[0x20][0x5B] = 0xFF;
         }
     }
-    func_80120CCC(D_801977D4_ovl3, D_801977D8_ovl3);
+    func_80120CCC(0.2617994f, 1.5707964f);
 }
 
 extern f32 *D_801926E8_ovl3[];
@@ -11745,9 +14089,6 @@ void func_8018DF78_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 extern s32 D_8012E7E8;
-extern f32 D_80197B5C_ovl3;
-extern f32 D_80197B60_ovl3;
-extern f32 D_80197B64_ovl3;
 extern f32 D_801921FC_ovl3[];
 extern s32 D_80196DB4_ovl3[];
 extern u8 D_801963E4_ovl3[];
@@ -11773,7 +14114,7 @@ void func_8018DFB4_ovl3(s32 arg0) {
         func_8011D67C();
         return;
     }
-    func_80120CCC(D_80197B5C_ovl3, D_80197B60_ovl3);
+    func_80120CCC(0.2617994f, 1.5707964f);
     if (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 4) {
         p = (Unk8018DFB4 *) D_800DFBD0[omCurrentObj->objId][9];
         temp = p->unk44;
@@ -11792,18 +14133,15 @@ void func_8018DFB4_ovl3(s32 arg0) {
         func_801521F0_ovl3((f32 (*)[4]) D_80196DB4_ovl3[idx], (f32 (*)[4]) ((u8 *) &D_8012E9B8 + 0x10),
                            D_801963E4_ovl3[0], temp);
     }
-    func_80154578_ovl3(D_801963E4_ovl3, 0, gEntitiesAngleYArray[omCurrentObj->objId] - D_80197B64_ovl3);
+    func_80154578_ovl3(D_801963E4_ovl3, 0, gEntitiesAngleYArray[omCurrentObj->objId] - 1.5707964f);
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 1/130, and the one word is the rodata MODEL, not the code.
-   D_80197B68_ovl3 is a lone `.float 65535` in asm/data/ovl3/kirby_2.rodata.s,
-   i.e. IDO's own literal-pool entry for the source token `65535.0f`, not a
-   variable. Writing the literal takes this from 6/130 to 1/130 -- see the long
-   note on func_80180818_ovl3 above for the rule, the failed sweeps and why the
-   last word needs the ovl3 re-split rather than a source change. DO NOT
-   UN-GUARD before that split: the literal would duplicate the ROM's rodata
-   word and shift the kirby_2 blob. */
+/* MATCHED. D_80197B68_ovl3 was a lone `.float 65535` in the old
+   asm/data/ovl3/kirby_2.rodata.s blob, i.e. IDO's own literal-pool entry for
+   the source token `65535.0f`, not a variable. Writing the literal took this
+   from 6/130 to 1/130, and the ovl3 re-split (0xF7FB0 is now this file's own
+   dotted .rodata) closed the last word -- see the long note on
+   func_80180818_ovl3 above for the rule and the failed sweeps. */
 extern f32 D_80198848_ovl3[];
 extern f32 D_80198858_ovl3[];
 void func_8018E36C_ovl3(s32, s32, f32);
@@ -11835,9 +14173,6 @@ void func_8018E164_ovl3(s32 arg0) {
     gKirbyState.unk30 = gKirbyState.unk30 + 1;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8018E164_ovl3.s")
-#endif
 void func_8018E36C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
     if (arg1 == 0) {
         if (arg2 != 0.0f) {
@@ -11848,7 +14183,6 @@ void func_8018E36C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 
 extern f32 D_80198848_ovl3[];
 extern f32 D_80198858_ovl3[];
-extern f32 D_80197B6C_ovl3;
 
 void func_8018E3B0_ovl3(s32 arg0) {
     func_80153984_ovl3();
@@ -11882,7 +14216,7 @@ void func_8018E3B0_ovl3(s32 arg0) {
             if (D_800E3210[omCurrentObj->objId] > 0.0f) {
                 D_800E3750[omCurrentObj->objId] = 0.0;
                 D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-                D_800E3C90[omCurrentObj->objId] = D_80197B6C_ovl3;
+                D_800E3C90[omCurrentObj->objId] = 65535.0f;
             }
             set_kirby_action_1(6, 6);
         }
