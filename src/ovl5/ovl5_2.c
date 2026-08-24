@@ -4283,27 +4283,24 @@ extern Unk10Bytes D_800D7178[];
 extern u8 D_8018E224_ovl5[];
 s32 func_80164914_ovl5(s32);
 
-#ifdef NON_MATCHING
-/* FACTORY: 2/26 (2 words DIFFER; the old "24/26" was the matched-count
-   convention -- measure_seeds.py is the authority). IDO fills the post-`jal` delay
-   slot with `addiu $s0,$s0,1` and sinks `sw $v0` to the next
-   instruction, where the ROM stores at `0xC($s1)` first and increments
-   second -- a scheduling order swap, not reachable by C reshaping.
-   Swept without effect at 2: for/while/do-while, != vs <, pointer
-   inductions, `u32 i`, two counters, temp local for the call result
-   (re-measured this pass: 4/26, worse), s32/volatile stores, volatile
-   on either array, `if` before/after, extra dead locals, 0-13 leading
-   blank lines. Pointer-induction forms are much WORSE (25/26).
-   Clone twins with the identical residue: func_8016CB14_ovl5,
-   func_80176108_ovl5. */
-void func_801649CC_ovl5(void) {
-    s32 i;
-
-    for (i = 0; i < 4; i++) { D_800D7178[i].unkC = func_80164914_ovl5(i); if (D_8018E224_ovl5[i] != 0) {} }
+/* Clone of the matched func_80176108_ovl5 in ovl5_5.c: the ROM's dead
+   induction over D_8018E224_ovl5 is a DOUBLY nested empty `if`, and the inner
+   `if ((!i) && (!i)) {}` is what keeps the `sw` ahead of the counter
+   increment. 2/26 -> MATCH by copying the donor verbatim. */
+void func_801649CC_ovl5(void)
+{
+  s32 i;
+  for (i = 0; i < 4; i++)
+  {
+    D_800D7178[i].unkC = func_80164914_ovl5(i);
+    if (D_8018E224_ovl5[i] != 0)
+    {
+      if ((!i) && (!i))
+      {
+      }
+    }
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801649CC_ovl5.s")
-#endif
 /* FACTORY: 88/223, UNCERTAIN -- PORT-seeded, time-boxed. Fixed two real
  * defects: (1) `D_800D7178_words_[] __asm__("D_800D7178")` used a GCC
  * asm-label alias IDO's cc rejects (Syntax Error) -- rewritten using the

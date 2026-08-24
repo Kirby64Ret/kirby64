@@ -134,7 +134,7 @@ def target_words(listing_path):
     # Only collect words inside the glabel...endlabel region: splat "nonmatching"
     # listings put .late_rodata words (float literals) before the .text section,
     # and those are not part of the function's instruction stream.
-    words, texts = [], []
+    words, texts, vrams = [], [], []
     in_text = False
     for line in open(listing_path):
         if line.startswith('glabel '):
@@ -148,7 +148,8 @@ def target_words(listing_path):
         if m:
             words.append(int(m.group(2), 16))
             texts.append(m.group(3).strip())
-    return words, texts
+            vrams.append(int(m.group(1), 16))
+    return words, texts, vrams
 
 def compile_file(cfile):
     # Write UNDER build/verify/, never to build/<cfile>.o itself.
@@ -342,7 +343,7 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'kirby.ld, in the SAME edit as the conversion.')
     if listing is None:
         return None, f'{func}: no listing (unverifiable — matched before per-function listings existed; full-ROM sha1 covers it)'
-    twords, ttexts = target_words(listing)
+    twords, ttexts, tvrams = target_words(listing)
     if func not in objfuncs:
         return False, f'{func}: not found in compiled object'
     cur = objfuncs[func]
@@ -351,6 +352,31 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
     # genuinely emits fewer instructions than the ROM -- which still assembles
     # to a "MATCH" while silently shifting everything after it in the segment.
     # Report it so it is never silent; check_layout.py is the authority.
+    # A FOLDED STUB is not a shortfall. When splat has no name for a tiny
+    # function it merges it into the previous symbol's .size, so the listing
+    # ends `jr $ra; nop` for a function the C file now defines separately --
+    # see func_80160A70_ovl5 after func_80160A20_ovl5 in ovl5_2.c. Scoring the
+    # donor against those two words reported a permanent 1/21, and a standing
+    # false alarm on a correct file is worse than no check: it masks a real
+    # diff appearing there later. If the excess is exactly `jr $ra` + `nop` at
+    # a 16-byte-aligned address AND the object defines a function at that
+    # address, it is accounted for.
+    # The alignment of the folded stub is NOT a reliable tell -- func_80161424_ovl5
+    # sits at +4 -- so the evidence is only that the object defines a function
+    # at exactly that address. Accept either a `jr $ra` + `nop` pair or a bare
+    # trailing `jr $ra` (the object's own tail nop is trimmed below).
+    folded = None
+    tail2 = len(twords) == len(cur) + 2 and twords[-2] == 0x03E00008 and twords[-1] == 0
+    tail1 = len(twords) == len(cur) + 1 and twords[-1] == 0x03E00008
+    if tail2 or tail1:
+        want = 'func_%08X' % tvrams[-2 if tail2 else -1]
+        hit = next((k for k in objfuncs
+                    if k == want or k.startswith(want + '_ovl')), None)
+        if hit:
+            folded = hit
+            k = 2 if tail2 else 1
+            twords = twords[:-k]; ttexts = ttexts[:-k]; tvrams = tvrams[:-k]
+
     trimmed = 0
     while len(twords) > len(cur) and twords[-1] == 0:
         twords.pop(); ttexts.pop(); trimmed += 1
@@ -446,6 +472,11 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
             return True, (f'{func}: MATCH ({len(cur)} insns) '
                           f'[{len(rodata_notes)} uncounted relocation note(s)]\n'
                           + '\n'.join(rodata_notes[:10]))
+        if folded:
+            return True, (f'{func}: MATCH ({len(cur)} insns) '
+                          f'[listing also carries {folded}, an unnamed function '
+                          f'splat folded into this .size; it is defined '
+                          f'separately in the C and accounted for]')
         return True, f'{func}: MATCH ({len(cur)} insns)'
     return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:int(__import__("os").environ.get("VERIFY_MAXDIFF","40"))])
 
