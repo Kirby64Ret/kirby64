@@ -3686,7 +3686,16 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * two `lui`s as well and is worse.  Its listing also carries an extra unnamed
  * empty function at 0x800299F0 (`jr $ra; nop` past the epilogue), so a
  * conversion must define `void func_800299F0(void) {}` after it or the TU
- * comes out 8 bytes short. */
+ * comes out 8 bytes short.
+ *
+ * MEASURED 2026-08-24: the folded-function half of that is correct and the TU
+ * comes out the right size with it, but the BODY is not byte-exact -- true
+ * residue 3 words. Un-guarding leaves exactly two instructions differing at
+ * ROM 0x2a5c5, where the ROM has `sw $t7, 8($v0)` then `lui $t6` and IDO
+ * emits them swapped with the registers rotated. So this is a scheduling
+ * floor, not a padding trap: writing out func_800299F0 is necessary but not
+ * sufficient. Do not re-attempt the un-guard without closing those two
+ * first. */
 #ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
