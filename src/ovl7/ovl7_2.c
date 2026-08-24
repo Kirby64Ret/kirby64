@@ -16,7 +16,11 @@ void func_801ACF84_ovl7(GObj *);
 
 struct Ovl7AnimCmd {
     u8 filler0[8];
-    s32 unk8;
+    /* A DObj handle. func_8019F410_ovl7 stores its argument here, and every
+     * non-zero caller passes a real DObj * -- so on LP64 an s32 field would
+     * just move the truncation from the call into this store. Four bytes on
+     * MIPS either way, so the N64 layout is unchanged. */
+    struct DObj *unk8;
 };
 
 struct Ovl7AnimHdrSub {
@@ -45,7 +49,11 @@ struct Ovl7AnimObj {
     struct Ovl7AnimCmd *unk24;
 };
 
-void func_80111550(void *);
+/* Defined `void func_80111550(s32)` in ovl2_9.c:1525 and it takes an entity
+ * id, not a pointer -- both call sites below pass omCurrentObj->objId. The
+ * `void *` spelling was backwards: it widened an id rather than truncating a
+ * pointer. */
+void func_80111550(s32);
 struct Ovl7AnimObj *func_80111C88(s32 *, u32);
 /* K&R form is load-bearing here: its real signature is
  * void func_80111ECC(s32 *), but its call site at line ~656 passes 2 args
@@ -53,7 +61,7 @@ struct Ovl7AnimObj *func_80111C88(s32 *, u32);
  * compilation with "too many arguments". */
 void func_80111ECC();
 
-s32 func_8019F410_ovl7(s32);
+s32 func_8019F410_ovl7(struct DObj *);
 s32 func_8019F4D0_ovl7(s32);
 s32 func_8019F590_ovl7(s32);
 s32 func_8019F650_ovl7(void);
@@ -72,7 +80,7 @@ void func_801A7000_ovl7(struct GObj *);
 void func_801BD510_ovl7(struct GObj *);
 
 void func_8019F3B0_ovl7(void) {
-    func_8019F410_ovl7(0);
+    func_8019F410_ovl7(NULL);
 }
 
 void func_8019F3D0_ovl7(void) {
@@ -83,7 +91,7 @@ void func_8019F3F0_ovl7(void) {
     func_8019F590_ovl7(0);
 }
 
-s32 func_8019F410_ovl7(s32 arg0) {
+s32 func_8019F410_ovl7(struct DObj *arg0) {
     struct EnemyRecord *ent;
     u32 objId;
     struct Ovl7AnimObj *anim;
