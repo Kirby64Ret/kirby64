@@ -1650,9 +1650,7 @@ void func_8020703C_ovl9(s32 arg0) {
 
 /* D_8021DAB8_ovl9: literal, this TU owns its .rodata */
 
-void func_8020705C_ovl9(arg0)
-struct GObj *arg0;
-{
+void func_8020705C_ovl9(struct GObj *arg0) {
     if (D_800E9FE0[omCurrentObj->objId].as_s32 == 0) {
         play_sound(0x256);
     }

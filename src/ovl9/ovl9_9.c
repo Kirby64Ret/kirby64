@@ -1612,7 +1612,10 @@ void func_80200810_ovl9(struct GObj *arg0) {
    own bc1fl copying `move $v0,$a0` into its delay slot); rewriting every
    `return 1;` as `ret = 1; goto exit;` sharing one `or $v0,$a0,$zero` at a
    single exit label matches it exactly (LEVERS lever 6, flag-variable/goto
-   form). */
+   form).
+   RE-MEASURED this pass: with the head written `s32 func_80200908_ovl9(s32
+   arg0)` the build fails at ovl9_9.c:1665 (the call in func_80200B84_ovl9)
+   with "too few arguments to function 'func_80200908_ovl9'". */
 s32 func_80200908_ovl9(arg0)
 s32 arg0;
 {

@@ -164,6 +164,10 @@ void func_801D152C_ovl8(void) {
  * spills at 0x48/0x4C/0x50, frame 0x60) as if IDO had allocated a FOURTH,
  * unused compiler spill slot. Leading/trailing s32, u8 and f64 pads all move
  * the block in 8-byte steps and cannot land on +4. */
+/* K&R definition kept, MEASURED: func_801D17F4_ovl8 (ovl8.c:214) calls this
+ * with no argument and relies on the GObj already sitting in $a0. With the
+ * head written `void func_801D1648_ovl8(struct GObj *arg0)` the build fails
+ * there with "too few arguments to function 'func_801D1648_ovl8'". */
 #ifdef NON_MATCHING
 void func_801D1648_ovl8(arg0)
 struct GObj *arg0;

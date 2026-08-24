@@ -212,11 +212,13 @@ void func_801D4D88_ovl8(struct GObj *arg0) {
     func_801D4778_ovl8(arg0);
 }
 
-/* K&R, for the same reason as func_801D57E0_ovl8 below: the definition
- * takes the struct GObj * the ROM leaves in $a0 (it homes it at 0x88(sp)),
- * but both call sites just above pass 0 arguments. An ANSI (void) here
- * makes the definition a redeclaration; an ANSI (GObj *) breaks the two
- * calls with "too few arguments". */
+/* Unspecified arguments, for the same reason as func_801D57E0_ovl8 below:
+ * the definition takes the struct GObj * the ROM leaves in $a0 (it homes it
+ * at 0x88(sp)), but both call sites just below pass 0 arguments, so this
+ * declaration -- which is what those two calls are checked against -- must
+ * stay unprototyped. The DEFINITION itself is ANSI as of this pass:
+ * measured, both the N64 and the PC build accept it, because it comes after
+ * the two calls and only this declaration is in scope for them. */
 void func_801D5024_ovl8();
 
 void func_801D4FA4_ovl8(void) {
@@ -263,9 +265,7 @@ void func_801D4FE4_ovl8(void) {
  * prototype in scope, leaving $a2 as a leftover. Passing the parent id
  * explicitly (as here) produces the same register contents and keeps the
  * call type-checked against ovl1_7.c's three-parameter definition. */
-void func_801D5024_ovl8(arg0)
-struct GObj *arg0;
-{
+void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAA60[];
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];
@@ -345,9 +345,7 @@ struct GObj *arg0;
     curObjSleepForever();
 }
 #elif defined(PORT)
-void func_801D5024_ovl8(arg0)
-struct GObj *arg0;
-{
+void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAA60[];
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];

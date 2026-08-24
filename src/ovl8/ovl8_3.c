@@ -424,9 +424,7 @@ void func_801D4440_ovl8(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-void func_801D447C_ovl8(arg0)
-struct GObj *arg0;
-{
+void func_801D447C_ovl8(struct GObj *arg0) {
     extern s32 D_800D6B54;
     extern s32 D_800BE4F8;
     extern s32 D_800BE508;

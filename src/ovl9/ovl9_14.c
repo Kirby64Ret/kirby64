@@ -533,6 +533,11 @@ void func_802112F4_ovl9(void) {
     func_8019F3B0_ovl7();
 }
 
+/* K&R definition kept, MEASURED: func_80211560_ovl9 (ovl9_14.c:588) calls
+ * this with no argument and relies on the GObj already sitting in $a0 --
+ * see the note on the unprototyped declaration further down. With the head
+ * written `void func_8021134C_ovl9(struct GObj *arg0)` the build fails
+ * there with "too few arguments to function 'func_8021134C_ovl9'". */
 void func_8021134C_ovl9(arg0)
 struct GObj *arg0;
 {

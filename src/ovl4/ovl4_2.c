@@ -103,9 +103,7 @@ void func_80151E00_ovl4(void) {
     func_80154DDC_ovl4();
 }
 
-void func_80151E20_ovl4(arg0)
-GObj *arg0;
-{
+void func_80151E20_ovl4(GObj *arg0) {
     extern u8 D_8015A868_ovl4[];
     extern s32 D_8015C698_ovl4;
     extern void *D_8015A888_ovl4[];
@@ -1555,9 +1553,7 @@ void func_80154DA0_ovl4(struct GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_8015C694_ovl4];
 }
 
-void func_80154DDC_ovl4(arg0)
-GObj *arg0;
-{
+void func_80154DDC_ovl4(GObj *arg0) {
     extern void *D_8015A8A0_ovl4[];
     extern Unk8015A8F8 D_8015A8B8_ovl4[];
     extern s32 D_800D6B80;

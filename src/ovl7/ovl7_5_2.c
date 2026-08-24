@@ -29,11 +29,11 @@ void func_801A03B4_ovl7(void);
 extern f32 D_800E6D90[];
 s32 request_track_general(s32, s32, s32);
 
-/* K&R form is load-bearing here: this file calls it with 0 args at line ~73
- * against its real 2-arg (s32, s32) signature -- the ROM relies on whatever
- * is already sitting in $a0/$a1. An ANSI prototype breaks compilation with
- * "the number of arguments doesn't agree with the number in the
- * declaration". */
+/* K&R form is load-bearing here: func_801ACC34_ovl7 (ovl7_5_2.c:78) calls it
+ * with 0 args against its real 2-arg (s32, s32) signature -- the ROM relies
+ * on whatever is already sitting in $a0/$a1. MEASURED: with the head written
+ * `s32 func_801AC9D0_ovl7(s32 arg0, s32 arg1)` the build fails there with
+ * "too few arguments to function 'func_801AC9D0_ovl7'". */
 s32 func_801AC9D0_ovl7(arg0, arg1)
 s32 arg0;
 s32 arg1;

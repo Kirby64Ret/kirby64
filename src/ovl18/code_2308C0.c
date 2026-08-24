@@ -385,6 +385,11 @@ void func_800B491C(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 extern s32 D_800D6E1C;
 
+/* K&R definition is load-bearing for the same reason as
+ * func_8021ED10_ovl18: func_8021F400_ovl18 calls this with no argument
+ * and relies on the GObj slot already in $a0. MEASURED: with the head
+ * written `void func_8021E978_ovl18(s32 arg0)` the build fails at
+ * code_2308C0.c:703 with "too few arguments to function 'func_8021E978_ovl18'". */
 void func_8021E978_ovl18(arg0)
 s32 arg0;
 {
@@ -455,8 +460,11 @@ s32 arg0;
 #endif
 
 /* K&R definition is load-bearing: the parameter home slot (sw $a0) is only
- * emitted with a declared parameter, and a prototyped one would reject the
- * zero-argument call in func_8021F400_ovl18. */
+ * emitted with a declared parameter, and a prototyped one is rejected by the
+ * zero-argument call in func_8021F400_ovl18, which relies on the GObj slot
+ * already sitting in $a0. MEASURED: with the head written
+ * `void func_8021ED10_ovl18(s32 arg0)` the build fails at code_2308C0.c:705
+ * with "too few arguments to function 'func_8021ED10_ovl18'". */
 void func_8021ED10_ovl18(arg0)
 s32 arg0;
 {
@@ -549,6 +557,11 @@ void func_800AF9B8(u16, u8);
 void func_800B491C(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 
+/* K&R definition is load-bearing for the same reason as
+ * func_8021ED10_ovl18: func_8021F400_ovl18 calls this with no argument
+ * and relies on the GObj slot already in $a0. MEASURED: with the head
+ * written `void func_8021ED3C_ovl18(s32 arg0)` the build fails at
+ * code_2308C0.c:700 with "too few arguments to function 'func_8021ED3C_ovl18'". */
 void func_8021ED3C_ovl18(arg0)
 s32 arg0;
 {

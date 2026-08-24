@@ -2239,9 +2239,10 @@ block_19:
 // `andi $s0, $a0, 0xFFFF` in a saved register (42/46), and assigning to the
 // parameter kills the $s0 copy entirely (37/45). Also swept: demoting the
 // forward declaration to `void f();`, a 2-parameter K&R form.
-void func_8019D8A0(arg0)
-s32 arg0;
-{
+// The head is ANSI as of this pass: scored both ways on a scratch copy of
+// this TU with the draft un-guarded, 20/46 either way, so the K&R spelling
+// was buying nothing.
+void func_8019D8A0(s32 arg0) {
     struct EnemyRecord *ent = D_800E1B50[(u16) arg0];
 
     if (ent->unk34 != NULL) {
@@ -2376,7 +2377,11 @@ s32 func_8019DD78_ovl7(u8 arg0, s32 arg1) {
 /* K&R form is load-bearing here: an ANSI `u8 arg0` prototype makes IDO
  * insert a caller-side `andi $a0, $a0, 0xff` mask (2 call sites) where the
  * ROM leaves a nop -- measured via objdump A/B against the last known-good
- * build. */
+ * build. RE-MEASURED with the head written
+ * `s32 func_8019DF0C_ovl7(u8 arg0, s32 arg1)`: the full ROM build fails the
+ * sha1, and .text of enelib.o differs at exactly two words, 0x5830 and
+ * 0x5874 (the calls in func_8019DFBC_ovl7 and func_8019E024_ovl7), where
+ * `nop` becomes `andi a0,a0,0xff`. */
 s32 func_8019DF0C_ovl7(arg0, arg1)
 u8 arg0;
 s32 arg1;
@@ -2419,7 +2424,12 @@ s32 func_8019E0E8_ovl7(s32 arg0, s32 arg1) {
     return track;
 }
 
-// m2c draft, measured 462/462 diffs
+// m2c draft, measured 462/462 diffs.
+// K&R definition kept, MEASURED: the func_8019E9F0_ovl7 draft below
+// (enelib.c:2788) calls this with no argument and relies on the pointer
+// already in $a0; with the head written `void func_8019E128_ovl7(s32 *arg0)`
+// the build fails there with "too few arguments to function
+// 'func_8019E128_ovl7'".
 #ifdef NON_MATCHING
 void func_8019E128_ovl7(arg0)
     s32 *arg0;

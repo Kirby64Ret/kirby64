@@ -2700,6 +2700,11 @@ void func_80116B68(struct GObj *arg0) {
     func_80115070(arg0);
 }
 
+/* K&R definition is load-bearing: the eight thunks below (func_80116CA0 and
+ * its siblings, ovl2_10.c:2722-2750) call this with no argument and rely on
+ * the GObj already sitting in $a0. MEASURED: with the head written
+ * `void func_80116B90(struct GObj *arg0)` the build fails with
+ * "too few arguments to function 'func_80116B90'" at all eight. */
 void func_80116B90(arg0)
 struct GObj *arg0;
 {

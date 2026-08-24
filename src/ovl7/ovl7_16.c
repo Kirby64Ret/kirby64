@@ -325,6 +325,11 @@ void func_801BE450_ovl7(void) {
     func_801BE490_ovl7();
 }
 
+/* K&R definition kept, MEASURED: func_801BE740_ovl7 (ovl7_16.c:360) calls
+ * this with no argument and relies on the GObj already sitting in $a0.
+ * With the head written `void func_801BE490_ovl7(GObj *arg0)` the build
+ * fails there with "too few arguments to function
+ * 'func_801BE490_ovl7'". */
 void func_801BE490_ovl7(arg0)
 GObj *arg0;
 {

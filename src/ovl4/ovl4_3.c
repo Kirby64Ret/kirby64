@@ -176,6 +176,11 @@ s32 func_801554F0_ovl4(void) {
  * The residue is only the second, nameless `jr $ra; nop` inside this
  * function's .size, which no C body can emit (WAVE8 floor class 3). */
 #ifdef NON_MATCHING
+/* K&R definition kept, MEASURED: func_80156BAC_ovl4 (ovl4_3.c:813) calls
+ * this with no argument and relies on the file number already in $a0.
+ * With the head written `s32 func_801555AC_ovl4(s32 arg0)` the build
+ * fails there with "too few arguments to function
+ * 'func_801555AC_ovl4'". */
 s32 func_801555AC_ovl4(arg0)
 s32 arg0;
 {

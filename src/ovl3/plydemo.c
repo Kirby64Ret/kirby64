@@ -1015,6 +1015,11 @@ void func_8015814C_ovl3(s32 arg0, void (*arg1)(), f32 arg2) {
 
 extern void set_kirby_action_1(s32, s32);
 
+/* K&R definition kept, MEASURED: four call sites in this file
+ * (plydemo.c:1047, :1102, :1106, :1135) call this with no argument and
+ * rely on the GObj already sitting in $a0. With the head written
+ * `void func_80158294_ovl3(GObj *arg0)` the build fails at all four with
+ * "too few arguments to function 'func_80158294_ovl3'". */
 void func_80158294_ovl3(arg0)
 GObj *arg0;
 {

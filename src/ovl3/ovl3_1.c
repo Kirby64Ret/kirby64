@@ -1842,6 +1842,10 @@ void func_801548DC_ovl3(struct PositionState *st) {
  * (ovl3_1.c stayed 0 match / not-wrong-size both times; the one
  * wrong-size TU flagged, ovl2_7.c, is pre-existing and unrelated --
  * confirmed by reverting and re-checking). */
+/* K&R definition kept, MEASURED: func_80155498_ovl3 (ovl3_1.c:2122) calls this
+ * with no argument and relies on the PositionState* already in $a0.
+ * Prototyping the signature makes the build fail at ovl3_1.c:2122 with
+ * "too few arguments to function 'func_801548DC_ovl3'". */
 void func_801548DC_ovl3(arg0)
     struct PositionState *arg0;
 {
@@ -1913,6 +1917,10 @@ void func_801548DC_ovl3(arg0)
  * repeated omCurrentObj->objId gets IDO to allocate a callee-saved $s0
  * instead (extra sw/lw pair, +8 frame). Matches the "whole-function
  * callee-saved permutation" floor in LEVERS.md -- queued for the permuter. */
+/* K&R definition kept, MEASURED: func_80155424_ovl3 (ovl3_1.c:2113) calls this
+ * with no argument and relies on the PositionState* already in $a0.
+ * Prototyping the signature makes the build fail at ovl3_1.c:2113 with
+ * "too few arguments to function 'func_80154CFC_ovl3'". */
 void func_80154CFC_ovl3(arg0)
     struct PositionState *arg0;
 {
@@ -2024,6 +2032,10 @@ void func_80155088_ovl3(struct PositionState *st) {
  * omCurrentObj->objId` hoist. A rewrite needs every omCurrentObj->objId use
  * spelled out inline with no local caching the id or the pointer -- not
  * attempted here; leaving guarded, not a D<=8 target as labeled. */
+/* K&R definition kept, MEASURED: func_80155664_ovl3 (ovl3_1.c:2208) calls this
+ * with no argument and relies on the PositionState* already in $a0.
+ * Prototyping the signature makes the build fail at ovl3_1.c:2208 with
+ * "too few arguments to function 'func_80155088_ovl3'". */
 void func_80155088_ovl3(arg0)
     struct PositionState *arg0;
 {

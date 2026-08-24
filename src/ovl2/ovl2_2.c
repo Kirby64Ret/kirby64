@@ -368,8 +368,13 @@ void func_800F6E0C(void *arg0, UNUSED void *_1, UNUSED void *_2) {
  * every call, every branch and the whole loop are exact. The residue
  * is one adjacent-instruction schedule swap in the loop preheader:
  * the ROM emits `addiu $fp, %lo(D_800BE504)` then `or $s4,$zero,$zero`
- * and IDO emits them the other way round. Moving `var_s4 = 0` next to
- * `var_s3 = 0` is inert. Lever that DID land: the three-way dispatch
+ * and IDO emits them the other way round. Re-measured 2026-08-24: moving
+ * `var_s4 = 0` up next to `var_s3 = 0` is not inert, it is WORSE (12/207 --
+ * it also pulls `or $s3,$zero` out of the second beqz's delay slot and
+ * shifts the gSegment4StartArray index block). Both instructions are loop
+ * PREHEADER material -- one a hoisted invariant address, one a real source
+ * statement -- so this is a scheduler tie-break, not a source shape.
+ * Lever that DID land: the three-way dispatch
  * must be a `switch`, not an if/else chain -- as if/else IDO emits
  * sequential tests instead of the ROM's beqz/beq $s5/beq $s7 dispatch
  * and loses the hoisted constants (137 diffs -> 2). */
