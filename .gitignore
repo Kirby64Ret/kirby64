@@ -91,7 +91,11 @@ tools/decomp/decomp-permuter/
 # m2c is a third-party clone, not our source. SESSION_SETUP.sh fetches it.
 tools/decomp/m2c/
 
-# PC port lives in JR3DFUL/kirby64_port now
+# The PC port lives in JR3DFUL/HALBERD. (This used to say kirby64_port; that
+# repository is retired -- following the stale name cost a round trip.)
+# These paths are still present and buildable in this checkout so the port can
+# be developed against a byte-exact tree, but they are tracked in HALBERD, not
+# here. Sync them across before relying on either copy.
 Makefile.pc
 tools/pc/
 src/pc/

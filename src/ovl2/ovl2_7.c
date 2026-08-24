@@ -1550,8 +1550,7 @@ s32 func_80103528(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80103528.s")
 #endif
 
-s32 func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
-                        s32 arg6, s32 arg7) {
+s32 func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1565,8 +1564,7 @@ s32 func_80103930(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
-s32 func_801039E8(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5,
-                        s32 arg6, s32 arg7) {
+s32 func_801039E8(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1580,7 +1578,7 @@ s32 func_801039E8(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32
     func_80103528(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80103AA0(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+void func_80103AA0(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1636,8 +1634,7 @@ s32 func_80103B58(f32 *arg0, Vector *arg1, struct Normal **arg2, struct Collisio
     return 0;
 }
 
-void func_80103CC8(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
-        s32 arg5, s32 arg6, s32 arg7) {
+void func_80103CC8(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1664,8 +1661,7 @@ u32 func_80103D80(f32 *arg0, Vector *arg1, struct Normal *arg2, Vector *arg3) {
     return 0;
 }
 
-void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
-    s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, f32 *arg4, Vector *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, u32 *arg8) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1680,8 +1676,7 @@ void func_80103DE4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
 }
 
 
-s32 func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
-    s32 arg5, s32 arg6, s32 arg7) {
+s32 func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1695,8 +1690,7 @@ s32 func_80103EA0(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal
     return func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
-    s32 arg5, s32 arg6, s32 arg7) {
+void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
     gCollisionState = &newColState;
     newColState.currPos = *arg0;
@@ -1710,8 +1704,7 @@ void func_80103F58(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80104010(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4,
-    s32 arg5, s32 arg6, s32 arg7, s32 arg8)
+void func_80104010(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, f32 *arg4, Vector *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, u32 *arg8)
 {
     struct CollisionState newColState;
 
@@ -1727,7 +1720,7 @@ void func_80104010(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
-void func_801040CC(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+void func_801040CC(Vector *arg0, Vector *arg1, u32 (*arg2)(), f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1742,7 +1735,7 @@ void func_801040CC(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80104184(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+void func_80104184(Vector *arg0, Vector *arg1, u32 (*arg2)(), f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1772,7 +1765,7 @@ s32 func_8010423C(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Ve
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_801042F4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+void func_801042F4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, f32 *arg4, Vector *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, u32 *arg8) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1787,7 +1780,7 @@ void func_801042F4(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
-void func_801043B0(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+void func_801043B0(Vector *arg0, Vector *arg1, u32 (*arg2)(), f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1802,7 +1795,7 @@ void func_801043B0(Vector *arg0, Vector *arg1, u32 (*arg2)(), s32 arg3, s32 arg4
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80104468(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7) {
+void func_80104468(Vector *arg0, Vector *arg1, struct Normal *arg2, f32 *arg3, Vector *arg4, struct Normal **arg5, struct CollisionTriangle **arg6, u32 *arg7) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1817,7 +1810,7 @@ void func_80104468(Vector *arg0, Vector *arg1, struct Normal *arg2, s32 arg3, s3
     func_80103B58(arg3, arg4, arg5, arg6, arg7);
 }
 
-void func_80104520(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+void func_80104520(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Normal *arg3, f32 *arg4, Vector *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, u32 *arg8) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1832,7 +1825,7 @@ void func_80104520(Vector *arg0, Vector *arg1, struct Normal *arg2, struct Norma
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
-void func_801045DC(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8) {
+void func_801045DC(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, f32 *arg4, Vector *arg5, struct Normal **arg6, struct CollisionTriangle **arg7, u32 *arg8) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1849,7 +1842,7 @@ void func_801045DC(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4, s32
     func_80103B58(arg4, arg5, arg6, arg7, arg8);
 }
 
-void func_801046A0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+void func_801046A0(Vector *arg0, Vector *arg1, f32 *arg2, Vector *arg3, struct Normal **arg4, struct CollisionTriangle **arg5) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
@@ -1879,7 +1872,7 @@ void func_8010474C(Vector *arg0, Vector *arg1) {
     func_80103D80(0, 0, 0, 0);
 }
 
-void func_801047F0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+void func_801047F0(Vector *arg0, Vector *arg1, f32 *arg2, Vector *arg3, struct Normal **arg4, struct CollisionTriangle **arg5, u32 *arg6) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1894,7 +1887,7 @@ void func_801047F0(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
 
-void func_801048A4(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+void func_801048A4(Vector *arg0, Vector *arg1, f32 *arg2, Vector *arg3, struct Normal **arg4, struct CollisionTriangle **arg5, u32 *arg6) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1909,7 +1902,7 @@ void func_801048A4(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     func_80103B58(arg2, arg3, arg4, arg5, arg6);
 }
 
-void func_80104958(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
+void func_80104958(Vector *arg0, Vector *arg1, Vector *arg2, struct Normal **arg3, struct CollisionTriangle **arg4) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
@@ -1924,7 +1917,7 @@ void func_80104958(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
     func_80103B58(0, arg2, arg3, arg4, 0);
 }
 
-void func_80104A08(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
+void func_80104A08(Vector *arg0, Vector *arg1, Vector *arg2, struct Normal **arg3, struct CollisionTriangle **arg4) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
@@ -1939,7 +1932,7 @@ void func_80104A08(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4) {
     func_80103D80(0, arg2, arg3, arg4);
 }
 
-void func_80104AB4(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4) {
+void func_80104AB4(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, struct CollisionTriangle **arg4) {
     struct CollisionState sp18;
 
     gCollisionState = &sp18;
@@ -1956,7 +1949,7 @@ void func_80104AB4(Vector *arg0, Vector *arg1, u16 arg2, u16 arg3, s32 arg4) {
     func_80103D80(0, 0, 0, arg4);
 }
 
-void func_80104B70(Vector *arg0, Vector *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6) {
+void func_80104B70(Vector *arg0, Vector *arg1, f32 *arg2, Vector *arg3, struct Normal **arg4, struct CollisionTriangle **arg5, u32 *arg6) {
     struct CollisionState newColState;
 
     gCollisionState = &newColState;
