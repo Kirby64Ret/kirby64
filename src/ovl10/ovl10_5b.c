@@ -1676,7 +1676,26 @@ void func_801F28AC_ovl10(GObj *arg0) {
  * this straight to 32/674 on the first compile.
  * gDisplayListHeads and the four light symbols are declared IN-BODY because this
  * file keeps them in its PORT-only block; do not hoist them to file scope -- the
- * equivalent move in ovl10_1.c moved a matched function and grew that TU. */
+ * equivalent move in ovl10_1.c moved a matched function and grew that TU.
+ *
+ * RESIDUE CHARACTERISED (2026-08-24), and it is ONE cause repeated four times,
+ * not 32 independent words. verify.py prints 33; one is a phantom (the
+ * jtbl_801F4CF4_ovl10 load reads as `<.rodata>+0x94` when scored on a scratch
+ * COPY -- ovl10_5b.o's .rodata base makes that the same address). The other 32
+ * are eight sites x four words where the ROM re-materialises D_801F4758_ovl10
+ * into $v0 and D_801F4750_ovl10 into $v1 after each renderer call, and IDO
+ * picks $v1 and $a0 -- a uniform one-register shift. Everything BEFORE the
+ * first renderer call matches, `sw $v0, 0x4($s0)` included, so $v0 is chosen
+ * correctly on the first materialisation and only the post-call ones drift:
+ * caller-saved permutation, LEVERS "guard on the second variant".
+ * Swept and rejected this pass: this function is a jal-sequence near-clone of
+ * the MATCHED func_8017CCE0_ovl5 / func_8017D6F8_ovl5 in ovl5_7.c (lever 1),
+ * and the only spelling difference is that the donor passes `&D_800BE550`
+ * where this passes an array name. Declaring the two stage-light symbols as
+ * scalars and taking their address -- and doing the same to all four -- is
+ * byte-identical, 32 either way. The donor is not portable here for a second
+ * reason: it reuses ONE light pair for both halves of every case, so it never
+ * needs the post-call re-materialisation at all. */
 /* Goal-game render callback: per render mode (func_800AB0F4 19..30) sets the
  * track's segment-4 base, swaps in the goal-game light pair
  * D_801F4DA0/D_801F4D98, draws with that mode's renderer, then restores the stage
