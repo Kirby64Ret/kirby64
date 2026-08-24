@@ -766,7 +766,12 @@ segments:
     exclusive_ram_id: self_contained
     bss_size: 0x10
     subsegments:
-    - [0x1EB520, c, ovl12/code_1EB520]
+    # 0x1EB520..0x1EB53F is eight zero words that fall straight through
+    # into func_801DB200_ovl12 at 0x1EB540; splat named the first word of
+    # it, producing a 'function' no C source can express (an empty body
+    # emits two words and never a nop in word 0, so its floor is 2/2).
+    - [0x1EB520, pad]
+    - [0x1EB540, c, ovl12/code_1EB520]
     - [0x1F18D0, c, ovl12/code_1F18D0]
     - [0x1F2DE0, data, ovl12/ovl12]
     - [0x1F3060, .rodata, ovl12/code_1EB520]
