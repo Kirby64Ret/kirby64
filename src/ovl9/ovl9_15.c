@@ -1195,11 +1195,27 @@ void func_8021817C_ovl9(struct GObj *arg0) {
     func_802180D8_ovl9(arg0);
 }
 
-/* 36 diffs, all downstream of the frame: the ROM frame is 0x20 (tmp spilled
-   at 0x18, the f32 call result at 0x1C) so the source has only ONE named local
-   besides tmp. Dropping the d0/d1/d2 and u locals reaches frame 0x20 but then
-   every pointer sits one register slot low (71 diffs); callee return-type flips
-   on eneTurnCommon2 and func_8019F410_ovl7 are inert. */
+/* FACTORY: 36/76 words DIFFER, and the frame is the whole constraint.
+   MEASURED 2026-08-24, one compile each -- IDO charges 4 bytes of frame for
+   EVERY declared local here, register-allocated or not, so
+   frame = align8(0x18 + 4*ndecls):
+     6 decls (tmp,u,d0,d1,d2,t)  frame 0x30   36 diffs   <- best, kept
+     3 decls (tmp,u,t)           frame 0x28   49 diffs   (registers correct:
+                                 tmp lands in $a2 and u in $a1 exactly as the
+                                 ROM has them; the residue is the frame and a
+                                 one-slot $t rotation in the tail)
+     2 decls (tmp,t)             frame 0x20   71 diffs   (frame EXACT, but with
+                                 `u` inlined as tmp->unk84 IDO must reload it
+                                 after the u->headOffsetY store -- the store may
+                                 alias -- and the whole pointer chain shifts a
+                                 register)
+   The ROM's two stack words are tmp at 0x18 and the f32 call result at 0x1C,
+   so its source has exactly TWO things needing memory while still holding `u`
+   in $a1 across the null test and three uses. `register`, an inner block for
+   `u`, and folding d0/d1/d2 into the chain each cost or gain nothing (49-52).
+   What is needed is a third live pointer that owns no frame word -- i.e. a
+   spelling of `u` that is neither a declaration nor a re-read. Callee
+   return-type flips on eneTurnCommon2 and func_8019F410_ovl7 are inert. */
 #ifdef NON_MATCHING
 extern f32 D_801CA9E8;
 extern FUNCLIST D_8021CDAC_ovl9;
