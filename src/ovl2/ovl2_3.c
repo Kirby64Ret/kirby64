@@ -2500,40 +2500,6 @@ void func_800FB9B4(void) {
         D_80129404 = ptr[1];
     }
 }
-#elif defined(PORT)
-/* PORT: camera-shake playback tick -- the factory-guarded draft above,
- * byte-for-byte. D_801242B4 is emitted as a native pointer array on this
- * build and its shake tables are value-preserving u32 words, so reading
- * them through f32* works unchanged (8888.0/9999.0 sentinels included). */
-void func_800FB9B4(void) {
-    f32 *var_a0;
-    f32 var_f0;
-    f32 *temp_v1;
-
-    if (D_801293F8 != 0) {
-        temp_v1 = D_801242B4[D_801293F8];
-        D_801293FC += 2;
-        var_a0 = &temp_v1[D_801293FC];
-        var_f0 = *var_a0;
-        if (var_f0 == 8888.0f) {
-            D_801293F8 = 0;
-            D_801293FC = -2;
-            D_80129404 = 0.0f;
-            D_80129400 = D_80129404;
-            return;
-        }
-        if (var_f0 == 9999.0f) {
-            D_801293FC = 0;
-            var_a0 = &temp_v1[D_801293FC];
-            var_f0 = *var_a0;
-        }
-        D_80129400 = var_f0;
-        D_80129404 = var_a0[1];
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB9B4.s")
-#endif
 
 /* The empty parameter list is load-bearing: func_800FC804 passes its own arg0
  * to every one of these and the ROM reloads it into $a0 before the jump table.
