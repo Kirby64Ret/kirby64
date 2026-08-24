@@ -1311,9 +1311,8 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 // the better permuter seed if the frame turns out to be the harder half.
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
-    s32 pad;
-    Unk801875F0 *p;
     s32 temp = D_8018ECA8_ovl5[arg0];
+    Unk801875F0 *p;
 
     play_sound(0xBA);
     D_800E9FE0[omCurrentObj->objId].as_s32 = 1;

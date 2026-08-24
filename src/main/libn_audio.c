@@ -4003,17 +4003,14 @@ s32 func_8002A4E4(N_PVoice *filter, s32 paramID, void *param) {
  * are 2 + 1*8).  The six jump-table arms are the ALFxId values 1..6 and the
  * fall-through is D_8003F9E8.
  *
- * FACTORY: MATCH (256 insns, byte-exact) -- but PADDING-TRAPPED, so it stays
- * guarded.  func_8002A508's `.s` carries two trailing nops INSIDE its listing
- * and the function is INTERIOR to this TU (n_alSynAddSeqPlayer follows it), so
- * those nops are an ex-libn_audio.a object boundary, not something alignment
- * puts back: un-guarding was measured and shrinks .text from 0x7710 to 0x7700,
- * 16 bytes.  Per tools/decomp/padtrap.py's "interior + benign" case the fix is
- * to SPLIT the `c` subsegment at 0x2B510 (vram 0x8002A910) into a second C
- * file, exactly as libn_audio_2b..2f were split; that is a kirby64.yaml +
- * kirby.ld change and belongs to the coordinator.  .rodata is byte-identical
- * either way (0x630 both ways), so LEVERS 53 is clear -- the jump table and
- * the 173123.4 pool come out in the same place.
+ * CONVERTED. This was a byte-exact 256-instruction match that could not be
+ * un-guarded, because its listing carried two trailing nops INSIDE it and the
+ * function is INTERIOR to the TU (n_alSynAddSeqPlayer followed it), so those
+ * nops were an ex-libn_audio.a object boundary that alignment does not put
+ * back -- un-guarding shrank .text from 0x7710 to 0x7700. The `c` subsegment
+ * is now split at 0x2B510 into main/libn_audio_a2, exactly as prescribed, so
+ * SUBALIGN(16) emits the fill and the guard is gone. .rodata is unchanged at
+ * 0x630, as predicted.
  *
  * Two spellings were load-bearing and are worth keeping if this is ever
  * re-derived: `i`/`j` must be u16 (the ROM wraps them with `andi 0xFFFF`, not
@@ -4026,7 +4023,6 @@ s32 func_8002A4E4(N_PVoice *filter, s32 paramID, void *param) {
  *
  * The body is plain ANSI C over synthInternals.h's public types, so the port
  * takes it too. */
-#if defined(MIPS_TO_C) || defined(PORT)
 extern s32 D_8003F880[];
 extern s32 D_8003F8E8[];
 extern s32 D_8003F970[];
@@ -4097,54 +4093,4 @@ void func_8002A508(ALFx **r, ALSynConfig *c, ALHeap *hp) {
             j++;
         }
     }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002A508.s")
-#endif
-
-void n_alSynAddSeqPlayer(ALPlayer *client) {
-    OSIntMask mask = osSetIntMask(OS_IM_NONE);
-
-    client->samplesLeft = n_syn->curSamples;
-
-    client->next = n_syn->head;
-    n_syn->head = client;
-
-    if (!(n_syn->n_seqp1))
-        n_syn->n_seqp1 = client;
-    else if (!(n_syn->n_seqp2))
-        n_syn->n_seqp2 = client;
-
-    osSetIntMask(mask);
-}
-
-void n_alSynAddSndPlayer(ALPlayer *client) {
-    OSIntMask mask = osSetIntMask(OS_IM_NONE);
-
-    client->samplesLeft = n_syn->curSamples;
-
-    client->next = n_syn->head;
-    n_syn->head = client;
-
-    if (!(n_syn->n_sndp))
-        n_syn->n_sndp = client;
-
-    osSetIntMask(mask);
-}
-
-/* The n_audio functions from here on were each their own object in
- * libn_audio.a, so each ends 16-byte aligned and the ROM has nop fill between
- * them. That fill is the LINKER's, not the function's, so the drafts below were
- * condemned as unconvertible; one C file per object makes SUBALIGN(16) emit it.
- * See src/main/libn_audio_2.h and kirby64.yaml. */
-
-void n_alSynAddPlayer(ALPlayer *client) {
-    OSIntMask mask = osSetIntMask(OS_IM_NONE);
-
-    client->samplesLeft = n_syn->curSamples;
-
-    client->next = n_syn->head;
-    n_syn->head = client;
-
-    osSetIntMask(mask);
 }

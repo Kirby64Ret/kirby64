@@ -67,6 +67,11 @@ segments:
     # separate libn_audio.a objects. One `c` subsegment per object; the rodata
     # all belongs to functions before 0x8002AA70, so it stays with libn_audio.
     - [0x23F60, c, main/libn_audio]
+    # func_8002A508 ends at 0x2B508 with two nops to 0x2B510 --
+    # align16(end)-end, an object boundary. It is INTERIOR to the TU, so
+    # alignment does not put those nops back and the byte-exact function
+    # could not be converted while both objects shared one subsegment.
+    - [0x2B510, c, main/libn_audio_a2]
     - [0x2B670, c, main/libn_audio_b]
     - [0x2B6E0, c, main/libn_audio_c]
     - [0x2B910, lib, libn_audio, n_synsetpan]

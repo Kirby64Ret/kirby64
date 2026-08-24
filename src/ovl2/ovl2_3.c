@@ -2473,22 +2473,19 @@ s32 func_800FB914(s32 arg0) {
     return 0;
 }
 
-/* FACTORY: 5/49, structure + registers exact. Residue is three commutative-operand parities that
-   are invariant to source order (retested both spellings, zero change): addu $a0,$v1,$t0 vs
-   $t0,$v1, and c.eq.s $f4,$f0 vs $f0,$f4 at both literal compares, plus the addu/sw schedule
-   swap at the 9999 arm. Dropping the counter local (D_801293FC += 2 inline) is what took this
-   from 21 to 5 -- it is what frees $a0 for var_a0; do not reintroduce a named temp. */
-#ifdef MIPS_TO_C
-/* FACTORY: 48/49, single commutative addu operand orientation (base+idx with store-forwarded zero index; both source orders canonicalize to idx-first, ROM has base-first) */
+/* Camera-shake playback tick. The byte-offset spelling
+ * `(f32 *)((u8 *)vec + i * 4)` rather than `&vec[i]` is load-bearing: the
+ * array form makes IDO canonicalise the address `addu` to index-first, where
+ * the ROM has base-first. At the 9999 rewind the assignment has to sit in the
+ * BASE operand (comma) so the store is scheduled after that same `addu`. */
 void func_800FB9B4(void) {
     f32 *vec;
     f32 *ptr;
-    s32 idx;
 
     if (D_801293F8 != 0) {
         vec = D_801242B4[D_801293F8];
         D_801293FC += 2;
-        ptr = (f32 *) ((s32) vec + D_801293FC * 4);
+        ptr = (f32 *) ((u8 *) vec + D_801293FC * 4);
         if (*ptr == 8888.0f) {
             D_801293F8 = 0;
             D_801293FC = -2;
@@ -2497,7 +2494,7 @@ void func_800FB9B4(void) {
             return;
         }
         if (*ptr == 9999.0f) {
-            ptr = (f32 *) ((D_801293FC = 0) * 4 + (s32) vec);
+            ptr = (f32 *) ((D_801293FC = 0, (u8 *) vec) + D_801293FC * 4);
         }
         D_80129400 = *ptr;
         D_80129404 = ptr[1];
