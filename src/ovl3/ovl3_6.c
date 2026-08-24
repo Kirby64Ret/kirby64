@@ -1181,20 +1181,29 @@ void func_8017E54C_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* FACTORY: 12/244, multi-cluster register/scheduling floor -- measured
-   2026-08-23. Four independent clusters, all register-shaped: (1) the two
-   `D_80196D98_ovl3[D_80198830_ovl3.unk8]` index computations in the if/else
-   branches use $t5/$t9 swapped between the two branches; (2) the mtc1
-   $zero,$f8 / lui $at,%hi(D_80196D98_ovl3) pair for the ABSF is scheduled
-   in the OPPOSITE order; (3) the `D_80198830_ovl3.unk8 -= 1;
-   D_80198830_ovl3.unkA = 0xF;` pair uses $t5/$t6 swapped from the ROM's
-   $t6/$t5; (4) `gKirbyState.unk30 = gKirbyState.unk30 + 1;` -- the SAME
-   idiom that already matches verbatim in func_80180818_ovl3 and
-   func_8018E164_ovl3 above in this file -- here keeps the address in one
-   register ($t9, reused for both address and value) where the ROM holds it
-   in $v0 separately, meaning this residue is downstream register pressure
-   from clusters 1-3, not a defect in the idiom itself. Swept: ABS() vs
-   ABSF() (lever 3) on the D_800E3C90 store -- no change, identical 12/244.
+/* FACTORY: 8/244, register/scheduling floor -- re-measured 2026-08-24, down
+   from 12/244. Cluster (3) of the old note CLOSED: writing
+   `D_80198830_ovl3.unkA = 0xF;` BEFORE the `unk8 - 1` store (the two fields
+   are independent, so this is a free reordering) takes 12 -> 8 and removes
+   the $t5/$t6 swap on that pair outright. Three clusters remain, all
+   register-shaped: (1) the two `D_80196D98_ovl3[D_80198830_ovl3.unk8]` index
+   computations in the if/else branches use $t5/$t9 swapped between the two
+   branches; (2) the mtc1 $zero,$f8 / lui $at,%hi(D_80196D98_ovl3) pair for
+   the ABSF is scheduled in the OPPOSITE order; (4) `gKirbyState.unk30 =
+   gKirbyState.unk30 + 1;` -- the SAME idiom that already matches verbatim in
+   func_80180818_ovl3 and func_8018E164_ovl3 above in this file -- here keeps
+   the address in one register ($t9, reused for both address and value) where
+   the ROM holds it in $v0 separately, so it is downstream register pressure
+   from clusters 1-2, not a defect in the idiom itself.
+   Swept with no effect (all exactly 8/244): `unk30++`, `unk30 += 1`, and a
+   read-into-a-temp-then-store split of the same increment. Worse: hoisting
+   `struct Player *k = &gKirbyState` as a base local (12/244), flipping the
+   two arms of the `& 6` test (19/244), `unk8 -= 1` in place of the explicit
+   subtraction (12/244, i.e. it undoes the reorder win), and writing
+   D_801976B8_ovl3/D_801976BC_ovl3 as the float literals they actually are
+   (14/244 -- unlike its neighbours this function's extern references are
+   already word-exact, so the literal only adds the unmigrated-rodata diff;
+   see the note on func_80180818_ovl3). ABS() vs ABSF() (lever 3): no change.
    Good permuter seed. */
 typedef struct Unk80198830 {
     u8 pad0[8];
@@ -1245,8 +1254,8 @@ void func_8017EA0C_ovl3(s32 arg0) {
         func_800BB468(0, 0);
     }
     D_800E9720[omCurrentObj->objId] = 0xA;
-    D_80198830_ovl3.unk8 = D_80198830_ovl3.unk8 - 1;
     D_80198830_ovl3.unkA = 0xF;
+    D_80198830_ovl3.unk8 = D_80198830_ovl3.unk8 - 1;
     if (D_80198830_ovl3.unk8 != 0) {
         func_800AA864(0x201C5, 2);
     } else {
@@ -2428,35 +2437,57 @@ phase_check:
 #endif
 
 #ifdef NON_MATCHING
-/* FACTORY: 6/208, neighbouring FP-register floor -- measured 2026-08-23.
-   Everything matches except two shared FP constants ($f0 = the 0.0f used
-   for D_800E6690/D_800E3750, $f2 = the D_8019770C_ovl3 extern read into
-   `temp`, used for D_800E6850/D_800E3C90) landing in the OPPOSITE of the
-   two neighbouring registers: the ROM has 0.0f in $f0 and temp in $f2, the
-   draft has them swapped. Swept: moving `temp = D_8019770C_ovl3;` after
-   the first pair of 0.0f stores (worse -- 19/208, forks a whole extra
-   load/address-computation chain) and inlining D_8019770C_ovl3 directly at
-   both use sites instead of through `temp` (same, worse -- 19/208,
-   identical failure shape to the reorder). Same class as the guard-on-the-
-   second-variant "CSE'd load landing in the neighbouring register"
-   floor ($v0/$v1, $a2/$a3), extended here to $f0/$f2. Good permuter seed.
-   RULE MEASURED 2026-08-24, and it is the same one in func_80184538_ovl3 and
-   func_8018E164_ovl3: IDO always hands $f0 to the memory-LOADED float and $f2
-   to the `mtc1 $zero` one, where the ROM does the reverse. It is not source
-   order and it is not schedule order -- putting the 0.0f store FIRST in the
-   source does move the `lwc1` later (35/208) but the two registers stay
-   swapped, and in func_8018E164_ovl3 the ROM's own order is the reverse of
-   its source's. Nothing that keeps the ROM's schedule reaches it. */
+/* FACTORY: 1/208 -- and the ONE remaining word is the rodata MODEL, not the
+   code. See "THE $f0/$f2 RULE IS NOT A REGISTER FLOOR" below; DO NOT UN-GUARD
+   until ovl3's kirby_2 rodata blob is migrated, or IDO's literal duplicates
+   the ROM's word and shifts the whole blob.
+
+   THE $f0/$f2 RULE IS NOT A REGISTER FLOOR -- SOLVED 2026-08-24.
+   The old note here said IDO "always hands $f0 to the memory-LOADED float and
+   $f2 to the `mtc1 $zero` one", and swept declaration order, initialisation
+   order, an explicit `f32 zero` local, a third constant and a computed zero
+   looking for a tie-break. All of that was measuring the wrong thing:
+   D_8019770C_ovl3 IS NOT A VARIABLE. asm/data/ovl3/kirby_2.rodata.s has it as
+   a lone `.float 65535`, i.e. it is IDO's OWN literal-pool entry for the
+   source token `65535.0f`, which splat named because the function was never
+   decompiled. (Same for D_801977D0_ovl3 and D_80197B68_ovl3 -- three separate
+   pool entries for the same value, one per function, exactly as IDO emits.)
+
+   IDO allocates FP registers to memory-loaded values BEFORE constants, so an
+   `extern f32` read wins $f0 over a `mtc1 $zero` no matter how the source is
+   spelled -- that is the invariance the old sweep kept re-measuring. Write the
+   literal instead and both operands are constants, allocated in source order,
+   and the ROM's $f0/$f2 falls straight out. Measured here: 6/208 -> 1/208, and
+   6/130 -> 1/130 on func_8018E164_ovl3.
+
+   Measured and FAILED, so nobody repeats them (all reproduce the identical
+   6/208 with the extern in place, byte-for-byte the same six words): `f32 zero`
+   as a second declared local with both declaration orders and both
+   initialisation orders; zero via `D_8019770C_ovl3 - D_8019770C_ovl3` and via
+   an `s32 iz = 0` (IDO folds both back to `mtc1 $zero`); a third live FP
+   constant to force a recolour (206/214 -- it perturbs the whole function);
+   an extra FP temp used before the pair (177/214); a third use of the 0.0f to
+   outvote the load (113/209); making the non-zero value computed rather than
+   loaded (105/208). Reference counts do not decide it either: measured
+   standalone, 0.0f with three uses still loses $f0 to a load with two.
+
+   THE REMAINING WORD IS A SPLAT TASK, NOT A SOURCE TASK. kirby64.yaml keeps
+   0xF7FB0 as `rodata, ovl3/kirby_2` -- an UNMIGRATED blob -- because the
+   kirby.c/ovl3_6.c file split at 0xDD9A0 is not the real TU boundary (the yaml
+   says so itself). build/kirby.ld places build/src/ovl3/ovl3_6.o(.rodata)
+   immediately BEFORE that blob, so a literal emitted from this C file lands at
+   0xF7FB0 and pushes every word of the blob up by 4. Closing this function for
+   real needs the ovl3 re-split (kirby.c + ovl3_6.c retiled at the true object
+   boundary near func_80179370_ovl3) so that ovl3_6.c owns 0xF7FB0.. as a
+   dotted `.rodata` subsegment and emits these literals itself. Until then this
+   stays guarded at 1/208. */
 extern f32 *D_801926E8_ovl3[];
 extern u8 D_801906D8_ovl3[];
-extern f32 D_8019770C_ovl3;
 extern void func_80122F08(s32);
 extern void func_801230E8(s32, s32, s32);
 extern void play_sound(s32);
 
 void func_80180818_ovl3(s32 arg0) {
-    f32 temp;
-
     gKirbyState.unk30 = 0;
     gKirbyState.unk3C = 0;
     gKirbyState.unk4C = 0;
@@ -2474,13 +2505,12 @@ void func_80180818_ovl3(s32 arg0) {
     gKirbyState.unk154 = 0xD;
     func_8011DC04(0x125);
     if (gKirbyState.unk44 == 0) {
-        temp = D_8019770C_ovl3;
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-        D_800E6850[omCurrentObj->objId] = temp;
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
         D_800E3750[omCurrentObj->objId] = 0.0f;
         D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-        D_800E3C90[omCurrentObj->objId] = temp;
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
         func_801230E8(0x201CF, 0x201D0, 1);
     } else {
         func_801230E8(0x201CB, 0x201CC, 1);
@@ -5102,15 +5132,27 @@ void func_80183FF4_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 8/219: 6 of the 8 are the $f0/$f2 swap between the shared 0.0f and `temp`
-   (see func_8018E164_ovl3); the other 2 are the scheduler putting `i = 0`
-   before rather than after the &D_800EC2E0 addiu. Swept: statement order of
-   the temp assignment (3 positions), double 0.0 literals, a named zero. */
-extern f32 D_801977D0_ovl3;
+/* FACTORY: 8/219. D_801977D0_ovl3 is a lone `.float 65535` in
+   asm/data/ovl3/kirby_2.rodata.s -- IDO's literal pool, not a variable -- so
+   the draft now writes `65535.0f` (see the rule note on func_80180818_ovl3).
+   That fix closes the $f0/$f2 swap in the other two functions of this cluster
+   but NOT here, and this one is the exception worth recording: 6 of the 8 are
+   still the swap (ROM 65535 -> $f2, 0.0f -> $f0; draft the reverse) even
+   though the schedule is word-identical, and the other 2 are the scheduler
+   putting `i = 0` before rather than after the &D_800EC2E0 addiu.
+   Measured and FAILED here on top of the literal fix, all still exactly
+   8/219 with the identical eight words: `gKirbyState.unk7C = 0` as an int
+   literal so the pre-call zero is a separate constant-table entry (this DOES
+   flip the pair in a standalone repro of the same shape, so the real function
+   is deciding it on something else); dropping the pre-call float constant
+   entirely (`unk7C = gKirbyState.unk78`); and reverting the pre-call store to
+   0.0f. Swapping the two array groups is worse (12/219). Earlier sweeps:
+   statement order of the temp assignment (3 positions), double 0.0 literals,
+   a named zero. Good permuter seed -- and note the same rodata-model caveat as
+   its siblings: the literal must not be un-guarded before the ovl3 re-split. */
 extern u8 D_8019080C_ovl3[];
 
 void func_80184538_ovl3(s32 arg0) {
-    f32 temp;
     s32 i;
 
     gKirbyState.unk7C = 0.0f;
@@ -5119,14 +5161,13 @@ void func_80184538_ovl3(s32 arg0) {
     gKirbyState.unk4C = 0;
     gKirbyState.unk7 = 0;
     func_8011CF58();
-    temp = D_801977D0_ovl3;
     D_800DDFD0[omCurrentObj->objId] = 0x36;
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = temp;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = temp;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E83E0[omCurrentObj->objId] = 0;
     gKirbyState.unk78 = -D_800E6A10[omCurrentObj->objId];
     play_sound(0x24);
@@ -11755,27 +11796,21 @@ void func_8018DFB4_ovl3(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* FACTORY: 6/130: instruction-for-instruction exact; only $f0 and $f2 are
-   swapped. IDO gives $f0 to the float value whose definition lands
-   EARLIEST in the scheduled stream (temp's lwc1 in the prologue); the ROM
-   gives it to the later-defined shared 0.0f. Swept in wave 8 on top of the
-   earlier sweep: dropping the local entirely (51 diffs -- the lwc1 sinks
-   out of the prologue), an explicit `f32 zero` local, and both declaration
-   orders of `zero`/`temp`; the register choice tracks the schedule, not
-   the source. Re-confirmed 2026-08-23, identical 6/130 -- same
-   neighbouring-register floor class as func_80180818_ovl3 above in this
-   file. Good permuter seed. */
-extern f32 D_80197B68_ovl3;
+/* FACTORY: 1/130, and the one word is the rodata MODEL, not the code.
+   D_80197B68_ovl3 is a lone `.float 65535` in asm/data/ovl3/kirby_2.rodata.s,
+   i.e. IDO's own literal-pool entry for the source token `65535.0f`, not a
+   variable. Writing the literal takes this from 6/130 to 1/130 -- see the long
+   note on func_80180818_ovl3 above for the rule, the failed sweeps and why the
+   last word needs the ovl3 re-split rather than a source change. DO NOT
+   UN-GUARD before that split: the literal would duplicate the ROM's rodata
+   word and shift the kirby_2 blob. */
 extern f32 D_80198848_ovl3[];
 extern f32 D_80198858_ovl3[];
 void func_8018E36C_ovl3(s32, s32, f32);
 
 void func_8018E164_ovl3(s32 arg0) {
-    f32 temp;
-
     gKirbyState.unk30 = 0;
     func_8011CF58();
-    temp = D_80197B68_ovl3;
     gKirbyState.abilityInUse = gKirbyState.ability;
     D_800DDFD0[omCurrentObj->objId] = 0x41;
     D_80198848_ovl3[0] = D_800E64D0[omCurrentObj->objId];
@@ -11783,7 +11818,7 @@ void func_8018E164_ovl3(s32 arg0) {
     D_80198848_ovl3[2] = D_800E6850[omCurrentObj->objId];
     D_800E6690[omCurrentObj->objId] = 0.0f;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = temp;
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     if (D_800E8920[omCurrentObj->objId] == 0) {
         D_80198858_ovl3[0] = D_800E3210[omCurrentObj->objId];
         D_80198858_ovl3[1] = D_800E3750[omCurrentObj->objId];
@@ -11791,7 +11826,7 @@ void func_8018E164_ovl3(s32 arg0) {
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = temp;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_801693C4_ovl3(0x14);
     func_801230E8(0x20041, 0x20042, 0);
     D_800DF310[omCurrentObj->objId] = func_8018E36C_ovl3;

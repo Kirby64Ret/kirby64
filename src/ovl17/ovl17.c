@@ -300,7 +300,6 @@ void func_801DB1E0_ovl17(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DB1E0_ovl17.s")
 #endif
 
-#if defined(MIPS_TO_C) || defined(PORT)
 /* 02's per-tick hook, installed into D_800DF150 by func_801DB1E0_ovl17 above.
  * D_800E83E0 is its request mailbox: 1 hands the thread over to the death
  * sequence (func_801DC460_ovl17) and 2 is the "start the fight" cue. Each tick
@@ -315,16 +314,17 @@ void func_801DB1E0_ovl17(struct GObj *arg0) {
  * above started referencing it; it is drafted here so that arm does not
  * introduce a new undefined symbol.
  *
- * FACTORY: 6/199 words differ, instruction count exact, every branch matches.
- * The six are one neighbouring-register swap: the ROM holds &D_800E83E0[objId]
- * in $a1 and the loaded request in $v0, IDO the other way round. Swept:
- * declaring the pointer first, and naming the masked request in its own local
- * -- both 6/199.
- * What paid: caching the mailbox ELEMENT ADDRESS in a pointer local (the ROM
- * stores through it) and writing the two-way dispatch as a `switch` with case
- * 2 before case 1 -- IDO sorts the compares by value but lays the bodies in
- * source order, and the ROM's case-1 body sits at the HIGHER address
- * (LEVERS lever 34). 24/199 -> 6/199.
+ * MATCHED. Two spellings are load-bearing:
+ *  - the two-way dispatch is a `switch` with case 2 written BEFORE case 1:
+ *    IDO sorts the compares by value but lays the bodies out in source order,
+ *    and the ROM's case-1 body sits at the HIGHER address (LEVERS lever 34).
+ *  - the mailbox element is spelled inline, `D_800E83E0[g->objId]`, at BOTH
+ *    uses. An earlier note here recommended the opposite -- caching the
+ *    element ADDRESS in an `s32 *req` local -- and that is what held this at
+ *    6/199: a declared pointer takes $v0 as its statement result, pushing the
+ *    loaded request to $a1, while the ROM has the CSE temp in $a1 and the
+ *    request in $v0. Deleting the local is the whole fix (LEVERS: try
+ *    DELETING before adding).
  *
  * PORT: shared rather than duplicated; the `(s32 *)` view of D_800E9AA0 is the
  * flat 4-byte-slot vram layout the host uses. */
@@ -346,13 +346,11 @@ void func_801DC460_ovl17(struct GObj *);
 
 void func_801DBA8C_ovl17(struct GObj *arg0) {
     struct GObj *g;
-    s32 *req;
 
     g = omCurrentObj;
-    req = &D_800E83E0[g->objId];
-    switch (*req & 0xFFFF) {
+    switch (D_800E83E0[g->objId] & 0xFFFF) {
         case 2:
-            *req = 0;
+            D_800E83E0[g->objId] = 0;
             play_sound(0xD8);
             func_800BB468(0, 0);
             g = omCurrentObj;
@@ -418,9 +416,6 @@ void func_801DBA8C_ovl17(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DBA8C_ovl17.s")
-#endif
 
 #if defined(MIPS_TO_C) || defined(PORT)
 /* 02's free-look integrator, called by func_801DBA8C_ovl17 above while the

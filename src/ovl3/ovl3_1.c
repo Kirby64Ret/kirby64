@@ -1659,7 +1659,16 @@ void func_8015439C_ovl3(f32 *arg0) {
         variant needs further register work, not just the length fix. Swept:
         `s32 ret = 0` at declaration and as a statement, goto into a shared
         return block, trailing `return 0` vs falling off, and the literal
-        separate-if split (worse, 23/29). Good permuter seed. */
+        separate-if split (worse, 23/29).
+   Re-swept 2026-08-24, and the shape space is now closed rather than merely
+   sampled -- the `||` form below is the BEST of everything tried, and every
+   single-exit rewrite is strictly worse: `goto done` from two separate ifs,
+   the same with a `s32 ret` local, the `||` test branching to a `done:`
+   label, and nested ifs with a `ret` local ALL come out at exactly 22/28,
+   and the separate-if forms (with dst hoisted, with dst assigned late, with
+   &D_8012E944[1], and with the pointer store split out of the test) at
+   23/29, 23/29, 23/29 and 25/31. The length fix and the register fix are not
+   reachable from the same shape. Good permuter seed. */
 s32 func_80154428_ovl3(f32 *arg0) {
     extern f32 D_8012E948[];
     f32 *dst = D_8012E948;

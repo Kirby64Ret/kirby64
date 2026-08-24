@@ -14,6 +14,17 @@
 /* 3.096774f = 3.096774f : now emitted by this TU */
 /* -0.30967742f = -0.30967742f : now emitted by this TU */
 
+/* These four are called all over this TU with no prototype in scope, which
+   makes IDO give each an implicit `int f()`. That is not inert: the phantom
+   return value keeps $v0 busy across every call site, and func_801DD590_ovl14
+   was 6 words out for exactly that reason (the ROM parks
+   &((s32 *)D_800E9AA0)[objId] in $v0 right after a call; IDO was forced to
+   $a1). Declaring them void is a type correction and it closes that gap. */
+void func_800AA018(s32);
+void func_800AF27C(void);
+void ohSleep(s32);
+void play_sound(s32);
+
 extern u32 D_801CB470;
 extern s32 D_800D7154;
 
@@ -685,126 +696,7 @@ void func_801DD588_ovl14(GObj *arg0) {
 
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 6/400 measured, INSTRUCTION COUNT EXACT.  The whole residue is one
-   caller-saved temp name: the ROM parks &((s32 *)D_800E9AA0)[objId] in $v0 for
-   the two read-modify-write flag statements at the tail, IDO picks $a1.  Swept
-   and rejected: the expanded `x = x | 8` form, `*(s32 *)&D_800E9AA0[i]`,
-   `*((s32 *)D_800E9AA0 + i)`, a u32 element type, an explicit `s32 *flags`
-   local (that one costs 2 instructions and rotates $v1->$a1 across the whole
-   tail, 72/402), a second f32 local for the second chain, and swapping the
-   local declaration order -- all six give the identical $a1.
-   Worth keeping from this derivation: `gen->unk4C->pos.x` must be written
-   `gEntitiesNextPosXArray[i] + (D_800E6A10[i] * 90.0f)`, NOT the other way
-   round -- lever 2, and that single operand swap was worth 20 of the 26 words
-   the first compile was out (26/400 -> 6/400), because the FP temp names of
-   all six emitter stores cascade off it. */
-struct Ovl14GenXform {
-    u8 filler0[4];
-    Vector pos;
-    Vector angle;
-};
-
-struct Ovl14Generator {
-    u8 filler0[0x4C];
-    struct Ovl14GenXform *unk4C;
-};
-
-void func_801DD590_ovl14(GObj *arg0) {
-    struct Ovl14Generator *gen;
-    f32 spin;
-
-    D_800DDFD0[omCurrentObj->objId] = 2;
-    D_800D7098.unk10 = 1;
-    if (arg0->animTimer < 4.0f) {
-        spin = 8.0f;
-    } else if (arg0->animTimer < 8.0f) {
-        spin = 6.0f;
-    } else if (arg0->animTimer < 12.0f) {
-        spin = 4.0f;
-    } else if (arg0->animTimer < 16.0f) {
-        spin = 2.0f;
-    } else if (arg0->animTimer < 20.0f) {
-        spin = 16.0f;
-    } else if (arg0->animTimer < 24.0f) {
-        spin = 14.0f;
-    } else if (arg0->animTimer < 28.0f) {
-        spin = 12.0f;
-    } else {
-        spin = 10.0f;
-    }
-    func_801DF75C_ovl14(spin);
-    func_800AA018(0x1043D);
-    func_800AA018(0x1043E);
-    D_800E9AA0[omCurrentObj->objId] = 3;
-    D_800EA360[omCurrentObj->objId] = &D_801D9D80;
-    ohSleep(0x24);
-    play_sound(0x18A);
-    ohSleep(0xF);
-    D_800EC4A0[omCurrentObj->objId] = func_800A8234(6, 3, 6);
-    gen = (struct Ovl14Generator *) D_800EC4A0[omCurrentObj->objId];
-    if (gen->unk4C != NULL) {
-        gen->unk4C->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId] + (D_800E6A10[omCurrentObj->objId] * 90.0f);
-        gen->unk4C->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] + 170.0f;
-        gen->unk4C->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-        gen->unk4C->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-        gen->unk4C->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-        gen->unk4C->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-    }
-    func_800AF27C();
-    func_800AA018(0x1043F);
-    func_800AA018(0x10440);
-    func_800AF27C();
-    if (arg0->animTimer < 2.0f) {
-        spin = 16.0f;
-    } else if (arg0->animTimer < 4.0f) {
-        spin = 12.0f;
-    } else if (arg0->animTimer < 6.0f) {
-        spin = 8.0f;
-    } else if (arg0->animTimer < 8.0f) {
-        spin = 4.0f;
-    } else if (arg0->animTimer < 10.0f) {
-        spin = 0.0f;
-    } else if (arg0->animTimer < 12.0f) {
-        spin = 28.0f;
-    } else if (arg0->animTimer < 14.0f) {
-        spin = 24.0f;
-    } else if (arg0->animTimer < 16.0f) {
-        spin = 20.0f;
-    } else if (arg0->animTimer < 18.0f) {
-        spin = 16.0f;
-    } else if (arg0->animTimer < 20.0f) {
-        spin = 12.0f;
-    } else if (arg0->animTimer < 22.0f) {
-        spin = 8.0f;
-    } else if (arg0->animTimer < 24.0f) {
-        spin = 4.0f;
-    } else if (arg0->animTimer < 26.0f) {
-        spin = 0.0f;
-    } else if (arg0->animTimer < 28.0f) {
-        spin = 28.0f;
-    } else if (arg0->animTimer < 30.0f) {
-        spin = 24.0f;
-    } else {
-        spin = 20.0f;
-    }
-    func_801DF580_ovl14(spin);
-    func_800AA018(0x10441);
-    func_800AA018(0x10442);
-    ((s32 *) D_800E9AA0)[omCurrentObj->objId] |= 8;
-    D_800EA360[omCurrentObj->objId] = &D_801D9CCC;
-    play_sound(0x18B);
-    func_800AF27C();
-    func_800AF27C();
-    func_800AF27C();
-    func_800AA018(0x10443);
-    func_800AA018(0x10444);
-    ohSleep(5);
-    ((s32 *) D_800E9AA0)[omCurrentObj->objId] &= ~8;
-    func_800AF27C();
-    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
-}
-#elif defined(PORT)
+#ifdef PORT
 /* PORT: behavioural port of the listing.  Two things diverge from the N64 arm:
    the generator/emitter node offsets (the host's 8-byte `next` pointer moves
    the emitter pointer from +0x4C to +0x58 and the vectors from +0x4/+0x10 to
@@ -922,7 +814,125 @@ void func_801DD590_ovl14(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DD590_ovl14.s")
+/* MATCHED.  Two spellings are load-bearing and both were paid for:
+   - `gen->unk4C->pos.x` must be written
+     `gEntitiesNextPosXArray[i] + (D_800E6A10[i] * 90.0f)`, NOT the other way
+     round -- lever 2; that operand swap alone was worth 20 words, because the
+     FP temp names of all six emitter stores cascade off it.
+   - the last 6 words were NOT a source-shape residue at all: the ROM parks
+     &((s32 *)D_800E9AA0)[objId] in $v0 for the two read-modify-write flag
+     statements, and IDO could only reach $a1 while ohSleep / func_800AA018 /
+     func_800AF27C / play_sound were implicitly `int f()` in this TU and so
+     kept $v0 nominally busy.  The void prototypes at the top of the file are
+     what close it; every respelling of the `|= 8` statement itself (expanded
+     `x = x | 8`, `*(s32 *)&D_800E9AA0[i]`, `*((s32 *)D_800E9AA0 + i)`, a u32
+     element type, an explicit `s32 *flags` local, declaration reorder) gives
+     the identical $a1. */
+struct Ovl14GenXform {
+    u8 filler0[4];
+    Vector pos;
+    Vector angle;
+};
+
+struct Ovl14Generator {
+    u8 filler0[0x4C];
+    struct Ovl14GenXform *unk4C;
+};
+
+void func_801DD590_ovl14(GObj *arg0) {
+    struct Ovl14Generator *gen;
+    f32 spin;
+
+    D_800DDFD0[omCurrentObj->objId] = 2;
+    D_800D7098.unk10 = 1;
+    if (arg0->animTimer < 4.0f) {
+        spin = 8.0f;
+    } else if (arg0->animTimer < 8.0f) {
+        spin = 6.0f;
+    } else if (arg0->animTimer < 12.0f) {
+        spin = 4.0f;
+    } else if (arg0->animTimer < 16.0f) {
+        spin = 2.0f;
+    } else if (arg0->animTimer < 20.0f) {
+        spin = 16.0f;
+    } else if (arg0->animTimer < 24.0f) {
+        spin = 14.0f;
+    } else if (arg0->animTimer < 28.0f) {
+        spin = 12.0f;
+    } else {
+        spin = 10.0f;
+    }
+    func_801DF75C_ovl14(spin);
+    func_800AA018(0x1043D);
+    func_800AA018(0x1043E);
+    D_800E9AA0[omCurrentObj->objId] = 3;
+    D_800EA360[omCurrentObj->objId] = &D_801D9D80;
+    ohSleep(0x24);
+    play_sound(0x18A);
+    ohSleep(0xF);
+    D_800EC4A0[omCurrentObj->objId] = func_800A8234(6, 3, 6);
+    gen = (struct Ovl14Generator *) D_800EC4A0[omCurrentObj->objId];
+    if (gen->unk4C != NULL) {
+        gen->unk4C->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId] + (D_800E6A10[omCurrentObj->objId] * 90.0f);
+        gen->unk4C->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId] + 170.0f;
+        gen->unk4C->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+        gen->unk4C->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
+        gen->unk4C->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
+        gen->unk4C->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
+    }
+    func_800AF27C();
+    func_800AA018(0x1043F);
+    func_800AA018(0x10440);
+    func_800AF27C();
+    if (arg0->animTimer < 2.0f) {
+        spin = 16.0f;
+    } else if (arg0->animTimer < 4.0f) {
+        spin = 12.0f;
+    } else if (arg0->animTimer < 6.0f) {
+        spin = 8.0f;
+    } else if (arg0->animTimer < 8.0f) {
+        spin = 4.0f;
+    } else if (arg0->animTimer < 10.0f) {
+        spin = 0.0f;
+    } else if (arg0->animTimer < 12.0f) {
+        spin = 28.0f;
+    } else if (arg0->animTimer < 14.0f) {
+        spin = 24.0f;
+    } else if (arg0->animTimer < 16.0f) {
+        spin = 20.0f;
+    } else if (arg0->animTimer < 18.0f) {
+        spin = 16.0f;
+    } else if (arg0->animTimer < 20.0f) {
+        spin = 12.0f;
+    } else if (arg0->animTimer < 22.0f) {
+        spin = 8.0f;
+    } else if (arg0->animTimer < 24.0f) {
+        spin = 4.0f;
+    } else if (arg0->animTimer < 26.0f) {
+        spin = 0.0f;
+    } else if (arg0->animTimer < 28.0f) {
+        spin = 28.0f;
+    } else if (arg0->animTimer < 30.0f) {
+        spin = 24.0f;
+    } else {
+        spin = 20.0f;
+    }
+    func_801DF580_ovl14(spin);
+    func_800AA018(0x10441);
+    func_800AA018(0x10442);
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] |= 8;
+    D_800EA360[omCurrentObj->objId] = &D_801D9CCC;
+    play_sound(0x18B);
+    func_800AF27C();
+    func_800AF27C();
+    func_800AF27C();
+    func_800AA018(0x10443);
+    func_800AA018(0x10444);
+    ohSleep(5);
+    ((s32 *) D_800E9AA0)[omCurrentObj->objId] &= ~8;
+    func_800AF27C();
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+}
 #endif
 
 void func_801DDBD0_ovl14(GObj *arg0) {
@@ -1544,47 +1554,41 @@ extern void func_80169430_ovl3(s32, s32, s32, s32);
 extern s32 D_801D9E34;
 extern s32 D_801D9DC8;
 
-/* BLOCKED by the +8 frame anomaly, decided not swept. Every instruction is
- * correct; the only residue is the frame constant and the four sp offsets that
- * follow from it. The ROM is frame 0x38 with the struct at 0x18, i.e. locals
- * base 0x18 and L = 0x20; IDO computes align8(0x1C + L) = 0x40 and puts the
- * struct at 0x20. 0x20 mod 8 == 0, so this shape cannot match. Shrinking the
- * struct to 0x1C does restore frame 0x38 but then the struct sits at 0x1C and
- * all four offsets are +4 (measured 4/30 and 2/30). Nothing below 0x18 is
- * available to absorb the difference -- $ra is at 0x14 and the outgoing-arg
- * area is 0x00..0x0F. */
-#ifdef NON_MATCHING
+/* MATCHED, and the earlier "+8 frame anomaly, cannot match" note here was
+ * wrong about the cause. The residue was never the struct's size: writing
+ * `func_80111ECC(func_80111C88(...))` as ONE nested call makes IDO reserve a
+ * 4-byte stack temp for the intermediate, which lifts the locals base from
+ * 0x18 to 0x1C and rounds the frame 0x38 -> 0x40. A named local for the
+ * intermediate costs the same 4 bytes. Assigning it into the already-homed
+ * PARAMETER costs nothing, and that is the ROM's frame exactly. (Verified by
+ * deleting the inner call outright: frame drops to 0x38 immediately.) */
 s32 func_801DEC34_ovl14(GObj *arg0) {
     struct Ovl14AnimInfo sp18;
 
     func_80111550(omCurrentObj->objId);
-    func_80111ECC(func_80111C88(&D_801D9E34, omCurrentObj->objId));
+    arg0 = (GObj *) func_80111C88(&D_801D9E34, omCurrentObj->objId);
+    func_80111ECC((struct Ovl14AnimObj *) arg0);
     if (func_80110150(&sp18) != 0) {
         func_80169430_ovl3(sp18.unkC, sp18.unk0, sp18.unk1, 0xF);
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DEC34_ovl14.s")
-#endif
 
-/* Same +8 frame block as func_801DEC34_ovl14 above; 2/30. */
-#ifdef NON_MATCHING
+/* MATCHED, same shape and same parameter-as-scratch spelling as
+ * func_801DEC34_ovl14 above. */
 s32 func_801DECAC_ovl14(GObj *arg0) {
     struct Ovl14AnimInfo sp18;
 
     func_80111550(omCurrentObj->objId);
-    func_80111ECC(func_80111C88(&D_801D9DC8, omCurrentObj->objId));
+    arg0 = (GObj *) func_80111C88(&D_801D9DC8, omCurrentObj->objId);
+    func_80111ECC((struct Ovl14AnimObj *) arg0);
     if (func_80110150(&sp18) != 0) {
         func_80169430_ovl3(sp18.unkC, 0, 0, 0x10);
         return 1;
     }
     return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DECAC_ovl14.s")
-#endif
 
 void func_801DED24_ovl14(void) {
     s32 temp;

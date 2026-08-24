@@ -1410,28 +1410,18 @@ void func_801E8EC8_ovl9(GObj *arg0) {
     func_8019F3F0_ovl7();
 }
 
-/* FACTORY: 65/201 -- measured 2026-08-23, correcting the prior note's D
-   count (word count was right, "1/201" undercounted the cascade). First
-   101 instructions byte-exact, frame 0x40 and all three stack slots
-   (0x20/0x2C/0x34) exact via the five pad locals. Root cause is ONE extra
-   late_rodata constant: right after the second atan2f call, IDO emits a
-   spurious lwc1 of 1.5707964f into $f14 (byte value 3FC90FDB, same bits
-   as the ABSF-compare constant and the upper-clamp constant used 20 lines
-   later) that the ROM does not have at all -- the ROM's next instruction
-   after "lw $a1, omCurrentObj" is straight into loading D_8021D0A8_ovl9
-   (6.2831855f) for the second while-loop-pair. Ruled out: materializing
-   ABSF(ang) into a named local before the compare (byte-identical output,
-   zero effect -- the extra load is not tied to the ABSF expansion). Ruled
-   out: m2c can't re-derive this function fresh from the current ctx.c
-   (fails on an unrelated PositionState field before reaching this one).
-   Everything past [102] is the same shift-by-one cascade re-syncing once
-   this one spurious load is found and removed -- looks like IDO global
-   instruction scheduling speculatively hoisting an independent pure float
-   load across the two while-loops from its real (much later) use point in
-   the hysteresis clamp; a fix likely needs the clamp block restructured
-   (e.g. caching D_800EA6E0[objId] in a named local per lever 10) rather
-   than anything local to this while-loop preamble. */
-#ifdef NON_MATCHING
+/* MATCHED. Same shape as func_801EA2F8_ovl9 below (same call sequence, same
+   frame, same five pad locals); the two spellings that were wrong here:
+   - the last statement is `D_800EA6E0[i] + D_800EAA60[i]`, the donor's
+     operand order, not the reverse (worth 4 words on its own);
+   - the bearing test's 90-degree constant is written `(f32) 1.5707964`
+     rather than `1.5707964f`. It has to be a DIFFERENT constant node from
+     the identical-valued upper clamp 20 lines below, or IDO's CSE merges
+     the two loads and hoists the survivor across both while-loop pairs --
+     one spurious `lwc1` right after the second atan2f, and every word from
+     there on shifts by one (that single load was the whole 65/201). The
+     earlier note here read the hoist as a scheduling floor needing the
+     clamp block restructured; it is just the shared literal. */
 extern f32 sqrtf(f32);
 extern f32 atan2f(f32, f32);
 
@@ -1459,7 +1449,7 @@ void func_801E8F74_ovl9(struct GObj *arg0) {
         while (ang <= -3.1415927f) {
             ang = ang + 6.2831855f;
         }
-        if (1.5707964f < ABSF(ang)) {
+        if ((f32) 1.5707964 < ABSF(ang)) {
             dist = -dist;
         }
         ang = atan2f(dist, dy) - D_800EAA60[omCurrentObj->objId];
@@ -1482,11 +1472,8 @@ void func_801E8F74_ovl9(struct GObj *arg0) {
         }
     }
     D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
-    D_800EA8A0[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] + D_800EA6E0[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E8F74_ovl9.s")
-#endif
 
 extern f32 sqrtf(f32);
 extern f32 atan2f(f32, f32);
@@ -1787,7 +1774,7 @@ void func_801EA048_ovl9(struct GObj *arg0) {
  * order); this reads as a prologue-vs-delay-slot store-scheduling floor,
  * not a source-spelling residue. */
 void func_801EA2F8_ovl9(struct GObj *);
-void func_801EA628_ovl9(void);
+void func_801EA628_ovl9();
 void func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 
@@ -1862,10 +1849,6 @@ void func_801EA2F8_ovl9(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + D_800EAA60[omCurrentObj->objId];
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 15/221, stack slot 0x44 vs the ROM's 0x30 for the first spilled
-   float, with the FP temps renamed to follow.  The first 8 instructions and
-   the whole call sequence are the ROM's. */
 extern void func_800B2AD4(Vector *, s32, u32);
 extern float atan2f(float, float);
 /* Shooter aim tick: take a point 100 units above Kirby's feet (foot
@@ -1873,139 +1856,70 @@ extern float atan2f(float, float);
  * derive the target pitch/yaw with atan2, and walk the tracked pitch
  * D_800EA6E0 (clamped [0, 30deg]) and yaw D_800EAC20 (wrap-aware,
  * renormalized to [0, 2pi)) toward it in pi/80 steps; write both onto
- * bone 2's X/Y rotation. */
-void func_801EA628_ovl9(void) {
-    f32 sp30;
-    f32 sp34;
-    f32 sp38;
+ * bone 2's X/Y rotation.
+ *
+ * MATCHED. Same shape as func_801E92DC_ovl9 above (identical call
+ * sequence and .late_rodata pool bar the 30deg clamp): three scalars
+ * before the Vector and `t` after it puts the Vector at the ROM's 0x30
+ * and the atan2f spill at 0x44. Empty parens on the declaration, as
+ * there: the ROM homes an unused $a0. */
+void func_801EA628_ovl9(s32 arg0) {
     f32 pitch;
     f32 yaw;
-    f32 d;
-    u32 id;
+    f32 diff;
+    Vector sp30;
+    f32 t;
 
-    sp30 = gEntitiesNextPosXArray[0];
-    sp34 = gEntitiesNextPosYArray[0] + 20.0f + 80.0f;
-    sp38 = gEntitiesNextPosZArray[0];
-    func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
-    pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
-    yaw = atan2f(sp30, sp38);
+    sp30.x = gEntitiesNextPosXArray[0];
+    sp30.y = gEntitiesNextPosYArray[0] + 20.0f + 80.0f;
+    sp30.z = gEntitiesNextPosZArray[0];
+    func_800B2AD4(&sp30, 0, 0xFFFF);
+    pitch = atan2f(sqrtf((sp30.x * sp30.x) + (sp30.z * sp30.z)), sp30.y);
+    yaw = atan2f(sp30.x, sp30.z);
     while (pitch >= 3.1415927f) {
         pitch -= 3.1415927f;
     }
     while (pitch <= -3.1415927f) {
         pitch += 3.1415927f;
     }
-    id = omCurrentObj->objId;
-    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
-        D_800EA6E0[id] -= 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] < 0.0f) {
-            D_800EA6E0[id] = 0.0f;
+    if ((pitch + 0.039269909f) < D_800EA6E0[omCurrentObj->objId]) {
+        D_800EA6E0[omCurrentObj->objId] -= 0.039269909f;
+        if (D_800EA6E0[omCurrentObj->objId] < 0.0f) {
+            D_800EA6E0[omCurrentObj->objId] = 0.0f;
         }
-    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
-        D_800EA6E0[id] += 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] > 0.5235988f) {
-            D_800EA6E0[id] = 0.5235988f;
+    } else if (D_800EA6E0[omCurrentObj->objId] < (pitch - 0.039269909f)) {
+        D_800EA6E0[omCurrentObj->objId] += 0.039269909f;
+        if (D_800EA6E0[omCurrentObj->objId] > 0.5235988f) {
+            D_800EA6E0[omCurrentObj->objId] = 0.5235988f;
         }
     }
-    id = omCurrentObj->objId;
-    d = yaw - D_800EAC20[id];
-    if (((d < 0.0f) ? -d : d) > 3.1415927f) {
-        if (d < 0.0f) {
-            d = (yaw + 6.2831855f) - D_800EAC20[id];
+    diff = yaw - D_800EAC20[omCurrentObj->objId];
+    t = (diff < 0) ? -diff : diff;
+    if (t > 3.1415927f) {
+        if (diff < 0.0f) {
+            diff = (yaw + 6.2831855f) - D_800EAC20[omCurrentObj->objId];
         } else {
-            d = yaw - (D_800EAC20[id] + 6.2831855f);
+            diff = yaw - (D_800EAC20[omCurrentObj->objId] + 6.2831855f);
         }
     }
-    if (((d < 0.0f) ? -d : d) > 0.03926991f) {
-        D_800EAC20[id] += (d > 0.0f) ? 0.03926991f : -0.03926991f;
-        id = omCurrentObj->objId;
-        while (D_800EAC20[id] > 6.2831855f) {
-            D_800EAC20[id] -= 6.2831855f;
-            id = omCurrentObj->objId;
-        }
-        while (D_800EAC20[id] < 0.0f) {
-            D_800EAC20[id] += 6.2831855f;
-            id = omCurrentObj->objId;
-        }
-    }
-    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
-    id = omCurrentObj->objId;
-    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
-}
-#elif defined(PORT)
-extern void func_800B2AD4(Vector *, s32, u32);
-extern float atan2f(float, float);
-/* Shooter aim tick: take a point 100 units above Kirby's feet (foot
- * +20 +80), transform it into the turret frame via func_800B2AD4,
- * derive the target pitch/yaw with atan2, and walk the tracked pitch
- * D_800EA6E0 (clamped [0, 30deg]) and yaw D_800EAC20 (wrap-aware,
- * renormalized to [0, 2pi)) toward it in pi/80 steps; write both onto
- * bone 2's X/Y rotation. */
-void func_801EA628_ovl9(void) {
-    f32 sp30;
-    f32 sp34;
-    f32 sp38;
-    f32 pitch;
-    f32 yaw;
-    f32 d;
-    u32 id;
-
-    sp30 = gEntitiesNextPosXArray[0];
-    sp34 = gEntitiesNextPosYArray[0] + 20.0f + 80.0f;
-    sp38 = gEntitiesNextPosZArray[0];
-    func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
-    pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
-    yaw = atan2f(sp30, sp38);
-    while (pitch >= 3.1415927f) {
-        pitch -= 3.1415927f;
-    }
-    while (pitch <= -3.1415927f) {
-        pitch += 3.1415927f;
-    }
-    id = omCurrentObj->objId;
-    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
-        D_800EA6E0[id] -= 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] < 0.0f) {
-            D_800EA6E0[id] = 0.0f;
-        }
-    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
-        D_800EA6E0[id] += 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] > 0.5235988f) {
-            D_800EA6E0[id] = 0.5235988f;
-        }
-    }
-    id = omCurrentObj->objId;
-    d = yaw - D_800EAC20[id];
-    if (((d < 0.0f) ? -d : d) > 3.1415927f) {
-        if (d < 0.0f) {
-            d = (yaw + 6.2831855f) - D_800EAC20[id];
+    t = (diff < 0) ? -diff : diff;
+    if (t > 0.039269909f) {
+        if (diff > 0.0f) {
+            t = 0.039269909f;
         } else {
-            d = yaw - (D_800EAC20[id] + 6.2831855f);
+            t = -0.039269909f;
+        }
+        D_800EAC20[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId] + t;
+        while (D_800EAC20[omCurrentObj->objId] > 6.2831855f) {
+            D_800EAC20[omCurrentObj->objId] -= 6.2831855f;
+        }
+        while (D_800EAC20[omCurrentObj->objId] < 0.0f) {
+            D_800EAC20[omCurrentObj->objId] += 6.2831855f;
         }
     }
-    if (((d < 0.0f) ? -d : d) > 0.03926991f) {
-        D_800EAC20[id] += (d > 0.0f) ? 0.03926991f : -0.03926991f;
-        id = omCurrentObj->objId;
-        while (D_800EAC20[id] > 6.2831855f) {
-            D_800EAC20[id] -= 6.2831855f;
-            id = omCurrentObj->objId;
-        }
-        while (D_800EAC20[id] < 0.0f) {
-            D_800EAC20[id] += 6.2831855f;
-            id = omCurrentObj->objId;
-        }
-    }
-    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
-    id = omCurrentObj->objId;
-    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800EAC20[omCurrentObj->objId];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801EA628_ovl9.s")
-#endif
 
 s32 func_801ACC34_ovl7(s32, s32);
 

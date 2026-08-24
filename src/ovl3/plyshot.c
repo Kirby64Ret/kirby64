@@ -1433,18 +1433,29 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* FACTORY: 43/273, first draft — NOT swept, one compile only.
-   Decoded from the listing against the matched family exemplar
-   func_8015ADF8_ovl3 in this TU; all calls, constants, branch polarities and
-   the two D_800D7238/D_800D723C scratch-global arms are read directly off
-   asm/nonmatchings/ovl3/plyshot/func_8015D7A0_ovl3.s, so the residue should be
-   allocation-shaped rather than structural. Good permuter seed. */
+/* FACTORY: 36/273 -- swept 2026-08-24, down from 43/273, and the residue is
+   now a SINGLE cluster instead of three.
+   Fixed: the first draft had both inner `& 4` tests written true-case-first,
+   so IDO chose the opposite branch polarity from the ROM (`beqzl` for the
+   ROM's `bnel`) and pre-loaded the wrong one of each constant pair
+   (0x41200000 for 0x40A00000, 0xC1880000 for 0xC1080000). Writing the EQUAL
+   case first (LEVERS lever 5) fixes both, 43 -> 37. The `mul.s` slot on the
+   D_800E64D0 store is worth one more: with `v` a named local and
+   D_800E6A10[] a direct array load, IDO emits `load, local` however the
+   product is spelled, but folding the scale into an INLINE ternary flips it
+   to the ROM's `local, load` (LEVERS lever 21), 37 -> 36.
+   What is LEFT is one register-naming cluster with a long cascade: the ROM
+   holds the `omCurrentObj->objId` temp in $v1 and the CSE'd D_800E8AE0 /
+   D_800EA8A0 table bases in $v0/$a1; this draft has objId in $v0 and the
+   bases in $v1, and every dependent `sll`/`addu`/`addu $at` inherits the
+   swap. Swept with no effect (all exactly 36/273): caching `omCurrentObj`
+   in a `GObj *obj` local, and dropping the now-unused `f32 v`.
+   Good permuter seed -- one two-register exchange from byte-exact. */
 void func_8015D7A0_ovl3(s32 arg0) {
     extern f32 D_800D7238;
     extern f32 D_800D723C;
     extern f32 **D_80192E9C_ovl3;
     f32 temp;
-    f32 v;
 
     D_800EA520[omCurrentObj->objId] = 0;
     D_800E0650[omCurrentObj->objId] = 1;
@@ -1475,20 +1486,16 @@ void func_8015D7A0_ovl3(s32 arg0) {
     func_800AA018(0x20280);
     if (D_800EC2E0[omCurrentObj->objId].as_s32 == 1) {
         gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
-        if (D_800E8AE0[omCurrentObj->objId] & 4) {
-            v = 5.0f;
-        } else {
-            v = 10.0f;
-        }
-        D_800E64D0[omCurrentObj->objId] = v * D_800E6A10[omCurrentObj->objId];
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] *
+            (((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 10.0f : 5.0f);
         D_800E6690[omCurrentObj->objId] = 0.0f;
         D_800E6850[omCurrentObj->objId] = 10.0f;
     } else {
         gEntitiesAngleXArray[omCurrentObj->objId] = 1.57079637f;
-        if (D_800E8AE0[omCurrentObj->objId] & 4) {
-            D_800E3210[omCurrentObj->objId] = -8.5f;
-        } else {
+        if ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) {
             D_800E3210[omCurrentObj->objId] = -17.0f;
+        } else {
+            D_800E3210[omCurrentObj->objId] = -8.5f;
         }
         D_800E3750[omCurrentObj->objId] = 0.0f;
         D_800E3C90[omCurrentObj->objId] = 17.0f;
@@ -1830,14 +1837,12 @@ void func_8015E754_ovl3(s32 arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 1/275, mul.s source-operand SLOT (invariant per LEVERS.md entry
- * 84, reconfirmed here a fourth time: `D_800E6A10[objId] * v` and `v *
- * D_800E6A10[objId]` both compile to the identical `mul.s $f16,$f10,$f0`
- * -- no source spelling reaches the ROM's $f16,$f0,$f10 slot order).
- * Everything else matches. Good permuter seed for the remaining mul.s
- * slot. Re-measured 2026-08-23 via direct verify.py: DIFF 1/275, single
- * mul.s insn only. */
+/* The mul.s operand slot here is decided by the OPERAND KINDS, not by the
+ * source order: with one operand a named local and the other a direct array
+ * load, IDO emits `load, local` whichever way the source spells the product
+ * (measured both ways, both 1/275). Writing the scale factor as an INLINE
+ * ternary instead of through `v` flips it to the ROM's `local, load` slot --
+ * that is the knob, and it is a different one from LEVERS entry 84. */
 void func_8015E8E0_ovl3(s32 arg0) {
     extern f32 **D_80192EB8_ovl3;
     extern u8 D_8012E7C5[];
@@ -1845,7 +1850,7 @@ void func_8015E8E0_ovl3(s32 arg0) {
     s32 sp50;
     s32 sp4C;
     f32 v;
-    s32 pad[3];
+    s32 pad[1];
 
     D_800EA6E0[omCurrentObj->objId] = 0.0f;
     D_800E9FE0[omCurrentObj->objId].as_s32 = 0;
@@ -1876,8 +1881,8 @@ void func_8015E8E0_ovl3(s32 arg0) {
     D_800EA360[omCurrentObj->objId] = (s32) &sp4C;
     func_800A77E8(0x58, &sp4C, &sp50);
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
-    v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * v;
+    D_800E64D0[omCurrentObj->objId] =
+        D_800E6A10[omCurrentObj->objId] * (((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f);
     v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
     if (v < 0) {
         v = ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 16.0f : 8.0f;
@@ -1896,9 +1901,6 @@ void func_8015E8E0_ovl3(s32 arg0) {
     D_800E98E0[omCurrentObj->objId] = 1;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015E8E0_ovl3.s")
-#endif
 
 #ifdef MIPS_TO_C
 /* FACTORY: 6/776, whole-function callee-saved permutation (same floor class documented across this cluster). Inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, and adds an ANSI prototype for func_800A7F74. Queued for the permuter. */

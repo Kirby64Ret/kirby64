@@ -79,9 +79,20 @@ ovl16 19, ovl10 18, ovl2 17, ovl17 16, ovl14 14, ovl19 12.
 19. **A switch arm that stores the same value as the default must be folded away.** m2c's natural three-arm `else if` reads correctly and emits four extra instructions; write two arms (149 → 145).
 
 
+20. **A lone `.float` in a data blob is IDO's LITERAL POOL, not a variable — write the literal.** splat names every rodata word it cannot attribute, so a one-word `.float` entry with its own `dlabel` is almost always the constant IDO emitted for a source token in the function that loads it (three separate entries all reading `.float 65535` in ovl3, one per function, is the giveaway). Referencing it as `extern f32 D_xxxx` compiles to the same `lui/lwc1` but NOT to the same registers: **IDO allocates FP registers to memory-loaded values BEFORE constants**, so an extern read takes $f0 and a neighbouring `mtc1 $zero` is pushed to $f2, where the ROM has the reverse. Writing `65535.0f` makes both operands constants, they are allocated in source order, and the ROM's assignment falls out. Measured on func_80180818_ovl3 (6/208 → 1/208) and func_8018E164_ovl3 (6/130 → 1/130).
+    This had been sealed three times as a "$f0/$f2 neighbouring-register floor" and swept for a tie-break that does not exist: declaration order, initialisation order, an explicit `f32 zero` local, a zero built from arithmetic or from an `s32`, a third live constant, and reference counts (0.0f with three uses still loses $f0 to a load with two) all reproduce the identical residue. The register order is decided by operand KIND, and nothing else moves it.
+    **Check the rodata model before rewriting.** If the symbol lives in an `asm/data/**.rodata.s` blob (an undotted `rodata, X` subsegment) the literal DUPLICATES the ROM's word and shifts the blob — keep the draft guarded and report the split as a coordinator task. If it lives in the function's OWN listing under `.section .late_rodata`, the migration is already done and the rewrite is free.
+
+
+21. **`mul.s` operand slot IS movable — by operand KIND, not by source order.** Correcting the long-standing "INVARIANT" entry below. With one operand a named local and the other a direct array load, IDO emits `load, local` whichever way the product is spelled (`arr * v` and `v * arr` are byte-identical, measured four times, which is what made it look invariant). Change what the operands ARE and the slot moves: spelling the scale factor as an INLINE ternary instead of through a local flips it to the ROM's `local, load`. Two named locals honour source order. Closed func_8015E8E0_ovl3 at 275/275 (the inline form cost 8 bytes of frame, paid back by shrinking its `pad`).
+
+
 
 ## GUARD ON THE SECOND VARIANT — these are floors, no source spelling reaches them
-Whole-function callee-saved permutation; one-slot temp rotation; `mul.s` source operand order (INVARIANT — reconfirmed twice); a CSE'd load landing in the neighbouring register ($v0/$v1, $a2/$a3); IDO folding an address into load offsets where the ROM CSEs it into a spilled register.
+Whole-function callee-saved permutation; one-slot temp rotation; a CSE'd load landing in the neighbouring register ($v0/$v1, $a2/$a3); IDO folding an address into load offsets where the ROM CSEs it into a spilled register.
+
+`mul.s` source operand order was on this list and is NOT a floor — see lever 21. It is invariant to source ORDER and movable by operand KIND, which is why re-spelling the product kept reproducing the same word.
+The `$f0`/`$f2` split between a `mtc1 $zero` and a neighbouring float was also sealed here as a floor three times, and is not one either — see lever 20.
 
 ## PADDING TRAPS — screen the .s tail BEFORE spending anything
 Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a leading `.late_rodata` block and gives a FALSE trap). Three unclosable classes, all of which produce a verify.py MATCH while the TU still shrinks:
