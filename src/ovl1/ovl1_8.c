@@ -1028,7 +1028,7 @@ void func_800B6064(GObj *gobj) {
  * leftover objId*4 index, not an argument), the slot byte 0x14 is the
  * "not riding anything" sentinel, and the lateral report to func_800F8728
  * is guarded by (delta.x != 0 || delta.z != 0). */
-void func_800B6144(s32 arg0) {
+void func_800B6144(GObj *arg0) {
     s32 slot;
     Vector pos;
     Vector delta;
@@ -1059,8 +1059,11 @@ void func_800B6144(s32 arg0) {
 /* Ride-the-platform step (draft above, completed): when the entity stands
  * on a dynamic collider (slot byte != 0x14), fetch that collider's frame
  * delta (func_80112A40) and carry the entity's next position with it,
- * reporting the lateral part to func_800F8728 first. */
-void func_800B6144(s32 arg0) {
+ * reporting the lateral part to func_800F8728 first.
+ * arg0 is the entity GObj -- all twelve call sites in this file pass their
+ * own `GObj *gobj` -- and is unused: the body works off omCurrentObj. It was
+ * declared s32, which truncated the pointer at every one of those calls. */
+void func_800B6144(GObj *arg0) {
     u32 objId = omCurrentObj->objId;
     struct EnemyProbe *rec = D_800E1B50[objId]->unk84;
 

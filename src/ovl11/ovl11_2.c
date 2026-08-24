@@ -98,7 +98,7 @@ extern void func_800A9864(s32, s32, s32, void *);
 extern void func_801D1094_ovl8(s32);
 extern void func_800AECC0(f32);
 extern void func_800AED20(f32);
-extern void func_801A3E80_ovl7(s32);
+extern void func_801A3E80_ovl7(GObj *);
 extern f32 gameTicksPerDraw;
 extern s32 func_800F98EC(s32, f32);
 extern s32 func_801ACD90_ovl7(s32, s32, Vector *);

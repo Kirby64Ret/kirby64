@@ -158,7 +158,7 @@ void func_801DB9F8_ovl14(GObj *arg0) {
 
 }
 
-extern void func_800AA608(s32, s32, f32, s32, f32);
+extern void func_800AA608(struct DObj *, s32, f32, u32, f32);
 extern void func_800A9F98(s32, f32);
 
 void func_801DBA00_ovl14(void *arg0) {
@@ -1136,7 +1136,7 @@ void func_801DE210_ovl14(GObj *arg0) {
 
 extern void func_800AF314(void);
 extern void func_8019F1EC_ovl7(void);
-extern void func_800AA608(s32, s32, f32, s32, f32);
+extern void func_800AA608(struct DObj *, s32, f32, u32, f32);
 extern void func_800A9F98(s32, f32);
 extern void func_800AF408(void);
 extern void func_801BC794_ovl7(s32);

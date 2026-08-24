@@ -77,7 +77,15 @@ extern void func_800AFBB4(s32, struct GObj *);
  * void func_800B2340(Vector *, struct DObj *, u32). This file keeps the s32
  * spelling because every call site here passes the DObj through an explicit
  * (s32)(uintptr_t) cast off D_800DFBD0[][]; kirby.c uses the real types.
- * Reconciling means retyping D_800DFBD0, not the prototype. */
+ * CONFLICT, recorded rather than forced: D_800DFBD0 is already
+ * `struct DObj **[]`, so the prototype is what disagrees -- but this file
+ * also reaches func_800B2340 through func_80161EC0_ovl3(s32 arg0), fed from
+ * D_800E1ED0[] and D_800EC2E0[].as_s32, which store DObj handles as 32-bit
+ * scalars. Retyping the prototype here without retyping those arrays would
+ * SIGN-extend a handle back into a pointer, which is worse than the
+ * truncation. Fixing it means settling D_800EC2E0/D_800E1ED0 tree-wide (see
+ * the D_800E9AA0 entry in tools/decomp/REFOUND.md), so every call site in
+ * this file spells the truncation explicitly instead. */
 extern void func_800B2340(Vector *, s32, s32);
 extern void func_800B26D8(Vector *, s32, s32);
 extern s32 func_800B3158(void);
@@ -4935,7 +4943,7 @@ void func_80166210_ovl3(struct GObj *arg0) {
         return;
     }
     parent = D_800E0D50[omCurrentObj->objId];
-    func_800B2340(&sp44, D_800DFBD0[parent][1], parent);
+    func_800B2340(&sp44, (s32) (uintptr_t) D_800DFBD0[parent][1], parent);
     gEntitiesNextPosXArray[omCurrentObj->objId] = sp44.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp44.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = sp44.z;
@@ -5262,12 +5270,12 @@ void func_80166E2C_ovl3(s32 arg0) {
     Vector sp34;
     Vector sp28;
 
-    func_800B2340(&sp34, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_800E0F10[omCurrentObj->objId]],
+    func_800B2340(&sp34, (s32) (uintptr_t) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_800E0F10[omCurrentObj->objId]],
                   D_800E0D50[omCurrentObj->objId]);
     gEntitiesNextPosXArray[omCurrentObj->objId] = sp34.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp34.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = sp34.z;
-    func_800B26D8(&sp28, D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_800E0F10[omCurrentObj->objId]],
+    func_800B26D8(&sp28, (s32) (uintptr_t) D_800DFBD0[D_800E0D50[omCurrentObj->objId]][D_800E0F10[omCurrentObj->objId]],
                   D_800E0D50[omCurrentObj->objId]);
     gEntitiesAngleXArray[omCurrentObj->objId] = sp28.x;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp28.y;

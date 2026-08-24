@@ -59,16 +59,23 @@ s32 func_80110150(void *);
 void func_80111550(s32);
 struct Unk80111C88Inner {
     /* 0x00 */ u8 pad0[8];
-    /* 0x08 */ struct DObj *unk8;
+    /* The joint word: either a small sentinel (-1/-2/-3) or a DObj node
+       address TRUNCATED to 32 bits. It must stay 4 bytes wide -- this block
+       is a view over ovl2_9.c's Shape28 arena, 40 bytes per entry and
+       offset-stable on LP64 (see the note at the top of src/ovl2/ovl2_8.c),
+       and func_8010E740 rebuilds the pointer by zero-extension, lossless
+       because the -no-pie image keeps everything below 4 GiB. Same for
+       unk30/unk58, which are the same field of array elements 1 and 2. */
+    /* 0x08 */ s32 unk8;
     /* 0x0C */ u8 padC[4];
     /* 0x10 */ f32 unk10;
     /* 0x14 */ u8 pad14[4];
     /* 0x18 */ f32 unk18;
     /* 0x1C */ f32 unk1C;
     /* 0x20 */ u8 pad20[0x10];
-    /* 0x30 */ struct DObj *unk30;
+    /* 0x30 */ s32 unk30;
     /* 0x34 */ u8 pad34[0x24];
-    /* 0x58 */ struct DObj *unk58;
+    /* 0x58 */ s32 unk58;
 };
 struct Unk80111C88 {
     /* 0x00 */ u8 pad0[0x24];

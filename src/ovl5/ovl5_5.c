@@ -31,7 +31,9 @@ u8 func_80172B10_ovl5(s32, s32);
 s32 func_80175B70_ovl5(s32);
 s32 func_80175B8C_ovl5(s32);
 s32 func_80175BB0_ovl5(s32);
-void func_80175AD0_ovl5(s32, s32, s32, s32);
+/* arg0 is the GObj: it is forwarded straight to func_8015C740_ovl5, whose
+   definition in ovl5_1.c takes a `GObj *`. Same for the two callers below. */
+void func_80175AD0_ovl5(GObj *, s32, s32, s32);
 typedef union Unk28Words {
     s32 unk0[10];
 } Unk28Words;
@@ -2949,7 +2951,7 @@ void func_80175A28_ovl5(GObj *arg0) {
     curObjSleepForever();
 }
 
-void func_80175AD0_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void func_80175AD0_ovl5(GObj *arg0, s32 arg1, s32 arg2, s32 arg3) {
 #ifdef PORT
     /* D_801873A0 is ten N64 pointer words; the PC data generator emits the
        region as a native void*[] (8-byte slots), so the word-struct copy
@@ -2981,7 +2983,7 @@ s32 func_80175BB0_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-void func_80175BD4_ovl5(s32 arg0, s32 arg1) {
+void func_80175BD4_ovl5(GObj *arg0, s32 arg1) {
     extern f32 D_80187A18_ovl5[];
     extern f32 D_80187A28_ovl5[];
     extern f32 D_80187A38_ovl5[];
@@ -3525,7 +3527,7 @@ void func_801765EC_ovl5(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801765EC_ovl5.s")
 #endif
 
-void func_8017685C_ovl5(s32 arg0, s32 arg1, f32 arg2, f32 arg3) {
+void func_8017685C_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
     s32 sp34;
     s32 sp30;
     s32 sp2C;

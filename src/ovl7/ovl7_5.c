@@ -50,8 +50,8 @@ extern s32 D_800D7090;
  * compile with "too few arguments". */
 void func_801ABBA0_ovl7();
 void func_801A9268_ovl7(void);
-void func_801A9FC4_ovl7(s32);
-void func_801AA344_ovl7(s32);
+void func_801A9FC4_ovl7(GObj *);
+void func_801AA344_ovl7(GObj *);
 /* K&R form is load-bearing here: struct AnimReq/AnimReqSet aren't defined
  * until further down this file. A `struct AnimReq *` parameter here would
  * only get IDO's function-prototype-scope tag (a distinct, incomplete type
@@ -67,7 +67,7 @@ void func_801AA78C_ovl7();
 void func_801AA850_ovl7();
 void func_801AAE60_ovl7(void);
 void func_801A9930_ovl7(s32);
-void func_801A8CDC_ovl7(s32);
+void func_801A8CDC_ovl7(GObj *);
 void func_801AA1D4_ovl7(GObj *);
 void func_801AAAF8_ovl7(s32);
 void func_801AB884_ovl7(s32);
@@ -187,7 +187,7 @@ void func_801A7000_ovl7(GObj *gobj) {
 
 // m2c draft, measured 265/273 diffs
 #ifdef NON_MATCHING
-void func_801A7104_ovl7(s32 arg0) {
+void func_801A7104_ovl7(GObj *arg0) {
     s32 sp3C;
     struct SubSub800E1B50_Unk88_UnkC *sp34;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp30;
@@ -913,7 +913,7 @@ s32 func_801A8BAC_ovl7(void) {
 #endif
 // m2c draft, measured 171/205 diffs
 #ifdef NON_MATCHING
-void func_801A8CDC_ovl7(s32 arg0) {
+void func_801A8CDC_ovl7(GObj *arg0) {
     struct EnemyRecord *sp2C;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp24;
     f32 temp_f0;
@@ -1206,7 +1206,10 @@ void func_801A96C4_ovl7(GObj *arg0) {
     temp_a1 = ((struct EneAnimSetup *) D_800E1B50[temp_v0]->unk88->unkC->unk4)->unk1C;
     D_800DF150[temp_v0] = func_801A9930_ovl7;
     sp44 = temp_a1->unk14;
-    func_801AA344_ovl7(temp_a1);
+    /* $a0 is still the incoming GObj at the ROM's jal (it was only copied
+       to $s0 at 801A9724, never overwritten); m2c's temp_a1 was $a1, a
+       leftover. The callee ignores it either way. */
+    func_801AA344_ovl7(arg0);
     temp_t2 = D_8012E860[0x18];
     switch (temp_t2) {
         case 0:
@@ -1437,7 +1440,7 @@ block_17:
 #endif
 // m2c draft, measured 47/117 diffs
 #ifdef NON_MATCHING
-void func_801A9FC4_ovl7(s32 arg0) {
+void func_801A9FC4_ovl7(GObj *arg0) {
     s32 temp_s4;
     s32 temp_s5;
 
@@ -1526,7 +1529,7 @@ void func_801AA33C_ovl7(GObj *gobj) {
 
 // m2c draft, measured 186/188 diffs
 #ifdef NON_MATCHING
-void func_801AA344_ovl7(s32 arg0) {
+void func_801AA344_ovl7(GObj *arg0) {
     struct SubSub800E1B50_Unk88_UnkC *sp2C;
     struct EneAnimSetup *sp28;
     s32 temp_v0_2;

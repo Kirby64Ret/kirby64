@@ -56,7 +56,7 @@ s32 func_801A0D74_ovl7();
 void func_8019B424_ovl7();
 void eneTurnCommon(s32);
 void func_8019D4D0_ovl7(f32, s32);
-void func_80199F1C_ovl7(s32);
+void func_80199F1C_ovl7(GObj *);
 void func_800AECC0(f32);
 s32 func_801ACCA0_ovl7(s32, s32, f32, f32);
 void play_sound(s32);

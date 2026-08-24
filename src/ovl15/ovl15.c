@@ -2063,9 +2063,10 @@ struct Ovl15AnimInfo2 {
 };
 
 /* The three arguments are DObj nodes: every call site passes
-   D_800DFBD0[objId][n], which is `struct DObj *`, and they are stored
-   straight into the animation control block. Declared s32 they truncated on
-   LP64. */
+   D_800DFBD0[objId][n], which is `struct DObj *`. Declared s32 they were
+   truncated by the call itself on LP64, with the upper half of the argument
+   register left undefined by the ABI. The truncation into the 4-byte joint
+   slot is explicit in the body instead -- see struct Unk80111C88Inner. */
 s32 func_801E19D0_ovl15(struct DObj *arg0, struct DObj *arg1, struct DObj *arg2) {
     struct Ovl15AnimInfo2 sp30;
     struct EnemyRecord *ent;
@@ -2075,14 +2076,14 @@ s32 func_801E19D0_ovl15(struct DObj *arg0, struct DObj *arg1, struct DObj *arg2)
     func_80111550(omCurrentObj->objId);
     obj = func_80111C88(ent->unk8C, omCurrentObj->objId);
     if (obj != NULL) {
-        if (arg0 != 0) {
-            obj->unk24->unk8 = arg0;
+        if (arg0 != NULL) {
+            obj->unk24->unk8 = (s32) (uintptr_t) arg0;
         }
-        if (arg1 != 0) {
-            obj->unk24->unk30 = arg1;
+        if (arg1 != NULL) {
+            obj->unk24->unk30 = (s32) (uintptr_t) arg1;
         }
-        if (arg2 != 0) {
-            obj->unk24->unk58 = arg2;
+        if (arg2 != NULL) {
+            obj->unk24->unk58 = (s32) (uintptr_t) arg2;
         }
         func_80111ECC(obj);
     }

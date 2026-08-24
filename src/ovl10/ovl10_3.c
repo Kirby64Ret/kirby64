@@ -40,7 +40,7 @@ extern FUNCLIST D_801F45B8_ovl10;
  * already sitting in $a0 at the 0-arg site. An ANSI prototype breaks
  * compilation with "too few arguments". */
 s32 func_801A0D74_ovl7();
-void func_8019B424_ovl7(s32);
+void func_8019B424_ovl7(GObj *);
 void eneTurnCommon(s32);
 void func_8019D4D0_ovl7(f32, s32);
 /* K&R form is load-bearing here: its real signature is
@@ -95,7 +95,9 @@ extern s32 D_801F3F28_ovl10;
 s32 func_801E9ACC_ovl10(void);
 s32 func_8019A9AC_ovl7(f32, f32);
 extern s32 D_801F3F70_ovl10;
-void func_80111550(struct GObj *);
+/* src/ovl2/ovl2_9.c:1525 defines this as func_80111550(s32): the argument
+   is the objId both call sites in this file already pass. */
+void func_80111550(s32);
 void *func_80111C88(void *, u32);
 void func_80111ECC(void *);
 s32 func_80110150(void *);

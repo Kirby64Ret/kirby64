@@ -104,7 +104,10 @@ void func_800B26D8(Vector *vec, struct DObj *node, u32 track);
 void func_800B2928(Vector *vec, struct DObj *node, u32 track);
 void setProcessMain(GObjProcess *proc, void (*cb)(GObj *));
 void assign_new_process_entry(struct GObjProcess *ts, void (*func)(struct GObj *));
-s32 func_800A4F48(s32 arg0, Vector *arg1, f32 arg2, f32 arg3);
+/* arg0 is the camera/render context pointer the definition in
+   src/ovl1/util.c takes as `void *` (and ignores); every call site passes
+   D_800D799C->data.ptr. Declared s32 it truncated on LP64. */
+s32 func_800A4F48(void *arg0, Vector *arg1, f32 arg2, f32 arg3);
 
 void procMainStub(GObj *g);
 void procMainMove(GObj *g);

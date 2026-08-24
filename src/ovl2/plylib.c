@@ -32,6 +32,11 @@ struct UnkPos4C {
 };
 
 GObj *func_800A8234(s32, s32, s32);
+/* src/ovl1/ovl1.c:5409 defines this as func_800A22D4(UnkA22A8 *). The u32
+ * spelling is kept here because this TU's other three call sites pass
+ * gKirbyState.unk4C/unk50/unk6C, which are u32 handle fields; the two
+ * pointer sites truncate explicitly (lossless -- the -no-pie image keeps
+ * the whole arena below 4 GiB). */
 void func_800A22D4(u32);
 /* defined in ovl1_10.c; was re-declared four times in this file as
  * (u32, s32), which disagrees with the definition and left the call in
@@ -4056,7 +4061,7 @@ void func_80121A04(void) {
         } else {
             var_a0 = D_8012EAE0;
             if (var_a0 != NULL) {
-                func_800A22D4(var_a0);
+                func_800A22D4((u32) (uintptr_t) var_a0);
                 D_8012EAE0 = NULL;
                 var_a0 = NULL;
             }
@@ -4069,7 +4074,7 @@ void func_80121A04(void) {
     } else {
         D_8012EADC = 0;
         if (D_8012EAE0 != NULL) {
-            func_800A22D4(D_8012EAE0);
+            func_800A22D4((u32) (uintptr_t) D_8012EAE0);
             D_8012EAE0 = NULL;
         }
     }

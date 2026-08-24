@@ -23,7 +23,7 @@ void func_800A22D4(void *);
 void func_800AA018(s32);
 void func_800AA154(s32);
 extern s32 D_801F3A18_ovl10[], D_801F3B38_ovl10[];
-s32 func_801E2BD8_ovl10(s32, void *);
+s32 func_801E2BD8_ovl10(struct DObj *, void *);
 s32 func_8019A7E8_ovl7(f32);
 s32 func_801E28C8_ovl10(s32);
 #include "buffers.h"
@@ -761,7 +761,7 @@ struct Ovl10AnimInfo0 {
 
 extern s32 D_801F3E2C_ovl10;
 void func_80169430_ovl3(s32, u8, u8, s32);
-s32 func_801E2C78_ovl10(s32, void *);
+s32 func_801E2C78_ovl10(struct DObj *, void *);
 
 #ifdef NON_MATCHING
 /* FACTORY: 10/155, pure $v0/$v1 swap on `temp` (ROM $v1) -- the CSE'd-load-
@@ -2516,6 +2516,12 @@ s32 func_801E28C8_ovl10(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E28C8_ovl10.s")
 #endif
 
+/* unk8/unk30 are the joint word of Shape28 array elements 0 and 1: either a
+   small sentinel or a DObj node address TRUNCATED to 32 bits. They must stay
+   4 bytes -- this is a view over ovl2_9.c's Shape28 arena, 40 bytes per entry
+   and offset-stable on LP64 (see the note at the top of src/ovl2/ovl2_8.c) --
+   and func_8010E740 zero-extends them back, lossless because the -no-pie
+   image keeps everything below 4 GiB. */
 struct Ovl10AnimCmd2 {
     u8 filler0[8];
     s32 unk8;
@@ -2531,7 +2537,7 @@ struct Ovl10AnimObj2 {
 struct Ovl10AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl10AnimObj2 *);
 
-s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
+s32 func_801E2BD8_ovl10(struct DObj *arg0, void *arg1) {
     struct EnemyKindDesc *sp0;
     struct EnemyRecord *temp;
     struct Ovl10AnimObj2 *temp_v0;
@@ -2544,8 +2550,8 @@ s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
     func_80111550(omCurrentObj->objId);
     temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
     if (temp_v0 != NULL) {
-        if (arg0 != 0) {
-            temp_v0->unk24->unk8 = arg0;
+        if (arg0 != NULL) {
+            temp_v0->unk24->unk8 = (s32) (uintptr_t) arg0;
         }
         func_80111ECC(temp_v0);
     }
@@ -2557,7 +2563,7 @@ s32 func_801E2BD8_ovl10(s32 arg0, void *arg1) {
    function of the `c` subsegment, so converting it shortens ovl10_1's .text by
    16 bytes. Needs a `pad` subsegment in kirby64.yaml (`. += 0x10;`); un-guard
    in the same change. */
-s32 func_801E2C78_ovl10(s32 arg0, void *arg1) {
+s32 func_801E2C78_ovl10(struct DObj *arg0, void *arg1) {
     struct EnemyKindDesc *sp0;
     struct EnemyRecord *temp;
     struct Ovl10AnimObj2 *temp_v0;
@@ -2570,9 +2576,9 @@ s32 func_801E2C78_ovl10(s32 arg0, void *arg1) {
     func_80111550(omCurrentObj->objId);
     temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
     if (temp_v0 != NULL) {
-        if (arg0 != 0) {
-            temp_v0->unk24->unk8 = arg0;
-            temp_v0->unk24->unk30 = arg0;
+        if (arg0 != NULL) {
+            temp_v0->unk24->unk8 = (s32) (uintptr_t) arg0;
+            temp_v0->unk24->unk30 = (s32) (uintptr_t) arg0;
         }
         func_80111ECC(temp_v0);
     }

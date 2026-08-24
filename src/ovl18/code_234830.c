@@ -42,7 +42,7 @@ void func_80221E90_ovl18(s32 arg0) {
 }
 
 extern u32 D_800BE4EC;
-extern void func_800A8100(u32, u32, u32, u32);
+extern void func_800A8100(u32, u32, u32, struct DObj *);
 
 void func_80222168_ovl18(struct GObj *arg0) {
     switch(D_800BE4EC % 6) {

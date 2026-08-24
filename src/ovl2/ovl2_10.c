@@ -3089,7 +3089,9 @@ void func_80117834(struct GObj *arg0) {
 extern f32 D_80126DFC[];
 s32 random_soft_s32_range(s32);
 
-void func_80117904(s32 arg0) {
+/* arg0 is the entity GObj -- all three call sites below pass their own
+   `struct GObj *arg0` -- and is unused: the body works off omCurrentObj. */
+void func_80117904(struct GObj *arg0) {
     f32 step;
 
     D_800E3750[omCurrentObj->objId] = -0.5f;

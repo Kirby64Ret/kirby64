@@ -265,7 +265,7 @@ void func_80109B5C(struct PositionState *arg0, struct CollisionResult *arg1);
 void func_801096F0(struct PositionState *arg0, struct CollisionResult *arg1);
 s32 func_8010A2C4(struct PositionState *arg0, struct CollisionResult *arg1);
 s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1);
-s32 func_8010AEE0(s32 arg0, s32 arg1);
+s32 func_8010AEE0(struct PositionState *, struct CollisionResult *);
 
 extern u32 D_8012BD44;
 extern Vector D_8012BD34;
@@ -5143,7 +5143,9 @@ s32 func_80108E08(struct PositionState *arg0, struct CollisionResult *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80108E08.s")
 #endif
 
-void func_80109240(s32 arg0, s32 arg1) {
+/* Empty stub. Its two arguments are the collision pair every neighbour in
+   this file takes; the s32 spelling truncated them at the call. */
+void func_80109240(struct PositionState *arg0, struct CollisionResult *arg1) {
 }
 
 void func_8010924C(struct PositionState *arg0, struct CollisionResult *arg1) {
@@ -6181,7 +6183,8 @@ s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010AC1C.s")
 #endif
 
-s32 func_8010AEE0(s32 arg0, s32 arg1) {
+/* Empty stub, same collision pair as func_80109240 above. */
+s32 func_8010AEE0(struct PositionState *arg0, struct CollisionResult *arg1) {
     return 0;
 }
 

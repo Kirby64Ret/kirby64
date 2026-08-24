@@ -2729,14 +2729,17 @@ s32 func_801E3A84_ovl13(struct DObj *arg0, struct DObj *arg1, struct DObj *arg2)
     func_80111550((s32) var_v1);
     temp_v0 = func_80111C88(temp_t0->unk8C, (s32) omCurrentObj->objId);
     if (temp_v0 != NULL) {
-        if (arg0 != 0) {
-            temp_v0->unk24->unk8 = arg0;
+        /* The joint slots are 4 bytes wide by construction (ovl13.h), so the
+           node addresses go in truncated, exactly as func_8011D4A4 stores
+           them; func_8010E740 zero-extends them back. */
+        if (arg0 != NULL) {
+            temp_v0->unk24->unk8 = (s32) (uintptr_t) arg0;
         }
-        if (arg1 != 0) {
-            temp_v0->unk24->unk30 = arg1;
+        if (arg1 != NULL) {
+            temp_v0->unk24->unk30 = (s32) (uintptr_t) arg1;
         }
-        if (arg2 != 0) {
-            temp_v0->unk24->unk58 = arg2;
+        if (arg2 != NULL) {
+            temp_v0->unk24->unk58 = (s32) (uintptr_t) arg2;
         }
         sp30 = temp_t0;
         func_80111ECC(temp_v0);

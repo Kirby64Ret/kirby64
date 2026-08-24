@@ -55,6 +55,16 @@ void func_8019BB58_ovl7(void);
 void func_8019D958_ovl7(u16);
 void ohSleep(s32);
 
+/* src/ovl1/ovl1.c:5409 defines this as func_800A22D4(UnkA22A8 *) and
+   dereferences it, and every argument in this TU is EnemyRecord.unk34, a
+   real pointer -- but the u32 spelling is LOAD-BEARING and stays.
+   MEASURED: retyping this declaration (and the two matching in-guard copies)
+   to `void *` breaks the ROM -- 14 words in ovl7_4 at 0x14CAAC, 0x14CBC8,
+   0x14CEB8 and 0x14D048. IDO stages a pointer argument straight into $a0
+   while the ROM builds it in $a1 and copies (`or $a0, $a1, $zero` at
+   0x14CBD8), so the narrower prototype is what the game was compiled
+   against. The call sites truncate explicitly instead; lossless, the
+   -no-pie image keeps the arena below 4 GiB. */
 void func_800A22D4(u32);
 void func_800A2300(struct GObj *);
 void func_800B3520(void);
@@ -94,8 +104,9 @@ s32 func_801AE7E0_ovl7(s32);
    spelling copied from the matched func_801A50B0_ovl7 is what makes the
    middle of this function land.  Note the in-guard prototype must be
    `void func_800A22D4(u32)` to agree with the other guarded drafts already
-   in this TU -- declaring it (void *) is a redeclaration error, so the
-   pointer is passed as (u32) ent->unk34 (a no-op in codegen). Good permuter
+   in this TU -- declaring it (void *) is a redeclaration error, and the u32
+   is load-bearing besides (see the file-scope declaration), so the pointer
+   is passed as (u32) ent->unk34 (a no-op in codegen). Good permuter
    seed. */
 void func_801A3E80_ovl7(GObj *arg0) {
     void func_800A22D4(u32);
@@ -129,7 +140,7 @@ void func_801A3E80_ovl7(GObj *arg0) {
     arg0->onAnimate = NULL;
     D_800DF310[omCurrentObj->objId] = NULL;
     if (ent->unk34 != NULL) {
-        func_800A22D4((u32) ent->unk34);
+        func_800A22D4((u32) (uintptr_t) ent->unk34);
     }
     func_800A2300(arg0);
     ent->unk34 = NULL;
@@ -173,9 +184,8 @@ void func_801A3E80_ovl7(GObj *arg0) {
  * track (func_8019D958_ovl7 takes the u16 low half of objId -- the ROM's
  * lhu obj+2 is the big-endian half of the same word). */
 void func_801A3E80_ovl7(GObj *arg0) {
-    void func_800A22D4(u32); /* takes ent->unk34; u32 to agree with the N64
-                              * declarations later in this file (lossless:
-                              * the whole image lives below 4 GiB) */
+    void func_800A22D4(u32); /* takes ent->unk34; u32 is load-bearing, see
+                              * the file-scope declaration above */
     void func_800A2300(struct GObj *);
     void func_800AECC0(f32);
     s32 func_801A66B4_ovl7(void);
@@ -1027,7 +1037,7 @@ s32 func_801A66FC_ovl7(void) {
         if (ent->unk88->unk10 != 0) {
             func_801A2558_ovl7(ent->unk88->unk10);
         } else {
-            func_801A2558_ovl7(&D_801CA9F8_ovl7);
+            func_801A2558_ovl7((u32) (uintptr_t) &D_801CA9F8_ovl7);
         }
     }
     if ((sel == 1) && (ent->unk3E == 2) && (ent->unk3F == 6)) {
@@ -1116,7 +1126,7 @@ void func_801A69B0_ovl7(GObj *arg0) {
     D_800E3E50[omCurrentObj->objId] = c;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
     if (ent->unk34 != 0) {
-        func_800A22D4(ent->unk34);
+        func_800A22D4((u32) (uintptr_t) ent->unk34);
     }
     func_800A2300(arg0);
     ent->unk34 = 0;
@@ -1143,7 +1153,7 @@ void func_801A6C10_ovl7(GObj *arg0) {
     ent->unk48 = 0;
     ent->unk98 = &D_801CB470_ovl7;
     if (ent->unk34 != 0) {
-        func_800A22D4(ent->unk34);
+        func_800A22D4((u32) (uintptr_t) ent->unk34);
     }
     func_800A2300(arg0);
     ent->unk34 = 0;
@@ -1194,7 +1204,7 @@ void func_801A6DF0_ovl7(GObj *arg0) {
     arg0->onAnimate = NULL;
     D_800DF310[omCurrentObj->objId] = 0;
     if (ent->unk34 != 0) {
-        func_800A22D4(ent->unk34);
+        func_800A22D4((u32) (uintptr_t) ent->unk34);
     }
     func_800A2300(arg0);
     ent->unk34 = 0;

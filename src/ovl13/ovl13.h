@@ -47,9 +47,10 @@ void func_801E37E8_ovl13(GObj *);
 void func_801E3958_ovl13(GObj *);
 /* The three arguments are DObj nodes, not scalars: every one of the fourteen
    call sites in code_1F3160.c passes D_800DFBD0[objId][n], which is
-   `struct DObj *` (track_arrays.h). They are stored straight into the
-   animation control block, so its three receiving fields are DObj pointers
-   too. Declared s32 they truncated on LP64. */
+   `struct DObj *` (track_arrays.h). Declared s32 they were truncated by the
+   call itself on LP64, with the upper half of the argument register left
+   undefined by the ABI. The truncation into the 4-byte joint slot is now
+   explicit in the body instead -- see struct Ovl13AnimCmd below. */
 s32 func_801E3A84_ovl13(struct DObj *, struct DObj *, struct DObj *);
 
 
@@ -66,13 +67,20 @@ struct Ovl13AnimInfo {
 struct Ovl13AnimCmd {
     u32 unk0;
     u32 unk4;
-    struct DObj *unk8;
+    /* The joint word. It holds either a small sentinel (-1/-2/-3) or a DObj
+       node address TRUNCATED to 32 bits, and it must stay 4 bytes wide: this
+       block is a view over ovl2_9.c's Shape28 arena, which is 40 bytes per
+       entry and offset-stable on LP64 (see the note at the top of
+       src/ovl2/ovl2_8.c). func_8010E740 rebuilds the pointer by
+       zero-extension, which is lossless because the -no-pie image keeps
+       everything the game can see below 4 GiB. Do NOT widen these three. */
+    s32 unk8;
     u8 fillerC[0xC];
     f32 unk18;
     u8 filler1C[0x14];
-    struct DObj *unk30;
+    s32 unk30;
     u8 filler34[0x24];
-    struct DObj *unk58;
+    s32 unk58;
 };
 
 struct Ovl13AnimObj {

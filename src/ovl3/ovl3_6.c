@@ -62,7 +62,7 @@ s32 func_800AF230(void);
 void func_800AFA54(void *);
 /* src/ovl1/ovl1_7.c:1396 defines (Vector *, struct DObj *, u32); the s32
  * here matches this file's explicit (s32)(uintptr_t) casts off D_800DFBD0. */
-void func_800B2340(Vector *, s32, s32);
+void func_800B2340(Vector *, struct DObj *, u32);
 void func_800B26D8(Vector *, struct DObj *, u32);
 f32 func_800F8824(Vector *, f32);
 /* src/ovl2/ovl2_9.c:1529 defines struct PlySlot *func_80111574(struct
@@ -2535,8 +2535,8 @@ void func_80180818_ovl3(s32 arg0) {
  * (N64 4-byte cells); func_80155838_ovl3's raw bit ranges are 28.5f /
  * 70.0f / -65.0f; func_8016854C_ovl3 keeps its (s32, s32, f32) file
  * spelling with (s32)(uintptr_t) handles like the kirby.c arms (game
- * objects sit below 4GB on this build); func_800B2340's DObj handle goes
- * through the same cast. */
+ * objects sit below 4GB on this build); func_800B2340 now takes its DObj
+ * as a real `struct DObj *` (see the file-scope declaration), so no cast. */
 void func_80180B58_ovl3(s32 arg0) {
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
     extern f32 D_800EC9E4;
@@ -2601,7 +2601,7 @@ void func_80180B58_ovl3(s32 arg0) {
                                3, 1.0f);
         }
         func_8015449C_ovl3(D_80194904_ovl3, 0);
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][9], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][9], 0xFFFF);
         if (gKirbyState.unk44 == 1) {
             if (gKirbyState.horizontalCollision != 0) {
                 hit = 1;
@@ -2660,8 +2660,8 @@ void func_80180B58_ovl3(s32 arg0) {
  * (N64 4-byte cells); func_80155838_ovl3's raw bit ranges are 28.5f /
  * 70.0f / -65.0f; func_8016854C_ovl3 keeps its (s32, s32, f32) file
  * spelling with (s32)(uintptr_t) handles like the kirby.c arms (game
- * objects sit below 4GB on this build); func_800B2340's DObj handle goes
- * through the same cast. */
+ * objects sit below 4GB on this build); func_800B2340 now takes its DObj
+ * as a real `struct DObj *` (see the file-scope declaration), so no cast. */
 void func_80180B58_ovl3(s32 arg0) {
     s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
     extern f32 D_800EC9E4;
@@ -2726,7 +2726,7 @@ void func_80180B58_ovl3(s32 arg0) {
                                3, 1.0f);
         }
         func_8015449C_ovl3(D_80194904_ovl3, 0);
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][9], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][9], 0xFFFF);
         if (gKirbyState.unk44 == 1) {
             if (gKirbyState.horizontalCollision != 0) {
                 hit = 1;
@@ -3743,12 +3743,12 @@ void func_8018271C_ovl3(s32 arg0) {
     }
     if (gKirbyState.unk50 != 0) {
         gen = (PcO36Gen *) (uintptr_t) gKirbyState.unk4C;
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][8], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[id][8], 0xFFFF);
         gen->xf->unk4.x = pos.x;
         gen->xf->unk4.y = pos.y;
         gen->xf->unk4.z = pos.z;
         gen = (PcO36Gen *) (uintptr_t) gKirbyState.unk50;
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xF], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][0xF], 0xFFFF);
         gen->xf->unk4.x = pos.x;
         gen->xf->unk4.y = pos.y;
         gen->xf->unk4.z = pos.z;
@@ -3921,12 +3921,12 @@ void func_8018271C_ovl3(s32 arg0) {
     }
     if (gKirbyState.unk50 != 0) {
         gen = (PcO36Gen *) (uintptr_t) gKirbyState.unk4C;
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][8], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[id][8], 0xFFFF);
         gen->xf->unk4.x = pos.x;
         gen->xf->unk4.y = pos.y;
         gen->xf->unk4.z = pos.z;
         gen = (PcO36Gen *) (uintptr_t) gKirbyState.unk50;
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xF], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][0xF], 0xFFFF);
         gen->xf->unk4.x = pos.x;
         gen->xf->unk4.y = pos.y;
         gen->xf->unk4.z = pos.z;
@@ -4621,7 +4621,7 @@ void func_80183A1C_ovl3(s32 arg0) {
                 func_8011E0E8();
             } else {
                 gen = (LocalO36Gen *) (uintptr_t) gKirbyState.unk4C;
-                func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][2], 0xFFFF);
+                func_800B2340(&pos, D_800DFBD0[id][2], 0xFFFF);
                 gen->xf->unk4.x = pos.x;
                 gen->xf->unk4.y = pos.y;
                 gen->xf->unk4.z = pos.z;
@@ -4743,7 +4743,7 @@ void func_80183A1C_ovl3(s32 arg0) {
                 func_8011E0E8();
             } else {
                 gen = (PcO36Gen *) (uintptr_t) gKirbyState.unk4C;
-                func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][2], 0xFFFF);
+                func_800B2340(&pos, D_800DFBD0[id][2], 0xFFFF);
                 gen->xf->unk4.x = pos.x;
                 gen->xf->unk4.y = pos.y;
                 gen->xf->unk4.z = pos.z;
@@ -7918,7 +7918,7 @@ void func_80188238_ovl3(GObj *arg0) {
                 slot->unk20->unk24 = src[6];
                 slot->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1];
                 func_80111C4C((s32) (uintptr_t) slot);
-                func_800B2340(&pos0, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE],
+                func_800B2340(&pos0, D_800DFBD0[omCurrentObj->objId][0xE],
                               0xFFFF);
                 row = (f32 *) ((u8 *) &D_8012E9B8 + 0x10);
                 f = pos0.y - gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -7994,7 +7994,7 @@ void func_80188238_ovl3(GObj *arg0) {
                     row[3] = D_80195718_ovl3[3];
                     func_8015449C_ovl3(D_801957B8_ovl3, 0);
                 } else {
-                    func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][0xE], 0xFFFF);
+                    func_800B2340(&pos, D_800DFBD0[id][0xE], 0xFFFF);
                     f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
                     row[2] = f;
                     row[0] = f;
@@ -8436,7 +8436,7 @@ void func_80188238_ovl3(GObj *arg0) {
                 slot->unk20->unk24 = src[6];
                 slot->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1];
                 func_80111C4C((s32) (uintptr_t) slot);
-                func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE],
+                func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][0xE],
                               0xFFFF);
                 row = (f32 *) ((u8 *) &D_8012E9B8 + 0x10);
                 f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -8513,7 +8513,7 @@ void func_80188238_ovl3(GObj *arg0) {
                     row[3] = D_80195718_ovl3[3];
                     func_8015449C_ovl3(D_801957B8_ovl3, 0);
                 } else {
-                    func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[id][0xE], 0xFFFF);
+                    func_800B2340(&pos, D_800DFBD0[id][0xE], 0xFFFF);
                     f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
                     row[2] = f;
                     row[0] = f;
@@ -12677,7 +12677,7 @@ void func_8018F368_ovl3(GObj *arg0) {
     if ((gKirbyState.unk44 == 7) || (gKirbyState.unk44 == 0)) {
         func_8016854C_ovl3((s32) (uintptr_t) D_801922CC_ovl3,
                            (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE], 1.0f);
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][0xE], 0xFFFF);
         row = (f32 *) ((u8 *) &D_8012E9B8 + 0x10);
         f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
         row[0] = f;
@@ -13050,7 +13050,7 @@ void func_8018F368_ovl3(GObj *arg0) {
     if ((gKirbyState.unk44 == 7) || (gKirbyState.unk44 == 0)) {
         func_8016854C_ovl3((s32) (uintptr_t) D_801922CC_ovl3,
                            (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE], 1.0f);
-        func_800B2340(&pos, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][0xE], 0xFFFF);
+        func_800B2340(&pos, D_800DFBD0[omCurrentObj->objId][0xE], 0xFFFF);
         row = (f32 *) ((u8 *) &D_8012E9B8 + 0x10);
         f = pos.y - gEntitiesNextPosYArray[omCurrentObj->objId];
         row[0] = f;

@@ -13,7 +13,7 @@ extern void (*D_8022F040_ovl19[])(struct GObj *);
 void func_800AED20(f32);
 extern void func_800B1900(u16);
 void func_8021E4B0_ovl19(struct GObj *);
-void func_800F88C8(s32, s32, f32);//, f32);
+void func_800F88C8(GObj *, s32, f32);
 void func_8021E7DC_ovl19(struct GObj *);
 s32 func_800B3158(void);
 extern u8 D_800D6C90[];

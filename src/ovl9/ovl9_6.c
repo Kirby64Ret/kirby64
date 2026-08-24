@@ -178,7 +178,7 @@ extern s32 D_801C87A8[];
 extern u8 D_8012E7C5;
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern void func_80169430_ovl3(s32, s32, u8, s32);
-s32 func_801EBB28_ovl9(s32, void *);
+s32 func_801EBB28_ovl9(struct DObj *, void *);
 void func_8019F410_ovl7(struct DObj *);
 void func_801EACB8_ovl9(struct GObj *);
 
@@ -283,6 +283,12 @@ void func_801EB98C_ovl9(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
 
+/* unk8 is the Shape28 joint word: either a small sentinel or a DObj node
+   address TRUNCATED to 32 bits. It must stay 4 bytes -- this is a view over
+   ovl2_9.c's Shape28 arena, 40 bytes per entry and offset-stable on LP64
+   (see the note at the top of src/ovl2/ovl2_8.c) -- and func_8010E740
+   zero-extends it back, lossless because the -no-pie image keeps everything
+   below 4 GiB. */
 struct Ovl9AnimCmd2 {
     u8 filler0[8];
     s32 unk8;
@@ -298,7 +304,7 @@ struct Ovl9AnimObj2 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl9AnimObj2 *);
 s32 func_80110150(void *);
 
-s32 func_801EBB28_ovl9(s32 arg0, void *arg1) {
+s32 func_801EBB28_ovl9(struct DObj *arg0, void *arg1) {
     struct EnemyKindDesc *sp0;
     struct EnemyRecord *temp;
     struct Ovl9AnimObj2 *temp_v0;
@@ -311,8 +317,8 @@ s32 func_801EBB28_ovl9(s32 arg0, void *arg1) {
     func_80111550(omCurrentObj->objId);
     temp_v0 = func_80111C88(temp->unk8C, omCurrentObj->objId);
     if (temp_v0 != NULL) {
-        if (arg0 != 0) {
-            temp_v0->unk24->unk8 = arg0;
+        if (arg0 != NULL) {
+            temp_v0->unk24->unk8 = (s32) (uintptr_t) arg0;
         }
         func_80111ECC(temp_v0);
     }

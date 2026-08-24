@@ -35,7 +35,7 @@ void func_801A32A8_ovl7(s32);
 // prefix: ene
 
 // helplib.h
-void func_800F88C8(s32, s32, f32);
+void func_800F88C8(GObj *, s32, f32);
 
 // ovl1_7
 void func_800B3520(void);
@@ -699,7 +699,11 @@ void func_80199E90_ovl7(s32 arg0) {
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
 }
 
-void func_80199F1C_ovl7(s32 arg0) {
+/* An entity callback like its neighbours: arg0 is the GObj, unused, and the
+   body works off omCurrentObj. Nineteen of the twenty-two declarations of
+   this symbol across the tree already spell it `struct GObj *`; the s32 here
+   was the outlier and truncated the pointer at every call. */
+void func_80199F1C_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (ent->unk3C == 0) {
@@ -1219,7 +1223,7 @@ void func_8019B3C8_ovl7(Unused GObj *gobj) {
 /* PORT: same 4-byte-local landmine as func_8019B164_ovl7 above -- the
  * callee stores 8 bytes, the matching bodies lend it a lone s32 and count
  * on the N64 frame layout for the spill. Real struct locals instead. */
-void func_8019B424_ovl7(s32 arg0) {
+void func_8019B424_ovl7(GObj *arg0) {
     EnemyRecord *sp24;
     struct TrackPosition sp1C;
 
@@ -1229,7 +1233,7 @@ void func_8019B424_ovl7(s32 arg0) {
     }
 }
 
-void func_8019B4BC_ovl7(s32 arg0) {
+void func_8019B4BC_ovl7(GObj *arg0) {
     EnemyRecord *sp24;
     struct TrackPosition sp1C;
 
@@ -1242,7 +1246,7 @@ void func_8019B4BC_ovl7(s32 arg0) {
     }
 }
 #else
-void func_8019B424_ovl7(s32 arg0) {
+void func_8019B424_ovl7(GObj *arg0) {
     EnemyRecord *sp24;
     f32 sp20;
     s32 sp1C;
@@ -1253,7 +1257,7 @@ void func_8019B424_ovl7(s32 arg0) {
     }
 }
 
-void func_8019B4BC_ovl7(s32 arg0) {
+void func_8019B4BC_ovl7(GObj *arg0) {
     EnemyRecord *sp24;
     f32 sp20;
     s32 sp1C;
