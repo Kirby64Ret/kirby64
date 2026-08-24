@@ -116,13 +116,23 @@ def measure_file(path):
                 break
         # scratch copy: this one draft un-guarded, its pragma removed
         body = lines[st + 1:en]
-        keep = [b for b in body
-                if not PRAGMA.match(b)
-                and not b.lstrip().startswith(('#elif', '#else'))]
-        # drop the PORT arm: everything after the first #elif/#else in the group
+        # Drop the PORT arm: everything after the group's own first #elif or
+        # #else. Depth matters -- a draft may itself contain a nested
+        # conditional, and cutting at the FIRST #elif/#else anywhere truncated
+        # the body mid-block. That is why 24 drafts reported "did not compile
+        # alone" rather than a number: they were not unmeasurable, they were
+        # being corrupted before the compiler saw them.
         cut = len(body)
+        depth = 0
         for k, b in enumerate(body):
-            if b.lstrip().startswith(('#elif', '#else')):
+            t = b.lstrip()
+            if t.startswith('#if'):
+                depth += 1
+                continue
+            if t.startswith('#endif'):
+                depth -= 1
+                continue
+            if depth == 0 and t.startswith(('#elif', '#else')):
                 cut = k
                 break
         keep = [b for b in body[:cut] if not PRAGMA.match(b)]
@@ -165,7 +175,19 @@ def main():
         flag = '  <-- note wrong' if r in wrong else ''
         print(f"{r['diff']:>6}  {n:>7}  {r['func']}  ({r['file']}){flag}")
 
-    unscored = [r for r in all_r if not isinstance(r['diff'], int)]
+    # A draft that is ALREADY BYTE-EXACT scores 'MATCH', which is not an int,
+    # so it used to be filed under "unscorable" -- the one bucket nobody reads.
+    # Free closures were hiding in it. Surface them first: they cost nothing
+    # but the un-guard.
+    exact = [r for r in all_r if r['diff'] == 'MATCH']
+    if exact:
+        print(f'\n== ALREADY BYTE-EXACT: {len(exact)} draft(s) -- un-guard, '
+              f'delete the pragma, done ==')
+        for r in exact:
+            print(f"   {r['func']}  ({r['file']})")
+
+    unscored = [r for r in all_r
+                if not isinstance(r['diff'], int) and r['diff'] != 'MATCH']
     print(f'\n-- {len(all_r)} draft(s) measured, {len(ok)} scored, '
           f'{len(unscored)} unscorable (did not compile alone)')
     print(f'-- {len(wrong)} note(s) disagree with the measurement')
