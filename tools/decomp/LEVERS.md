@@ -363,3 +363,43 @@ the pool allocator's real stride is 0x78.
     Screen any un-guard in a TU with migrated late_rodata that way, and note
     that check_rodata_bytes.py only sees it if build/src/<file>.o exists --
     it silently skipped 35 of 136 subsegments until that was fixed.
+
+54. **The frame is arithmetic, not a sweep -- and DECLARATION COUNT positions
+    the compiler temp.** Reproduced on three functions in three overlays
+    (func_801A8BAC_ovl7, func_801DC8E4_ovl16, func_80218248_ovl9):
+
+        frame      = align8(0x1C + 4n + 4)
+        spill slot = frame - 4n - 8
+
+    where n is the number of DECLARED scalars. Register-allocated ones are
+    not free -- they still count. So when the ROM's spill sits one word off,
+    the answer is usually to DELETE a declaration rather than add a pad.
+    func_801A8BAC_ovl7 needed n=3 where the draft had n=4: `temp_f0`'s last
+    read is inside the sqrtf argument, so the result reuses it and `temp_f4`
+    disappears. Its note had said "no 4-byte local can buy the slot for free"
+    because every pad grew the frame -- true, and pointed the wrong way.
+
+    This turns several "+8 frame anomaly, decidable but unreachable" notes
+    into arithmetic. Tabulate n against the frame before sweeping anything:
+    func_80218248_ovl9 goes 6 decls -> 0x30/36 diffs, 3 -> 0x28/49, 2 ->
+    frame exact 0x20/71, which says plainly what shape is needed.
+
+55. **A callee declared NOWHERE is the same bug as one declared only in the
+    PORT arm.** func_801F2964_ovl10 (690 words) and func_8019E128_ovl7 (462
+    words) both closed on this and both had been documented as register
+    floors. In the first, nine callees were declared only under `#ifdef PORT`;
+    in the second, the same nine-callee shape was declared in no header at
+    all. Either way every call in the compiled arm is an implicit `int f()`,
+    IDO treats $v0 as defined by the call, and refuses it for the next temp --
+    which reads as a post-call $v0/$v1 -> $v1/$a0 rotation.
+
+    Audit whether a draft's callees are declared AT ALL before touching the
+    body. `gcc -fsyntax-only -Wimplicit-function-declaration` with the draft's
+    own macro state finds the first form; the second needs a grep of the
+    headers the TU includes, because the call compiles silently in both.
+
+    Beware the knock-on: prototyping a callee can turn an existing zero-arg
+    call elsewhere in the file into a hard error, since CC_CHECK compiles
+    guarded arms with -DNON_MATCHING. func_8019E9F0_ovl7 needed its signature
+    corrected to (GObj *) in the same change -- justified independently, as
+    the ROM jals func_8019E128_ovl7 twice with $a0 untouched.
