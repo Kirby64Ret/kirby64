@@ -2062,7 +2062,11 @@ struct Ovl15AnimInfo2 {
     u8 filler10[0x10];
 };
 
-s32 func_801E19D0_ovl15(s32 arg0, s32 arg1, s32 arg2) {
+/* The three arguments are DObj nodes: every call site passes
+   D_800DFBD0[objId][n], which is `struct DObj *`, and they are stored
+   straight into the animation control block. Declared s32 they truncated on
+   LP64. */
+s32 func_801E19D0_ovl15(struct DObj *arg0, struct DObj *arg1, struct DObj *arg2) {
     struct Ovl15AnimInfo2 sp30;
     struct EnemyRecord *ent;
     struct Unk80111C88 *obj;

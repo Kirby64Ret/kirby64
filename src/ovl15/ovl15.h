@@ -59,16 +59,16 @@ s32 func_80110150(void *);
 void func_80111550(s32);
 struct Unk80111C88Inner {
     /* 0x00 */ u8 pad0[8];
-    /* 0x08 */ s32 unk8;
+    /* 0x08 */ struct DObj *unk8;
     /* 0x0C */ u8 padC[4];
     /* 0x10 */ f32 unk10;
     /* 0x14 */ u8 pad14[4];
     /* 0x18 */ f32 unk18;
     /* 0x1C */ f32 unk1C;
     /* 0x20 */ u8 pad20[0x10];
-    /* 0x30 */ s32 unk30;
+    /* 0x30 */ struct DObj *unk30;
     /* 0x34 */ u8 pad34[0x24];
-    /* 0x58 */ s32 unk58;
+    /* 0x58 */ struct DObj *unk58;
 };
 struct Unk80111C88 {
     /* 0x00 */ u8 pad0[0x24];
