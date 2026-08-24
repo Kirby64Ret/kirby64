@@ -764,6 +764,9 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
 // vs `$f0,$f10`. Both FP orders are INVARIANT to source operand order (all four
 // spellings tried); the `fx` local is what fixed the `mul.s` order, and the
 // frame (0xA8, buffer at 0x3C) needs `f32 fx` declared AFTER the array.
+// Re-measured 2026-08-24, true residue 6/169: writing `fc + fc * fx` and
+// `fx != 0.0f` (both the ROM's own operand order) is byte-for-byte identical
+// to the current text, so lever 2 does not reach either of those two words.
 #ifdef NON_MATCHING
 extern f32 D_800D515C[];
 extern s32 random_soft_s32_range(s32);

@@ -2439,7 +2439,14 @@ phase_check:
    both use sites instead of through `temp` (same, worse -- 19/208,
    identical failure shape to the reorder). Same class as the guard-on-the-
    second-variant "CSE'd load landing in the neighbouring register"
-   floor ($v0/$v1, $a2/$a3), extended here to $f0/$f2. Good permuter seed. */
+   floor ($v0/$v1, $a2/$a3), extended here to $f0/$f2. Good permuter seed.
+   RULE MEASURED 2026-08-24, and it is the same one in func_80184538_ovl3 and
+   func_8018E164_ovl3: IDO always hands $f0 to the memory-LOADED float and $f2
+   to the `mtc1 $zero` one, where the ROM does the reverse. It is not source
+   order and it is not schedule order -- putting the 0.0f store FIRST in the
+   source does move the `lwc1` later (35/208) but the two registers stay
+   swapped, and in func_8018E164_ovl3 the ROM's own order is the reverse of
+   its source's. Nothing that keeps the ROM's schedule reaches it. */
 extern f32 *D_801926E8_ovl3[];
 extern u8 D_801906D8_ovl3[];
 extern f32 D_8019770C_ovl3;

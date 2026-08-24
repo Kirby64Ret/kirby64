@@ -2948,6 +2948,18 @@ extern f32 D_80126CF4[];
 // 0x30); two leading pads grew the frame instead (0x38). Pads move
 // register allocation here, not the +8 anomaly itself -- reverted, no net
 // gain over the documented 10/95. Left guarded.
+//
+// Re-measured 2026-08-24, and the frame IS decidable here -- it just cannot be
+// reached without breaking the body. IDO's frame for this function is
+// align8(declared local BYTES + 32): 8 bytes -> 0x28 (the ROM's), 12 -> 0x30,
+// 16 -> 0x30, 20 -> 0x38. So the ROM's 0x28 needs TWO declared locals, and the
+// three values it spills at 0x1C/0x20/0x24 (unk4C, objId, the D_80126CF4
+// element) are all computed BEFORE func_800B4924 and reloaded after it, so all
+// three have to be declared. Every 2-local spelling was measured and each one
+// wrecks the body instead: inlining the f32 90/94, inlining unk4C 72/95,
+// inlining both 91/94. Same closed form that DID close func_80112B4C above --
+// there the named `f32 *` locals were replaceable by array stores that IDO
+// CSEs on its own, and here there is no such substitute.
 #ifdef NON_MATCHING
 /* FACTORY: 8/95 (verify.py prints 9 on a scratch copy; one is a PHANTOM
    own-.rodata note that resolves to the right symbol on the real path).
