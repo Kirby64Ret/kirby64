@@ -1312,14 +1312,16 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 temp = D_8018ECA8_ovl5[arg0];
-    s32 pad;
+    s32 *q;
+    Unk801875F0 *p;
 
     play_sound(0xBA);
     D_800E9FE0[omCurrentObj->objId].as_s32 = 1;
     D_800E9C60[omCurrentObj->objId] = D_800E9FE0[omCurrentObj->objId].as_s32;
-    D_8018E998_ovl5[arg0]++;
-
-    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(D_801875F0_ovl5[temp].unk4) + D_801875F0_ovl5[temp].unk0) * 0.5f;
+    q = &D_8018E998_ovl5[arg0];
+    (*q)++;
+    p = &D_801875F0_ovl5[temp];
+    D_800E98E0[omCurrentObj->objId] = (random_soft_s32_range(p->unk4) + p->unk0) * 0.5f;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_801720D8_ovl5.s")
