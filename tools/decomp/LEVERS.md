@@ -1962,3 +1962,64 @@ the pool allocator's real stride is 0x78.
     what puts every `NN($sp)` on the ROM's slot. Read the slots off the
     listing and sort ALL the declarations by address descending; that is the
     order, whatever their types.
+
+95. **LEVER 58/89 IS EXHAUSTED IN ovl8, ovl9, ovl12, ovl15 AND ovl16 -- the
+    list, so nobody re-screens it.** `lever58_screen.py --all-guarded` over
+    every guarded draft in those five overlays produces exactly EIGHT
+    CANDIDATE lines that name a CALL, and LEVER 89's filter (the draft writes
+    that call with NO argument) leaves four. All four die:
+
+      func_801D66A0_ovl9   calls func_8019BB58_ovl7 bare -- LEVER 89 already
+                           lists that callee as a genuine `(void)`.
+      func_801D74EC_ovl9   } both call func_801A3280_ovl7 bare, and it is
+      func_801ED208_ovl9   } `void func_801A3280_ovl7(void)` in ovl7_3.c:1350.
+                           Its object opens `lui $t6,%hi(omCurrentObj)` with no
+                           $a0 home store, i.e. LEVER 67(b): it reaches its
+                           object through omCurrentObj, so untouched $a0 in
+                           front of it means nothing.
+      func_801E429C_ovl9   calls func_801A0D74_ovl7 bare, and that callee IS
+                           `s32 (GObj *)` -- but declaring the parameter and
+                           passing it is EXACTLY inert, 380/479 before and
+                           after. Its residue starts at instruction 0 with a
+                           frame 0x68 against the ROM's 0x60 (LEVER 79).
+
+    The remaining four CALL candidates (func_801D1334_ovl8, func_801D1718_ovl9,
+    func_801D74EC_ovl9's sibling func_801E1F34_ovl15, func_801D66A0_ovl9)
+    already pass an argument at the call site, so there is nothing for the
+    lever to add; func_801D1334_ovl8's note records the same edit as measured
+    inert at 50/128.
+
+    Also re-confirmed the two `(void)`-headed exceptions in this scope:
+    func_8020F078_ovl9 screens "homed AND re-read 3 times" and its own note
+    already records the parameter version as WORSE (89 -> 96); func_80217834_ovl9
+    screens "homed but never re-read" and its residue is 164/167 starting at
+    instruction 0 with a frame 0x60 against the ROM's 0x68 -- prologue-blocked
+    before the lever can be read.
+
+96. **"UNSCORABLE" IS NOT ALWAYS A PADDING TRAP. Check padtrap.classify FIRST,
+    and if it says `clean` the draft is failing to COMPILE -- usually because
+    its declarations live in a DIFFERENT draft's guard.** Three drafts in
+    src/ovl9/ovl9_7.c (func_801F1784_ovl9, func_801F1C90_ovl9,
+    func_801F2584_ovl9) reported unscorable from measure_seeds and from
+    absf_sweep --screen, and all three classify `clean, 0`. What they share is
+    that func_801ACF5C_ovl7, D_801CB4DC_ovl7, func_800B7514, func_800A9864 and
+    func_800AA018 are declared ONLY inside func_801F0060_ovl9's guard at the
+    top of that file. Any tool that cuts ONE draft -- which is what
+    scratchverify.py and measure_seeds.py do, and the whole point of them --
+    leaves those uses as implicit-int declarations that then collide with the
+    real prototypes further down the file.
+
+    LEVERS' own RULES already say "declarations a GUARDED draft needs go INSIDE
+    the guard", for a different reason (a file-scope declaration changes
+    codegen for every function below it). This is the same rule between guards,
+    and the cost of breaking it is not codegen, it is that the draft can never
+    be measured. Copying the declarations into each guard is free -- guarded
+    text, sha1 unchanged -- and it produced three residue numbers that had
+    never existed.
+
+    **And it invalidates the numbers those drafts were carrying.** All three
+    notes quote a score (16/366, 291/315 "was noted 24/315", 45/226) taken with
+    the top draft open and its declarations in scope. Re-measured one at a
+    time they are 350/366, 277/313 and 181/226. Same shape of error as the
+    padding-trap notes in LEVER 88: a number nobody could reproduce with the
+    standard tool is not a measurement.
