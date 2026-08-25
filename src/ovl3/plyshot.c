@@ -1143,30 +1143,48 @@ void func_8015C00C_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 244/291 positional, word count exact, PARTIAL -- the frame is now
-   the ROM's 0x40 and it was 0x50, so the 286/291 this replaces was scored
-   through a wrong prologue (LEVERS 69/74) and meant nothing.
+/* FACTORY: 180/292 positional (was 244/291), PARTIAL -- the frame map is now
+   EXACT and the remaining residue is an aligndiff-clean whole-function temp
+   permutation ($a3<->$v1, $v0<->$a0, $t0<->$a3).  Queue for the permuter
+   (LEVER 104): `aligndiff.py` prints only two scheduling runs and a couple of
+   li/addiu aliases, so the shape is right.
 
-   Done: `s32 id = omCurrentObj->objId` spelled inline (that is 0x50 -> 0x38),
-   plus two trailing 4-byte pads to get back to 0x40 (LEVERS 13/30).
+   Four measured edits, each scored alone:
+     a) the two pads moved from the END of the declaration list to BETWEEN
+        `Vector v` and `kind` -- that is what puts the `kind` home store on the
+        ROM's `sw $t7, 0x28($sp)` instead of 0x30.  244 -> 242, and the whole
+        stack map (v at 0x34/0x38/0x3C, kind at 0x28, $ra at 0x14, frame 0x40)
+        then agrees word for word.  LEVER 13 is right about later-is-lower and
+        the previous note read the map correctly; what it missed is that the
+        two unknown words sit ABOVE kind, not below it, so the pads had to move
+        UP the list, not be added to it.
+     b) the vector is initialised y, x, z -- not x, y, z.  The ROM stores
+        0x38 then 0x34 then 0x3C, and it materialises the 8.0f constant BEFORE
+        loading D_80196750_ovl3[kind], which is just source order.  242 -> 239.
+     c) `v.y = v.y * 1.6f` instead of `v.y = 8.0f * 1.6f`.  239 -> 208, the
+        single biggest edit here.  IDO constant-folds `8.0f * 1.6f` to one
+        rodata word; the ROM has a real `mul.s $f16, $f0, $f10` against
+        D_80197070_ovl3 = 1.6f and reuses the $f0 it just stored to v.y.  The
+        aligned diff named this in one line ("delete ROM 124 mul.s") after the
+        positional diff had hidden it for two lanes.  Both floats live in this
+        function's OWN `.section .late_rodata`, so the literals are free
+        (LEVER 20's migration test).
+     d) the LEVER 90/99 zero pair: `D_800E6690[objId] = 0` and
+        `D_800E3750[objId] = 0` as integer literals, TOGETHER.  208 -> 180.
+        The previous note's "229 / 245 at 291 words" for these was measured
+        through the pre-(a) frame and does not reproduce -- with the frame map
+        right they are worth 28 diffs, and they add exactly the two `mtc1
+        $zero` ($f4 beside $f2, $f10 beside its own) that the aligned diff
+        listed as missing.
 
-   NOT DONE, and this is where the next lane should start: the ROM's first
-   compiler spill is `sw $t7, 0x28($sp)` and this C puts it at 0x30, i.e. two
-   declared words too few sit above it. The ROM's map is
-       0x34..0x3F  Vector v      (so v is the FIRST declaration)
-       0x30, 0x2C  two more declared words
-       0x28        the first compiler temp
-   and the pads are standing in for whatever those two really are. `kind` and
-   `r` are candidates but neither is spilled in the ROM, so at least one of
-   them is not a local. Read LEVERS 57 and 102 before sweeping.
-
-   Also measured and left out on purpose: writing `D_800E6690[objId] = 0` OR
-   `D_800E3750[objId] = 0` with the integer literal scores 229 but takes the
-   word count to 292 (one OVER the ROM's 291), and writing BOTH scores 245 at
-   291. The ROM is short two `mtc1 $zero` against this C at 0x8015C9A8 and
-   0x8015C9EC, so the zero pair is real (LEVERS 90/99) -- but it cannot be read
-   until the two missing declarations are found, because the spill offsets
-   move every store around it. */
+   Measured inert, do not re-cost: spelling the mode word three ways --
+   `*(s32 *) &D_8012E7FC[2]` (f32 extern), `D_8012E7FC[2]` (s32 extern array,
+   what ovl19_2.c uses) and `*(s32 *) ((u8 *) &D_8012E7FC + 8)` (s32 extern
+   scalar, what ovl3_6.c uses) -- all three score 180.  The array form does
+   drop two positional diffs at 137/139 and gains two elsewhere.  The ROM's
+   `lui $t9, %hi(D_8012E7FC + 0x8)` against this C's `lui/lw 8($t4)` is
+   LEVER 101's residual: same linked address, different place for the +8, and
+   no source spelling in this file reaches it. */
 
 /* PORT: spread-fragment init coroutine, from asm/nonmatchings/ovl3/plyshot/
  * func_8015C7F4_ovl3.s. Spawned at the carry target (D_800E1ED0[id-112]),
@@ -1179,12 +1197,12 @@ void func_8015C00C_ovl3(s32 arg0) {
 void func_8015C7F4_ovl3(s32 arg0) {
     extern f32 **D_80192C3C_ovl3;
     extern f32 D_80196750_ovl3[];
-    extern f32 D_8012E7FC[];
+    extern s32 D_8012E7FC[];
     Vector v;
-    s32 kind = D_800EC2E0[omCurrentObj->objId].as_u32;
-    s32 r;
     s32 pad0;
     s32 pad1;
+    s32 kind = D_800EC2E0[omCurrentObj->objId].as_u32;
+    s32 r;
 
     D_800EA520[omCurrentObj->objId] = 0;
     func_80161CE0_ovl3(arg0);
@@ -1200,16 +1218,16 @@ void func_8015C7F4_ovl3(s32 arg0) {
     gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x2002F, 0x21, 0x10);
     r = random_soft_s32_range(8);
-    v.x = D_80196750_ovl3[kind];
     v.y = 8.0f;
+    v.x = D_80196750_ovl3[kind];
     v.z = 0.0f;
     if ((r == 2) || (r == 7)) {
-        v.y = 8.0f * 1.6f;
+        v.y = v.y * 1.6f;
     }
     if (D_800EC660[omCurrentObj->objId] == -1.0f) {
         v.x = -v.x;
     }
-    if (*(s32 *) &D_8012E7FC[2] == 1) {
+    if (D_8012E7FC[2] == 1) {
         lbvector_Rotate(&v, 4, -D_800EA6E0[D_800E0D50[omCurrentObj->objId]]);
     } else {
         lbvector_Rotate(&v, 4, D_800EA6E0[D_800E0D50[omCurrentObj->objId]]);
@@ -1223,10 +1241,10 @@ void func_8015C7F4_ovl3(s32 arg0) {
     }
     D_800E9720[omCurrentObj->objId] = 0x14;
     D_800E64D0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
-    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0;
     D_800E6850[omCurrentObj->objId] = (D_800EA8A0[omCurrentObj->objId] < 0.0f) ? -D_800EA8A0[omCurrentObj->objId] : D_800EA8A0[omCurrentObj->objId];
     D_800E3210[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
-    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = 0;
     D_800E3C90[omCurrentObj->objId] = (D_800EA6E0[omCurrentObj->objId] < 0.0f) ? -D_800EA6E0[omCurrentObj->objId] : D_800EA6E0[omCurrentObj->objId];
     D_800EA520[omCurrentObj->objId] = func_800A8100(1, 1, 0x29, NULL);
     curObjSleepForever();
