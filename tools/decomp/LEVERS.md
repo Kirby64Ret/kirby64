@@ -2515,8 +2515,12 @@ the pool allocator's real stride is 0x78.
     function immediately above func_800B1378 in ovl1_7.c is already a switch
     over the same three cases, and it matches.
 
-110. **SHAPE DISTANCE 0 DOES NOT MEAN "PERMUTER ONLY". CLEAN THE DECLARATION
-    LIST FIRST, THEN BELIEVE THE SHAPE.** `shapescan.py` (LEVER 104's tool)
+116. **SHAPE DISTANCE 0 DOES NOT MEAN "PERMUTER ONLY". CLEAN THE DECLARATION
+    LIST FIRST, THEN BELIEVE THE SHAPE.**
+    (Written as "110" and renumbered to 116 on 2026-08-25: two lanes appended
+    within six minutes and 110 was already taken by the local-layout entry
+    above, which src/ovl3/kirby.c:5758 already cites by number. Content
+    unchanged.) `shapescan.py` (LEVER 104's tool)
     found 101 guarded drafts tree-wide with shape distance zero, and the
     reading being put on them is "no structural disagreement, only register
     names". That reading is half right and the missing half is expensive.
