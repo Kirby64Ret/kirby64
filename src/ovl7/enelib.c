@@ -2816,22 +2816,30 @@ void func_8019F000_ovl7(void *arg0, f32 *arg1, s32 arg2, f32 arg3) {
 }
 
 #ifdef NON_MATCHING
-// 20/47, re-measured: every diff is register naming, the instruction stream is
-// otherwise identical. The ROM puts objId in $v0, the D_800E7CE0 value in $a1
-// and the D_800E1B50 element in $t0; IDO swaps the first two ($a1/$v0) and
-// gives the element $a3. Swept: assigning the element before the value,
-// s32 vs u32 for the objId local, and dropping the objId local entirely so
-// `omCurrentObj->objId` is written inline at every use. That last one is the
-// ROM's real shape -- it is what produces the in-place `sll $v1,$v1,2` the ROM
-// has, where a named index local keeps the unscaled value alive in a second
-// register -- but it scores 23 because it rotates the whole allocation one
-// further. The named-index form is the lower count, the inline form is the
-// right shape; neither reaches the $v0/$a1 assignment.
-void func_8019F130_ovl7(void) {
+// 12/47 (was 20/47). LEVER 58 APPLIES HERE and paid 8 words: the prologue is
+// `addiu $sp,-0x18 / sw $ra,0x14($sp)` with no home store, $a0 is never
+// written anywhere in the listing, and both jals leave it alone -- so the
+// incoming GObj * is being handed straight to func_801A3AE0_ovl7 /
+// func_801A3E0C_ovl7, which src/ovl7/ovl7_3.c defines as `(GObj *)` and which
+// D_800DEDD0 (`void (*[])(struct GObj *)`) says this proc is too. Declaring
+// `struct GObj *arg0` and passing it occupies $a0 and drops every remaining
+// diff to naming.
+// The 12 that remain are one whole-function rotation: the ROM holds
+// omCurrentObj in $a2, objId in $v0, the D_800E7CE0 address in $v1 and its
+// value in $a1; IDO comes out $a3/$a2/$v1/$a1 with the value in $v0, i.e. one
+// register high for the first two and never touching $a3 the way the ROM
+// never touches it. Swept since the lever landed, both WORSE: inlining
+// `omCurrentObj->objId` at every use instead of the named index (19 -- it does
+// produce the ROM's in-place `sll`, and still rotates), and caching
+// omCurrentObj in its own local (23). Earlier sweeps at the 20 baseline
+// (element-before-value, s32 vs u32 index) are not worth repeating.
+void func_8019F130_ovl7(struct GObj *arg0) {
     struct EnemyRecord *temp_t0;
     s32 temp_a1;
     u32 temp_v0;
     u16 temp_v0_2;
+    void func_801A3AE0_ovl7(struct GObj *);
+    void func_801A3E0C_ovl7(struct GObj *);
 
     temp_v0 = omCurrentObj->objId;
     temp_a1 = D_800E7CE0[temp_v0];
@@ -2844,9 +2852,9 @@ void func_8019F130_ovl7(void) {
         temp_v0_2 = D_800E77A0[omCurrentObj->objId];
         if ((temp_v0_2 < 0x4E) || (temp_v0_2 >= 0x5D)) {
             if (temp_t0->unk6C == 2) {
-                func_801A3AE0_ovl7();
+                func_801A3AE0_ovl7(arg0);
             } else {
-                func_801A3E0C_ovl7();
+                func_801A3E0C_ovl7(arg0);
             }
         }
     }
