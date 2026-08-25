@@ -90,7 +90,6 @@ void func_801A5DE8_ovl7(GObj *);
 void func_801A6DD0_ovl7(void);
 s32 func_801AE7E0_ovl7(s32);
 
-#ifdef MIPS_TO_C
 /* FACTORY: 9/213, $v0/$v1 transposition ONLY (the CSE'd-load-in-the-
    neighbouring-register floor from LEVERS). Re-confirmed 2026-08-23,
    identical 9/213.  Instruction count, schedule,
@@ -108,70 +107,6 @@ s32 func_801AE7E0_ovl7(s32);
    is load-bearing besides (see the file-scope declaration), so the pointer
    is passed as (u32) ent->unk34 (a no-op in codegen). Good permuter
    seed. */
-void func_801A3E80_ovl7(GObj *arg0) {
-    void func_800A22D4(u32);
-    void func_800A2300(struct GObj *);
-    s32 func_801A66B4_ovl7(void);
-    s32 func_801A66FC_ovl7(void);
-    void func_801A41D4_ovl7(GObj *);
-    void func_801A42D8_ovl7(GObj *);
-    void func_80198880_ovl7(struct EnemyKindDesc *);
-    void func_8019B7D8_ovl7(void);
-    void func_8019BB58_ovl7(void);
-    void func_8019D958_ovl7(u16);
-    extern f32 gameTicksPerDraw;
-    extern FUNCLIST D_801C2970_ovl7;
-    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
-    struct EnemyKindDesc *desc = ent->unk88;
-    f32 c;
-
-    func_8019B7D8_ovl7();
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    c = 65535.0f;
-    D_800DF150[omCurrentObj->objId] = NULL;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = c;
-    D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3E50[omCurrentObj->objId] = c;
-    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
-    arg0->onAnimate = NULL;
-    D_800DF310[omCurrentObj->objId] = NULL;
-    if (ent->unk34 != NULL) {
-        func_800A22D4((u32) (uintptr_t) ent->unk34);
-    }
-    func_800A2300(arg0);
-    ent->unk34 = NULL;
-    if (ent->unk40 != 1) {
-        if (func_801A66B4_ovl7() != 0) {
-            func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
-        } else {
-            gEntityFuncListIDArray[omCurrentObj->objId] = func_801A66FC_ovl7();
-            utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_801C2970_ovl7);
-            func_80198880_ovl7(desc);
-            D_800E7B20[omCurrentObj->objId] = 0.0f;
-        }
-        if ((ent->unk94->unk1C != 0x80000000) && (ent->unk40 != 1)) {
-            play_sound(ent->unk94->unk1C);
-        }
-        if (ent->unk94 != NULL) {
-            if (ent->unk94->unk18 == 6) {
-                func_801A41D4_ovl7(arg0);
-            }
-            if (ent->unk94->unk18 == 7) {
-                func_801A42D8_ovl7(arg0);
-            }
-        }
-    }
-    D_800DF150[omCurrentObj->objId] = NULL;
-    func_800B19F4(0x7D, omCurrentObj->objId);
-    func_8019BB58_ovl7();
-    ohSleep(0xF);
-    func_8019D958_ovl7((u16) omCurrentObj->objId);
-}
-#elif defined(PORT)
 /* The enemy "return to idle" epilogue every FUNCLIST tail jumps to (ported
  * from m2c): stop the anim driver, clear the velocity/accel banks, drop
  * the attached effect object (func_800A22D4 takes just ent->unk34 -- m2c's
@@ -183,76 +118,81 @@ void func_801A3E80_ovl7(GObj *arg0) {
  * setups; finally detach, become entity 0x7D, sleep 15 and free the
  * track (func_8019D958_ovl7 takes the u16 low half of objId -- the ROM's
  * lhu obj+2 is the big-endian half of the same word). */
-void func_801A3E80_ovl7(GObj *arg0) {
-    void func_800A22D4(u32); /* takes ent->unk34; u32 is load-bearing, see
-                              * the file-scope declaration above */
-    void func_800A2300(struct GObj *);
-    void func_800AECC0(f32);
-    s32 func_801A66B4_ovl7(void);
-    s32 func_801A66FC_ovl7(void);
-    void func_801A41D4_ovl7(GObj *);
-    void func_801A42D8_ovl7(GObj *);
-    void func_80198880_ovl7(struct EnemyKindDesc *);
-    void func_8019B7D8_ovl7(void);
-    extern f32 gameTicksPerDraw;
-    extern FUNCLIST D_801C2970_ovl7;
-    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
-    struct EnemyKindDesc *desc = ent->unk88;
-    f32 c;
-
-    func_8019B7D8_ovl7();
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    D_800DF150[omCurrentObj->objId] = NULL;
-    c = 65535.0f;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = c;
-    D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
-        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3E50[omCurrentObj->objId] = c;
-    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
-    arg0->onAnimate = NULL;
-    D_800DF310[omCurrentObj->objId] = NULL;
-    if (ent->unk34 != NULL) {
-        func_800A22D4((u32) (uintptr_t) ent->unk34);
+void func_801A3E80_ovl7(GObj *arg0)
+{
+  void func_800A22D4(u32);
+  void func_800A2300(struct GObj *);
+  s32 func_801A66B4_ovl7(void);
+  s32 func_801A66FC_ovl7(void);
+  void func_801A41D4_ovl7(GObj *);
+  void func_801A42D8_ovl7(GObj *);
+  void func_80198880_ovl7(struct EnemyKindDesc *);
+  void func_8019B7D8_ovl7(void);
+  void func_8019BB58_ovl7(void);
+  void func_8019D958_ovl7(u16);
+  extern f32 gameTicksPerDraw;
+  extern FUNCLIST D_801C2970_ovl7;
+  struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+  struct EnemyKindDesc *desc = ent->unk88;
+  f32 c;
+  func_8019B7D8_ovl7();
+  func_800AECC0(gameTicksPerDraw);
+  func_800AED20(gameTicksPerDraw);
+  c = 65535.0f;
+  D_800DF150[omCurrentObj->objId] = (void *) 0;
+  D_800E6690[omCurrentObj->objId] = 0.0f;
+  D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+  D_800E6850[omCurrentObj->objId] = c;
+  D_800E3910[omCurrentObj->objId] = 0.0f;
+  D_800E3050[omCurrentObj->objId] = (D_800E3210[omCurrentObj->objId] = (D_800E33D0[omCurrentObj->objId] = (D_800E3590[omCurrentObj->objId] = (D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId]))));
+  D_800E3E50[omCurrentObj->objId] = c;
+  D_800E3AD0[omCurrentObj->objId] = (D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId]);
+  arg0->onAnimate = (void *) 0;
+  D_800DF310[omCurrentObj->objId] = (void *) 0;
+  if (ent->unk34 != ((void *) 0))
+  {
+    func_800A22D4((u32) ((uintptr_t) ent->unk34));
+  }
+  func_800A2300(arg0);
+  ent->unk34 = (void *) 0;
+  if (ent->unk40 != 1)
+  {
+    if (func_801A66B4_ovl7() != 0)
+    {
+      func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
     }
-    func_800A2300(arg0);
-    ent->unk34 = NULL;
-    if (ent->unk40 != 1) {
-        u32 snd;
-
-        if (func_801A66B4_ovl7() != 0) {
-            func_800FD570(0, ent->unk94->unk18, 0.0f, 0.0f, 0.0f);
-        } else {
-            gEntityFuncListIDArray[omCurrentObj->objId] = func_801A66FC_ovl7();
-            utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_801C2970_ovl7);
-            func_80198880_ovl7(desc);
-            D_800E7B20[omCurrentObj->objId] = 0.0f;
-        }
-        snd = ent->unk94->unk1C;
-        if ((snd != 0x80000000) && (ent->unk40 != 1)) {
-            play_sound(snd);
-        }
-        if (ent->unk94 != NULL) {
-            if (ent->unk94->unk18 == 6) {
-                func_801A41D4_ovl7(arg0);
-            }
-            if (ent->unk94->unk18 == 7) {
-                func_801A42D8_ovl7(arg0);
-            }
-        }
+    else
+    {
+      gEntityFuncListIDArray[omCurrentObj->objId] = func_801A66FC_ovl7();
+      utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 9, D_801C2970_ovl7);
+      func_80198880_ovl7(desc);
+      D_800E7B20[omCurrentObj->objId] = 0.0f;
     }
-    D_800DF150[omCurrentObj->objId] = NULL;
-    func_800B19F4(0x7D, omCurrentObj->objId);
-    func_8019BB58_ovl7();
-    ohSleep(0xF);
-    func_8019D958_ovl7((u16) omCurrentObj->objId);
+    if ((ent->unk94->unk1C != 0x80000000) && (ent->unk40 != 1))
+    {
+      play_sound(ent->unk94->unk1C);
+      if (1)
+      {
+      }
+    }
+    if (ent->unk94 != ((void *) 0))
+    {
+      if (ent->unk94->unk18 == 6)
+      {
+        func_801A41D4_ovl7(arg0);
+      }
+      if (ent->unk94->unk18 == 7)
+      {
+        func_801A42D8_ovl7(arg0);
+      }
+    }
+  }
+  D_800DF150[omCurrentObj->objId] = (void *) 0;
+  func_800B19F4(0x7D, omCurrentObj->objId);
+  func_8019BB58_ovl7();
+  ohSleep(0xF);
+  func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_4/func_801A3E80_ovl7.s")
-#endif
 
 void func_801A41D4_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
