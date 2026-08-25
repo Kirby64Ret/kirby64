@@ -319,6 +319,23 @@ struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
 // register rather than a home slot, and lever 60's question -- which of the
 // ROM's values is a temp and not a local -- is asked here against the register
 // NUMBERING rather than against spill offsets.
+// FACTORY: 4/10, re-measured 2026-08-25 by the coordinator, and eight further
+// spellings all reproduce the same 4 -- so the source-shape search space here
+// is now large and empty:
+//   a third declaration, before or after the two real ones (a declaration in a
+//     frameless function buys a register, so this was the direct test of the
+//     "one more value" theory, and IDO simply does not allocate for it);
+//   `size` folded inline into the store expression;
+//   `size` computed before the load;
+//   `u32 arg0` instead of `s32`;
+//   `s32 size` instead of `u32`;
+//   an explicit `(u32)` cast on the addend.
+// Measured WORSE: `& ~0xF` in place of `& 0xFFFFF0` is 7/10 -- IDO builds the
+// mask differently, so the literal is confirmed by measurement rather than
+// assumed.
+// Ten instructions, four of them a contiguous one-slot temp rotation, no
+// frame, no calls. That is the smallest and best-conditioned permuter target
+// in ovl1 and it is now in priority_queue.py's TARGETS.
 u32 func_800A84F0(s32 arg0) {
     u32 temp_v0;
     u32 size;

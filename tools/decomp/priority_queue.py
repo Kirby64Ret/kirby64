@@ -63,6 +63,7 @@ TARGETS = [
     (  2, 'src/ovl1/ovl1_13.c', 'func_800BDE0C'),   # of 72
     (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),   # of 88
     (  2, 'src/ovl5/ovl5_5.c', 'func_8017232C_ovl5'),   # of 88
+    (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),   # of 10, one-slot temp rotation, no frame
     (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),   # of 169
     (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),   # of 146
     (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),   # of 138
