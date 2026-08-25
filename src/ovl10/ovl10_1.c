@@ -1963,59 +1963,35 @@ void func_801E100C_ovl10(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xB;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
 f32 atan2f(f32, f32);                               /* extern */
 f32 func_8019DA50_ovl7();                           /* extern */
 
+/* Clone of func_801E3450_ovl10 in ovl10_2.c (LEVER 1), and it closed on the
+   same three facts:
+     - `ABSF(func_8019DA50_ovl7())` -- the macro names its argument THREE
+       times, so the three `jal func_8019DA50_ovl7` at 801E13A8/13C8/13D8 are
+       the macro, not three source calls (LEVER 40).
+     - the two clamps are ABSF(r) against a DOUBLE literal.
+     - each clamp's value is a TERNARY OF DOUBLES, so the ternary's type is
+       double and the assignment to the f32 `r` is the ROM's ldc1 + cvt.s.d,
+       with the true arm reusing the $f14/$f0 the c.lt.d already loaded.
+       Written as four separate `r = 2.199...;` statements IDO folds each to a
+       float constant and emits lwc1 instead.
+   Was 33/108 as an m2c draft with six locals. */
 f32 func_801E13A0_ovl10(GObj *arg0) {
-    f32 temp_f0;
-    f32 var_f12;
-    f32 var_f2;
-    f32 var_f2_2;
-    f32 var_f2_3;
-    u32 temp_v0;
+    f32 t;
+    f32 r;
 
-    if (func_8019DA50_ovl7() < 0.0f) {
-        var_f2 = -func_8019DA50_ovl7();
-    } else {
-        var_f2 = func_8019DA50_ovl7();
+    t = ABSF(func_8019DA50_ovl7());
+    r = atan2f(D_800E6A10[omCurrentObj->objId] * t,
+               (gEntitiesNextPosYArray[0] + 20.0f) - (gEntitiesNextPosYArray[omCurrentObj->objId] + 40.0f));
+    if (2.19911491870880127 < ABSF(r)) {
+        r = (1.0f == D_800E6A10[omCurrentObj->objId]) ? 2.19911491870880127 : -2.19911491870880127;
+    } else if (ABSF(r) < 0.942477822303771973) {
+        r = (1.0f == D_800E6A10[omCurrentObj->objId]) ? 0.942477822303771973 : -0.942477822303771973;
     }
-    temp_v0 = omCurrentObj->objId;
-    temp_f0 = atan2f(D_800E6A10[temp_v0] * var_f2, (*gEntitiesNextPosYArray + 20.0f) - (gEntitiesNextPosYArray[temp_v0] + 40.0f));
-    var_f12 = temp_f0;
-    if (temp_f0 < 0.0f) {
-        var_f2_2 = -temp_f0;
-    } else {
-        var_f2_2 = temp_f0;
-    }
-    if ((f64) var_f2_2 > 2.1991149187088013) {
-        if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-            var_f12 = (f32) 2.1991149187088013;
-        } else {
-            var_f12 = (f32) -2.1991149187088013;
-        }
-    } else {
-        if (temp_f0 < 0.0f) {
-            var_f2_3 = -temp_f0;
-        } else {
-            var_f2_3 = temp_f0;
-        }
-        if ((f64) var_f2_3 < 0.942477822303772) {
-            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-                var_f12 = (f32) 0.942477822303772;
-            } else {
-                var_f12 = (f32) -0.942477822303772;
-            }
-        }
-    }
-    return var_f12;
+    return r;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_1/func_801E13A0_ovl10.s")
-#endif
 
 extern s32 D_801F3AA8_ovl10;
 extern s32 D_801F3E98_ovl10;
