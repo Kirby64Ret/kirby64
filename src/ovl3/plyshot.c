@@ -2171,55 +2171,63 @@ void func_8015E8E0_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 789/804 positional, and READ THE NEXT PARAGRAPH BEFORE COMPARING
-   THAT TO THE 770/776 IT REPLACES.
+/* FACTORY: 789/804 positional, UNCHANGED by tonight's edits AND THAT IS NOT
+   THE MEASUREMENT. The draft is still 27 words longer than the ROM, so the
+   positional diff is pinned by LEVER 48 and cannot move; what moved is the
+   STACK MAP, and the right meter for that is the SET of `NN($sp)` offsets the
+   two functions use.
 
-   THE FRAME IS NOW EXACT (0xA8) AND IT WAS NOT BEFORE. Diff 0 used to be the
-   stack adjustment, which by LEVERS 69/74 means no body edit could be scored
-   at all; the first diff is now a register NAME at word 1. The positional
-   number went UP because the draft is 27 words LONGER than the ROM and every
-   word after the first insertion counts as wrong (LEVER 48). The 27 are one
-   identified cause -- see WHAT IS LEFT -- not 27 separate defects.
+       ROM uses 24 distinct sp offsets.
+       before tonight   20 of 24 reproduced   (extra 0x34 0x48 0x50 0x88 0x8C)
+       after            23 of 24 reproduced   (extra 0x88 0x8C only)
 
-   Fixed, re-derived from the listing 2026-08-25:
-   1. `s32 id = omCurrentObj->objId;` (81 uses) and `s32 parent =
-      D_800E0D50[id];` (6 uses), both spelled inline. The ROM reads
-      D_800E0D50 exactly three times off objId, which is what CSE gives the
-      six inline uses -- caching it is not the ROM's shape.
-   2. The sound-pair release in the detonate tail has NO null check and no
-      copy-out: `func_800A7870(p, p + 1)` on one load of D_800EA360[objId].
-      That shim was 8 words and 2 address-taken locals, and taking their
-      addresses is also what stopped IDO materialising `&omCurrentObj` into
-      a register the way the ROM does at 0x8015ED30.
-   3. Both `hAbs` locals are `ABSF()`. The listing shows the macro plainly
-      (LEVER 73's tell): `c.lt.s $f0, $f6` against a materialised zero, a
-      `bc1fl`, and THREE copies of the operand expression, one of them
-      unreachable. `dyAbs` is `ABSF(Y[objId] - Y[parent])` -- the same shape
-      with the subtraction folded into the compare, so the difference must
-      NOT be named (LEVER 73 again); the two-step
-      `d = a - b; if (d < 0) d = -d;` is 4 words short.
-   4. Four declarations the ROM does not have, found by reading its slots:
-      `t` (write `D_800E9560[objId]-- != 0`), `k` and its
-      `for (k = 0; k < 4; k++)` (the ROM writes the four multiplies out), and
-      `lim` -- the ROM holds `&D_801967C4_ovl3[close]` in $s4 and RE-READS the
-      element at each of the four uses (LEVERS 10/11). Those four are exactly
-      the 0xB8 -> 0xA8 the frame needed.
-   Slot map read off the listing, for whoever finishes this: 0xA4 hits,
-   0xA0 hdist, 0x9C dyAbs, 0x98 dz, 0x94 hy, 0x90 dx, 0x80 sn, 0x78 close,
-   0x64-0x6F vb, 0x58-0x63 va, 0x4C-0x57 vc (so the declaration order of the
-   three Vectors is vb, va, vc), and 0x38/0x3C are compiler temps for the two
-   squares spilled across sqrtf.
+   Two edits, both pure declaration order/count inside the homing block:
+     a) that block was declared va, vb, vc, ang, dir, spd, close and is now
+        close, dir, spd, vb, va, vc.  LEVER 13 (later declarations take lower
+        addresses) plus the previous note's own reading that the ROM's vector
+        order is vb, va, vc: this puts va on 0x58, vb on 0x64 and vc on 0x4C,
+        which is the ROM's `addiu $a1, $sp, 0x64` for lbvector_Angle's second
+        argument exactly, and it recovered 0x5C/0x60 as well.
+     b) `ang` is gone -- `dir` holds lbvector_Angle's result and is then
+        overwritten in every arm, which is what the ROM's slot count says.
+        Dropping ONE declared word from below the vectors is what moves the
+        two sqrtf spill temps from 0x34/0x38 onto the ROM's 0x38/0x3C without
+        moving the vectors.  The frame is still the ROM's 0xA8 and diff 0 is
+        still a register name at word 1.
 
-   WHAT IS LEFT, and it is ONE cause worth about 27 words: every `goto
-   detonate` gets the detonate block's head DUPLICATED into it -- ten words of
-   `lui/lw omCurrentObj`, the D_800E9C60 base, the gKirbyState base and the
-   index, then a `b` into the middle of the block -- where the ROM branches
-   straight to .L8015F840 with a `nop` and re-materialises `&omCurrentObj`
-   there. Three goto sites, three copies. An empty `do { } while (0);` at the
-   label is NOT the fix (measured, no change). This is LEVER 46/59's family
-   (IDO duplicating a shared head or tail into every predecessor) and the
-   source shape that stops it is not yet known. Everything else in the aligned
-   diff is a register name or a one-slot rotation. */
+   Measured and REVERTED, do not re-cost:
+     - splitting `if (abilityInUse != 0 && D_800E8760[objId] == 0) {...}` into
+       two explicit `goto detonate` tests (which is literally the ROM's shape
+       at .L8015EF48: `beqz $t6, .L8015F840` then `bnez $t7, .L8015F840`)
+       costs FOUR MORE words, 804 -> 808.  The if/return form is right.
+     - inlining `v3` at its two uses drops a declaration from ABOVE the
+       vectors, which fixes the temps and breaks the vectors: 21 of 24
+       against 23.  Above and below the vector block are different knobs.
+
+   Slot map, re-read and corrected where the old note guessed: 0xA4 hits,
+   0xA0/0x9C hdist and dyAbs, 0x98/0x94/0x90 the hy/dx/dz group, 0x88+0x8C
+   the two spills discussed below, 0x78 close, 0x74 dir, 0x70 spd,
+   0x64-0x6F vb, 0x58-0x63 va, 0x4C-0x57 vc, 0x38/0x3C the two sqrtf temps.
+
+   WHAT IS LEFT, two causes:
+   1. The 27 extra words are still the `goto detonate` head duplication:
+      every goto site gets `lui/lw omCurrentObj`, `lui/addiu %lo(D_800E9C60)`,
+      `lw objId`, `lui/addiu %lo(gKirbyState)`, `sll`, `addu` and a `b` into
+      the MIDDLE of the detonate block, where the ROM branches straight to
+      .L8015F840 with a `nop` and materialises all of that once at the label.
+      Three sites, ~10 words each.  Note the ROM has SIX branches to
+      .L8015F840 and one fall-through from .L8015F838 (the `func_800BB468(9,
+      0x1E)` arm sits immediately above the label), so the ROM's detonate
+      block is the physical tail of the function and every predecessor is a
+      branch or a fall-through into it.  Neither an empty `do {} while (0)`
+      at the label nor the explicit-goto rewrite in (a) reaches it.
+   2. The remaining two sp offsets, 0x88 and 0x8C, are `hy` and the first
+      sqrt operand being SPILLED across atan2f/sqrtf where the ROM keeps
+      them.  The cause is visible in the aligned diff a few words earlier:
+      the ROM holds `&gEntitiesNextPosXArray`/`Z` in $a1/$t3 and reaches dx,
+      dz and hy off those held bases, where this C re-materialises
+      `lui $at, %hi(...)` at every one of the six accesses.  That is LEVER 11
+      (hoist the reused base), and it is the next thing to try here. */
 
 /* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
  * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
@@ -2335,13 +2343,12 @@ void func_8015ED2C_ovl3(s32 arg0) {
             func_80154578_ovl3(D_8019370C_ovl3, 0, dobj->angle.v.y);
         }
         if (D_800E98E0[omCurrentObj->objId] != 0) {
-            Vector va;
-            Vector vb;
-            Vector vc;
-            f32 ang;
+            s32 close;
             f32 dir;
             f32 spd;
-            s32 close;
+            Vector vb;
+            Vector va;
+            Vector vc;
 
             if (func_8011D858(D_80192358_ovl3, D_800E0D50[omCurrentObj->objId], 1.0f) != 0) {
                 func_800BB468(9, 0x1E);
@@ -2354,15 +2361,15 @@ void func_8015ED2C_ovl3(s32 arg0) {
             vb.x = hdist;
             vb.y = hy;
             vb.z = 0.0f;
-            ang = lbvector_Angle(&va, &vb);
-            if (ang == 3.1415927f) {
+            dir = lbvector_Angle(&va, &vb);
+            if (dir == 3.1415927f) {
                 if (D_800E64D0[omCurrentObj->objId] > 0.0f) {
                     dir = (D_801967C4_ovl3[close] * 3.1415927f) / 180.0f;
                 } else {
                     dir = 3.1415927f - ((D_801967C4_ovl3[close] * 3.1415927f) / 180.0f);
                 }
             } else {
-                if (ang < ((D_801967C4_ovl3[close] * 3.1415927f) / 180.0f)) {
+                if (dir < ((D_801967C4_ovl3[close] * 3.1415927f) / 180.0f)) {
                     va = vb;
                 } else {
                     vec3_normalized_cross_product(&va, &vb, &vc);
