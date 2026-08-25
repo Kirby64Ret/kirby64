@@ -1435,7 +1435,6 @@ void func_801E0A74_ovl17(void) {
     D_800E8E60[temp_v0] = 1;
 }
 
-#ifdef NON_MATCHING
 /* FACTORY: MATCH (108/108), padding-trapped TU -- MEASURED 2026-08-25, and the
    first measurement this draft has ever had. The note this replaces said "not
    byte-exact and not claimed to be"; nobody had a number because verify.py
@@ -1462,25 +1461,42 @@ void func_801E0A74_ovl17(void) {
    carries 6 words of linker fill past its own .size, so un-guarding shortens
    the TU by 0x18 under kirby.ld's SUBALIGN(16). Un-guarding needs a `pad`
    subsegment in kirby64.yaml in the SAME commit -- a coordinator task. */
-/* BYTE-EXACT (108/108) AND STILL GUARDED, because the padding-trap remedy
- * does not work at this site.
+/* CLOSED 2026-08-25 by `- [0x22BEE0, pad]` in kirby64.yaml -- the 16-byte
+ * boundary above this function's `.size`, not the `.size` itself.
  *
- * This is the last function of ovl17_2.o and its listing carries six words of
- * fill past its own .size, 0x22BED8..0x22BEEC, ending exactly where ovl17_3
- * begins -- so decompiling it shortens the object by 0x18 and shifts
- * everything after. The documented remedy is a `pad` subsegment in
- * kirby64.yaml, which is already doing this job six times in ovl5.
+ * The history: this is the last function of ovl17_2.o and its listing carries
+ * six words of fill past its own .size, 0x22BED8..0x22BEEC, ending exactly
+ * where ovl17_3 begins. `- [0x22BED8, pad]` was tried and broke the ROM
+ * (78f0632e un-guarded, ecb9c0a1 with the pad alone), and the note that stood
+ * here concluded "the pad is the problem, not the un-guarding" and read
+ * splat's .text figure as evidence that the listing had not been shortened.
+ * That reading was wrong. splat shortens the listing exactly as the extents
+ * say; what the note was missing is that `as` ROUNDS A SECTION'S SIZE UP TO 16
+ * BYTES, so a pad placed at an unaligned `.size` is a second copy of fill the
+ * object already supplies. 0x22BED8 is 8 mod 16, and the ROM came out 0x20
+ * long. (The figure the old note rested on, "13512 bytes with the pad and
+ * without", is not this object's .text size in any configuration; it is
+ * 0x33E0 = 13280 guarded and 0x33D0 = 13264 un-guarded.)
  *
- * MEASURED 2026-08-25 and it fails here. `- [0x22BED8, pad]` between the
- * ovl17_2 and ovl17_3 entries breaks the ROM, and it breaks it WITH THIS
- * DRAFT STILL GUARDED -- so the pad is the problem, not the un-guarding.
- * ovl17_2.o's .text is 13512 bytes with the pad and 13512 without: splat did
- * not shorten the preceding listing the way the subsegment extents say it
- * should, so the six words end up supplied twice. Three builds: 78f0632e with
- * pad and un-guarded, ecb9c0a1 with the pad alone, 6cea2d46 reverted.
+ * The arithmetic, all four numbers measured with objdump -h:
  *
- * Do not un-guard this without solving that first. The two edits that made it
- * byte-exact are worth keeping either way, and are recorded above. */
+ *   subsegment 0x228B10..0x22BEF0                    = 0x33E0
+ *   guarded:   listing content incl. the six nops    = 0x33E0, no rounding
+ *   un-guarded: 0x33E0 - 0x18 = 0x33C8, align16      -> 0x33D0, 0x10 SHORT
+ *   pad 0x22BEE0..0x22BEF0 supplies that 0x10        -> 0x22BEF0. Green.
+ *
+ * ROUND TO 16, NOT TO THE SECTION'S Algn FIELD. This object's .text reports
+ * `Algn 2**5` and rounding to 32 would predict no pad at all; that was tried
+ * and is what the intermediate red build (226cacd0, .text 0x33D0 against an
+ * expected 0x33E0) refuted. The Algn field is a placement requirement, which
+ * kirby.ld's SUBALIGN(16) overrides anyway -- 0x228B10 is not 32-aligned and
+ * the link has always been happy. Size rounding is a separate thing and it is
+ * 16 here and on ovl9_8.
+ *
+ * The sibling case is func_801FB9DC_ovl9 in src/ovl9/ovl9_8.c: same class of
+ * trap, same rule, `- [0x1A9AE0, pad]`.
+ *
+ * The two edits that made the body byte-exact are recorded above. */
 s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
     /* Spelled u16, like ovl11.c and ovl11_2.c do. Nothing this TU includes
        declares it at all, so the call was an implicit `int f()` and the mask
@@ -1514,6 +1530,3 @@ s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
     return temp_v0;
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801E0B38_ovl17.s")
-#endif

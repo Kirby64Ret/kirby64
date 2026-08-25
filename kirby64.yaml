@@ -684,6 +684,7 @@ segments:
     - [0x19E0B0, c, ovl9/ovl9_7]
     - [0x1A0A20, c, ovl9/ovl9_7_2]
     - [0x1A6780, c, ovl9/ovl9_8]
+    - [0x1A9AE0, pad]
     - [0x1A9AF0, c, ovl9/ovl9_9]
     - [0x1AFE30, c, ovl9/ovl9_10]
     - [0x1B5310, c, ovl9/ovl9_11]
@@ -997,6 +998,7 @@ segments:
     - [0x2263D0, c, ovl17/ovl17]
     - [0x228630, c, ovl17/ovl17b]
     - [0x228B10, c, ovl17/ovl17_2]
+    - [0x22BEE0, pad]
     - [0x22BEF0, c, ovl17/ovl17_3]
     - [0x230050, data, ovl17/ovl17]
     # Same reset test as ovl16 puts .rodata at 0x230710 (vram 0x801E5520); the

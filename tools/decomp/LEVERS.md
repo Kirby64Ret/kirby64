@@ -157,7 +157,51 @@ preceding listing the way the subsegment extents say it should, so the six
 words are supplied twice and everything after 0x22BED8 shifts. Three builds,
 sha1 78f0632e (pad + un-guarded), ecb9c0a1 (pad only), 6cea2d46 (reverted).
 
-**WHAT DISTINGUISHES THEM IS THE ADDRESS'S ALIGNMENT, measured 2026-08-25 on
+**SOLVED 2026-08-25. THE PAD DOES NOT GO AT THE `.size`; IT GOES AT
+align16(THE UN-GUARDED OBJECT'S .text). Two closures on this rule:
+func_801FB9DC_ovl9 (`- [0x1A9AE0, pad]`) and func_801E0B38_ovl17
+(`- [0x22BEE0, pad]`), both un-guarded, sha1 6cea2d46, check_tu_size 0 wrong,
+check_rodata_bytes 0 problems. func_801E0B38_ovl17 had been sealed as
+"the pad remedy does not work at this site".**
+
+The formula, and it is arithmetic, not a sweep:
+
+    content   = (subseg_end - subseg_start) - 4 * (trailing nops in the .s)
+    pad_start = subseg_start + align16(content)
+    pad_bytes = subseg_end - pad_start          # 0 means no pad is needed
+
+`as` rounds a section's SIZE up to 16 and its fill is zero, which is what `nop`
+encodes as -- so the object supplies the first part of the tail itself and the
+pad supplies only the remainder. Putting the pad at the `.size` asks for the
+whole tail and gets the object's rounding on top of it, which is the
+double-count that has been breaking these.
+
+**ROUND TO 16, NOT TO THE SECTION'S `Algn` FIELD.** ovl17_2.o's .text reports
+`Algn 2**5`; rounding to 32 predicts no pad at all, and that was built and is
+wrong (226cacd0, .text 0x33D0 against an expected 0x33E0). `Algn` is a
+placement requirement, and kirby.ld's SUBALIGN(16) overrides it anyway --
+0x228B10 is not 32-aligned and the link has never minded. Size rounding is a
+separate mechanism and it is 16. padtrap.py's own header already said "IDO's
+assembler pads .text only to 16"; what was missing was connecting that to the
+pad's ADDRESS.
+
+**THE REMAINING POPULATION, enumerated and costed** (class (a), last function
+in its TU, computed with the formula above -- each still needs its draft to be
+byte-exact before un-guarding, and the pad gated guarded first):
+
+    ovl1/ovl1          - [0x4AB00, pad]   16   func_800A2550
+    ovl1/save_file     - [0x629E0, pad]   16   saveForceCompleteFile
+    ovl3/ovl3_4        - [0xCC970, pad]   48   func_8016BD24_ovl3
+    ovl8/ovl8          - [0x175B10, pad]  16   func_801D1E98_ovl8
+    ovl9/ovl9_4        - [0x193760, pad]  16   func_801E5660_ovl9
+    ovl9/ovl9_13       - [0x1BDFC0, pad]  16   func_8020FD34_ovl9
+    ovl12/code_1EB520  - [0x1F18C0, pad]  16   func_801DB1E0_ovl12
+    ovl18/code_236CC0  - [0x236F10, pad]  16   func_802244FC_ovl18
+
+The older text below is kept because its measurements are real; read it as
+history, not as guidance.
+
+**(SUPERSEDED READING) THE ADDRESS'S ALIGNMENT, first measured on
 func_801FB9DC_ovl9 (ovl9_8, `.size` at 0x1A9AD4, seven words of fill to
 ovl9_9's 0x1A9AF0). THE PAD MUST START ON A 16-BYTE BOUNDARY.**
 

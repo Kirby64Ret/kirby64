@@ -1137,7 +1137,6 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
  * `0 <= temp - rand - 3`, `!(temp - rand - 3 < 0)`, and inverting the test so
  * the `+ 5` arm comes first.  If someone finds a spelling of this barrier that
  * is not a hack, it belongs here. */
-#ifdef NON_MATCHING
 void func_801FB9DC_ovl9(struct GObj *arg0) {
     s32 temp;
     s32 rand;
@@ -1151,7 +1150,4 @@ void func_801FB9DC_ovl9(struct GObj *arg0) {
     }
     func_801FB614_ovl9();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB9DC_ovl9.s")
-#endif
 
