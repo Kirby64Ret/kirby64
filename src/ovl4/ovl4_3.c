@@ -979,6 +979,22 @@ extern Unk2Floats D_8015ADC4_ovl4[];
 extern Unk3Halfs D_8015ADDC_ovl4[];
 extern s32 D_8015C6F8_ovl4[];
 
+/* FACTORY: 1/138. One word, and it is a register-ORDER choice inside a
+ * commutative branch:
+ *     ROM  beq $v0, $fp    (rs = the call result, rt = the held value)
+ *     IDO  beq $fp, $v0
+ * at `if (t != v)`, where `t` is the func_80157004_ovl4 result in $v0 and `v`
+ * is the loop-carried copy in $fp. $fp IS $s8 -- the two disassemblies name
+ * the same register differently, so the only real difference is which operand
+ * is rs.
+ *
+ * MEASURED AND INERT 2026-08-25: writing it `if (v != t)`. Byte-identical.
+ * IDO canonicalises the operand order of `!=` before register allocation, so
+ * the source cannot express this choice and lever 20 does not reach it.
+ *
+ * Permuter food, and it is in priority_queue.py's TARGETS. Note it has not
+ * had a real run yet: its first scheduled slot was cut to 17 seconds by a
+ * stray kill while the queue was being restarted for the --stack-diffs fix. */
 void func_80157028_ovl4(GObj *arg0, s32 arg1) {
     Unk2Floats *p;
     SPObj *sp;
