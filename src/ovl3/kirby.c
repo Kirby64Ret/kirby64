@@ -2505,11 +2505,13 @@ void func_8016F7C8_ovl3(s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 29/211: instruction-for-instruction exact; the ROM keeps the reloaded
-   omCurrentObj pointer in $v0 and the scaled index in $v1, this C swaps the
-   pair. Swept: local declared before/after the inner prototypes, block-scoped
-   local, and an s32 return on func_8011CF58 (which regressed two matched
-   functions). */
+/* FACTORY: 29/211, instruction-for-instruction exact; the ROM keeps the
+   reloaded omCurrentObj pointer in $v0 and the scaled index in $v1, this C
+   swaps the pair, and all 29 diffs are that one swap. Swept: local declared
+   before/after the inner prototypes, block-scoped local, and an s32 return on
+   func_8011CF58 (which regressed two matched functions). Re-swept 2026-08-25
+   and negative: every barrier_sweep placement (LEVER 61/71). Pure colouring;
+   this is the permuter's. */
 void func_8016F80C_ovl3(GObj *arg0) {
 
     D_800E83E0[omCurrentObj->objId] = 0;

@@ -478,7 +478,42 @@ void func_8015B190_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 276/289 [was noted 13/289], whole-function callee-saved permutation (same floor class documented across this cluster). Gives the carry-effect block a local RockFx view instead of the PORT arm's guarded struct PcPlyshotFx, and inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, same pattern as func_80161058_ovl3. Queued for the permuter. */
+/* FACTORY: 100/290, register permutation + 8 bytes of frame (was 276/289,
+   and the ROM is 290 words, not 289). The old note called this a
+   "whole-function callee-saved permutation"; five real source defects were
+   in front of that, all found by reading the listing:
+
+   1. `s32 id = omCurrentObj->objId;`. The ROM holds &omCurrentObj in a
+      register and re-derives the field at EVERY use. Worth 146 words, and
+      it is also what turns func_800B1900's argument into the ROM's
+      `lhu 0x2(obj)` instead of a lw+andi. Same fix closed
+      func_8015D3C8_ovl3 two functions below.
+   2. The per-class speed is NOT a literal table. The ROM reads
+      D_80196728_ovl3 with `sll 4` -- a 16-byte row stride, i.e. row [2] of
+      the 4-float rows at D_80196720_ovl3 -- indexed by D_800E98E0[objId].
+      The draft's `static const f32 pc_rock_spd[3]` also put 12 bytes of its
+      own into .rodata, which is why every float reloc in the function was
+      landing 0xC late.
+   3. Both wet ternaries have the ROM's polarity only when the EQUAL case is
+      written first (LEVER 5): `(wet == 0) ? plain : plain * 0.5f` and
+      `(wet == 0) ? 16.0f : 8.0f`.
+   4. `->unk4C` is RE-READ at each of the six seat stores; the ROM holds the
+      GObj* (spilled at 0x38) and reloads the field. Caching it as an `fx`
+      pointer is five words short (LEVER 10).
+   5. The release block was a PORT shim. The ROM does ONE load of
+      D_800EA360[objId] and calls `func_800A7870(p, p + 1)` -- no null
+      check, no copy-out to stack temps, no zeroing afterwards, because
+      func_800A7870 (src/ovl1/ovl1_2_2.c:175) clears both words itself.
+      That shim was eleven instructions and two address-taken locals.
+
+   WHAT IS LEFT: the word count is now exact (290) and the frame is 0x58
+   against the ROM's 0x50 -- two local words too many. `Vector v` is
+   correctly the first declaration (it takes the top three words in both).
+   Measured and REVERTED: folding the D_800E9720 countdown into
+   `if (D_800E9720[objId]-- != 0)` to drop the `t` local is catastrophic
+   (237/290) -- `t` is load-bearing even though the ROM keeps it in $v1 with
+   no home slot. The rest is a colouring cascade ($a2/$a0 for the
+   omCurrentObj pointer, $v0/$v1 for the countdown pair). */
 /* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 276 of 289 words differ (95%). A
    permutation RENAMES registers -- it does not change what the function
@@ -514,16 +549,15 @@ void func_8015B190_ovl3(s32 arg0) {
 void func_8015B75C_ovl3(struct GObj *arg0) {
     struct RockFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
     extern char D_80190B6C_ovl3[];
-    static const f32 pc_rock_spd[3] = { 6.0f, 8.0f, 10.0f };
-    s32 id = omCurrentObj->objId;
-    struct RockFx *fx;
+    extern f32 D_80196728_ovl3[];
+    GObj *o;
     Vector v;
     s32 n;
 
-    if ((gKirbyState.unk3C == 0) && (D_800E9AA0[id].as_u32 == 0)) {
+    if ((gKirbyState.unk3C == 0) && (D_800E9AA0[omCurrentObj->objId].as_u32 == 0)) {
         if ((gKirbyState.action == 0x15) || (gKirbyState.abilityInUse == 0)) {
-            func_800A22D4(D_800EA520[id]);
-            func_800B1900((u16) id);
+            func_800A22D4(D_800EA520[omCurrentObj->objId]);
+            func_800B1900((u16) omCurrentObj->objId);
             return;
         }
         goto seat;
@@ -531,15 +565,15 @@ void func_8015B75C_ovl3(struct GObj *arg0) {
     if (func_800B3158() == 0) {
         goto release;
     }
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
-    if (D_800E6310[id] == 0) {
-        s32 t = D_800E9720[id];
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    if (D_800E6310[omCurrentObj->objId] == 0) {
+        s32 t = D_800E9720[omCurrentObj->objId];
 
-        D_800E9720[id] = t - 1;
+        D_800E9720[omCurrentObj->objId] = t - 1;
         if (t != 0) {
-            if ((D_800E83E0[id] == 0) && (func_80155424_ovl3(D_80197F60_ovl3[id - 4]) == 0)
-                && (D_800E8920[id] == 0)) {
-                s32 flags = D_800E8AE0[id];
+            if ((D_800E83E0[omCurrentObj->objId] == 0) && (func_80155424_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4]) == 0)
+                && (D_800E8920[omCurrentObj->objId] == 0)) {
+                s32 flags = D_800E8AE0[omCurrentObj->objId];
                 s32 wet = flags & 4;
                 f32 grav;
                 f32 spd;
@@ -550,13 +584,14 @@ void func_8015B75C_ovl3(struct GObj *arg0) {
                 } else {
                     grav = -0.980665f;
                 }
-                spd = wet ? pc_rock_spd[D_800E98E0[id]] * 0.5f : pc_rock_spd[D_800E98E0[id]];
-                cap = wet ? 8.0f : 16.0f;
-                D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
-                D_800E3750[id] = grav;
-                D_800E3C90[id] = (cap < 0.0f) ? -cap : cap;
+                spd = (wet == 0) ? D_80196728_ovl3[D_800E98E0[omCurrentObj->objId] * 4]
+                                 : D_80196728_ovl3[D_800E98E0[omCurrentObj->objId] * 4] * 0.5f;
+                cap = (wet == 0) ? 16.0f : 8.0f;
+                D_800E6850[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
+                D_800E3750[omCurrentObj->objId] = grav;
+                D_800E3C90[omCurrentObj->objId] = (cap < 0.0f) ? -cap : cap;
                 func_80162150_ovl3();
-                func_80111C4C(func_801117BC(D_80190B6C_ovl3, id));
+                func_80111C4C(func_801117BC(D_80190B6C_ovl3, omCurrentObj->objId));
                 goto seat;
             }
         }
@@ -564,40 +599,38 @@ void func_8015B75C_ovl3(struct GObj *arg0) {
     play_sound(0xE);
     n = func_801693C4_ovl3(5);
     if (n != -1) {
-        gEntitiesNextPosXArray[n] = gEntitiesNextPosXArray[id];
-        gEntitiesNextPosYArray[n] = gEntitiesNextPosYArray[id];
-        gEntitiesNextPosZArray[n] = gEntitiesNextPosZArray[id];
-        D_800EA6E0[n] = D_800E17D0[id];
+        gEntitiesNextPosXArray[n] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[n] = gEntitiesNextPosYArray[omCurrentObj->objId];
+        gEntitiesNextPosZArray[n] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        D_800EA6E0[n] = D_800E17D0[omCurrentObj->objId];
         D_800EC2E0[n].as_u32 = 5;
     }
 release:
+    /* The ROM releases the looping pair IN PLACE: one load of
+     * D_800EA360[objId], then func_800A7870(p, p + 1) with no null check
+     * and no zeroing afterwards -- func_800A7870 clears both words itself
+     * (src/ovl1/ovl1_2_2.c:175). The PORT arm's copy-out/copy-back shim is
+     * eleven instructions the ROM does not have. */
     {
-        u32 *pair = (u32 *) D_800EA360[id];
+        void **pair = (void **) D_800EA360[omCurrentObj->objId];
 
-        if (pair != NULL) {
-            void *handle = (void *) pair[0];
-            u16 sid = *(u16 *) (pair + 1);
-
-            func_800A7870(&handle, &sid);
-            pair[0] = 0;
-            *(u16 *) (pair + 1) = 0;
-        }
+        func_800A7870(pair, (u16 *) (pair + 1));
     }
-    func_800A22D4(D_800EA520[id]);
-    func_800B1900((u16) id);
+    func_800A22D4(D_800EA520[omCurrentObj->objId]);
+    func_800B1900((u16) omCurrentObj->objId);
     return;
 
 seat:
     /* Re-seat the carry effect block on hand DObj [3]'s world transform. */
-    fx = (struct RockFx *) ((GObj *) D_800EA520[id])->unk4C;
-    func_800B2340(&v, (s32) (uintptr_t) D_800DFBD0[id][3], 0xFFFF);
-    fx->unk4 = v.x;
-    fx->unk8 = v.y;
-    fx->unkC = v.z;
-    func_800B26D8(&v, (s32) (uintptr_t) D_800DFBD0[id][3], 0xFFFF);
-    fx->unk10 = v.x;
-    fx->unk14 = v.y;
-    fx->unk18 = v.z;
+    o = (GObj *) D_800EA520[omCurrentObj->objId];
+    func_800B2340(&v, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    ((struct RockFx *) o->unk4C)->unk4 = v.x;
+    ((struct RockFx *) o->unk4C)->unk8 = v.y;
+    ((struct RockFx *) o->unk4C)->unkC = v.z;
+    func_800B26D8(&v, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][3], 0xFFFF);
+    ((struct RockFx *) o->unk4C)->unk10 = v.x;
+    ((struct RockFx *) o->unk4C)->unk14 = v.y;
+    ((struct RockFx *) o->unk4C)->unk18 = v.z;
 }
 #elif defined(PORT)
 /* PORT: service routine for the thrown rock installed by func_8015B190_ovl3
