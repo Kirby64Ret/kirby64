@@ -2673,24 +2673,55 @@ void func_8015F950_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 388/391 [was noted 3/391], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 388 of 391 words differ (99%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 22/392, word count exact. Was 388/391 [noted 3/391] -- and the ROM
+   is 392 words, not 391. Re-derived from the listing 2026-08-25. Seven
+   defects, in the order they paid:
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+   1. `s32 id = omCurrentObj->objId;`, spelled inline throughout.
+   2. `f32 spd` IS THE GLOBAL D_800D7238, held in a register and re-read --
+      the same file-scope scratch float that func_8015F950_ovl3 and
+      func_8015CF9C_ovl3 in this TU use. `lui $s2, %hi(D_800D71E8 + 0x50)` is
+      spimdisasm naming the nearest preceding symbol.
+   3. `impact`, `kind` and `hit` are not variables. The ROM branches straight
+      out of the kind test into the burst tail (`bnez $v0, .L801602D4`), so the
+      shape is `if ((D_800EC2E0[objId].as_u32 == 0) && (func_80155D50_ovl3(..)
+      != 0)) goto burst;` with the burst label inside the outer if. m2c's
+      `impact` flag and its two temporaries cost three declarations and the
+      whole frame.
+   4. `pc_sndpair_release` -- a PORT-only helper -- was being called from the
+      N64 arm. The ROM has one load of D_800EA360[objId] and
+      `func_800A7870(p, p + 1)`, no null check.
+   5. `if (--D_80198830_ovl3.unkC == 0)`, not a decrement followed by a
+      re-read: the ROM tests the decremented value it already has in a
+      register.
+   6. DECLARATION ORDER: the ROM's four scalars sit ABOVE the three Vectors
+      (0x58/0x5C/0x60/0x64 against vb 0x4C, va 0x40, vc 0x34), so `ang` and
+      `dir` must be declared BEFORE `vb` and `va`, and vb before va. Worth
+      163 -> 153 and it is what puts every `NN($sp)` on the ROM's slot.
+   7. INTEGER ZEROS IN PAIRS again (see func_8015C00C_ovl3's note): writing
+      `D_800E6690[objId] = 0` with the integer literal forks the `mtc1 $zero`
+      the ROM materialises separately from the one its `< 0.0f` compare uses.
+      150 -> 22. Doing the same to D_800E3750 is inert here (also 22) because
+      that pair already forks.
+   Also: `((D_800E8AE0[objId] & 4) == 0) ? 15.0f : 7.5f`, equal case first
+   (LEVER 5), and the target index spelled `D_800E1B50[objId + 112]` rather
+   than `D_800E1ED0[objId - 112]` -- 326 -> 163, because the ROM needs
+   objId*4 shared with the block above and the minus form makes IDO fold the
+   -448 into the SCALED INDEX instead of the symbol, costing an `sll` and an
+   `addiu` and breaking the share.
+
+   WHAT IS LEFT, 22 words in three groups:
+     - 4 words: the ROM writes `%lo(D_800E1B50 + 0x1C0)` into the addiu and
+       loads/stores at `0x0($a0)`; this C leaves the addiu at %lo(D_800E1B50)
+       and folds 448 into the displacement. Same linked address, different
+       encoding. `(&D_800E1B50[112])[objId]` is identical (22); the
+       LEVER 35 cast form `*(s32 *)((u32)&D_800E1B50[112] + objId*4)` is much
+       worse (271). The ROM's form is what a real symbol at 0x800E1D10 would
+       produce, and there is none in the tree -- adding one is a splat change,
+       not a source change.
+     - 5 words: an $a0/$a1 swap in the D_800E9560 countdown.
+     - 13 words: a schedule rotation of the two `.z = 0.0f` stores; the ROM
+       sinks vb.z ten words later than this C does. */
 
 /* PORT: service routine for func_8015F950_ovl3's shot above (anim 0x2003D),
  * from asm/nonmatchings/ovl3/plyshot/func_8015FD58_ovl3.s. Kind 0 first
@@ -2706,123 +2737,116 @@ void func_8015F950_ovl3(s32 arg0) {
  * sound pair copied into the init's frame. */
 void func_8015FD58_ovl3(s32 arg0) {
     extern char D_80190D90_ovl3[];
+    extern f32 D_800D7238;
+    extern s32 D_800E1B50[];
     extern s32 D_80193728_ovl3[];
     extern Unk80198830 D_80198830_ovl3;
-    struct PcShotAnimCmd {
+    struct ShotAnimCmd {
         u8 pad0[4];
         u8 unk4;
         u8 pad5[3];
         s32 unk8;
     };
-    struct PcShotAnimHdr {
+    struct ShotAnimHdr {
         u8 pad0[0x1C];
         s32 unk1C;
-        struct PcShotAnimCmd *unk20;
+        struct ShotAnimCmd *unk20;
     };
-    s32 id = omCurrentObj->objId;
-    s32 impact = 0;
 
     if (func_800B3158() != 0) {
-        u32 kind = D_800EC2E0[id].as_u32;
-
-        if (kind != 0xFFFFFFFFU) {
-            s32 hit = 0;
-
-            if (kind == 0) {
-                /* The PC func_80155D50_ovl3 is declared void at its
-                 * definition but ends in the func_8011BF4C call, so its
-                 * hit count comes back exactly as the N64 tail call did
-                 * (verified against the generated code). */
-                hit = func_80155D50_ovl3(D_801982F8_ovl3[id - 4],
-                                         (s32) (uintptr_t) D_80193728_ovl3, 0, id);
+        if (D_800EC2E0[omCurrentObj->objId].as_u32 != 0xFFFFFFFFU) {
+            if ((D_800EC2E0[omCurrentObj->objId].as_u32 == 0)
+                && (func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4],
+                                       (s32) (uintptr_t) D_80193728_ovl3, 0,
+                                       omCurrentObj->objId) != 0)) {
+                goto burst;
             }
-            if ((kind == 0) && (hit != 0)) {
-                impact = 1;
-            } else {
-                D_800EC2E0[id].as_u32 = 0xFFFFFFFFU;
-            }
+            D_800EC2E0[omCurrentObj->objId].as_u32 = 0xFFFFFFFFU;
         }
-        if (impact == 0) {
-            if (D_800E9AA0[id].as_u32 != 0) {
-                struct PcShotAnimHdr *hdr =
-                    (struct PcShotAnimHdr *) (uintptr_t) (u32) func_801117BC(D_80190D90_ovl3, id);
+        if (D_800E9AA0[omCurrentObj->objId].as_u32 != 0) {
+            struct ShotAnimHdr *hdr =
+                (struct ShotAnimHdr *) func_801117BC(D_80190D90_ovl3, omCurrentObj->objId);
 
-                hdr->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[id][1];
-                func_80111C4C((s32) (uintptr_t) hdr);
-                D_800E9AA0[id].as_u32 -= 1;
-            }
-            gEntitiesAngleYArray[id] = D_800E17D0[id];
-            impact = 1;
-            if ((D_800E6310[id] == 0) && (D_800E83E0[id] == 0)) {
-                s32 fuse = D_800E9720[id];
+            hdr->unk20->unk8 = (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1];
+            func_80111C4C((s32) (uintptr_t) hdr);
+            D_800E9AA0[omCurrentObj->objId].as_u32 -= 1;
+        }
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+        if ((D_800E6310[omCurrentObj->objId] == 0) && (D_800E83E0[omCurrentObj->objId] == 0)) {
+            s32 fuse = D_800E9720[omCurrentObj->objId];
 
-                D_800E9720[id] = fuse - 1;
-                if ((fuse != 0)
-                    && (func_801555B0_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]) == 0)) {
-                    func_80162150_ovl3();
-                    if (D_800E8920[id] == 0) {
-                        if (D_800E9560[id] != 0) {
-                            D_800E9560[id] -= 1;
-                        } else {
-                            s32 target = D_800E1ED0[id - 112];
+            D_800E9720[omCurrentObj->objId] = fuse - 1;
+            if ((fuse != 0)
+                && (func_801555B0_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4],
+                                       D_801982F8_ovl3[omCurrentObj->objId - 4]) == 0)) {
+                func_80162150_ovl3();
+                if (D_800E8920[omCurrentObj->objId] == 0) {
+                    if (D_800E9560[omCurrentObj->objId] != 0) {
+                        D_800E9560[omCurrentObj->objId] -= 1;
+                    } else if (D_800E1B50[omCurrentObj->objId + 112] != 0) {
+                        if (D_800DD710[D_800E1B50[omCurrentObj->objId + 112]] != -1) {
+                            f32 ang;
+                            f32 dir;
+                            Vector vb;
+                            Vector va;
 
-                            if (target != 0) {
-                                if (D_800DD710[target] != -1) {
-                                    Vector va;
-                                    Vector vb;
-                                    f32 ang;
-                                    f32 dir;
-                                    f32 spd;
-
-                                    vb.x = func_800F9828(id, target);
-                                    vb.y = gEntitiesNextPosYArray[target] - gEntitiesNextPosYArray[id];
-                                    vb.z = 0.0f;
-                                    va.x = D_800E64D0[id];
-                                    va.y = D_800E3210[id];
-                                    va.z = 0.0f;
-                                    ang = lbvector_Angle(&va, &vb);
-                                    if (ang == 3.1415927f) {
-                                        dir = (D_800E64D0[id] > 0.0f) ? 0.08726647f : 2.6790805f;
-                                    } else {
-                                        if (ang < 0.08726647f) {
-                                            va = vb;
-                                        } else {
-                                            Vector vc;
-
-                                            vec3_normalized_cross_product(&va, &vb, &vc);
-                                            func_800191F8(&va, &vc, 0.08726647f);
-                                        }
-                                        dir = atan2f(va.y, va.x);
-                                    }
-                                    D_800E9560[id] = 0;
-                                    spd = (D_800E8AE0[id] & 4) ? 7.5f : 15.0f;
-                                    D_800E64D0[id] = cosf(dir) * spd;
-                                    D_800E6690[id] = 0.0f;
-                                    D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
-                                    D_800E3210[id] = sinf(dir) * spd;
-                                    D_800E3750[id] = 0.0f;
-                                    D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
+                            vb.x = func_800F9828(omCurrentObj->objId,
+                                                 D_800E1B50[omCurrentObj->objId + 112]);
+                            vb.y = gEntitiesNextPosYArray[D_800E1B50[omCurrentObj->objId + 112]]
+                                   - gEntitiesNextPosYArray[omCurrentObj->objId];
+                            vb.z = 0.0f;
+                            va.x = D_800E64D0[omCurrentObj->objId];
+                            va.y = D_800E3210[omCurrentObj->objId];
+                            va.z = 0.0f;
+                            ang = lbvector_Angle(&va, &vb);
+                            if (ang == 3.1415927f) {
+                                dir = (D_800E64D0[omCurrentObj->objId] > 0.0f) ? 0.08726647f
+                                                                              : 2.6790805f;
+                            } else {
+                                if (ang < 0.08726647f) {
+                                    va = vb;
                                 } else {
-                                    D_800E1ED0[id - 112] = 0;
+                                    Vector vc;
+
+                                    vec3_normalized_cross_product(&va, &vb, &vc);
+                                    func_800191F8(&va, &vc, 0.08726647f);
                                 }
+                                dir = atan2f(va.y, va.x);
                             }
+                            D_800E9560[omCurrentObj->objId] = 0;
+                            D_800D7238 =
+                                ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 15.0f : 7.5f;
+                            D_800E64D0[omCurrentObj->objId] = cosf(dir) * D_800D7238;
+                            D_800E6690[omCurrentObj->objId] = 0;
+                            D_800E6850[omCurrentObj->objId] =
+                                (D_800D7238 < 0.0f) ? -D_800D7238 : D_800D7238;
+                            D_800E3210[omCurrentObj->objId] = sinf(dir) * D_800D7238;
+                            D_800E3750[omCurrentObj->objId] = 0.0f;
+                            D_800E3C90[omCurrentObj->objId] =
+                                (D_800D7238 < 0.0f) ? -D_800D7238 : D_800D7238;
+                        } else {
+                            D_800E1B50[omCurrentObj->objId + 112] = 0;
                         }
-                        gEntitiesAngleXArray[id] = -atan2f(D_800E3210[id], D_800E64D0[id]);
-                        func_80111C4C(func_801117BC(D_80190D90_ovl3, id));
-                        return;
                     }
+                    gEntitiesAngleXArray[omCurrentObj->objId] =
+                        -atan2f(D_800E3210[omCurrentObj->objId], D_800E64D0[omCurrentObj->objId]);
+                    func_80111C4C(func_801117BC(D_80190D90_ovl3, omCurrentObj->objId));
+                    return;
                 }
             }
         }
+    burst:
         play_sound(0xE);
-        func_800FD754(0, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
-                      gEntitiesNextPosZArray[id]);
+        func_800FD754(0, gEntitiesNextPosXArray[omCurrentObj->objId],
+                      gEntitiesNextPosYArray[omCurrentObj->objId],
+                      gEntitiesNextPosZArray[omCurrentObj->objId]);
     }
-    D_80198830_ovl3.unkC -= 1;
-    if (D_80198830_ovl3.unkC == 0) {
-        pc_sndpair_release((void *) (uintptr_t) (u32) D_800EA360[id]);
+    if (--D_80198830_ovl3.unkC == 0) {
+        void **pair = (void **) D_800EA360[omCurrentObj->objId];
+
+        func_800A7870(pair, (u16 *) (pair + 1));
     }
-    func_800B1900((u16) id);
+    func_800B1900((u16) omCurrentObj->objId);
 }
 #elif defined(PORT)
 /* PORT: service routine for func_8015F950_ovl3's shot above (anim 0x2003D),
