@@ -1389,12 +1389,21 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
  * CLOSED 2026-08-25: the tree now agrees.  Both DEFINITIONS in
  * src/ovl2/ovl2_2.c (the PORT arm and the matched one) and every declaration
  * -- src/ovl2/ovl2_2.h, src/ovl1/ovl1_8.c:16, src/ovl3/ovl3_1.c:73 and the
- * four block-scope ones in src/ovl8/ovl8_4.c -- say u32.  All four affected
- * objects (ovl2_2, ovl1_8, ovl3_1, ovl8_4) are .text-IDENTICAL across the
- * retype, objdump A/B, and the linked sha1 is unchanged, which is what
- * LEVER 68's gate asks for.  The retype had to move as one change: ovl1_8.c
- * both includes ovl2_2.h and redeclares the function locally, so a partial
- * move is the LEVER 49 collision. */
+ * four block-scope ones in src/ovl8/ovl8_4.c -- say u32.  The retype had to
+ * move as one change: ovl1_8.c both includes ovl2_2.h and redeclares the
+ * function locally, so a partial move is the LEVER 49 collision.
+ *
+ * GATED ON THE LINKED ROM, not on an object list.  The object-level gate
+ * (ovl2_2, ovl1_8, ovl3_1, ovl8_4 all .text-identical, objdump A/B) passes,
+ * but that gate is NOT sufficient for a header change and must not be relied
+ * on -- see the note on func_801D6534_ovl8 in src/ovl8/ovl8_4.c, where the
+ * identical gate reported func_800B2340's retype inert across fifteen objects
+ * and it broke twenty-nine functions in an ovl5 TU that only INCLUDES the
+ * header and never declares the symbol.  So: `rm -rf build/src` and a full
+ * rebuild, sha1 6cea2d46b929a3bb347b060a77fccc83526fb855, check_tu_size 0
+ * wrong, verify_rom 5606 byte-exact and 0 REAL DEFECTS.  ovl2_2.h has exactly
+ * one includer in the tree (src/ovl1/ovl1_8.c), which is why this one is safe
+ * where func_800B2340's was not. */
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
     f32 dx;
     f32 dz;
