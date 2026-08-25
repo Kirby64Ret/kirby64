@@ -102,6 +102,7 @@ TARGETS = [
     ( 26, 'src/ovl1/ovl1.c', 'func_8009E834'),   # of 48
     ( 27, 'src/ovl7/ovl7_3.c', 'func_801A2C78_ovl7'),   # of 123
     ( 27, 'src/ovl9/ovl9_3.c', 'func_801DE280_ovl9'),   # of 227
+    ( 59, 'src/ovl1/ovl1.c', 'func_800A0558'),   # of 277, $s4/$s5 rotation
 ]
 
 

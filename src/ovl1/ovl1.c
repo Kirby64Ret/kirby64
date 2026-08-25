@@ -3892,6 +3892,30 @@ void func_800A0558(f32 *arg0, f32 *arg1, struct DObj *arg2) {
  * the three column-normalized basis vectors (row-vector convention). */
 #include "main/lbmatrix.h"
 
+/* FACTORY: 59/277 -- MEASURED 2026-08-25. One saved-register rotation and the
+ * FP naming that follows it. The ROM holds `$sp + 0xB8` (the accumulator
+ * matrix) in $s5 and the draft holds it in $s4, which also reorders the
+ * prologue's seven `sw $sN` because IDO saves them in first-use order. From
+ * index 182 on every difference is an $s4/$s5 or $f20/$f22 exchange over
+ * identical opcodes and offsets.
+ *
+ * FRAME AND SLOTS ARE ALREADY RIGHT: `addiu $sN, $sp, 0xB8` appears in both,
+ * so the matrices are at the ROM's addresses. The reads at 0xB8 against 0xC8
+ * are acc[0][k] versus acc[1][k], i.e. which product of the inner sum IDO
+ * evaluates first -- not a layout difference.
+ *
+ * Measured 2026-08-25 and byte-identical at 59/277, so the source-shape search
+ * space here is empty:
+ *   - swapping the two Mat4 declarations (addresses do not move -- IDO packs
+ *     two 0x40 objects the same way in either order);
+ *   - moving `node` first or last among the declarations;
+ *   - declaring vy before vx;
+ *   - loading vy from arg1[1] before vx from arg1[0];
+ *   - writing the transform as ((r0*vx) + (r1*vy)) + (r2*vz) instead of
+ *     (r2*vz) + ((r0*vx) + (r1*vy)) -- the diff is IDENTICAL word for word,
+ *     so IDO canonicalises the sum order and LEVER 2 does not reach it;
+ *   - swapping the inner product to (r1*vy) + (r0*vx), same.
+ * Permuter fuel; queued in priority_queue.py's TARGETS. */
 void func_800A0558(f32 *arg0, f32 *arg1, struct DObj *arg2) {
     Mat4 acc;
     Mat4 tmp;
