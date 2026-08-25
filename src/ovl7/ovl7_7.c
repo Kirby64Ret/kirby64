@@ -127,7 +127,7 @@ void func_801AEA20_ovl7(GObj *arg0) {
     f32 *fac;
 
     D_800DEF90[omCurrentObj->objId] = func_800B8630;
-    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801AEE04_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x23;
     ent->unk98 = &D_801CD33C_ovl7;
     D_800E93A0[omCurrentObj->objId] = (s32) D_800E9AA0[omCurrentObj->objId];
@@ -181,7 +181,7 @@ void func_801AEA20_ovl7(GObj *arg0) {
  * kind-based 6.5/4.55/2.6 pop, -0.2925 gravity) than in air (6.0,
  * 10/7/4, -0.45) -- then sleep forever. */
 void func_801AEA20_ovl7(GObj *arg0) {
-    void func_801AEE04_ovl7(void);
+    void func_801AEE04_ovl7(GObj *);
     void func_800B8630(GObj *);
     /* func_800A9864(s32,s32,s32) is left implicit: plain code later in
      * this file calls it without a prototype, and a typed declaration
@@ -193,7 +193,7 @@ void func_801AEA20_ovl7(GObj *arg0) {
     s32 tone;
 
     D_800DEF90[id] = func_800B8630;
-    D_800DF150[omCurrentObj->objId] = (void (*)(GObj *)) func_801AEE04_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801AEE04_ovl7;
     D_800DDA90[omCurrentObj->objId] = 0x23;
     ent->unk98 = &D_801CD33C_ovl7;
     kind = (s32) (uintptr_t) D_800E9AA0[omCurrentObj->objId];
@@ -245,20 +245,20 @@ void func_801AEA20_ovl7(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEA20_ovl7.s")
 #endif
 
-#ifdef NON_MATCHING
-/* FACTORY: 5/111, call-argument EVALUATION-ORDER floor -- re-confirmed
-   2026-08-23. Only the first `assign_new_process_entry(gEntityGObjProcess
-   Array[objId], func_801ACF84_ovl7)` call site: the ROM evaluates the
-   second argument (the func_801ACF84_ovl7 function-symbol address, into
-   $a1) BEFORE the first (the gEntityGObjProcessArray[objId] load, into
-   $a0); IDO here evaluates left-to-right, matching source order. Swept:
-   hoisting the function pointer into a named `void (*fn)(struct GObj *)`
-   local assigned before the call reproduces the identical 5/111 -- the
-   call site still computes $a0 first regardless. The other two textually
-   identical calls in this function (D_800E9720 branch, D_800E8760 branch)
-   already match, so this is scheduling context at THIS call site, not the
-   expression itself. Good permuter seed. */
-void func_801AEE04_ovl7(void) {
+/* The popped-star bounce driver, installed in D_800DF150 by
+   func_801AEA20_ovl7. It had been sealed at 5/111 as a "call-argument
+   EVALUATION-ORDER floor" -- the ROM materialises the func_801ACF84_ovl7
+   address into $a1 before loading gEntityGObjProcessArray[objId] into $a0 at
+   the FIRST assign_new_process_entry site, and IDO evaluated left to right.
+   That was a symptom, not the cause. LEVER 58: the head is really
+   (GObj *) and func_801A0D74_ovl7 is handed the incoming parameter --
+   `jal func_801A0D74_ovl7` at 801AEE64 is reached only down the
+   D_800E83E0 == 0 arm, where nothing has written $a0, and its delay slot is
+   a spill of $a3, not an argument setup. Declaring the parameter and passing
+   it takes $a0 out of the allocator's hands for the whole function, and the
+   argument-setup order at the first call site falls out with it. MATCH. */
+void func_801AEE04_ovl7(GObj *arg0) {
+    s32 func_801A0D74_ovl7(GObj *);
     s32 func_801A0880_ovl7(void);
     struct Ovl7_7_AnimObj *func_801117BC(void *, u32);
     void func_80111C4C(struct Ovl7_7_AnimObj *);
@@ -276,7 +276,7 @@ void func_801AEE04_ovl7(void) {
         return;
     }
     if (D_800E9C60[omCurrentObj->objId] == 0) {
-        func_801A0D74_ovl7();
+        func_801A0D74_ovl7(arg0);
     }
     if (D_800E9560[omCurrentObj->objId] <= 0) {
         ret = func_801A0880_ovl7();
@@ -300,9 +300,6 @@ void func_801AEE04_ovl7(void) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_7/func_801AEE04_ovl7.s")
-#endif
 
 void func_801AEFC0_ovl7(GObj *arg0) {
     func_800B3520();
