@@ -2137,102 +2137,78 @@ void func_8019D2FC_ovl7(f32 arg0, u8 arg1) {
     }
 }
 
-// m2c draft, measured 230/249 diffs
+/* FACTORY: 24/244 (was 230/249 -- the old draft was m2c raw, with 24
+   declarations against a ROM frame of 0x18, i.e. ZERO locals).  Re-derived
+   from the listing 2026-08-25; four defects, none of them register-shaped:
+     1. `arg1` is a `u8` PARAMETER, not an `s32` masked at each use.  The
+        prologue's `sw $a1, 0x1C($sp)` + `andi $a1, $a1, 0xFF` is IDO's
+        promoted-u8 parameter sequence (LEVER 15); writing `arg1 & 0xFF` at
+        the two use sites instead makes IDO reload the home slot and mask
+        again at each one.  Worth 210 words on its own.
+        NOTE: every declaration of this symbol elsewhere says `(f32, s32)`
+        (ovl9_10.c, ovl10_3.c, ovl10_3b.c), and the call sites pass 6/8/15,
+        so the `u8` here is a real type correction that those declarations
+        have not caught up with.  Retyping them is a separate TU-wide job.
+     2. `D_800E1B50[omCurrentObj->objId]` is ONE local (`rec`), read once at
+        the top and held in $a2 for the whole body -- and it costs no frame,
+        because an initialised-at-declaration pointer gets no home slot
+        (LEVER 57's corollary).  `omCurrentObj->objId` itself is read INLINE
+        at every site: the ROM reloads it after each store through $a2 and
+        never reloads $a2, which is only consistent with that split.
+     3. IDO emits the full UNSIGNED int->float sequence (`bgez` + the
+        0x4F800000 fixup) for BOTH `rec->unk3C` and `arg1` even though both
+        are u8.  Do not "fix" that by casting; plain `(u8)` operands produce
+        it, and the integer compare in the third arm is still a signed `slt`.
+     4. the second arm's test is `rec->unk3C == (arg1 * 0.5f)`, memory load
+        on the left (LEVER 14); the reversed spelling costs exactly 2.
+   The 24 that remain are ONE two-register permutation and nothing else:
+   the ROM puts &omCurrentObj in $a3 and &D_800E6690 in $t0, IDO the other
+   way round, and the later reuse of that register for &D_800E6A10 follows
+   it in both.  Instruction count and frame are exact.  Swept and inert:
+   splitting `rec`'s declaration from its initialiser (24), and adding an
+   unused third parameter to free $a3 (242 -- it moves the whole ABI). */
 #ifdef NON_MATCHING
-void func_8019D4D0_ovl7(f32 arg0, s32 arg1) {
-    EnemyRecord *temp_a2;
-    f32 *temp_a0_2;
-    f32 *temp_a0_3;
-    f32 *temp_a0_4;
-    f32 *temp_v0_7;
-    f32 *temp_v1;
-    f32 *temp_v1_2;
-    f32 *temp_v1_3;
-    f32 *temp_v1_4;
-    f32 *var_at;
-    f32 temp_f0;
-    f32 temp_f2;
-    f32 var_f6;
-    f32 var_f8;
-    s32 temp_a1;
-    u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
-    u32 temp_v0_8;
-    u8 temp_a0;
+void func_8019D4D0_ovl7(f32 arg0, u8 arg1) {
+    EnemyRecord *rec = D_800E1B50[omCurrentObj->objId];
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a1 = arg1 & 0xFF;
-    temp_a2 = D_800E1B50[temp_v0];
-    temp_a0 = temp_a2->unk3C;
-    if (temp_a0 != 0) {
-        if (temp_a0 == 1) {
-            temp_a2->unk20 = D_800E64D0[temp_v0];
-            temp_a2->unk24 = D_800E6690[omCurrentObj->objId];
+    if (rec->unk3C != 0) {
+        if (rec->unk3C == 1) {
+            rec->unk20 = D_800E64D0[omCurrentObj->objId];
+            rec->unk24 = D_800E6690[omCurrentObj->objId];
             D_800E6690[omCurrentObj->objId] = 0.0f;
-            temp_v0_2 = omCurrentObj->objId;
-            D_800E64D0[temp_v0_2] = D_800E6690[temp_v0_2];
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
         }
-        temp_f0 = temp_a2->unk3C;
-        var_f6 = temp_a1;
-        if (temp_a1 < 0) {
-            var_f6 += 4294967296.0f;
-        }
-        temp_f2 = var_f6 * 0.5f;
-        if (temp_f0 < temp_f2) {
-            temp_v0_3 = omCurrentObj->objId;
-            if (D_800E6A10[temp_v0_3] == 1.0f) {
-                temp_v1 = &D_800E9020[temp_v0_3];
-                *temp_v1 -= (arg0 * 3.1415927f) / 180.0f;
+        if (rec->unk3C < (arg1 * 0.5f)) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                D_800E9020[omCurrentObj->objId] -= (arg0 * 3.1415927f) / 180.0f;
             } else {
-                temp_v1_2 = &D_800E9020[temp_v0_3];
-                *temp_v1_2 += (arg0 * 3.1415927f) / 180.0f;
+                D_800E9020[omCurrentObj->objId] += (arg0 * 3.1415927f) / 180.0f;
             }
-            goto block_19;
-        }
-        if (temp_f2 == temp_f0) {
-            temp_v0_4 = omCurrentObj->objId;
-            temp_a0_2 = &D_800E17D0[temp_v0_4];
-            if (D_800E6A10[temp_v0_4] == 1.0f) {
-                temp_a0_3 = &D_800E17D0[temp_v0_4];
-                *temp_a0_3 += 3.1415927f;
-                temp_v0_5 = omCurrentObj->objId;
-                var_at = &D_800E9020[temp_v0_5];
-                var_f8 = D_800E4C50[temp_v0_5] + 1.5707964f;
+        } else if (rec->unk3C == (arg1 * 0.5f)) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                D_800E17D0[omCurrentObj->objId] += 3.1415927f;
+                D_800E9020[omCurrentObj->objId] = D_800E4C50[omCurrentObj->objId] + 1.5707964f;
             } else {
-                *temp_a0_2 -= 3.1415927f;
-                temp_v0_6 = omCurrentObj->objId;
-                var_at = &D_800E9020[temp_v0_6];
-                var_f8 = D_800E4C50[temp_v0_6] + -1.5707964f;
+                D_800E17D0[omCurrentObj->objId] -= 3.1415927f;
+                D_800E9020[omCurrentObj->objId] = D_800E4C50[omCurrentObj->objId] + -1.5707964f;
             }
-            *var_at = var_f8;
-            temp_v0_7 = &D_800E6A10[omCurrentObj->objId];
-            *temp_v0_7 = -*temp_v0_7;
-            temp_a0_4 = &D_800E4C50[omCurrentObj->objId];
-            *temp_a0_4 = -*temp_a0_4;
-            D_800E64D0[omCurrentObj->objId] = -temp_a2->unk20;
-            D_800E6690[omCurrentObj->objId] = -temp_a2->unk24;
-            goto block_19;
-        }
-        if (temp_a2->unk3C < temp_a1) {
-            temp_v0_8 = omCurrentObj->objId;
-            if (D_800E6A10[temp_v0_8] == 1.0f) {
-                temp_v1_3 = &D_800E9020[temp_v0_8];
-                *temp_v1_3 += (arg0 * 3.1415927f) / 180.0f;
+            D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+            D_800E4C50[omCurrentObj->objId] = -D_800E4C50[omCurrentObj->objId];
+            D_800E64D0[omCurrentObj->objId] = -rec->unk20;
+            D_800E6690[omCurrentObj->objId] = -rec->unk24;
+        } else if (rec->unk3C < arg1) {
+            if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                D_800E9020[omCurrentObj->objId] += (arg0 * 3.1415927f) / 180.0f;
             } else {
-                temp_v1_4 = &D_800E9020[temp_v0_8];
-                *temp_v1_4 -= (arg0 * 3.1415927f) / 180.0f;
+                D_800E9020[omCurrentObj->objId] -= (arg0 * 3.1415927f) / 180.0f;
             }
-block_19:
-            temp_a2->unk3C += 1;
         } else {
-            temp_a2->unk3C = 0;
+            rec->unk3C = 0;
             D_800E9020[omCurrentObj->objId] = 0.0f;
             func_8019BC94_ovl7();
+            return;
         }
+        rec->unk3C += 1;
     }
 }
 #else
