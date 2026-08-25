@@ -669,7 +669,7 @@ s32 func_800F9020(Vector *v, s32 arg1, f32 param) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 20/202 positional; residue is regalloc naming cascade (idx vars t1/t2 vs ROM a2/a3 + 2-3 live-range-split moves) and temp-area layout (frame 0x78 vs 0x68, buf 0x28 vs 0x34); control flow, shifts-not-multu *0xC, loop bodies and float conversions all align */
+/* FACTORY: 20/202 positional (182 diffs); residue is regalloc naming cascade (idx vars t1/t2 vs ROM a2/a3 + 2-3 live-range-split moves) and temp-area layout (frame 0x78 vs 0x68, buf 0x28 vs 0x34); control flow, shifts-not-multu *0xC, loop bodies and float conversions all align */
 void func_800F90C0(s32 arg0, u8 *arg1) {
     struct TrackKirbyNode *node;
     u8 *pa;
@@ -877,7 +877,7 @@ s32 func_800F9438(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 13/202 positional; logic fully derived and believed correct (three SEPARATE 'return 9999.0f' statements confirmed by the three distinct rodata floats D_801287B8/BC/C0; N64 record access is plain recs[i].footer->length since struct Unk80129114_4 is exactly 0x10; D_8012912C/D_80129130 are POINTERS, lw not lui/addiu). Residue is one allocator decision that cascades everywhere: the ROM is a frameless leaf that moves the float params straight into the scratch arg registers (mtc1 a1,f14 / mtc1 a3,f12), while IDO here puts them in callee-saved f20/f22, which forces a 0x18 frame, turns all three early 'jr ra' returns into branches to a shared epilogue, and rotates every FP temp. Tried: if/else abs vs ternary abs, fewer named locals */
+/* FACTORY: 13/202 positional (189 diffs); logic fully derived and believed correct (three SEPARATE 'return 9999.0f' statements confirmed by the three distinct rodata floats D_801287B8/BC/C0; N64 record access is plain recs[i].footer->length since struct Unk80129114_4 is exactly 0x10; D_8012912C/D_80129130 are POINTERS, lw not lui/addiu). Residue is one allocator decision that cascades everywhere: the ROM is a frameless leaf that moves the float params straight into the scratch arg registers (mtc1 a1,f14 / mtc1 a3,f12), while IDO here puts them in callee-saved f20/f22, which forces a 0x18 frame, turns all three early 'jr ra' returns into branches to a shared epilogue, and rotates every FP temp. Tried: if/else abs vs ternary abs, fewer named locals */
 f32 func_800F951C(s32 arg0, f32 arg1, s32 arg2, f32 arg3) {
     struct Unk80129114_4 *recs;
     f32 len0;
@@ -1052,7 +1052,7 @@ s32 func_800F98EC(s32 arg0, f32 arg1) {
 
 
 #ifdef MIPS_TO_C
-/* FACTORY: 24/192 positional; control flow, both hop loops and every field access decoded from the asm. Key N64 facts recovered (the PORT arm reads them differently): the link COUNT at +0xC is a single s16 (lh), not the BE pair of u8s the PORT arm rebuilds, so the N64 view of the record is struct TrackNodeHeader, not struct Unk80129114_4; the forward-hop loop really does 'i++' while looping on 'i >= 0' (confirmed addiu t1,t1,1 at 800F9BB0 against bgez at 800F9BBC) -- a latent ROM infinite loop the PORT arm 'fixed' to i--; and the forward cursor is &conn[cnt]-1 (sll cnt,2 then -4 disp), not &conn[cnt-1]. Residue: arg2 lands in f12 instead of the ROM's f14, which reorders the prologue (the 0.1f multiply schedules after the node addressing instead of before) and rotates FP temps for the rest of the function. Same allocator floor as func_800F951C in this file */
+/* FACTORY: 24/192 positional (168 diffs); control flow, both hop loops and every field access decoded from the asm. Key N64 facts recovered (the PORT arm reads them differently): the link COUNT at +0xC is a single s16 (lh), not the BE pair of u8s the PORT arm rebuilds, so the N64 view of the record is struct TrackNodeHeader, not struct Unk80129114_4; the forward-hop loop really does 'i++' while looping on 'i >= 0' (confirmed addiu t1,t1,1 at 800F9BB0 against bgez at 800F9BBC) -- a latent ROM infinite loop the PORT arm 'fixed' to i--; and the forward cursor is &conn[cnt]-1 (sll cnt,2 then -4 disp), not &conn[cnt-1]. Residue: arg2 lands in f12 instead of the ROM's f14, which reorders the prologue (the 0.1f multiply schedules after the node addressing instead of before) and rotates FP temps for the rest of the function. Same allocator floor as func_800F951C in this file */
 s32 func_800F9974(s32 *arg0, f32 *arg1, f32 arg2) {
     struct TrackNodeHeader *recs;
     struct TrackNodeHeader *tp;
@@ -1305,7 +1305,7 @@ f32 func_800F9C54(s32 *arg0, f32 arg1, Vector *arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 28/166 positional. Structure fully solved from the asm and NOT from the PORT arm, which is semantically wrong here: the ROM keeps hi/lo in a cand[2] array and their distances in dist[2], runs two real pointer loops over them, and the second loop updates BOTH arg2 and best (the PORT arm's 'if (dLo < dBest) arg2 = lo;' drops the best update). Also fixed: 2e-05 and the recursion window are DOUBLE comparisons, and arg0/arg1 must be cached into locals so they land in s1/s2 instead of the parameter home slots (that change alone moved 8 prologue words). Residue: frame 0x70 vs 0x60 -- 16 bytes of locals the ROM register-allocates that IDO here keeps slots for -- which then rotates the FP temps one slot (half f16 vs f18) throughout */
+/* FACTORY: 28/166 positional (138 diffs). Structure fully solved from the asm and NOT from the PORT arm, which is semantically wrong here: the ROM keeps hi/lo in a cand[2] array and their distances in dist[2], runs two real pointer loops over them, and the second loop updates BOTH arg2 and best (the PORT arm's 'if (dLo < dBest) arg2 = lo;' drops the best update). Also fixed: 2e-05 and the recursion window are DOUBLE comparisons, and arg0/arg1 must be cached into locals so they land in s1/s2 instead of the parameter home slots (that change alone moved 8 prologue words). Residue: frame 0x70 vs 0x60 -- 16 bytes of locals the ROM register-allocates that IDO here keeps slots for -- which then rotates the FP temps one slot (half f16 vs f18) throughout */
 f32 func_800F9C94(void *arg0, Vector *arg1, f32 arg2, f32 arg3, s32 arg4) {
     f32 cand[2];
     f32 best;
@@ -1900,7 +1900,7 @@ void func_800FA92C(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 43/317 positional; all control flow, both goto-merge zero-velocity paths, the s32->f32 cvt.s.w compare on D_801292E0, the lhu-at-offset-0 controller read (extern u16 gPlayerControllers, NOT the Controller_800D6FE8[] view -- the ROM reads one halfword and CSEs it for both button tests), the arg1->unk5C re-read in the clamp pair, and frame 0x60 all reproduce. Residue: the ROM parks arg2 in s0 (its only callee-saved register) while IDO here spills it to the a2 home slot and saves nothing, so every later reference is a reload from a different base and the whole body shifts. Tried: explicit src local, with/without, pad sizing to fix the frame first */
+/* FACTORY: 43/317 positional (274 diffs); all control flow, both goto-merge zero-velocity paths, the s32->f32 cvt.s.w compare on D_801292E0, the lhu-at-offset-0 controller read (extern u16 gPlayerControllers, NOT the Controller_800D6FE8[] view -- the ROM reads one halfword and CSEs it for both button tests), the arg1->unk5C re-read in the clamp pair, and frame 0x60 all reproduce. Residue: the ROM parks arg2 in s0 (its only callee-saved register) while IDO here spills it to the a2 home slot and saves nothing, so every later reference is a reload from a different base and the whole body shifts. Tried: explicit src local, with/without, pad sizing to fix the frame first */
 void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
     DObj *dobj;
     Vector d;
@@ -2147,9 +2147,30 @@ void func_800FAC74(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ov
 #endif
 
 #ifdef MIPS_TO_C
-
-void func_800FB164(void *arg0, void *arg1, void *arg2) {
-    s32 sp4C;
+/* FACTORY: 358/427 -- MEASURED 2026-08-25, and the first measurement this
+ * draft has ever had. It carried no note and could not have: what stood here
+ * was raw m2c with all three parameters `void *` and dereferenced, `sp4C =
+ * D_800D799C->data;` assigning a union to an s32, and SIX arguments passed to
+ * each of lbvector_Diff and func_800191F8, which take three. Un-guarding it
+ * produced a dozen hard errors, so measure_seeds has always called it
+ * UNSCORABLE.
+ *
+ * Typed against the sibling func_800FAC74 directly above -- same three
+ * parameters, same globals, same manual-orbit accumulator -- and against
+ * asm/nonmatchings/ovl2/ovl2_3/func_800FB164.s for the tail. The invented
+ * arguments are m2c reading registers that merely happened to be live: the
+ * ROM sets only $a0/$a1/$a2 before each jal, and $a3 is not written until
+ * four instructions AFTER the first one. Same trap as func_800FA1D4 in
+ * ovl2_2.c and func_8011C344 in plylib.c -- three in one bloc, so it is worth
+ * checking every m2c call whose arity exceeds the prototype's.
+ *
+ * 358 of 427 words differ. This is raw m2c that now compiles, not a seed:
+ * the shape is right (the tail's atan2f/360-degree wrap and the three
+ * at-minus-offset stores all reproduce) and the register assignment is not.
+ * The sibling above sits at the same floor for the same reason -- the ROM
+ * parks arg2 in a callee-saved register and IDO here spills it. */
+void func_800FB164(struct Ovl2CamOut *arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
+    DObj *dobj;
     f32 sp30;
     f32 sp2C;
     f32 sp28;
@@ -2170,10 +2191,25 @@ void func_800FB164(void *arg0, void *arg1, void *arg2) {
     f32 var_f2_5;
     s32 var_a0;
     s32 var_v1;
+    /* Spelled exactly as func_800FAC74's draft above spells them -- IDO scopes
+       a block-scope extern file-wide, so two bodies that disagree reject the
+       TU. gPlayerControllers is a u16 there for a measured reason: the ROM
+       reads ONE halfword (`lhu %lo(gPlayerControllers)`) and CSEs it across
+       all four button tests, which this function does as well. */
+    extern u16 gPlayerControllers;
+    extern s32 D_801292E0;
+    extern f32 D_801293AC;
+    extern f32 D_801293B0;
+    extern f32 D_801293B4;
+    extern f32 D_801293B8;
+    extern f32 D_801293BC;
+    extern f32 D_801293C4;
+    extern f32 D_801293C8;
+    extern f32 D_801293CC;
 
-    sp4C = D_800D799C->data;
-    if (D_801292E0 == 9999.0f) {
-        M2C_MEMCPY_ALIGNED(arg0, arg2, 0x3C);
+    dobj = D_800D799C->data.dobj;
+    if ((f32) D_801292E0 == 9999.0f) {
+        *arg0 = *arg2;
     }
     D_801293B4 = 8.0f;
     D_801293B8 = 8.0f;
@@ -2181,20 +2217,20 @@ void func_800FB164(void *arg0, void *arg1, void *arg2) {
     D_801293C4 = 4.0f;
     D_801293C8 = 4.0f;
     var_v1 = 0;
-    if (gPlayerControllers->buttonHeld & 0x100) {
+    if (gPlayerControllers & 0x100) {
         var_v1 = 1;
     }
-    if (gPlayerControllers->buttonHeld & 0x200) {
+    if (gPlayerControllers & 0x200) {
         var_v1 -= 1;
     }
     var_a0 = 0;
-    if (gPlayerControllers->buttonHeld & 0x800) {
+    if (gPlayerControllers & 0x800) {
         var_a0 = 1;
     }
-    if (gPlayerControllers->buttonHeld & 0x400) {
+    if (gPlayerControllers & 0x400) {
         var_a0 -= 1;
     }
-    if ((var_v1 != 0) && (arg1->unk1E != 0)) {
+    if ((var_v1 != 0) && (arg1->manualOrbitEnable != 0)) {
         var_f2 = D_801293C4;
         if (var_v1 > 0) {
             if (D_801293BC < 0.0f) {
@@ -2250,17 +2286,17 @@ block_21:
         var_f2_2 = D_801293AC;
         D_801293BC = 0.0f;
     }
-    var_f0_2 = arg1->unk5C;
+    var_f0_2 = arg1->orbitYawLimit;
     if (var_f0_2 <= var_f2_2) {
         D_801293AC = var_f0_2;
         var_f2_2 = D_801293AC;
-        var_f0_2 = arg1->unk5C;
+        var_f0_2 = arg1->orbitYawLimit;
     }
     temp_f12_2 = -var_f0_2;
     if (var_f2_2 <= temp_f12_2) {
         D_801293AC = temp_f12_2;
     }
-    if ((var_a0 != 0) && (arg1->unk1E != 0)) {
+    if ((var_a0 != 0) && (arg1->manualOrbitEnable != 0)) {
         var_f2_3 = D_801293C8;
         if (var_a0 > 0) {
             if (D_801293C0 < 0.0f) {
@@ -2317,18 +2353,23 @@ block_51:
 block_64:
         D_801293C0 = 0.0f;
     }
-    var_f0_4 = arg1->unk5C;
+    var_f0_4 = arg1->orbitYawLimit;
     temp_f12_4 = var_f0_4 * 0.6f;
     if (temp_f12_4 <= var_f2_4) {
         D_801293B0 = temp_f12_4;
         var_f2_4 = D_801293B0;
-        var_f0_4 = arg1->unk5C;
+        var_f0_4 = arg1->orbitYawLimit;
     }
     temp_f12_5 = -var_f0_4 * 0.6f;
     if (var_f2_4 <= temp_f12_5) {
         D_801293B0 = temp_f12_5;
     }
-    lbvector_Diff(temp_f12_5, 0.6f, &sp28, arg2 + 0x18, arg2 + 0x24, &D_801293AC);
+    /* THREE arguments each, not six. m2c prefixed both calls with values that
+       merely happened to be live: the ROM sets only $a0/$a1/$a2 before each
+       jal (`addiu $a0,$sp,0x28 / addiu $a1,arg2,0x18 / addiu $a2,arg2,0x24`,
+       then `addiu $a0,$sp,0x28 / addiu $a1,dobj,0x54 / mfc1 $a2,$f10`), and
+       both callees are prototyped 3-argument in src/main/lbvector.h. */
+    lbvector_Diff((Vector *) &sp28, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
     temp_f12_6 = (atan2f(sp30, -sp28) / 3.1415927f) * 180.0f;
     var_f2_5 = temp_f12_6;
     if (temp_f12_6 < 0.0f) {
@@ -2337,13 +2378,14 @@ block_64:
     sp30 = 0.0f;
     sp28 = -D_801293AC;
     sp2C = D_801293B0;
-    func_800191F8(temp_f12_6, 3.1415927f, &sp28, sp4C + 0x54, ((var_f2_5 + 90.0f) * 3.1415927f) / 180.0f, &D_801293AC);
-    arg0->unk24 = arg2->unk24;
-    arg0->unk28 = arg2->unk28;
-    arg0->unk2C = arg2->unk2C;
-    arg0->unk18 = arg2->unk18 - sp28;
-    arg0->unk1C = arg2->unk1C - sp2C;
-    arg0->unk20 = arg2->unk20 - sp30;
+    func_800191F8((Vector *) &sp28, (Vector *) ((s32) dobj + 0x54),
+                  ((var_f2_5 + 90.0f) * 3.1415927f) / 180.0f);
+    arg0->eyeX = arg2->eyeX;
+    arg0->eyeY = arg2->eyeY;
+    arg0->eyeZ = arg2->eyeZ;
+    arg0->atX = arg2->atX - sp28;
+    arg0->atY = arg2->atY - sp2C;
+    arg0->atZ = arg2->atZ - sp30;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FB164.s")
