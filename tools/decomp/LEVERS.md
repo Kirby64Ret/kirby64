@@ -858,12 +858,21 @@ the pool allocator's real stride is 0x78.
     **Enumerate it, do not hunt it.** `tools/decomp/absf_sweep.py` walks every
     guarded draft, collects the registers a listing loads with
     `mtc1 $zero`, counts the `c.lt.s`/`c.le.s` naming one of them, and drops
-    any draft that already says `ABS`/`ABSF`. It reports 207 drafts. The count
-    is a strength ranking, not a verdict: a genuine sign test (`if (vel.y <
-    0.0f)` on a velocity) produces the same compare, so read the operand
-    first. The macro is the reading when every branch of the value is
-    obviously non-negative, or when the operand is reloaded twice around one
-    compare.
+    any draft that already says `ABS`/`ABSF`.
+
+    That alone reports 207 drafts and most of them are noise, because a
+    genuine sign test (`if (vel.y < 0.0f)`) produces the identical compare.
+    **The filter that separates them is `neg.s`: the macro's then-arm IS the
+    negation, so a listing with no `neg.s` cannot contain an ABSF, whatever
+    its compare count.** func_800B531C (ovl1_8) is the clean negative -- eight
+    compares against a materialised zero, 478 instructions, and not one
+    `neg.s`; its `mtc1 $zero, $f12` are 0.0f being loaded into the first FP
+    argument register for calls, not a macro. With the filter the sweep
+    reports 132, ranked by `min(compares, negs)`, and it prints both counts so
+    you can see which one is the binding constraint. The rank is still a
+    strength ordering, not a verdict: read the operand. The macro is the
+    reading when every branch of the value is obviously non-negative, or when
+    the operand is reloaded twice around one compare.
 
     Caveat, from func_800A52F0's residual 40: fixing the macro does not fix
     register allocation. That ROM promotes arg0 to the callee-saved `$f20`

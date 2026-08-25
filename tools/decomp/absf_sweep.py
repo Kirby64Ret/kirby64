@@ -11,6 +11,7 @@ import os, re, sys
 sys.path.insert(0, 'tools/decomp')
 from measure_seeds import guard_blocks
 
+NEG   = re.compile(r'\bneg\.s\s+(\$f\d+)\s*,\s*(\$f\d+)')
 MTC1Z = re.compile(r'\bmtc1\s+\$(?:zero|r0|0)\s*,\s*(\$f\d+)')
 CMP   = re.compile(r'\bc\.(?:lt|le)\.s\s+(\$f\d+)\s*,\s*(\$f\d+)')
 
@@ -35,13 +36,21 @@ for root, _, files in os.walk('src'):
             n = sum(1 for a, b in CMP.findall(asm) if a in zregs or b in zregs)
             if not n:
                 continue
+            # A listing with no neg.s cannot contain an ABSF expansion at all:
+            # the macro's then-arm IS the negation.  Without this filter the
+            # sweep reports every real `x < 0.0f` sign test as well -- 207
+            # drafts instead of the ones that can actually pay.
+            nneg = len(NEG.findall(asm))
+            if not nneg:
+                continue
             draft = '\n'.join(lines[st:en])
             if re.search(r'\bABSF?\s*\(', draft):
                 continue
             func = os.path.basename(listing)[:-2]
-            rows.append((n, path, func, en - st))
+            rows.append((n, nneg, path, func, en - st))
 
-rows.sort(key=lambda r: -r[0])
-print(f'{len(rows)} guarded drafts: mtc1-$zero compare, no ABS/ABSF in draft')
-for n, path, func, sz in rows:
-    print(f'{n:4d}  {func:28s} {path:34s} draft={sz} lines')
+rows.sort(key=lambda r: (-min(r[0], r[1]), -r[0]))
+print(f'{len(rows)} guarded drafts: mtc1-$zero compare AND a neg.s, no ABS/ABSF')
+print('  cmp   neg  function                     file')
+for n, nneg, path, func, sz in rows:
+    print(f'{n:5d} {nneg:5d}  {func:28s} {path:34s} draft={sz} lines')
