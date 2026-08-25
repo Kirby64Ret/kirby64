@@ -4960,12 +4960,14 @@ void func_801232A8(Vector *arg0, u16 arg1) {
     }
 }
 
+s32 func_800AB0F4(GObj *);
+
 extern Lights1 D_800BE548;
 extern Lights1 D_800BE550;
 #ifdef NON_MATCHING
 void func_80123354(GObj *g) {
     if (!(D_800DD8D0[g->objId] & 0x40)) {
-        switch (func_800AB0F4()) {
+        switch (func_800AB0F4(g)) {
             case 19:
                 gSPSegment(gDisplayListHeads[0]++, 4, gSegment4StartArray[g->objId]);
                 func_800A54FC(&D_800D7010, gDynamicBuffer1.top);

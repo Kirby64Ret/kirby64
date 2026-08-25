@@ -50,6 +50,8 @@ void func_800BB588(GObj *gobj) {
     }
 }
 
+s32 func_800AB0F4(GObj *);
+
 #ifdef NON_MATCHING
 void func_800BB6B0(GObj *gobj) {
     gDPPipeSync(gDisplayListHeads[0]++);
@@ -57,7 +59,7 @@ void func_800BB6B0(GObj *gobj) {
     gSPSegment(gDisplayListHeads[0]++, 0x04, gSegment4StartArray[gobj->objId]);
     gDPSetRenderMode(gDisplayListHeads[0]++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
 
-    switch (func_800AB0F4()) {
+    switch (func_800AB0F4(gobj)) {
         case 19:
         case 21:
         case 23:
