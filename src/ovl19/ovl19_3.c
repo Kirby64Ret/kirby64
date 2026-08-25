@@ -974,6 +974,11 @@ void func_8022C1A4_ovl19(GObj *g) {
 }
 
 #ifdef NON_MATCHING
+/* LEVER 70 second data point, 2026-08-25: the `D_800E6850[objId] = ABSF(var_f0)`
+   below was an if/else assigning the same lvalue in both arms, and the macro is
+   BYTE-INERT against that shape -- 257/340 either way.  Spelled with the macro
+   only so absf_sweep stops listing this function.  (Its real residue starts at
+   word 14: the ROM holds omCurrentObj in $v0 where IDO uses $v1.) */
 void func_8022C3BC_ovl19(GObj *g) {
     f32 var_f0;
     f32 var_f2;
@@ -1014,11 +1019,7 @@ void func_8022C3BC_ovl19(GObj *g) {
         }
         D_800E64D0[omCurrentObj->objId] = var_f0;
         D_800E6690[omCurrentObj->objId] = var_f2;
-        if (var_f0 < 0.0f) {
-            D_800E6850[omCurrentObj->objId] = -var_f0;
-        } else {
-            D_800E6850[omCurrentObj->objId] = var_f0;
-        }
+        D_800E6850[omCurrentObj->objId] = ABSF(var_f0);
         func_801230E8(0x2037A, 0x2037B, 1);
         D_800E3750[omCurrentObj->objId] = -0.980665f;
         D_800E3C90[omCurrentObj->objId] = 16.0f;
