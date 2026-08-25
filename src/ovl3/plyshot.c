@@ -1311,31 +1311,30 @@ void func_8015CC84_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 262/267 [was noted 5/267], whole-function callee-saved permutation (same floor
-   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 262 of 267 words differ (98%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 129/267, and it really is a permutation this time -- LEVER 65b's
+   opcode test reports 129 ALIGNED RENAMES AND 0 GENUINELY DIFFERENT WORDS.
+   Every instruction of this function is in the ROM's slot with the ROM's
+   opcode; only register fields disagree, led by the omCurrentObj value, which
+   the ROM keeps in $a3 and this C keeps in $v1. Word count exact (267).
+   Was 262/267 [noted 5/267].
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand.
+   Two defects, both read off the listing:
+   1. `s32 id = omCurrentObj->objId;` -- spell the field inline. That alone
+      fixed the frame (0x50 -> the ROM's 0x40) and the saved-register set.
+   2. `f32 spd` IS NOT A LOCAL. It is the file's global scratch f32 at
+      0x800D7238, which the ROM holds in $s2 (`lui $s2, %hi(D_800D71E8+0x50)`
+      -- spimdisasm names the nearest preceding symbol; the C spelling is
+      `D_800D7238`, exactly as the already-matched func_8015F950_ovl3 in this
+      TU uses it) and RE-READS at each use. It is written three times and read
+      four, and one of those writes is the second argument of
+      func_80161EC0_ovl3: the ROM stores `40.0f - sinf(angle) * 63.6396f` into
+      D_800D7238 and passes `lw $a1, 0x0($s2)`, so that argument is not an
+      expression at the call site at all. Three saved registers and the whole
+      body order fall out of this. 254 -> 129.
 
- * class as the rest of this cluster). The N64 draft calls func_800A77E8 /
- * func_800A7870 inline, which is what the asm's jal targets show; the PORT
- * arm's pc_sndpair_start/pc_sndpair_release are static helpers defined at
- * the top of THIS file that wrap those same two calls (an earlier report
- * that they were unresolved stubs was wrong -- they are real and linked).
- * Queued for the permuter. */
+   Swept and negative at 129: every barrier placement (17,
+   tools/decomp/barrier_sweep.py). Queue it for the permuter -- a pure
+   caller-saved rename with the word count exact is exactly what it is for. */
 /* PORT: the lobbed-throw init coroutine, from asm/nonmatchings/ovl3/plyshot/
  * func_8015CF9C_ovl3.s. Spawns at the carry target, launches along the
  * throw angle in D_800EC660 with speed 1.5x the parent's charge clamped to
@@ -1345,46 +1344,48 @@ void func_8015CC84_ovl3(s32 arg0) {
  * and destroys the track. */
 void func_8015CF9C_ovl3(s32 arg0) {
     extern f32 **D_80192CA4_ovl3;
-    s32 id = omCurrentObj->objId;
+    extern f32 D_800D7238;
     s32 pairHandle;
     s32 pairSid;
-    f32 spd;
 
-    D_800EA520[id] = 0;
-    D_800E98E0[id] = 0;
+    D_800EA520[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
     func_80161CE0_ovl3(arg0);
-    func_80161EC0_ovl3(D_800E1ED0[id - 112], 40.0f - (sinf(D_800EC660[id]) * 63.6396f),
-                       sinf(D_800EC660[id]) * -65.0f);
-    D_800DEF90[id] = func_800B4954;
-    D_800DF150[id] = func_8015D3C8_ovl3;
-    D_800E0490[id] = &D_80192CA4_ovl3;
-    func_80154648_ovl3(D_800E0D50[id], D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
-    D_800EA520[id] = func_800A8234(1, 1, 0x2A);
-    spd = (f32) D_800E9720[D_800E0D50[id]] * 1.5f;
-    if (spd < 8.0f) {
-        spd = 8.0f;
-    } else if (spd > 18.0f) {
-        spd = 18.0f;
+    D_800D7238 = 40.0f - (sinf(D_800EC660[omCurrentObj->objId]) * 63.6396f);
+    func_80161EC0_ovl3(D_800E1ED0[omCurrentObj->objId - 112], D_800D7238,
+                       sinf(D_800EC660[omCurrentObj->objId]) * -65.0f);
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DF150[omCurrentObj->objId] = func_8015D3C8_ovl3;
+    D_800E0490[omCurrentObj->objId] = &D_80192CA4_ovl3;
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4],
+                       D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    D_800EA520[omCurrentObj->objId] = func_800A8234(1, 1, 0x2A);
+    D_800D7238 = (f32) D_800E9720[D_800E0D50[omCurrentObj->objId]] * 1.5f;
+    if (D_800D7238 < 8.0f) {
+        D_800D7238 = 8.0f;
+    } else if (D_800D7238 > 18.0f) {
+        D_800D7238 = 18.0f;
     }
-    D_800E64D0[id] = cosf(D_800EC660[id]) * spd * D_800E6A10[id];
-    D_800E6690[id] = 0.0f;
-    D_800E6850[id] = 18.0f;
-    D_800E3210[id] = sinf(D_800EC660[id]) * spd;
-    D_800E3750[id] = -0.55f;
-    D_800E3C90[id] = 24.0f;
-    gEntitiesScaleXArray[id] = 0.2f;
-    gEntitiesScaleYArray[id] = 0.2f;
-    gEntitiesScaleZArray[id] = 0.2f;
+    D_800E64D0[omCurrentObj->objId] =
+        cosf(D_800EC660[omCurrentObj->objId]) * D_800D7238 * D_800E6A10[omCurrentObj->objId];
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6850[omCurrentObj->objId] = 18.0f;
+    D_800E3210[omCurrentObj->objId] = sinf(D_800EC660[omCurrentObj->objId]) * D_800D7238;
+    D_800E3750[omCurrentObj->objId] = -0.55f;
+    D_800E3C90[omCurrentObj->objId] = 24.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x20030, 0x21, 0x10);
-    while (D_800E98E0[id] == 0) {
+    while (D_800E98E0[omCurrentObj->objId] == 0) {
         ohSleep(1);
     }
-    D_800E0D50[id] = -1;
+    D_800E0D50[omCurrentObj->objId] = -1;
     func_800A9760(0x20047);
     func_800A77E8(0xB7, &pairHandle, &pairSid);
     func_800AA154(0x202A0);
     func_800A7870((void **) &pairHandle, (u16 *) &pairSid);
-    func_800B1900((u16) id);
+    func_800B1900((u16) omCurrentObj->objId);
 }
 #elif defined(PORT)
 /* PORT: the lobbed-throw init coroutine, from asm/nonmatchings/ovl3/plyshot/
