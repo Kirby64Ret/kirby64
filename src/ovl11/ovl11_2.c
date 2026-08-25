@@ -342,7 +342,6 @@ void func_801DFEA8_ovl11(void) {
     }
 }
 
-#ifdef NON_MATCHING
 /* 2/44: the y-difference sub lands in $f0 where the ROM uses $f14; everything
    else, including the $f2/$f12 assignments, is exact. IDO's FP pool order here
    is measured to be f2, f12, f14 with $f0 reused for the first range that dies.
@@ -357,26 +356,46 @@ void func_801DFEA8_ovl11(void) {
  * applied to the other entity, and the comparison is against 1600.0f because
  * both sides are squared -- there is no sqrt here.
  *
+ * THREE THINGS HERE ARE LOAD-BEARING AND ALL THREE LOOK LIKE m2c NOISE.
+ *
  * `d` IS DELIBERATELY REUSED for the Z difference, then the Y difference,
- * then the total, and that reuse is load-bearing rather than leftover m2c
- * noise. Written with one named local per quantity -- dz, dx, dy, distSq, in
- * that order and any other -- IDO starts its FP temps at $f0 where the ROM
- * starts at $f2 and the whole chain rotates: 17/45, and one instruction
- * LONGER than the ROM. Keeping the single reused local and the separate `zd`
- * copy of the Z difference is what holds $f0 occupied across the subtractions
- * so dz lands on $f2, dx on $f12 and dy on $f14. */
+ * then the total. Written with one named local per quantity -- dz, dx, dy,
+ * distSq, in that order and any other -- IDO starts its FP temps at $f0 where
+ * the ROM starts at $f2 and the whole chain rotates: 17/45, and one
+ * instruction LONGER than the ROM. The reuse plus the separate `zd` copy is
+ * what holds $f0 occupied across the subtractions so dz lands on $f2 and dx
+ * on $f12.
+ *
+ * `posY` EXISTS TO OCCUPY A REGISTER. Loading the array base into a pointer
+ * and subscripting that, rather than subscripting the array directly, is what
+ * pushes the Y difference off $f0 and onto the ROM's $f14. Note it is
+ * declared LAST while `yd` is declared SECOND -- the positions are not
+ * interchangeable (lever 57: declarations lay out top-down).
+ *
+ * `do { } while (0);` IS A SCHEDULING BARRIER, and this is the measurement
+ * that proves it: with everything else above in place the function reads
+ * 16/45 without it and MATCH (44) with it. An empty do-while emits no
+ * instruction of its own -- it changes where IDO is willing to move the ones
+ * around it, and here it stops the Y-difference block being folded into the
+ * multiply that follows. It is the one construct in this file that looks
+ * purely like leftover m2c goto-wrapping and is not; see LEVERS 61. */
 s32 func_801E00B8_ovl11(s32 arg0) {
     f32 dx;
+    f32 yd;
     f32 d;
     f32 sumXY;
     f32 zd;
     s32 ret;
+    f32 *posY;
 
     ret = 0;
     d = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
     zd = d;
     dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
-    d = gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[arg0] + 20.0f);
+    posY = gEntitiesNextPosYArray;
+    yd = posY[omCurrentObj->objId] - (gEntitiesNextPosYArray[arg0] + 20.0f);
+    d = yd;
+    do { } while (0);
     sumXY = (dx * dx) + (d * d);
     d = (zd * zd) + sumXY;
     if (d <= 1600.0f) {
@@ -384,9 +403,6 @@ s32 func_801E00B8_ovl11(s32 arg0) {
     }
     return ret;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11_2/func_801E00B8_ovl11.s")
-#endif
 void func_801E0168_ovl11(void)
 {
   struct GObj **var_s1;

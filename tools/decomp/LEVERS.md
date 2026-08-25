@@ -525,3 +525,27 @@ the pool allocator's real stride is 0x78.
     about a search space, not about the function. Check what the space held
     fixed. Lever 57's corollary that "declared" and "homed" are different
     things is the same observation from the other side.
+
+61. **An empty `do { } while (0);` is a SCHEDULING BARRIER, not m2c noise.**
+    m2c emits `do { ... } while (0)` to encode a `goto` out of a block, and
+    the standing habit is to delete those as artefacts on the way to a
+    readable draft. On func_801E00B8_ovl11 an EMPTY one is the difference
+    between 16/45 and MATCH (44), with every other part of the source already
+    correct. It emits no instruction of its own; what it changes is how far
+    IDO is willing to move the instructions around it -- here it stops the
+    block that computes the Y difference being folded into the multiply that
+    consumes it, which is what puts that value on the ROM's $f14 instead of
+    $f0.
+
+    So when a residue is "the right instructions in the wrong order" and no
+    declaration or expression spelling reaches it, try inserting an empty
+    do-while at the seam. And when cleaning up an m2c draft, do not delete a
+    do-while that wraps nothing until you have re-measured without it.
+
+    Found by the permuter, which reached score 0 on this function in about a
+    second and whose answer was three separate changes at once (the extra
+    pointer local, the extra f32 temp, and the do-while). Transcribing two of
+    the three by hand gave 16/45 and looked like a failed candidate; the
+    barrier was the part that did not look like it could matter. Worth
+    remembering when a permuter win is being cleaned up: check what every
+    piece of it is doing before dropping any of it.
