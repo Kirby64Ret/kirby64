@@ -659,6 +659,33 @@ the pool allocator's real stride is 0x78.
     -- the commutative floor elsewhere in this file is about arithmetic with a
     MEMORY operand, and the two are different.
 
+65b. **Permutation or not: compare the OPCODES, do not judge by eye.** A
+    register permutation renames fields at ALIGNED positions, so every diff
+    shares its top six bits with the target. A draft that has genuinely
+    diverged does not. One command settles which, and it decides whether a
+    function wants a spelling sweep or a re-derivation:
+
+        VERIFY_MAXDIFF=400 python3 /tmp/scratchverify.py <file.c> <func> \
+          | grep -a '^  \[' > /tmp/d.txt
+        python3 -c "
+        import re
+        s=d=0
+        for l in open('/tmp/d.txt'):
+            m=re.search(r'target=([0-9A-F]{8}).*?current=([0-9A-F]{8})', l)
+            if m:
+                t,c=int(m.group(1),16),int(m.group(2),16)
+                s+= (t>>26)==(c>>26); d+= (t>>26)!=(c>>26)
+        print(s,'aligned renames,',d,'genuinely different')"
+
+    Measured on func_8017EDDC_ovl3, whose note claims a callee-saved
+    permutation and whose score is 208/248: 38 aligned renames and 127
+    genuinely different opcodes. The first ~45 words really are a rename
+    cascade and everything after diverges -- so the note is describing the
+    part of the function it read and not the part that matters. VERIFY_MAXDIFF
+    matters: the default caps the diff listing at 40 lines, which on a
+    200-diff function shows you only the aligned prefix and makes every such
+    draft look like a permutation.
+
 66. **A branch offset that is wrong is never a register residue -- but read
     WHICH instruction the block gained before calling it a semantics bug.**
     func_80219E0C_ovl9's 30 diffs began at a `bc1f` with the wrong
