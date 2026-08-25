@@ -932,3 +932,49 @@ the pool allocator's real stride is 0x78.
     24/163 (its extra `f32` declaration moves sp24 from 0x24 to 0x20), and
     func_801E14B0_ovl17's goes 3/61 -> 12/61. Read diff.txt and apply the
     change by hand; never copy source.c into src/.
+
+73. **CORRECTION TO LEVER 70 AND TO absf_sweep.py: an ABSF of a SUBTRACTION
+    has no materialised zero at all.** IDO folds the macro's `(a - b) < 0.0f`
+    into a direct compare of the two operands -- `c.lt.s a, b` -- so the
+    whole population of `ABSF(x - y)` sites contains no `mtc1 $zero` and the
+    sweep's compare-against-materialised-zero filter cannot see them.
+    func_801B9E80_ovl7 is the proof: it MATCHED on the macro, and the only
+    `mtc1 $zero` in its listing belongs to an unrelated `while (cur < 0.0f)`
+    wrap loop. It was in the candidate list by accident.
+
+    **The reliable tell is the operand computed more times than the source
+    needs it, with one copy UNREACHABLE.** The macro names its argument three
+    times, so an `ABSF(a - b)` emits three `sub.s` into the same register: one
+    in the `bc1fl` delay slot, one in the then-arm before the `neg.s`, and one
+    at the fall-through label that no path reaches. Nothing else in IDO's
+    output emits a dead arithmetic instruction. Rank on `neg.s` and on that
+    duplication, not on `mtc1 $zero`.
+
+    **And the operand must NOT be a named variable.** This is where the
+    closure actually lived. In func_801B9E80_ovl7 the ROM's `$f14` is the
+    MACRO'S OWN temp, CSE'd into all twelve later comparisons of the same
+    difference, with `$f12` the macro's result. Any `diff = cur - target;`
+    statement gives the subtraction its own register first and pushes the abs
+    result into the higher one -- a clean $f12/$f14 transposition across 24
+    words. Measured on that function: m2c's if/else with the subtraction
+    duplicated in both arms 24/219; `diff` hoisted with `mag = ABSF(diff)`
+    193/219; `diff` hoisted with `mag = ABSF(cur - target)` also 193/219;
+    the difference spelled out at every one of the twelve sites, MATCH.
+    Naming it costs 169 words. LEVER 60's question -- which of the ROM's
+    values is a temp rather than a local -- is the same question here.
+
+    Three more measurements from the same sweep, so nobody re-spends them:
+      - `ABSF(ABSF(x))` is a real shape (func_801BB3D4_ovl7): the outer macro
+        names its operand three times and its operand is a macro, so the
+        listing holds three complete inner expansions.
+      - LEVER 3's ABS() substitution is NOT a general alternative to ABSF on
+        an f32. On func_8019CE28_ovl7 the integer zero forces a conversion and
+        the draft grows past the ROM's word count: 70/106 -> 78/112.
+      - The macro pays NOTHING while the frame is wrong. func_801DF5D0_ovl13
+        (14 expansions, two of them with a call as the operand -- six
+        `jal func_8019DA70_ovl7` in one listing, LEVER 40 in the flesh) and
+        func_801A7524_ovl7 (23/22, the sweep's number two) both have diff 0 at
+        the stack adjustment, -408 vs -0x70 and -600 vs -0xB8. Converting
+        ovl13's six mechanically-recognisable sites scored 1147/1239,
+        unchanged. Screen candidates on where diff 0 is BEFORE converting
+        anything; LEVER 69's rule generalises past LEVER 58.
