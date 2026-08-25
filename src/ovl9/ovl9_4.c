@@ -1216,9 +1216,43 @@ void func_801E3FE4_ovl9(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 422/479 [was noted 57/479], frame 0x68 vs the ROM's 0x60 plus the $v1/$a0 pair the
-   scaled objId lands in.  The largest function in this file; body order,
-   branch structure and call sequence all agree. */
+/* FACTORY: 380/479 [was 422/479, and noted 57/479 before that], frame 0x68 vs
+   the ROM's 0x60 plus the $v1/$a0 pair the scaled objId lands in.  The largest
+   function in this file; body order, branch structure and call sequence all
+   agree.
+
+   LEVERS 70/73 APPLIED 2026-08-25, 422 -> 380.  Four ABSF sites, every one of
+   them read off the listing rather than guessed:
+     - `D_800E6850[id] = ABSF((flag) ? 3.0f : 6.0f)` and the 5.0f/10.0f one.
+       801E4400..801E4488 holds the ternary THREE times with a `neg.s` in the
+       middle arm -- LEVER 70's macro-triples-the-whole-ternary shape.  The
+       already-matched func_801E3FE4_ovl9 sixty lines above spells exactly
+       these two lines with ABSF, so this is also a clone-family confirmation
+       (LEVER 1).
+     - `0.7853982f < ABSF(slope - prev)` at 801E4630: three `sub.s $f0,$f2,$f12`
+       into the same register, the last of them unreachable.  That is LEVER
+       73's signature for an ABSF of a subtraction with the difference NOT
+       named, and it is why the `f32 diff` local had to go.
+     - `ABSF(spd) <= ABSF(D_800E6690[id])` at 801E47F4..801E4840, two
+       mov.s/neg.s/mov.s triples where the draft had `aspd`/`aacc` locals.
+
+   THE FRAME IS THE REMAINING BLOCKER and it is LEVER 57's pinned n+t, measured
+   here rather than assumed.  The struct is right: sp+0x48 in a 0x68 frame is
+   0x20 to the top, exactly the ROM's sp+0x40 in 0x60.  The excess is two words
+   in the scalar+temp region below it (12 words against the ROM's 10), and
+   every spelling tried holds n+t fixed:
+       baseline (8 named, 2 ABSF)                 frame 0x68  422
+       ABSF ternaries + named `diff`              frame 0x78  411
+       ABSF ternaries, `diff` inlined             frame 0x70  411
+       + `aspd`/`aacc` inlined                    frame 0x68  380
+       + `spd` inlined as well                    frame 0x68  394  <- WORSE
+   Inlining `spd` is the negative control: it costs 14 words and does NOT buy
+   a frame word, so the ROM really does hold that one load in a local ($f12 at
+   801E47F4 is re-read at 801E484C).  Whatever the extra two words are, they
+   are not any of `id`/`slope`/`prev`/`drive`/`spd`, all five of which the
+   listing shows as live values.  Next lane: ask LEVER 60's question -- which
+   of the ROM's values is a compiler temp rather than a local -- do not sweep
+   declaration order at this count again. */
 extern s32 D_801CA4C0;
 extern s32 D_801CA508;
 extern s32 D_801C86AC_ovl7;
@@ -1255,7 +1289,6 @@ void func_801E429C_ovl9(void) {
     u32 id;
     f32 slope;
     f32 prev;
-    f32 diff;
 
     id = omCurrentObj->objId;
     D_800EAA60[id] = D_800E6A10[id];
@@ -1275,9 +1308,9 @@ void func_801E429C_ovl9(void) {
     id = omCurrentObj->objId;
     D_800E17D0[id] = D_800EAC20[id];
     id = omCurrentObj->objId;
-    D_800E6850[id] = (D_800E8AE0[id] & 1) ? 3.0f : 6.0f;
+    D_800E6850[id] = ABSF((D_800E8AE0[id] & 1) ? 3.0f : 6.0f);
     id = omCurrentObj->objId;
-    D_800E3C90[id] = (D_800E8AE0[id] & 1) ? 5.0f : 10.0f;
+    D_800E3C90[id] = ABSF((D_800E8AE0[id] & 1) ? 5.0f : 10.0f);
     id = omCurrentObj->objId;
     D_800EB320[id] = D_800EB160[id];
     D_800EB160[omCurrentObj->objId] = func_801E4F18_ovl9();
@@ -1292,8 +1325,7 @@ void func_801E429C_ovl9(void) {
     }
     slope = D_800EB160[id];
     prev = D_800EB320[id];
-    diff = (slope < prev) ? -(slope - prev) : (slope - prev);
-    if (diff > 0.7853982f) {
+    if (0.7853982f < ABSF(slope - prev)) {
         D_800E64D0[id] *= 0.5f;
         id = omCurrentObj->objId;
         slope = D_800EB160[id];
@@ -1321,10 +1353,8 @@ void func_801E429C_ovl9(void) {
         }
     } else {
         f32 spd = D_800E64D0[id];
-        f32 aspd = (spd < 0.0f) ? -spd : spd;
-        f32 aacc = (D_800E6690[id] < 0.0f) ? -D_800E6690[id] : D_800E6690[id];
 
-        if (aspd <= aacc) {
+        if (ABSF(spd) <= ABSF(D_800E6690[id])) {
             D_800E6690[id] = 0.0f;
             id = omCurrentObj->objId;
             D_800E64D0[id] = D_800E6690[id];
@@ -1391,7 +1421,6 @@ void func_801E429C_ovl9(void) {
     u32 id;
     f32 slope;
     f32 prev;
-    f32 diff;
 
     id = omCurrentObj->objId;
     D_800EAA60[id] = D_800E6A10[id];
@@ -1411,9 +1440,9 @@ void func_801E429C_ovl9(void) {
     id = omCurrentObj->objId;
     D_800E17D0[id] = D_800EAC20[id];
     id = omCurrentObj->objId;
-    D_800E6850[id] = (D_800E8AE0[id] & 1) ? 3.0f : 6.0f;
+    D_800E6850[id] = ABSF((D_800E8AE0[id] & 1) ? 3.0f : 6.0f);
     id = omCurrentObj->objId;
-    D_800E3C90[id] = (D_800E8AE0[id] & 1) ? 5.0f : 10.0f;
+    D_800E3C90[id] = ABSF((D_800E8AE0[id] & 1) ? 5.0f : 10.0f);
     id = omCurrentObj->objId;
     D_800EB320[id] = D_800EB160[id];
     D_800EB160[omCurrentObj->objId] = func_801E4F18_ovl9();
@@ -1428,8 +1457,7 @@ void func_801E429C_ovl9(void) {
     }
     slope = D_800EB160[id];
     prev = D_800EB320[id];
-    diff = (slope < prev) ? -(slope - prev) : (slope - prev);
-    if (diff > 0.7853982f) {
+    if (0.7853982f < ABSF(slope - prev)) {
         D_800E64D0[id] *= 0.5f;
         id = omCurrentObj->objId;
         slope = D_800EB160[id];
@@ -1457,10 +1485,8 @@ void func_801E429C_ovl9(void) {
         }
     } else {
         f32 spd = D_800E64D0[id];
-        f32 aspd = (spd < 0.0f) ? -spd : spd;
-        f32 aacc = (D_800E6690[id] < 0.0f) ? -D_800E6690[id] : D_800E6690[id];
 
-        if (aspd <= aacc) {
+        if (ABSF(spd) <= ABSF(D_800E6690[id])) {
             D_800E6690[id] = 0.0f;
             id = omCurrentObj->objId;
             D_800E64D0[id] = D_800E6690[id];
