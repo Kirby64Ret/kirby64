@@ -3862,6 +3862,27 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * So the two stores are an IDO delay-slot pick -- the ROM fills the branchless
  * pair by hoisting the SECOND command's w0 first -- and no spelling of the
  * pointer arithmetic reaches it.
+ *
+ * NARROWED 2026-08-25 on a pragma-free probe (scratchpad/ujoin/mkprobe.py +
+ * score.py, so the macros can be expanded by hand without touching the TU).
+ * The store ORDER is reachable: writing the two commands out longhand with the
+ * savebuffer w0 store first gives `sw ?, 8($v0)` then `sw ?, 0($v0)`, which is
+ * the ROM's order. It does not help, because the ORDER AND THE REGISTER
+ * ASSIGNMENT MOVE TOGETHER -- IDO numbers the two hoisted `lui` temps in the
+ * order the STORES appear in the source, so putting the savebuffer store first
+ * also puts its constant in $t6, and the ROM wants the interleave constant in
+ * $t6 with the savebuffer store first. Four longhand forms measured, including
+ * assigning the interleave word to a `u32` local ahead of the savebuffer
+ * stores (IDO sinks the `lui` to its use, so the local buys nothing): every
+ * one is 2/17, either the ROM's order with the registers swapped or the ROM's
+ * registers with the order swapped. There is no third combination to try from
+ * the source, which is what makes this a floor and not a sweep that stopped
+ * early.
+ *
+ * ALSO NOT A UJOIN EFFECT. Scored under cc_o3.py's real interprocedural -O3
+ * (CC_O3_UJOIN=1, the ucode pipeline): 2/17, the same two words. So the
+ * residue does not come from the phase ordering that explains the rest of this
+ * file's ABI-blocked pool.
  * tools/decomp/padtrap.py now classifies the folded half correctly ('swallowed'
  * -- it used to report 'clean'), and it is NOT a padding trap: 0x800299F0 is
  * the next, unnamed function of the TU (alAudioFrame starts at 0x800299F8), so
