@@ -162,15 +162,42 @@ def run_one(cf, fn, seconds, jobs):
     # permuter writes output-<pid>-<n>/ directories for every improvement and
     # names the score in its log; a zero score is the only thing worth waking
     # a human for.
+    #
+    # Which directory to copy is NOT hits[-1], and getting that wrong silently
+    # publishes the wrong source under a '*** MATCH' banner. Two of the first
+    # three wins this queue produced were the wrong candidate -- their
+    # score.txt read 396 and 46 -- and both cost a round of hand-testing in
+    # the tree before the mistake showed. The names sort lexicographically, so
+    # output-<pid>-10 lands before output-<pid>-9, and the last improvement is
+    # not necessarily the zero-scoring one anyway when several pids interleave.
+    # Every output dir carries its own score.txt: read those and take a zero.
     hits = sorted(glob.glob(os.path.join(d, 'output-*')))
+
+    def _score_of(h):
+        try:
+            return int(open(os.path.join(h, 'score.txt')).read().strip())
+        except (OSError, ValueError):
+            return None
+
+    zeros = [h for h in hits if _score_of(h) == 0]
     scores = [int(s) for s in re.findall(r'score = (\d+)', out.replace('\r', '\n'))]
     best = min(scores) if scores else None
 
-    if best == 0:
+    if zeros or best == 0:
         os.makedirs(WINS, exist_ok=True)
         dst = os.path.join(WINS, fn)
         shutil.rmtree(dst, ignore_errors=True)
-        shutil.copytree(hits[-1] if hits else d, dst)
+        if zeros:
+            shutil.copytree(zeros[-1], dst)
+        else:
+            # The log claimed a zero but no output dir carries one. Copy the
+            # whole permuter directory rather than a candidate picked at
+            # random, and say so -- a wrong source under a MATCH banner is
+            # worse than no source.
+            shutil.copytree(d, dst)
+            log(f'*** MATCH {fn} ({cf}) -- log says score 0 but NO output dir '
+                f'has score.txt 0; copied the whole permuter dir to {dst}')
+            return True
         log(f'*** MATCH {fn} ({cf}) -- source in {dst}')
         return True
 
