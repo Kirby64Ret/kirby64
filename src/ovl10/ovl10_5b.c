@@ -826,7 +826,20 @@ s32 func_801F111C_ovl10(void) {
  * 0x42C80000 / 0x40000000 passed to the f32 camera params are float bits:
  * 100.0f and 2.0f. */
 #ifdef MIPS_TO_C
-/* FACTORY: 21/171, residue -- re-confirmed 2026-08-23, identical 21/171.
+/* File scope WITHIN the guard, not inside the function body. It used to be
+   `#include` d in the body, and that is why this draft had never compiled:
+   include/unk_structs/D_800D79D8.h has no include guard, so an in-body
+   include DEFINES struct UnkStruct800D79D8 at BLOCK scope -- a different type
+   from the file-scope incomplete tag that `struct UnkStruct800D79D8
+   *func_800A6F40(u16);` introduces at the top of this file. The call's result
+   therefore had no members and every `->unk3C` was an error. Included here it
+   completes the file-scope tag, and it still survives un-guarding because it
+   sits before the #elif. */
+#include "unk_structs/D_800D79D8.h"
+/* FACTORY: 21/171, residue -- re-confirmed 2026-08-23, identical 21/171, and
+ * CONFIRMED AGAIN 2026-08-25 by measure_seeds, which had reported this draft
+ * UNSCORABLE the whole time (the block-scope include above). Both earlier
+ * measurements were right; neither was reproducible.
  * Length, frame (0x20), saved registers and the
  * whole call order are the ROM's.  What is left is a one-instruction
  * scheduling slip in the scale block: the ROM issues the D_801F4C94 load
@@ -853,7 +866,6 @@ s32 func_801F111C_ovl10(void) {
  * this is IDO's own scheduler decision, not a source-order lever. Good
  * permuter seed. */
 void func_801F11A8_ovl10(GObj *arg0) {
-    #include "unk_structs/D_800D79D8.h"
     extern u32 D_801F4670_ovl10[];
     extern f32 D_801F4C94_ovl10;
     extern u32 D_801F4D60_ovl10;

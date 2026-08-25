@@ -23,13 +23,22 @@ struct UnkEA20 {
 
 s32 func_8010E8F0(Vector *, f32, Vector *, f32, Vector *);
 #else
+/* Same types as the PORT view above, and that is a CORRECTION. unk18 is the
+   sphere radius and the parameters it feeds are floats -- the ROM's
+   func_8010E8F0 opens `mtc1 $a1, $f12 / mtc1 $a3, $f14`, which is exactly what
+   o32 does with an f32 parameter that is not in FP-argument position (arg0 is
+   a pointer, so arg1 travels in $a1 as raw bits). The old `s32` spelling was
+   bit-identical for the CALLER and wrong for the callee, and it is what made
+   func_8010E8F0's own draft unscorable: the draft's f32 definition
+   contradicted this prototype and the TU would not compile. Retyping is
+   .text-inert for this object (objdump A/B against build/src/ovl2/ovl2_8.o). */
 struct UnkEA20 {
     /* 0x00 */ char pad0[0xC];
     /* 0x0C */ Vector unkC;
-    /* 0x18 */ s32 unk18;
+    /* 0x18 */ f32 unk18;
 };
 
-s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);
+s32 func_8010E8F0(Vector *, f32, Vector *, f32, Vector *);
 #endif
 
 struct Unk8010E5B0Node {
@@ -316,23 +325,29 @@ void func_8010E740(struct Unk8010E740 *arg0, s32 arg1) {
  * (x,r,dx) [best, this one], (r,x,dx), and reloading arg2->x at the
  * tail instead of reusing x.
  *
- * This draft's f32 parameters do NOT compile against the current
- * file-scope prototype (`s32 func_8010E8F0(Vector *, s32, Vector *,
- * s32, s32);` at the top of this file, under the N64 arm) -- confirmed
- * by re-testing 2026-08-22: unguarding this draft as-is against that
- * prototype fails with "Incompatible type for the function parameter".
- * A prior pass apparently retyped the prototype to f32/Vector* and
- * confirmed func_8010EA20 still matched, per the note this comment used
- * to carry, but the prototype is s32 again now -- so that A/B result is
- * NOT the live state and should be re-verified, not trusted, before
- * anyone retypes it again. REFOUND.md's standing note for this function
- * suggests the safer alternative: an old-style K&R *definition* with
- * float parameters, LEAVING the s32 prototype alone (the promotion
- * rules differ from an ANSI redeclaration) -- untried this pass. Either
- * route needs the GATE GAP protocol (this file has zero verify.py-
- * visible matches, so an objdump byte-diff against build/, not
- * verify.py, is the only real gate) and is left for the next pass;
- * parked here as a genuine near-miss draft in the meantime. */
+ * RESOLVED 2026-08-25, and 25/76 is now a MEASUREMENT rather than a claim.
+ * The draft's f32 parameters used to contradict the N64 file-scope
+ * prototype (`s32 func_8010E8F0(Vector *, s32, Vector *, s32, s32);`), so
+ * un-guarding it failed on "Incompatible type for the function parameter"
+ * and measure_seeds reported it UNSCORABLE -- the earlier note recorded
+ * exactly that and then quoted a number anyway.
+ *
+ * The prototype was simply wrong. The ROM opens `mtc1 $a1, $f12 /
+ * mtc1 $a3, $f14`, which is what o32 does with f32 parameters that are not
+ * in FP-argument position (arg0 is a pointer, so the floats travel in the
+ * INTEGER registers as raw bits). `s32` was bit-identical for every caller
+ * and wrong for the callee, and the PORT arm has spelled it f32 the whole
+ * time. Both N64 declarations -- the prototype and struct UnkEA20's unk18 --
+ * now match the PORT ones.
+ *
+ * Gated the GATE GAP way, since this file has zero verify.py-visible
+ * matches: objdump -d -j .text of build/verify/src/ovl2/ovl2_8.o against
+ * build/src/ovl2/ovl2_8.o is byte-identical, and the retype also let
+ * func_8010EA68's tail call drop three words of bit-pattern casts it only
+ * carried to satisfy the wrong prototype.
+ *
+ * The K&R-definition route REFOUND.md suggested is therefore not needed and
+ * that standing note can be closed. */
 s32 func_8010E8F0(Vector *arg0, f32 arg1, Vector *arg2, f32 arg3, Vector *arg4) {
     f32 x = arg2->x;
     f32 r = arg1 + arg3;
@@ -412,10 +427,9 @@ s32 func_8010EA20(struct UnkEA20 *arg0, struct UnkEA20 *arg1, s32 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 236/242, UNCERTAIN -- fresh derivation, time-boxed. The real
- * draft (guarded the same way) sits next to the PORT implementation
- * below, since both need struct UnkF9AC, which this spot in the file
- * predates. See that site's comment for the residue note. */
+/* FACTORY: 229/239 -- see that site's comment. The real draft (guarded the
+ * same way) sits next to the PORT implementation below, since both need
+ * struct UnkF9AC, which this spot in the file predates. */
 #elif defined(PORT)
 /* The PORT implementation of func_8010EA68 lives below func_8010F9AC's
  * forward declarations: it needs struct UnkF9AC, which this spot in the
@@ -524,11 +538,9 @@ s32 func_8010EFA8(struct UnkEE24 *arg0, struct UnkEFA8 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 515/521, UNCERTAIN -- fresh derivation, time-boxed. The
- * real draft (guarded the same way) sits next to the PORT
- * implementation below, since both need struct UnkF9AC, which this
- * spot in the file predates. See that site's comment for the residue
- * note. */
+/* FACTORY: 515/521 -- see that site's comment. The real draft (guarded the
+ * same way) sits next to the PORT implementation below, since both need
+ * struct UnkF9AC, which this spot in the file predates. */
 #elif defined(PORT)
 /* The PORT implementation of func_8010F140 also lives below the forward
  * declarations, next to func_8010EA68's. */
@@ -583,14 +595,28 @@ s32 func_8010F140(struct UnkF9AC *, struct UnkF9AC *, struct UnkF9AC *);
  * as arg2's output floats at struct offsets that are u8 fields under
  * that struct's N64 view.
  *
- * FACTORY: 236/242, UNCERTAIN -- fresh derivation, time-boxed. m2c's
- * raw shape matches this control flow line for line; renamed its
- * temp_fN/var_fN soup to real per-axis names. Compiles, word count
- * matches (242/242), residue extreme (236/242) -- broad register/
- * frame relabeling from word 0. This file has zero verify.py-visible
- * matches (GATE GAP), so this residue is measured against the
- * unguarded compile only; treat it as UNCERTAIN until the sha1 gate.
- * Worth a fresh m2c pass before feeding to the permuter. */
+ * FACTORY: 229/239 -- MEASURED 2026-08-25 by measure_seeds, which had
+ * reported this draft UNSCORABLE for a reason that had nothing to do with
+ * the draft: its pragma sits 170 lines above, at the function's
+ * address-ordered position, because both C arms need struct UnkF9AC and
+ * that spot in the file predates it. guard_blocks paired a draft with the
+ * pragma in its OWN conditional group, so it cut the EMPTY arm up there and
+ * verify.py answered "not found in compiled object". The tool now pairs
+ * across the file.
+ *
+ * The old note said "236/242, word count matches (242/242)". Both halves
+ * were wrong in the same direction: the ROM is 239 words, not 242, so the
+ * draft was three words LONG and verify.py was scoring against the DRAFT's
+ * length (LEVERS 48 -- it uses max(target, current), which flatters an
+ * over-long draft). Those three words were the `*(s32 *) &r` bit-pattern
+ * casts on the tail call to func_8010E8F0, needed only because that
+ * function's N64 prototype spelled its f32 parameters `s32`. With the
+ * prototype corrected the casts go and the count is exactly 239.
+ *
+ * Residue is still broad register/frame relabeling from word 0. m2c's raw
+ * shape matches the control flow line for line; the temp_fN/var_fN soup is
+ * renamed to real per-axis names. Worth a fresh m2c pass before the
+ * permuter. */
 #ifdef MIPS_TO_C
 s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
     f32 r = arg0->unk18.x + *(f32 *) ((u8 *) arg1 + 0x24);
@@ -640,14 +666,14 @@ s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *ar
     dz = b2z - b1z;
     dd = dx * dx + dy * dy + dz * dz;
     if (dd == 0.0f) {
-        /* func_8010E8F0's N64 prototype passes its f32 args as raw s32
-         * bit patterns (the o32 bit-passing trick documented at the top
-         * of this file) and its out-pointer as a raw s32 too. */
-        f32 sphereR = arg0->unk18.x;
-        f32 capsuleR = *(f32 *) ((u8 *) arg1 + 0x24);
-
-        return func_8010E8F0(&arg0->unkC, *(s32 *) &sphereR, &arg1->unkC,
-                              *(s32 *) &capsuleR, (s32) (uintptr_t) arg2);
+        /* Plain f32 arguments now that func_8010E8F0's N64 prototype spells
+         * them f32 (it always was one; see the struct comment at the top of
+         * the file). The old `*(s32 *) &r` bit-pattern spelling was needed
+         * only to satisfy the wrong prototype, and it cost seven words:
+         * 244/249 with the casts against the corrected prototype, 236/242
+         * without them. */
+        return func_8010E8F0(&arg0->unkC, arg0->unk18.x, &arg1->unkC,
+                              *(f32 *) ((u8 *) arg1 + 0x24), (Vector *) arg2);
     }
     fx = b1x - ax;
     fy = b1y - ay;
@@ -766,14 +792,16 @@ s32 func_8010EA68(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *ar
  * 0. Both radii (unk24) are padding in the N64-side struct UnkF9AC, so
  * they are read through raw offset casts, same as func_8010EA68.
  *
- * FACTORY: 515/521, UNCERTAIN -- fresh derivation,
- * time-boxed. m2c's raw shape matches this control flow line for
- * line; renamed its temp_fN/var_fN soup to real per-axis names,
- * mirroring func_8010F140's already-clean PORT-side algebra.
- * This file has zero verify.py-visible matches (GATE GAP), so this
- * residue is measured against the unguarded compile only; treat it
- * as UNCERTAIN until the sha1 gate. Worth a fresh m2c pass before
- * feeding to the permuter. */
+ * FACTORY: 515/521 -- CONFIRMED 2026-08-25 by measure_seeds, which had
+ * reported this draft UNSCORABLE because its pragma sits 250 lines above
+ * (see the func_8010EA68 note for the split-site story and the tool fix).
+ * The number was right all along; nothing automatic could reproduce it.
+ * The ROM is 521 words and so is the draft, so unlike func_8010EA68 this
+ * one's count was never flattered.
+ * m2c's raw shape matches the control flow line for line; the
+ * temp_fN/var_fN soup is renamed to real per-axis names, mirroring the
+ * already-clean PORT-side algebra. 515 of 521 words differ -- this is not a
+ * near-miss and should not be queued as one. Worth a fresh m2c pass. */
 #ifdef MIPS_TO_C
 s32 func_8010F140(struct UnkF9AC *arg0, struct UnkF9AC *arg1, struct UnkF9AC *arg2) {
     f32 *out = (f32 *) arg2;
