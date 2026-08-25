@@ -162,25 +162,21 @@ s32 func_801554F0_ovl4(void) {
     return ret;
 }
 
-/* FACTORY: 1/17, and that one is the trap, not the code.
- * The listing carries a trailing unnamed empty function (extra jr $ra; nop,
- * 8 bytes) before .size, so converting it would shorten the TU; the pragma
- * must stay for the ROM build. The C body below is for NON_MATCHING builds.
- * K&R definition: one call site passes no argument (the ROM passes $a0
- * through).
- * Every instruction this C emits is now byte-exact (was 4/17): the fix was
+/* Every instruction this C emits is byte-exact (was 4/17): the fix was
  * BRANCH POLARITY. The ROM lays `return 0` out as the FALLTHROUGH and makes
  * `return 1` the branch target, hoisting that block's `addiu $v0,1` into the
  * bne delay slot, so the source must test the EQUAL case first --
  * `if (x == 0x99999999U) return 0; return 1;` -- not the != form m2c produces.
- * The residue is only the second, nameless `jr $ra; nop` inside this
- * function's .size, which no C body can emit (WAVE8 floor class 3). */
-#ifdef NON_MATCHING
-/* K&R definition kept, MEASURED: func_80156BAC_ovl4 (ovl4_3.c:813) calls
- * this with no argument and relies on the file number already in $a0.
- * With the head written `s32 func_801555AC_ovl4(s32 arg0)` the build
- * fails there with "too few arguments to function
- * 'func_801555AC_ovl4'". */
+ *
+ * The remaining `jr $ra; nop` at 0x801555EC inside this symbol's `.size` was
+ * read as a padding trap ("WAVE8 floor class 3"). It is not padding: it is the
+ * next, UNNAMED function of the translation unit, which splat folded into this
+ * symbol because nothing calls it. Written out below (same shape as
+ * func_80160A70_ovl5 in ovl5_2.c), so both close.
+ * K&R definition kept, MEASURED: func_80156BAC_ovl4 (ovl4_3.c:813) calls this
+ * with no argument and relies on the file number already in $a0. With the head
+ * written `s32 func_801555AC_ovl4(s32 arg0)` the build fails there with
+ * "too few arguments to function 'func_801555AC_ovl4'". */
 s32 func_801555AC_ovl4(arg0)
 s32 arg0;
 {
@@ -189,9 +185,9 @@ s32 arg0;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_801555AC_ovl4.s")
-#endif
+
+void func_801555EC_ovl4(void) {
+}
 
 extern s32 D_8015C6D0_ovl4;
 void func_80155890_ovl4(GObj *);

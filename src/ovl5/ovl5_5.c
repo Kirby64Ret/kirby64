@@ -2441,7 +2441,12 @@ void func_80174328_ovl5(GObj *arg0) {
  * FACTORY: 4/176, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
  * found; compiles as-is. Word count matches (176/176), residue extreme
  * (172/176) -- broad register/frame relabeling from word 0. Worth a
- * fresh m2c pass before feeding to the permuter. */
+ * fresh m2c pass before feeding to the permuter.
+ * The listing also swallows the next, unnamed function of the TU inside its
+ * own `.size` (`jr $ra; nop` at 0x80174624 -- padtrap.py class 'swallowed'),
+ * which a conversion writes out as `void func_80174624_ovl5(void) {}` after
+ * this one, the way ovl5_2.c does for func_80160A70_ovl5. Not a padding trap
+ * and not what blocks this site: measured with the stub, still 172 of 176. */
 #ifdef MIPS_TO_C
 void func_80174368_ovl5(GObj *arg0, s32 arg1) {
     extern u32 D_80187CE8_ovl5[];

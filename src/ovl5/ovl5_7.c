@@ -481,6 +481,12 @@ void func_8017ABC8_ovl5(void) {
     }
 }
 
+/* FACTORY: 85 of 99 words DIFFER (measured 2026-08-25).
+   The listing swallows the next, unnamed function of the TU inside its own
+   `.size` (`jr $ra; nop` at 0x8017AEE0 -- padtrap.py class 'swallowed'). Not a
+   padding trap: a conversion writes it out as `void func_8017AEE0_ovl5(void)
+   {}` after this one, the way ovl5_2.c does for func_80160A70_ovl5, and
+   verify.py then trims the pair. It is not what blocks this site. */
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below.

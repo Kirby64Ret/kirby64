@@ -84,6 +84,18 @@ struct UnkStruct8015C9B4 {
     f32 zUp;       // 0x5C
 };
 
+/* FACTORY: 13 of 112 words DIFFER, and the whole residue is ONE FP register
+ * permutation: the ROM keeps `w` in $f16 and `divisor` in $f14, this draft has
+ * them the other way round and every mov.s/c.lt.s/div.s below follows. Swept
+ * and inert: reordering the two declarations, and reordering `absW`/`divisor`.
+ * Permuter fuel (LEVERS: register-naming cascade).
+ *
+ * The listing swallows the next, unnamed function of the TU inside its own
+ * `.size` (`jr $ra; nop` at 0x8015CB74, with func_8015CB7C_ovl5 following --
+ * padtrap.py class 'swallowed'). That is NOT a padding trap: a conversion
+ * writes it out as `void func_8015CB74_ovl5(void) {}` after this one, the way
+ * ovl5_2.c does for func_80160A70_ovl5, and verify.py then trims the pair
+ * (the 13/112 above is measured WITH the stub). Body-blocked only. */
 #ifdef NON_MATCHING
 void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *arg0, Vector *vec, f32 *outX, f32 *outY) {
     Mat4 dst;

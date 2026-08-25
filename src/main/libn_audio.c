@@ -1237,8 +1237,12 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
  *
  * FACTORY: 27 of 27 words DIFFER against a 24-word listing (22 of those 24 are
  * the function; the last `jr $ra; nop` pair is a separate unnamed function
- * inside the same `.size`, so this site is also padding-trapped and could not
- * be un-guarded even on a MATCH).  The residue is entirely the convention: the
+ * inside the same `.size`).  That fold is NOT a padding trap and does not block
+ * an un-guard -- padtrap.py calls the class 'swallowed'; it is the next,
+ * uncalled function of the TU and a conversion just writes out
+ * `void func_80025874(void) {}` after this one, as ovl5_2.c does for
+ * func_80160A70_ovl5.  Only the BODY blocks this site.  The residue is entirely
+ * the convention: the
  * arithmetic core -- `andi 0x80`, `andi 0x7F`, `sll 7`, `andi 0x7F`,
  * `andi 0x80`, `bnez`, `addu` -- comes out instruction for instruction, and
  * the 3-word excess is o32 saving $s0/$s1/$s2 (6 words) less the four
@@ -1703,7 +1707,14 @@ void func_800263F0(KCSeqp *seqp) {
  * move is mandatory.  __n_setUsptFromTempo is `static` upstream and IDO's ujoin
  * gives static callees a custom convention; ujoin is missing from
  * tools/ido-7.1recomp, which is the same blocker as func_8002581C/__readVarLen
- * (args in $t2/$t3).  No source spelling reaches it. */
+ * (args in $t2/$t3).  No source spelling reaches it.
+ * Its listing also swallows the next, unnamed function of the TU inside its own
+ * `.size` (`jr $ra; nop` at 0x80026494 -- padtrap.py class 'swallowed').  That
+ * is not a padding trap: a conversion writes it out as
+ * `void func_80026494(void) {}` after this one.  Measured 2026-08-25 with the
+ * stub on a scratch copy: it does not shorten the residue, because the extra
+ * `mtc1` shifts the whole body one slot and verify.py's tail trim needs the
+ * lengths to line up.  Body-blocked, not fold-blocked. */
 #ifdef NON_MATCHING
 void func_80026460(KCSeqp *seqp, f32 tempo) {
     if (seqp->target) {
@@ -2850,6 +2861,12 @@ Acmd *func_80028318(s32 sampleOffset, Acmd *p) {
  * change) and `byte1`/`byte2` as s32 (693, worse -- the ROM's `andi $aN, 0xFF`
  * at each call site is the u8 promotion).
  *
+ * Its listing also swallows the next, unnamed function of the TU inside its own
+ * `.size` (`jr $ra; nop` at 0x80029014 -- padtrap.py class 'swallowed'), which
+ * a conversion writes out as `void func_80029014(void) {}` after this one.  It
+ * is not a padding trap and it is not what blocks this site; measured with the
+ * stub on a scratch copy 2026-08-25, still 672 of 681.
+ *
  * PORT CAVEAT, and it is a real one: KMidiVoice needs an ALSound POINTER at
  * N64 0x20, so at LP64 it cannot fit inside the file-scope KVoiceSt
  * (`{ next; u8 pad04[0x34]; }`, 64 bytes) that func_800296C0 allocates with
@@ -3705,11 +3722,13 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * So the two stores are an IDO delay-slot pick -- the ROM fills the branchless
  * pair by hoisting the SECOND command's w0 first -- and no spelling of the
  * pointer arithmetic reaches it.
- * Note also that tools/decomp/padtrap.py reports this listing 'clean': the
- * trailing `jr $ra; nop` at 0x800299F0 sits INSIDE n_alSavePull's `.size` but
- * is not trailing NOPs, so the classifier does not see it. alAudioFrame starts
- * at 0x800299F8, i.e. there really are 8 bytes of a separate empty function
- * folded in here. Treat this as a padding trap the tool cannot detect. */
+ * tools/decomp/padtrap.py now classifies the folded half correctly ('swallowed'
+ * -- it used to report 'clean'), and it is NOT a padding trap: 0x800299F0 is
+ * the next, unnamed function of the TU (alAudioFrame starts at 0x800299F8), so
+ * `void func_800299F0(void) {}` written out after this one accounts for it in
+ * full and verify.py trims the pair. RE-CONFIRMED 2026-08-25 with the stub in
+ * place on a scratch copy: exactly 2 words differ, and they are the two stores
+ * above. This site is body-blocked only. */
 #ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;

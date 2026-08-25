@@ -189,6 +189,13 @@ static u8 ovl5_pers_(s32 i) {
     return D_8018691D_ovl5[i - 5];
 }
 #endif
+/* The listing swallows the next, unnamed function of the TU inside its own
+   `.size` (`jr $ra; nop` at 0x8015CE6C -- padtrap.py class 'swallowed'). Not a
+   padding trap: a conversion writes it out as `void func_8015CE6C_ovl5(void)
+   {}` after this one, as done for func_80160A70_ovl5 below. It is not what
+   blocks this site -- the draft does not even compile alone (its file-scope
+   declarations of func_80160AF8_ovl5 / func_801611A8_ovl5 collide with the
+   earlier ones at the top of the file), so it is unscored. */
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
@@ -2093,7 +2100,12 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
  * / sll,1 / addiu,1), but everything else diverges from word 0: ROM
  * frame -0x30, no saved regs at all beyond $ra; this draft's frame is
  * -0x38 with $s0 held and a different instruction order. Needs a fresh
- * m2c derivation off the listing, not a register sweep. */
+ * m2c derivation off the listing, not a register sweep.
+ * The listing also swallows the next, unnamed function of the TU inside its
+ * own `.size` (`jr $ra; nop` at 0x80160504 -- padtrap.py class 'swallowed'),
+ * which a conversion writes out as `void func_80160504_ovl5(void) {}` after
+ * this one, as done for func_80160A70_ovl5 below. Not a padding trap and not
+ * what blocks this site: measured with the stub, still 245 of 250. */
 #ifdef MIPS_TO_C
 void func_80160120_ovl5(s32 arg0) {
     s32 idx = D_8018E224_ovl5[arg0];

@@ -495,6 +495,12 @@ ALSound *func_8002B70C(KSeqPlayer *seqp, u8 key, u8 vel, u8 chan) {
     return 0;
 }
 
+/* No draft yet (643 words). Its listing swallows the next, unnamed function of
+ * the TU inside its own `.size` (`jr $ra; nop` at 0x8002C03C, with
+ * func_8002C044 following -- padtrap.py class 'swallowed'), so whoever drafts
+ * it must also write out `void func_8002C03C(void) {}` after it or the TU comes
+ * out 8 bytes short. That is a convertible fold, not a padding trap; see
+ * func_80160A70_ovl5 in ovl5_2.c. */
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002B810.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C044.s")
@@ -739,8 +745,15 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
  * to func_8002C9FC, so an o32 build has to home all three on the stack, which
  * is the whole 3-word excess and renames the rest.  tools/decomp/cc_o3.py has
  * no ujoin, so no source spelling reaches this.  Its listing also carries two
- * unnamed empty functions (8002CD44/8002CD4C) inside its own `.size`, so the
- * site is padding-trapped as well and could not be un-guarded even on a MATCH.
+ * unnamed empty functions (8002CD44/8002CD4C) inside its own `.size`.  That is
+ * NOT a padding trap and does NOT block an un-guard -- padtrap.py now calls the
+ * class 'swallowed': they are simply the next two functions of the TU, which
+ * splat folded in because nothing calls them, and a conversion writes them out
+ * as `void func_8002CD44(void) {}` / `void func_8002CD4C(void) {}` after this
+ * one (same shape as func_80160A70_ovl5 in ovl5_2.c).  Note verify.py only
+ * accounts for ONE folded stub, so with both defined it still shows the second
+ * pair as a tail diff; the object A/B is the gate here.  Only the BODY blocks
+ * this site.
  * Swept: the upstream `if (curPtr < base + len) { ...; return TRUE; }
  * return FALSE;` polarity measures 21; the negated early-return below measures
  * 20 and is kept (LEVERS 5).
