@@ -126,6 +126,7 @@ s32 func_800B30BC(f32, f32, s32);
 void func_8019D8A0(s32);
 s32 func_8019A7E8_ovl7(f32);
 void func_8019B164_ovl7(void);
+f32 func_800F8824(Vector *, f32);
 s32 func_800F98EC(s32, f32);
 f32 func_8019AAD0_ovl7(f32, f32, f32);
 f32 func_8019B608_ovl7(s32 track);
@@ -1257,52 +1258,54 @@ s32 func_8019B260_ovl7(f32 offsetY) {
     return ((gEntitiesNextPosYArray[omCurrentObj->objId] + offsetY) < eneGetPlayerHeight()) ? 1 : -1;
 }
 
-/* FACTORY: 63/70, and re-derived into readable C at the SAME score so the next
-   lane is not reading m2c temps. What is now solid: `p` (the ROM's $a2) is
-   `D_800E1B50[id]->unk78`, the two-arm dispatch really is on arg0 against 1
-   and 2, and the objId cache is load-bearing -- `s32 id` used for the three
-   pre-call array reads is 63, spelling `omCurrentObj->objId` inline at all
-   five sites is 66, because the ROM shares ONE `sll $v0, $v0, 2` across
-   D_800E1B50, D_800E8920 and D_800E17D0 and re-reads only AFTER the call.
-   Measured 2026-08-25 and all EXACTLY 63/70: an if/else-if chain instead of
-   the switch, an early `if (p == 0) return;` instead of the enclosing if, an
-   `s32 kind = arg0;` copy to dispatch on, and swapping the `v`/`id`
-   declaration order.
-   THE RESIDUE IS ONE INSTRUCTION AND IT IS LEVER 89 READ BACKWARDS. The ROM
-   does `or $a3, $a0, $zero` in the ENTRY block and homes that copy in the
-   `jal func_800F8824` DELAY SLOT (`sw $a3, 0x18($sp)`), reloading it after --
-   i.e. it keeps the parameter in a register and spills it only on the path
-   that actually calls. Every spelling above homes `$a0` in the PROLOGUE
-   instead, at word 5, and that one misplaced store is what rotates the whole
-   register file afterwards. LEVER 89 names this store as the tell for a draft
-   that cannot USE its parameter; here the draft uses it and still cannot sink
-   the store, so the lever's mechanism is understood and its lever is not. */
-#ifdef NON_MATCHING
+/* MATCHED 2026-08-25, from a raw m2c draft at 63/70, and the step that broke
+ * it open was NOT visible in the source at all.
+ *
+ * 63 -> 29  LEVER 55. `func_800F8824` is defined in src/ovl2/ovl2_2.c and
+ *   prototyped ONLY in src/ovl19/ovl19_2.c -- no header enelib.c includes
+ *   declares it -- so the call was an implicit `int f()`: the draft promoted
+ *   the f32 argument to double (`cvt.d.s`) and converted the result back with
+ *   `cvt.s.w`. The screen that found it: score the draft and
+ *   `grep 'current=.*cvt\.d\.s'` on the diff. Third hit in this file today.
+ * 29 -> 22  LEVER 4. With the prototype right, `omCurrentObj->objId` inline at
+ *   every site gives the ROM's in-place `lw $v0` / `sll $v0,$v0,2`; the cached
+ *   `s32 id` kept the raw value live and rotated the $t file. (Before the
+ *   prototype fix the same edit measured WORSE, 63 -> 66, which is why the
+ *   earlier note recorded the cache as load-bearing. It was not; the double
+ *   promotion was masking it. A negative measured through a wrong prototype is
+ *   not a negative.)
+ * 22 ->  4  LEVER 86. `struct EnemyRecord *ent = D_800E1B50[...]` -- the ROM
+ *   holds it in $v1 across two unrelated instructions.
+ *  4 ->  2  the field is `firstChild` (DObj +0x10), not `parent` (+0x14).
+ *   m2c had guessed; the ROM's `lw $t4, 0x10($t3)` says which, and the matched
+ *   func_8019B3C8_ovl7 twenty lines below uses `firstChild` on the same chain.
+ *  2 ->  0  LEVER 86 again, on the value: the ROM's `mul.s $f2, $f2, $f6`
+ *   writes the product back into the register holding `v`. `v *= D_800E6A10[
+ *   ...];` then storing `v` is the match; writing the product at the store
+ *   site is 2 either way, and swapping the multiply's operands is inert (IDO
+ *   canonicalises). */
 void func_8019B2C0_ovl7(s32 arg0) {
     f32 v;
-    s32 id = omCurrentObj->objId;
-    u32 p = D_800E1B50[id]->unk78;
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+    u32 p = ent->unk78;
 
     if (p != 0) {
-        if (D_800E8920[id] == 0) {
+        if (D_800E8920[omCurrentObj->objId] == 0) {
             v = 0.0f;
         } else {
-            v = func_800F8824((Vector *) p, D_800E17D0[id]);
+            v = func_800F8824((Vector *) p, D_800E17D0[omCurrentObj->objId]);
         }
         switch (arg0) {
         case 1:
-            D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.x = -v;
+            D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = -v;
             break;
         case 2:
-            D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.z =
-                v * D_800E6A10[omCurrentObj->objId];
+            v *= D_800E6A10[omCurrentObj->objId];
+            D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = v;
             break;
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B2C0_ovl7.s")
-#endif
 void func_8019B3C8_ovl7(Unused GObj *gobj) {
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.x = 0.0f;
     D_800DE350[omCurrentObj->objId]->data.dobj->firstChild->angle.v.z = 0.0f;
