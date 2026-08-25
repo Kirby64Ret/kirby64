@@ -374,24 +374,22 @@ void func_80219924_ovl9(s32 arg0) {
 
 }
 
-/* Frame-layout anomaly, DECIDED -- do not re-attempt. IDO lays the frame out as
-   align8(0x1C + sizeof locals), the ROM as align8(0x18 + sizeof locals), and the
-   local block sits at (frame - sizeof locals). Here sizeof(struct Ovl9AnimInfo)
-   is 0x20, so IDO gives frame 0x40 / local at 0x20 and the ROM has 0x38 / 0x18.
-   A match needs (sizeof locals) == 4 (mod 8); 0x20 is 0 (mod 8), and no struct
-   size reproduces BOTH the 0x38 frame and the 0x18 local base (0x1C gives frame
-   0x38 with the local at 0x1C, 0x24 gives frame 0x40). 4 diffs, all frame. */
-#ifdef NON_MATCHING
+/* The +8 frame here was never the struct's size. Writing
+   `func_80111ECC(func_80111C88(...))` as ONE nested call makes IDO reserve a
+   4-byte stack temp for the intermediate, which lifts the locals base from
+   0x18 to 0x1C and rounds the frame 0x38 -> 0x40; a named local for the
+   intermediate costs the same 4 bytes, and assigning it into the already-homed
+   PARAMETER costs nothing. Same shape and same fix as func_801DEC34_ovl14 /
+   func_801DECAC_ovl14 in src/ovl14/ovl14.c. */
 void func_8021992C_ovl9(struct GObj *arg0) {
     struct Ovl9AnimInfo sp18;
 
     func_80111550(omCurrentObj->objId);
-    func_80111ECC(func_80111C88(&D_801C98A0, omCurrentObj->objId));
+    arg0 = (struct GObj *) func_80111C88(&D_801C98A0, omCurrentObj->objId);
+    func_80111ECC(arg0);
     func_80110B00(&sp18);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_16/func_8021992C_ovl9.s")
-#endif
+
 void func_80219980_ovl9(struct GObj *arg0) {
     func_8019D958_ovl7(omCurrentObj->objId);
 }
