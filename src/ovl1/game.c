@@ -506,6 +506,24 @@ void func_800A36C0(void) {
 /* FACTORY: 153/653 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
    listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
+/* FACTORY: 153/653 -- MEASURED 2026-08-25. The residue is a register CLASS
+ * difference repeated across the whole state machine, not 153 decisions: where
+ * the ROM materialises each state constant into a TEMP ($t9, then wrapping to
+ * $t1, $t2, $t3 -- a round-robin that has already been through $t0..$t8) the
+ * draft uses $v0/$v1. The held base is right ($s0 for gGameState, $s3 for its
+ * mirror), every store offset is right, and the same register is shared
+ * between the gGameState store and the D_800D6B60 store exactly as the ROM
+ * shares it.
+ *
+ * THE `*(s32 *) &gGameState` CASTS ARE LOAD-BEARING, measured rather than
+ * assumed: game.h declares gGameState `u32`, and dropping all 53 casts so the
+ * switch reads the u32 directly is 602/661 -- an unsigned switch generates a
+ * different bounds check and the whole function falls apart. Whatever the
+ * variable's declared type ought to be, the signed READ is what the ROM does.
+ * Declaring it `s32` in game.h and dropping the casts does not compile: another
+ * declaration in scope disagrees. Retyping it tree-wide is the func_800B2340
+ * trap (see src/ovl8/ovl8_4.c) -- if anyone tries it, gate on the LINKED ROM,
+ * not on this file. */
 void game_tick(s32 arg0) {
     s32 temp;
 
