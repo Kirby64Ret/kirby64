@@ -862,6 +862,8 @@ void func_800B113C(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
+/* FACTORY: 29/47 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
     void (*cb)(s32, s32, f32);

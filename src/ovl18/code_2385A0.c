@@ -128,6 +128,8 @@ void func_80225EB8_ovl18(s32 arg0) {
 
 // near-match (94/97): identical instruction stream, but the ROM frame is 0x30
 // (8-byte hole at 0x24) and spills arg0 lazily in the jal delay slot.
+/* FACTORY: 94/97 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80225FA8_ovl18(struct GObj *arg0) {
     f32 sp2C;

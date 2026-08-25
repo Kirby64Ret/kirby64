@@ -548,6 +548,8 @@ u8 faultWaitButton(u32 btn, void *cfb) {
 }
 
 // https://decomp.me/scratch/Odn7f 95.43%
+/* FACTORY: 420/450 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800222C4(OSThread* t, s32 arg1) {
     s16 cause;
@@ -822,6 +824,8 @@ extern s32 D_8003DCA4;
 extern OSThread gGameThread;
 
 void func_80022E04(Unused void *arg);
+/* FACTORY: 141/145 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80022E04(Unused void *arg) {
     OSMesg sp4C;

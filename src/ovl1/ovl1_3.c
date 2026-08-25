@@ -144,6 +144,8 @@ s32 func_800A8310(s32 arg0) {
     return D_800D7BB4 - arg0;
 }
 
+/* FACTORY: 33/45 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 #ifndef PORT
 // Correct structure; remaining diff is register allocation only (compiler
@@ -371,6 +373,8 @@ void *func_800A8564(struct CacheLine *arg0, s32 arg1) {
     return arg0;
 }
 
+/* FACTORY: 24/52 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 #ifndef PORT
 // Nearly matching (28/52 insns identical incl. all structure); remaining diff
@@ -523,6 +527,8 @@ s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
  * Guarded NON_MATCHING rather than MIPS_TO_C on purpose: it compiles, so the
  * PC port executes it, and this function is the port boot path's current
  * blocking stub. The ROM assembles the pragma below. */
+/* FACTORY: 130/134 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 s32 func_800A8724(s32 arg0) {
     /* D_800D6E68 is declared `u32 []` at file scope for the indexed read in
@@ -799,6 +805,8 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
 // `slot` (&D_800D00C4[arg0>>16]) in $s0 across the func_800A8578 call and
 // reuses $s0 for `p` afterwards, where IDO leaves it in $v1 and spills it.
 // Swept: idx as a variable vs inline, block-scoped inner locals.
+/* FACTORY: 60/62 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800A8D64(u32 arg0, s32 arg1) {
     u32 ***slot;
@@ -854,6 +862,8 @@ void func_800A8E54(u32 arg0, s32 arg1) {
 // swap in both leading loops (the ROM puts the walking pointer in $v0 and the
 // counter in $v1). m2c-shaped do/while loops with an explicit pointer local
 // are worse (111).
+/* FACTORY: 95/113 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800A8EC0(u32 arg0) {
     u32 **slot;
@@ -2747,6 +2757,8 @@ void *func_800A9AA8(u32 arg0, s32 arg1) {
     return buf;
 }
 
+/* FACTORY: 37/76 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 s32 func_800A9B48(s32 arg0) {
     u32 *temp_v0;
@@ -2796,6 +2808,8 @@ s32 func_800A9B48(s32 arg0) {
 // spill slot layout are right. Residue is the one-slot register rotation --
 // the ROM reuses $v0 for the loaded table entry and keeps the block pointer
 // in $a2/flag in $a3, where IDO reserves $v0 and shifts to $a3/$t0.
+/* FACTORY: 30/59 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 s32 func_800A9C78(s32 arg0, s32 arg1) {
     s32 pad0;
@@ -3023,6 +3037,8 @@ void func_800AA5C4(s32 arg0, u32 arg1, f32 arg2) {
     func_800AA49C(omCurrentObj->data.dobj->firstChild, arg0, 0.0f, arg1, arg2);
 }
 
+/* FACTORY: 65/98 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 // https://decomp.me/scratch/fS0Iu
 void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {

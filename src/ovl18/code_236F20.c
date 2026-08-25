@@ -217,6 +217,8 @@ void func_80224E50_ovl18(UNUSED s32 arg0) {
     curObjSleepForever();
 }
 
+/* FACTORY: 53/71 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 /* 53/71: structure exact. The ROM keeps objId in $v0 and copies it into $a1 at
  * BOTH func_80111C88 call sites; IDO coalesces the load straight into $a1, so
@@ -390,6 +392,8 @@ void func_802258EC_ovl18(UNUSED s32 arg0) {
  * `lw` at every one of the ten uses.  Swept: both polarities of the inner
  * if/else (113 vs 115) and an explicit `struct GObj *obj = omCurrentObj;`
  * local (120).  Anything that gets IDO to the value-CSE closes most of this. */
+/* FACTORY: 113/125 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80225958_ovl18(void) {
     struct EnemyRecord *sp3C;

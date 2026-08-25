@@ -564,6 +564,8 @@ void func_80023464(KChan *chan, u8 arg1) {
  *
  * NON_MATCHING: not yet byte-exact, but semantically read off the listing
  * instruction by instruction. The ROM build assembles the pragma below. */
+/* FACTORY: 59/65 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80023794(void) {
     KAudioMgr *mgr = &D_800978E0;
@@ -623,6 +625,8 @@ void func_80023794(void) {
  * order IS worth 2, `if (prev != NULL)` first is the ROM's polarity),
  * while/for, assigning `node` before or after `prev`, and a cur/node
  * restructure (58, much worse). */
+/* FACTORY: 23/62 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80023884(void) {
     KToneB *node;
@@ -690,6 +694,8 @@ void func_8002397C(KNote *arg0) {
  * holds &D_800978E0 in $a2, the constant 2 in $a1 and tone->unk28 in $a0
  * where IDO picks $a1/$a0/$v0.  Every instruction is otherwise in the right
  * place.  Swept leading dummy scalars and all four declaration orders. */
+/* FACTORY: 30/38 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 
 /* KAudioMgr needs `KTone *unk38` at 0x38 and `KTone *unk40` at 0x40. */
@@ -1825,6 +1831,8 @@ void func_800263F0(KCSeqp *seqp) {
  * stub on a scratch copy: it does not shorten the residue, because the extra
  * `mtc1` shifts the whole body one slot and verify.py's tail trim needs the
  * lengths to line up.  Body-blocked, not fold-blocked. */
+/* FACTORY: 13/14 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80026460(KCSeqp *seqp, f32 tempo) {
     if (seqp->target) {
@@ -2505,6 +2513,8 @@ void func_800275C0(ALLink *ln) {
     to->next = ln;
 }
 
+/* FACTORY: 23/23 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
@@ -3866,6 +3876,8 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * so spelling it `static` would leave uopt with no visible call site and it
  * would be deleted outright (measured on func_8002C9FC).  Two words of
  * delay-slot scheduling; permuter work, nothing structural. */
+/* FACTORY: 3/18 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
@@ -3901,6 +3913,8 @@ Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
  * `&client` to the helper, so after inlining the local is address-taken and
  * every store through it invalidates IDO's cached `n_syn`.  A plain
  * `ALPlayer *client` gets register-allocated and the reload pattern vanishes. */
+/* FACTORY: 194/198 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 /* upstream libnaudio/n_synthesizer.c n_alAudioFrame, with __n_nextSampleTime
  * and _n_timeToSamplesNoRound hand-inlined -- the ROM inlines both (ujoin), and
@@ -4009,6 +4023,8 @@ void alN_PVoiceNew(N_PVoice *mv, ALDMANew dmaNew, ALHeap *hp) {
     mv->em_ctrlTail = 0;
 }
 
+/* FACTORY: 105/195 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void n_alSynNew(ALSynConfig *c) {
     s32 i;

@@ -410,6 +410,8 @@ void func_800A3408(void) {
 // `*(u32 *) &D_800D6B44 = -1` forks that store's -1 from the hoisted compare -1.
 // Swept: all 24 statement orders in the BE4FC..BE534 group, two-temp loads,
 // a pointer local for &D_800BE4FC, s32/void prototypes for func_800F6AD4.
+/* FACTORY: 54/126 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 extern s32 D_800D6B6C;
 extern s32 D_800BE438[];
@@ -501,6 +503,8 @@ void func_800A36C0(void) {
  * materialises both addresses instead of folding them (worth 180 diffs).
  * Swept at 154 with no effect: temp declaration order/type/count, 9 separate
  * temps, arg0 as scratch, pad locals, and non-void returns on six callees. */
+/* FACTORY: 153/653 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void game_tick(s32 arg0) {
     s32 temp;

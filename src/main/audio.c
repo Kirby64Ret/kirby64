@@ -450,6 +450,8 @@ void auInit(void) {
 // https://decomp.me/scratch/CvKIB
 // Near-match draft (~92/338 insns differ, all in the auPublicSettings mirror
 // stores: target shares one lui/uses a base reg where this emits two luis).
+/* FACTORY: 92/336 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void auLoadAssets(void) {
     s32 j;

@@ -248,6 +248,8 @@ void func_800A7ABC(s32 arg0) {
 // a known floor: `mul.s $f6,$f2` vs the ROM's `$f2,$f6` (INVARIANT to source
 // operand order; a local for the constant swaps the f0/f2 roles and is worse),
 // plus a one-slot temp rotation from the first `sll` onward ($t1 vs $t2).
+/* FACTORY: 45/149 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800A7BF4(s16 *dst, u8 *src) {
     extern f32 D_800C4634;
@@ -364,6 +366,8 @@ Ovl1Generator *func_800A802C(s32 arg0, s32 arg1, s32 arg2, Vector *arg3, Vector 
     return NULL;
 }
 
+/* FACTORY: 24/76 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 Ovl1Generator *func_800A8100(s32 arg0, s32 arg1, s32 arg2, struct DObj *arg3) {
     extern f32 gEntitiesNextPosXArray[];

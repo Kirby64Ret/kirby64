@@ -395,6 +395,8 @@ void func_8002B4B4(KSeqPlayer *seqp, void *arg1) {
  * Swept: `|` vs `+` vs `*` scaling, all three byte orders, nested vs flat
  * or-chain, a `target` local, dropping `tevt`, inverting the if, and
  * dropping `ftempo`. */
+/* FACTORY: 12/30 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_8002B524(N_ALEvent *event, KSeqp *seqp) {
     ALTempoEvent *tevt = &event->msg.tempo;
@@ -551,6 +553,8 @@ void func_8002C790(KSeqPlayer *seqp) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C80C.s")
 
+/* FACTORY: 0/5 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 /* Correct as C, and verify.py calls it MATCH -- but it is a PADDING TRAP and
    must stay a pragma. Its listing carries 3 nops after `.size`, and it is the
@@ -654,6 +658,8 @@ static s32 func_8002C9FC(ALSeq *seq) {
  * `event` into $a2/$a3 and keeps them live ACROSS the jal to func_8002C9FC,
  * so that callee must preserve two caller-saved registers -- a ujoin custom
  * convention.  o32 has to home them on the stack instead (97/100). */
+/* FACTORY: 88/98 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void alSeqNextEvent(ALSeq *seq, ALEvent *event) {
     u8 status;

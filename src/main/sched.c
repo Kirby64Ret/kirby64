@@ -271,6 +271,8 @@ void func_80000E9C(void) {
 // weird long function
 // Transcribed from SSB64 sySchedulerUpdateViMode; all 511 instructions are
 // present but IDO swaps two register assignments ($v1 <-> $a0).
+/* FACTORY: 283/511 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80000F78(u32 width, u32 height, u32 flags, s16 edgeOffsetLeft, s16 edgeOffsetRight, s16 edgeOffsetTop, s16 edgeOffsetBottom)
 {
@@ -978,6 +980,8 @@ void scAddTask(SCTaskInfo *task) {
 
 // 345/350 instructions; the osTvType switch materialises one extra
 // `lui $a0, %hi(D_80048BA8)` per path.
+/* FACTORY: 294/345 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void scThreadMain(void *arg) {
     /* `u32 mesg` in the original, and on the N64 that is right: OSMesg is a

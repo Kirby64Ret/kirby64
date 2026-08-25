@@ -506,6 +506,8 @@ void func_800B5094(GObj *gobj) {
     func_800B3CEC();
 }
 
+/* FACTORY: 144/150 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800B50C4(Vector *vec) {
     s32 var_v0;

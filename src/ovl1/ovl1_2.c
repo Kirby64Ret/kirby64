@@ -279,6 +279,8 @@ void func_800A71A0(u32 arg0) {
     }
 }
 
+/* FACTORY: 28/50 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 // 28/50: every instruction correct but ONE missing -- the ROM emits a bare
 // "addiu $v1, $v1, 0x38" (base bias to &cam->viewMtx) before the last at-field

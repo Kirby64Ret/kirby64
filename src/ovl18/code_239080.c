@@ -304,6 +304,8 @@ void func_802271A8_ovl18(void) {
  * in turn.  Everything stays at 14 or gets worse.  The remaining lever has to
  * be whatever forces IDO to pick $v0 for a loop-induction pointer over a
  * loop-invariant constant. */
+/* FACTORY: 13/54 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 u32 func_80227308_ovl18(s32 arg0) {
     vu16 *zp;

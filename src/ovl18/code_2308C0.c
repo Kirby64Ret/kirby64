@@ -962,6 +962,8 @@ void func_8021FD48_ovl18(void) {
  * the ROM loads it once in the tail.  Swept at 40-47: an explicit
  * `struct GObj *obj` local (47), `old = -D_800D7098.unk8` vs a reload-then-
  * negate local, the product inline vs folded into `ft` first. */
+/* FACTORY: 40/54 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_8021FDF4_ovl18(void) {
     struct EnemyRecord *ent;
@@ -1056,6 +1058,8 @@ void func_8021FF80_ovl18(void) {
  * hoisted `lw objId` where the ROM fills them with the 1.25f `lui`.
  * Swept: sharing the constant as s32/u32/both-cast/chained, a separate `old`
  * vs one reused temp, goto vs nested if for the negate path. */
+/* FACTORY: 67/86 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_80220038_ovl18(void) {
     struct EnemyRecord *ent;

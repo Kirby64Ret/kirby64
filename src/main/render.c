@@ -255,6 +255,8 @@ void func_8001103C(Mtx* arg0, DObj* arg1, s32 arg2) {
     HS64_MtxF2L43(sp48, arg0);
 }
 
+/* FACTORY: 2066/2144 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 s32 renderPrepareModelMatrix(Gfx** gfxPtr, DObj* dobj) {
     Gfx* sp2DC;
@@ -2761,6 +2763,8 @@ void func_80018170(GObj *camObj)
     renderPostCameraDraw(cam);
 }
 
+/* FACTORY: 70/126 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 // 70/126 insns match; remaining diffs: i<4 loop test gets rewritten to i!=4 with 4
 // hoisted to $s7 (target keeps slti and puts 0xDF000000 in $fp instead), and

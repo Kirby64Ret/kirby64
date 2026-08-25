@@ -52,6 +52,8 @@ void func_800BB588(GObj *gobj) {
 
 s32 func_800AB0F4(GObj *);
 
+/* FACTORY: 182/189 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 void func_800BB6B0(GObj *gobj) {
     gDPPipeSync(gDisplayListHeads[0]++);
@@ -105,6 +107,8 @@ void func_800BB6B0(GObj *gobj);
 #endif
 
 // 7/131 (6 real): ROM keeps the omMakeGObj result in $v0 and dobj in $v0; we get $s0/$v1.
+/* FACTORY: 6/131 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
+   listing was read for it and no cause is diagnosed. */
 #ifdef NON_MATCHING
 extern struct {
     u32 unk0;
