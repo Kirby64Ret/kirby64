@@ -432,7 +432,7 @@ KToneX *func_80023B34(u8 *pc);
 KNoteX *func_80023D5C(u8 *pc);
 void func_80023E80(KToneX *tone);
 void func_80024750(KNoteX *note);
-/* func_80025758 / func_8002581C are `static` and defined above every use, so
+/* __getTrackByte / __readVarLen are `static` and defined above every use, so
    they must NOT be re-declared here: a non-static file-scope prototype ahead of
    a static definition is an error for gcc and changes what uopt -O3 may assume
    for IDO. */
@@ -805,7 +805,7 @@ void func_80023AE4(void *arg0) {
  * are clobbered without ever being written.  The old note called that a `ujoin`
  * custom convention beyond cc_o3.py's reach.  It is NOT: `uopt -O3`, which
  * cc_o3.py already runs, hands exactly this convention to a `static` callee
- * whose C call sites it can all see, and the same lever closed func_8002581C
+ * whose C call sites it can all see, and the same lever closed __readVarLen
  * and func_8002C9FC outright.  MEASURED HERE 2026-08-25.
  *
  * FACTORY: 42 of 69 words DIFFER and the COUNT IS NOW EXACT (was 67 of 68).
@@ -1231,7 +1231,7 @@ void func_80024748(void) {
  * sites it can all see its own register assignment, which is what the ROM used.
  * The only change needed was the word `static`.  It must STAY static; dropping
  * it restores the o32 entry moves and breaks this and its two callers. */
-static u8 func_80025758(ALCSeq *seq, u32 track) {
+static u8 __getTrackByte(ALCSeq *seq, u32 track) {
     u8 theByte;
 
     if (seq->curBULen[track]) {
@@ -1274,7 +1274,7 @@ static u8 func_80025758(ALCSeq *seq, u32 track) {
  * The three m2c holes that used to stand here -- `$t1`, `$t2` and `$t3` read
  * unset -- are all recovered from the listing, which is unambiguous about each:
  *   $t2  the ALCSeq*.  Its only use is `or $a0, $t2, $zero` in front of both
- *        `jal func_80025758` sites, i.e. it IS that callee's first argument.
+ *        `jal __getTrackByte` sites, i.e. it IS that callee's first argument.
  *   $t3  the track index, likewise `or $a1, $t3, $zero` at both call sites.
  *   $t1  the running accumulator `value`: seeded by `or $t1, $v0, $zero` /
  *        `andi $t1, $v0, 0x7F`, advanced by `sll $t7, $t1, 7` +
@@ -1298,15 +1298,15 @@ static u8 func_80025758(ALCSeq *seq, u32 track) {
  * SEALED 2026-08-25, byte-exact, and the ujoin story above is WRONG about the
  * cause.  `uopt -O3` -- which tools/decomp/cc_o3.py has run all along --
  * assigns the interprocedural convention itself; the only defect was that this
- * definition and func_80025758's were not spelled `static`.  Both are now, and
+ * definition and __getTrackByte's were not spelled `static`.  Both are now, and
  * the "3-word excess" (the o32 $s0/$s1/$s2 save) is gone.
  *
  * THE RELOC QUESTION IS SETTLED, and the answer is that nothing breaks.  A
  * `static` definition keeps a LOCAL FUNC symbol in the object, and
  * asm-processor assembles the surviving `#pragma GLOBAL_ASM` listings into the
- * same object, so alCSeqNextEvent.s's `jal func_8002581C` binds to it:
- *   readelf -r  ->  R_MIPS_26  000024bc  func_8002581C
- *   readelf -s  ->  000024bc  FUNC  LOCAL  func_8002581C
+ * same object, so alCSeqNextEvent.s's `jal __readVarLen` binds to it:
+ *   readelf -r  ->  R_MIPS_26  000024bc  __readVarLen
+ *   readelf -s  ->  000024bc  FUNC  LOCAL  __readVarLen
  * and 0x24bc + the TU base 0x80023360 is 0x8002581C.  `nm -u` lists neither
  * name.  So a caller left as a pragma does NOT have to be sealed in the same
  * change.  What DOES break is verify.py's report: it resolves a reloc through
@@ -1316,15 +1316,15 @@ static u8 func_80025758(ALCSeq *seq, u32 track) {
  *
  * The body is plain ANSI C, so the port takes it too -- but it must stay
  * `static`: an exported spelling puts the o32 entry moves back. */
-static u32 func_8002581C(ALCSeq *seq, u32 track) {
+static u32 __readVarLen(ALCSeq *seq, u32 track) {
     u32 value;
     u32 c;
 
-    value = func_80025758(seq, track);
+    value = __getTrackByte(seq, track);
     if (value & 0x80) {
         value &= 0x7F;
         do {
-            c = func_80025758(seq, track);
+            c = __getTrackByte(seq, track);
             value = (value << 7) + (c & 0x7F);
         } while (c & 0x80);
     }
@@ -1332,7 +1332,7 @@ static u32 func_8002581C(ALCSeq *seq, u32 track) {
 }
 
 /* The next, uncalled function of the TU: the ROM folds its `jr $ra; nop` inside
-   func_8002581C's own `.size` (padtrap.py class 'swallowed'), so it has to be
+   __readVarLen's own `.size` (padtrap.py class 'swallowed'), so it has to be
    written out here or the TU comes up two words short. */
 void func_80025874(void) {
 }
@@ -1348,7 +1348,7 @@ void func_80025874(void) {
  * `.s`.  The uninitialised `track` is real: the ROM reads its stack home at
  * 0x24($sp) before the scan loop has written it.
  *
- * FACTORY: 98 as of 2026-08-25, measured after func_8002581C and func_80025758
+ * FACTORY: 98 as of 2026-08-25, measured after __readVarLen and __getTrackByte
  * were sealed `static` -- their custom convention is now real in the object, so
  * this function's ten `jal`s no longer force the o32 homing.  The 209 below was
  * measured before that and is kept only for the reasoning.
@@ -1356,7 +1356,7 @@ void func_80025874(void) {
  * PREVIOUSLY: 209 of 210 words DIFFER against a 190-word ROM.  The 20-word excess
  * is one cause, ten times over: `minDelta` and `track` live in $t1/$t3 in the
  * ROM and stay there ACROSS all ten `jal`s -- the -O3 ujoin custom convention,
- * which also hands func_8002581C its arguments in $t2/$t3 (see its own
+ * which also hands __readVarLen its arguments in $t2/$t3 (see its own
  * listing).  Without ujoin (tools/decomp/cc_o3.py has none) an o32 build must
  * spill and reload both around every call.  Swept: hoisting
  * `seq->lastDeltaTicks` into a local before the scan loop, which is what the
@@ -1366,8 +1366,8 @@ void func_80025874(void) {
  * The body is plain ANSI C over the public ALCSeq/ALEvent, so the port takes
  * it too. */
 #if defined(MIPS_TO_C) || defined(PORT)
-u8 func_80025758(ALCSeq *seq, u32 track);
-u32 func_8002581C(ALCSeq *seq, u32 track);
+u8 __getTrackByte(ALCSeq *seq, u32 track);
+u32 __readVarLen(ALCSeq *seq, u32 track);
 
 void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
     u32 deltaTicks;
@@ -1390,17 +1390,17 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
         }
     }
 
-    status = func_80025758(seq, track);
+    status = __getTrackByte(seq, track);
 
     if (status == AL_MIDI_Meta) {
-        type = func_80025758(seq, track);
+        type = __getTrackByte(seq, track);
         if (type == AL_MIDI_META_TEMPO) {
             event->type = AL_TEMPO_EVT;
             event->msg.tempo.status = status;
             event->msg.tempo.type = type;
-            event->msg.tempo.byte1 = func_80025758(seq, track);
-            event->msg.tempo.byte2 = func_80025758(seq, track);
-            event->msg.tempo.byte3 = func_80025758(seq, track);
+            event->msg.tempo.byte1 = __getTrackByte(seq, track);
+            event->msg.tempo.byte2 = __getTrackByte(seq, track);
+            event->msg.tempo.byte3 = __getTrackByte(seq, track);
             seq->lastStatus[track] = 0;
         } else if (type == AL_MIDI_META_EOT) {
             seq->validTracks ^= 1 << track;
@@ -1410,8 +1410,8 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
                 event->type = AL_SEQ_END_EVT;
             }
         } else if (type == AL_CMIDI_LOOPSTART_CODE) {
-            func_80025758(seq, track);
-            func_80025758(seq, track);
+            __getTrackByte(seq, track);
+            __getTrackByte(seq, track);
             seq->lastStatus[track] = 0;
             event->type = AL_CSP_LOOPSTART;
         } else if (type == AL_CMIDI_LOOPEND_CODE) {
@@ -1435,7 +1435,7 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
         event->type = AL_SEQ_MIDI_EVT;
         if (status & 0x80) {
             event->msg.midi.status = status;
-            event->msg.midi.byte1 = func_80025758(seq, track);
+            event->msg.midi.byte1 = __getTrackByte(seq, track);
             seq->lastStatus[track] = status;
         } else {
             event->msg.midi.status = seq->lastStatus[track];
@@ -1444,9 +1444,9 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
 
         if (((event->msg.midi.status & 0xF0) != AL_MIDI_ProgramChange) &&
             ((event->msg.midi.status & 0xF0) != AL_MIDI_ChannelPressure)) {
-            event->msg.midi.byte2 = func_80025758(seq, track);
+            event->msg.midi.byte2 = __getTrackByte(seq, track);
             if ((event->msg.midi.status & 0xF0) == AL_MIDI_NoteOn) {
-                event->msg.midi.duration = func_8002581C(seq, track);
+                event->msg.midi.duration = __readVarLen(seq, track);
             }
         } else {
             event->msg.midi.byte2 = 0;
@@ -1458,7 +1458,7 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
     seq->lastTicks += minDelta;
 
     if (event->type != AL_TRACK_END) {
-        seq->evtDeltaTicks[track] += func_8002581C(seq, track);
+        seq->evtDeltaTicks[track] += __readVarLen(seq, track);
     }
     seq->deltaFlag = 1;
 }
@@ -1474,12 +1474,12 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
  * SEALED 2026-08-25, byte-exact, WITHOUT changing a character of this body.
  * The 70-of-70 note above diagnosed the right effect and the wrong cause: the
  * ROM does park `i` and `seq + 4*i` in caller-saved $t5/$t4 across the
- * `jal func_8002581C`, but that is legal only because uopt -O3 knows
- * func_8002581C's clobber set, and it knows that for a `static` callee whose
- * call sites are all in the TU.  Spelling func_8002581C `static` -- no ujoin,
+ * `jal __readVarLen`, but that is legal only because uopt -O3 knows
+ * __readVarLen's clobber set, and it knows that for a `static` callee whose
+ * call sites are all in the TU.  Spelling __readVarLen `static` -- no ujoin,
  * no source change here -- made all 66 words fall out at once.  A `#pragma
  * GLOBAL_ASM` caller elsewhere in the TU does not spoil that; see the reloc
- * note on func_8002581C.
+ * note on __readVarLen.
  * Rejected sweeps kept for the record: `((ALCMidiHdr *) ptr)->trackOffset[i]`
  * for `seq->base->trackOffset[i]` drops the `lw $t7, 0x0($s0)` the ROM performs
  * every iteration (a smaller diff against a wrong shape, LEVERS 48).
@@ -1504,7 +1504,7 @@ void alCSeqNew(ALCSeq *seq, u8 *ptr) {
         if (tmpOff != 0) {
             seq->validTracks |= 1 << i;
             seq->curLoc[i] = ptr + tmpOff;
-            seq->evtDeltaTicks[i] = func_8002581C(seq, i);
+            seq->evtDeltaTicks[i] = __readVarLen(seq, i);
         } else {
             seq->curLoc[i] = 0;
         }
@@ -1587,7 +1587,7 @@ void alUnlink(ALLink *ln) {
         ln->prev->next = ln->next;
 }
 
-void func_80025FA4(ALEventQueue *evtq, s16 type) {
+void n_alEvtqFlushType(ALEventQueue *evtq, s16 type) {
     ALLink *thisNode;
     ALLink *nextNode;
     N_ALEventListItem *thisItem, *nextItem;
@@ -1772,7 +1772,7 @@ void func_800263F0(KCSeqp *seqp) {
  * a float in argument slot 1 behind an integer slot 0 is passed in $a1, so the
  * move is mandatory.  __n_setUsptFromTempo is `static` upstream and IDO's ujoin
  * gives static callees a custom convention; ujoin is missing from
- * tools/ido-7.1recomp, which is the same blocker as func_8002581C/__readVarLen
+ * tools/ido-7.1recomp, which is the same blocker as __readVarLen/__readVarLen
  * (args in $t2/$t3).  No source spelling reaches it.
  *
  * MEASURED 2026-08-25 AND THE ABOVE IS WRONG ABOUT THE CAUSE.  ujoin is not
@@ -2102,7 +2102,7 @@ Acmd *func_80026A10(Acmd *ptr, N_PVoice *f, s32 tsam, s32 nbytes, s32 outp,
  * the callee: _decodeChunk is func_80026A10, which reads its arguments from
  * $s0/$s1/$s2/$s3/$s5 (ujoin custom convention), so this caller has to reserve
  * the low saved registers and spell the call in a way o32 cannot.  Same class
- * as func_8002581C/__readVarLen. */
+ * as __readVarLen/__readVarLen. */
 #ifdef PORT
 /* The draft below mislabels its callee: the ROM's _decodeChunk is
  * func_80026A10 (called with a ujoin custom convention the disassembler
@@ -3601,9 +3601,9 @@ s32 func_8002901C(void *node) {
 
             case AL_SEQP_STOPPING_EVT:
                 if (seqp->state == AL_PLAYING) {
-                    func_80025FA4(&seqp->evtq, AL_SEQ_REF_EVT);
-                    func_80025FA4(&seqp->evtq, AL_CSP_NOTEOFF_EVT);
-                    func_80025FA4(&seqp->evtq, AL_SEQP_MIDI_EVT);
+                    n_alEvtqFlushType(&seqp->evtq, AL_SEQ_REF_EVT);
+                    n_alEvtqFlushType(&seqp->evtq, AL_CSP_NOTEOFF_EVT);
+                    n_alEvtqFlushType(&seqp->evtq, AL_SEQP_MIDI_EVT);
                     vs = seqp->vAllocHead;
                     while (vs != NULL) {
                         voice = (N_ALVoice *) vs->voice;
@@ -3836,7 +3836,7 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * place on a scratch copy: exactly 2 words differ, and they are the two stores
  * above. This site is body-blocked only.
  *
- * And the `static` lever that closed func_8002581C and func_8002C9FC is NOT
+ * And the `static` lever that closed __readVarLen and func_8002C9FC is NOT
  * available here, nor is it needed: ipascan reports this function's live-ins
  * clean, and its only ROM caller is alAudioFrame, which is still a pragma --
  * so spelling it `static` would leave uopt with no visible call site and it
