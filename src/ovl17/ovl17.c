@@ -646,59 +646,47 @@ void func_801DC724_ovl17(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 6/28, one-slot rotation of the ARGUMENT registers, nothing else.
- * 6 diffs (was 16): hoisting omCurrentObj into a local is what puts it in $v0.
- * What is left is that the ROM keeps $a0 reserved (base in $a2, element address
- * in $a1) while IDO reuses $a0 for the element address -- the same two values,
- * the same order, one slot lower.  All 6 diffs are that pair renamed; every
- * other instruction, both branch-likelies and the parameter home store are
- * exact.  Two variants spent and BOTH measured 6/28 unchanged: a K&R definition
- * (the lever that is load-bearing for parameter homing elsewhere in ovl17/ovl18
- * does nothing here -- the home store is already emitted by the prototyped
- * form), and an explicit `s32 *p = &D_800E7CE0[obj->objId]` pointer local for
- * the element address.  Permuter food.
+/* SOLVED 2026-08-25 by the permuter; the long analysis this note used to
+ * carry was reading the symptom.  The ROM's temps start one argument register
+ * higher than IDO's ($a2/$a1 with $a0 untouched, against $a1/$a0) because the
+ * function holds TWO extra live values IDO never creates: a `u32` that carries
+ * the D_800E7CE0 read and is then reused as the literal 0 of the objId test
+ * (LEVER 45 -- a constant CSE keyed on TYPE, here shared with a value rather
+ * than with another constant), and an intermediate s32 copy between it and
+ * temp_v1.  Both are load-bearing; collapsing either one back returns 6/28.
+ * The `zero = 0;` after `count = zero;` looks like dead code and is not: it is
+ * what puts the objId compare's 0 in an allocatable register instead of $zero.
  *
- * Re-measured 2026-08-24, still 6/28, and it is NOT the same residue that
- * closed func_801DBA8C_ovl17 above (a declared pointer local stealing $v0):
- * here there is no pointer local and deleting one is not available. The ROM's
- * temps start one argument register HIGHER ($a2 for the base, $a1 for the
- * element) with $a0 untouched, while IDO starts at $a1/$a0 -- i.e. the ROM
- * keeps $a0 reserved for a parameter that this body never reads.
- *
- * LEVER 58 does not apply and the reason is measurable in this file. The
- * closures it produced elsewhere today all had a jal whose $a0 the function
- * never writes; here the only jal SETS $a0 itself ('or $a0, $v1, $zero'), so
- * there is no pass-through to declare. And the ROM's prologue DOES home the
- * parameter ('sw $a0, 0x18($sp)'), which this draft already reproduces, so the
- * parameter is genuinely unused in the ROM too.
- * The obvious next thought -- that an unused prototyped parameter is what
- * reserves $a0 -- is FALSE, and the counter-example is func_801DBA8C_ovl17 200
- * lines above: same 'void f(struct GObj *arg0)' head, same unused parameter,
- * same home store, and it MATCHES while using $a0 as a plain temp for
- * omCurrentObj. So an unused parameter does not reserve its register, and
- * whatever occupies $a0 for the whole of func_801DC91C_ovl17 is not the
- * parameter. Do not spend the K&R or pointer-local variants again; they are
- * already recorded above at 6/28. */
+ * Kept from the old note because they remain true and cost measurements:
+ * LEVER 58 does not apply here -- the only jal SETS $a0 itself
+ * (`or $a0, $v1, $zero`), so there is no pass-through to declare, and the ROM
+ * DOES home the parameter (`sw $a0, 0x18($sp)`), so it is genuinely unused in
+ * the ROM too.  An unused prototyped parameter does NOT reserve $a0: the
+ * counter-example is func_801DBA8C_ovl17 200 lines above, same head, same
+ * unused parameter, same home store, and it matches while using $a0 as a
+ * plain temp.  K&R and pointer-local variants were both spent at 6/28. */
 void func_801DC91C_ovl17(struct GObj *arg0) {
     struct GObj *obj;
+    s32 count;
     s32 temp_v1;
+    u32 zero;
 
     obj = omCurrentObj;
-    temp_v1 = D_800E7CE0[obj->objId];
+    zero = D_800E7CE0[obj->objId];
+    count = zero;
+    temp_v1 = count;
+    zero = 0;
     if (temp_v1 != 0) {
         D_800E7CE0[obj->objId] = temp_v1 - 1;
         if (temp_v1 <= 0) {
             D_800E7CE0[obj->objId] = 0;
         }
     }
-    if (obj->objId == 0) {
+    if (obj->objId == zero) {
         func_80111534(obj->objId);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DC91C_ovl17.s")
-#endif
+
 void func_801DC98C_ovl17(void) {
     Vector sp2C;
     Camera *cam;
