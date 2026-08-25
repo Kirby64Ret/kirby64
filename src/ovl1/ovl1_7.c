@@ -862,28 +862,24 @@ void func_800B113C(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-/* FACTORY: 29/47 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
-#ifdef NON_MATCHING
+/* The -1/-2 tail of the switch above, on its own: mark the object as
+   position-dirty (0x40000000) or rotation-dirty (0x80000000), otherwise hand
+   the call on to the object's own callback. */
 void func_800B1378(s32 arg0, s32 arg1, f32 arg2) {
-    void (*cb)(s32, s32, f32);
-
-    if (arg1 != -2) {
-        if (arg1 == -1) {
+    switch (arg1) {
+        case -1:
             D_800DD8D0[omCurrentObj->objId] |= 0x40000000;
-        } else {
-            cb = D_800DF310[omCurrentObj->objId];
-            if (cb != NULL) {
-                cb(arg0, arg1, arg2);
+            break;
+        case -2:
+            D_800DD8D0[omCurrentObj->objId] |= 0x80000000;
+            break;
+        default:
+            if (D_800DF310[omCurrentObj->objId] != NULL) {
+                D_800DF310[omCurrentObj->objId](arg0, arg1, arg2);
             }
-        }
-    } else {
-        D_800DD8D0[omCurrentObj->objId] |= 0x80000000;
+            break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B1378.s")
-#endif
 void procMainStub(GObj *arg0) {
 
 }
