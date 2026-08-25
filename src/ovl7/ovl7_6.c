@@ -194,15 +194,18 @@ void func_801AD980_ovl7(GObj *arg0) {
     func_800B1900(((u16 *) omCurrentObj)[1]);
 }
 
-#ifdef NON_MATCHING
-/* 38/108, fully decoded and every instruction is in the right place: the
-   residue is a whole-function one-slot register rotation -- the ROM has
-   $s1 = &omCurrentObj / $s0 = &D_800E9AA0 and uses $v0 as an address register,
-   IDO swaps the two saved registers and starts the argument-register class one
-   slot later ($a2 for D_800E0D50 where the ROM uses $a1). Swept: s32 return
-   types on both prototypes this draft introduces (func_801ADE10_ovl7,
-   func_800B8300) and on the TU's own func_800A9864/func_800AA018 -- all inert;
-   func_800B1900 cannot be flipped, it is declared in ovl1/ovl1_7.h. */
+/* MATCHED 2026-08-25 (was 38/108).  Harvested from a permuter output-0-1 that
+   the queue had scored zero and never published.
+   The old note called the residue "a whole-function one-slot register
+   rotation" and swept return types against it; it was not a register problem
+   at all.  `D_800E9E20[objId] = 1;` is UNCONDITIONAL in the ROM -- the
+   `bne $t1, $at` at .L801ADD8C skips only the `ohSleep(0x1E)`, and
+   .L801ADDA8, which is that branch's own target, is the store.  m2c had put
+   the store inside the if.  Moving it after the closing brace closed the
+   function outright, and the saved-register "rotation" fell out with it.
+   Standing lesson: a save-set difference reported as the residue can be a
+   consequence of a mis-scoped statement, not a cause.  Diff the branch
+   TARGETS against the block boundaries before believing a register story. */
 void func_801ADC60_ovl7(GObj *arg0) {
     void func_801ADE10_ovl7(struct GObj *);
     void func_800B8300(s32);
@@ -217,16 +220,13 @@ void func_801ADC60_ovl7(GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = gEntitiesAngleYArray[D_800E0D50[omCurrentObj->objId]];
     if (D_800E8E60[D_800E98E0[omCurrentObj->objId]] == 1) {
         ohSleep(0x1E);
-        D_800E9E20[omCurrentObj->objId] = 1;
     }
+    D_800E9E20[omCurrentObj->objId] = 1;
     while (((s32 *) D_800E9AA0)[omCurrentObj->objId] == 0) {
         ohSleep(1);
     }
     func_800B1900(omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_6/func_801ADC60_ovl7.s")
-#endif
 void func_801ADE10_ovl7(GObj *arg0) {
     void func_800AFBB4(s32, struct GObj *);
     extern s32 D_800E9C60[];
