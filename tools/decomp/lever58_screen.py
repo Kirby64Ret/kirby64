@@ -2,6 +2,10 @@
 """Screen ROM listings for the LEVER 58 shape (see tools/decomp/LEVERS.md 58,
 67, 68, 69).
 
+RE-RUNNABLE, and it is the one place the LEVER 58 discriminator is written
+down: LEVERS.md 58 points here rather than carrying a grep of its own, so if
+you change what counts as a candidate, change it HERE and say so in 67.
+
 LEVER 58 says a proc declared `(void)` whose ROM listing hands its own
 incoming $a0 to a callee is really a `(GObj *)` proc, and that declaring the
 parameter frees the register the rest of the body is fighting over.

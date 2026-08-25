@@ -471,9 +471,12 @@ the pool allocator's real stride is 0x78.
     one file: func_801B726C_ovl7 7/85 -> MATCH and func_801B793C_ovl7 7/28 ->
     MATCH, both by adding `GObj *arg0` and writing `func_801A0D74_ovl7(arg0)`.
     Three cautions, all measured:
-      - The parameter must be USED. An unused one is homed (`sw $a0, N($sp)`),
-        which ADDS an instruction and makes the score worse -- that is the
-        negative control, and it is how you tell the two cases apart.
+      - The parameter must be USED **by your draft**. If your draft cannot use
+        it, IDO homes it (`sw $a0, N($sp)`) and adds an instruction the ROM
+        does not have. That is not the same as the ROM homing it -- see
+        LEVER 67(e), which splits the three cases -- and the usual reason your
+        draft cannot use it is that the callee is itself declared `(void)`
+        (LEVER 68).
       - The callee may have no prototype in the TU. If an earlier function
         already calls it bare, that call created an implicit `int f()` and any
         disagreeing declaration is a hard IDO error (lever 49). Spell the
@@ -486,38 +489,33 @@ the pool allocator's real stride is 0x78.
     $a0-rotation smell but its ROM prologue HOMES $a0 and both its calls set
     $a0 themselves, and it stays at 99/125.
 
-    **ENUMERATING THE POPULATION, 2026-08-25.** Looking for the lever by which
-    function-pointer table a proc is stored in found 3 candidates tree-wide.
-    Looking for it by the PROLOGUE found 43, ~9,900 instruction words. The
-    prologue test is the discriminator and the table is not:
+    **ENUMERATING THE POPULATION.** Use `tools/decomp/lever58_screen.py`; it is
+    re-runnable and it is the discriminator written down.
 
-        python3 - <<'EOF'
-        import glob, os, re, sys
-        sys.path.insert(0, 'tools/decomp')
-        from measure_seeds import guard_blocks
-        for c in sorted(glob.glob('src/**/*.c', recursive=True)):
-            if c.startswith('src/pc/'): continue
-            lines = open(c, errors='replace').read().split('\n')
-            for st, en, pi, listing in guard_blocks(lines):
-                func = os.path.basename(listing)[:-2]
-                if not re.search(r'^[A-Za-z_][\w \t\*]*\b' + re.escape(func)
-                                 + r'\s*\(\s*void\s*\)\s*\{',
-                                 '\n'.join(lines[st:en]), re.M):
-                    continue
-                txt = open(listing, errors='replace').read()
-                txt = txt.split('glabel ' + func, 1)[-1].split('endlabel', 1)[0]
-                if re.search(r'\b(addiu|or|lw|move|lui|addu)\s+\$a0,',
-                             '\n'.join(txt.split('\n')[:14])): continue
-                if re.search(r'sw\s+\$a0,', txt): continue   # homed: negative
-                if 'jal ' not in txt: continue
-                fm = re.search(r'addiu\s+\$sp, \$sp, -(0x[0-9A-Fa-f]+)', txt)
-                print((fm.group(1) if fm else '?'), func, c)
-        EOF
+        python3 tools/decomp/lever58_screen.py func_801B3C54_ovl7 ...
+        python3 tools/decomp/lever58_screen.py --all-guarded src/ovl7/ovl7_10.c
 
-    Sort by frame and start at 0x18: all three closures on 2026-08-25 had frame
-    0x18, and the documented negative (func_8020C378_ovl9, 22/55 -> 54/55) has
-    frame 0x20 and a stack local. `sw $a0` ANYWHERE in the listing, not just in
-    the prologue, is the disqualifier.
+    It walks the listing's CFG and reports, per function, the calls reached
+    with $a0 untouched on every path, the instructions that READ $a0 before
+    anything writes it, the home store, and the reloads out of the home slot.
+
+    An earlier version of this entry carried an inline grep that enumerated 43
+    drafts by their PROLOGUE. That screen was worked end to end and **two of
+    its rules are false**; see LEVERS 67-69 for what replaced them, and do not
+    re-derive the grep:
+      - "`sw $a0` ANYWHERE in the listing is the disqualifier" -- NO. A home
+        store means the source HAD a parameter. func_801DBA8C_ovl17 matches
+        with an unused homed one; func_80164A34_ovl5 is homed and re-read ten
+        times out of its home slot and declaring it was worth 12 words;
+        func_80199A38_ovl7 is homed, never re-read, and worth 3.
+      - "Sort by frame and start at 0x18" -- frame size is not the
+        discriminator. func_801AEE04_ovl7 closed at frame 0x20 with a stack
+        spill slot, which is the shape the ovl9_13 note said needed a theory.
+      - and scanning only the first 14 lines for a `$a0` write misses the
+        body: of the 43, 31 write $a0 before every call they make.
+
+    The cautions above still hold, with one correction: "the parameter must be
+    USED" is really "your DRAFT must be able to use it". See LEVER 67(e).
 
 59. **An early test that shares a load with a later argument makes IDO
     duplicate the whole argument setup into every exit.** func_800BB198 tests
