@@ -1378,99 +1378,32 @@ void func_8015CF9C_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015CF9C_ovl3.s")
 #endif
 
-#ifdef MIPS_TO_C
-/* FACTORY: 242/245 [was noted 3/245], whole-function callee-saved permutation (same floor
-   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 242 of 245 words differ (98%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
-
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand.
-
- * class as the rest of this cluster -- correct instruction count and
- * control flow, near-total register/frame mismatch). Also gives the
- * PcPlyshotFx view a local-scope equivalent (LocalPlyshotFx) since the
- * real struct is declared inside an #ifdef PORT block elsewhere in this
- * file and can't be reached from here without a file-scope move. Queued
- * for the permuter. */
-/* PORT: service routine for the lobbed throw installed by func_8015CF9C_ovl3
- * above, from asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s. Before
- * impact (D_800E98E0==0) it pops off-screen, faces the walk direction,
- * pitches the model along its velocity (-atan2(vy,|vx|)), and while nothing
- * has been hit re-seats the trail effect block from position+angles and
- * steps the flight track; any contact (ground, hit record, shot collision
- * or off-parent flag) freezes the motion and raises D_800E98E0=1, waking
- * the sleeping init coroutine to run the burst. After impact it drives the
- * burst: scales anim D_801915B4 and ring row D_801943A8 by trail DObj [1]'s
- * scale.x and runs the impact hit record D_80194458. */
-void func_8015D3C8_ovl3(struct GObj *arg0) {
-    extern char D_80190C38_ovl3[];
-    extern s32 D_801915B4_ovl3[];
-    extern f32 D_801943A8_ovl3[][4];
-    extern f32 D_80198438_ovl3[];
-    extern s32 D_80194458_ovl3[];
-    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
-    s32 id = omCurrentObj->objId;
-
-    if (D_800E98E0[id] != 0) {
-        f32 s = D_800DFBD0[id][1]->scale.v.x;
-
-        func_8016854C_ovl3((s32) (uintptr_t) D_801915B4_ovl3, 0, s);
-        func_80152070_ovl3(D_801943A8_ovl3, (f32 (*)[4]) D_80198438_ovl3, 0xB, s);
-        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80194458_ovl3, 0, id);
-        return;
-    }
-    if (func_800B3158() == 0) {
-        func_800A22D4(D_800EA520[id]);
-        func_800B1900((u16) id);
-        return;
-    }
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
-    {
-        f32 h = D_800E64D0[id];
-
-        if (h < 0.0f) {
-            h = -h;
-        }
-        gEntitiesAngleXArray[id] = -atan2f(D_800E3210[id], h);
-    }
-    if ((D_800E6310[id] == 0) && (D_800E83E0[id] == 0)
-        && (func_8015550C_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]) == 0)
-        && (D_800E8920[id] == 0)) {
-        struct LocalPlyshotFx { u32 unk0; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
-        struct LocalPlyshotFx *fx = ((GObj *) (uintptr_t) (u32) D_800EA520[id])->unk4C;
-
-        fx->unk4 = gEntitiesNextPosXArray[id];
-        fx->unk8 = gEntitiesNextPosYArray[id];
-        fx->unkC = gEntitiesNextPosZArray[id];
-        fx->unk10 = gEntitiesAngleXArray[id];
-        fx->unk14 = gEntitiesAngleYArray[id];
-        fx->unk18 = gEntitiesAngleZArray[id];
-        func_80162150_ovl3();
-        func_80111C4C(func_801117BC(D_80190C38_ovl3, id));
-        return;
-    }
-    D_800E6690[id] = 0.0f;
-    D_800E64D0[id] = D_800E6690[id];
-    D_800E6850[id] = 65535.0f;
-    D_800E3750[id] = 0.0f;
-    D_800E3210[id] = D_800E3750[id];
-    D_800E3C90[id] = 65535.0f;
-    D_800E98E0[id] = 1;
-    func_800A22D4(D_800EA520[id]);
-}
-#elif defined(PORT)
+/* MATCHED 2026-08-25, re-derived from the listing (the old draft read
+ * 242/245 under a "callee-saved permutation" note). Four things did it:
+ *   - omCurrentObj->objId spelled INLINE at every use instead of cached in
+ *     an `s32 id`. The ROM holds &omCurrentObj in $s0 and re-reads both the
+ *     pointer and the field, because the stores through o->unk4C may alias
+ *     the global. Caching it changes every index computation in the
+ *     function -- and it is what turned func_800B1900's `lhu 0x2(obj)`
+ *     into a lw+andi.
+ *   - the top-level test inverted, so the D_800E98E0 != 0 burst block sits
+ *     at the TAIL where the ROM puts it (LEVER 66).
+ *   - the |vy| clamp written as a TERNARY inside the atan2f argument, not
+ *     as an in-place `if (h < 0) h = -h;`: the ROM keeps the loaded value
+ *     in $f0 and materialises the argument separately in $f14 (LEVER 16).
+ *   - `= 0` rather than `= 0.0f` for the two D_800E6690/D_800E3750 stores.
+ *     That was the LAST six words: with both written as float literals IDO
+ *     gives $f0 to the 65535.0f pool load and pushes the mtc1 $zero to $f2,
+ *     which is the register order LEVER 20 describes; an INTEGER zero is a
+ *     different operand kind and lands on the ROM's $f0/$f2 assignment.
+ *     Same family as LEVER 3 (ABS vs ABSF).
+ * pad0/pad1 are two dead words the ROM's frame reserves (0x28/0x2C of a
+ * 0x30 frame, never written) -- LEVER 43; without them the frame is 0x28.
+ *
+ * The PORT arm below is kept only because this body stores GObj pointers
+ * through the s32 arrays D_800EA520/D_801915B4/D_80194458, which truncate
+ * under LP64. */
+#ifdef PORT
 /* PORT: service routine for the lobbed throw installed by func_8015CF9C_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s. Before
  * impact (D_800E98E0==0) it pops off-screen, faces the walk direction,
@@ -1537,7 +1470,62 @@ void func_8015D3C8_ovl3(struct GObj *arg0) {
     func_800A22D4(D_800EA520[id]);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015D3C8_ovl3.s")
+void func_8015D3C8_ovl3(struct GObj *arg0) {
+    struct PlyshotFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
+    extern char D_80190C38_ovl3[];
+    extern s32 D_801915B4_ovl3[];
+    extern f32 D_801943A8_ovl3[][4];
+    extern f32 D_80198438_ovl3[];
+    extern s32 D_80194458_ovl3[];
+    s32 func_80152070_ovl3(f32 (*)[4], f32 (*)[4], u8, f32);
+    s32 pad0;
+    s32 pad1;
+    f32 s;
+    f32 h;
+    GObj *o;
+
+    if (D_800E98E0[omCurrentObj->objId] == 0) {
+        if (func_800B3158() == 0) {
+            func_800A22D4(D_800EA520[omCurrentObj->objId]);
+            func_800B1900((u16) omCurrentObj->objId);
+            return;
+        }
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+        h = D_800E64D0[omCurrentObj->objId];
+        gEntitiesAngleXArray[omCurrentObj->objId] =
+            -atan2f(D_800E3210[omCurrentObj->objId], (h < 0.0f) ? -h : h);
+        if ((D_800E6310[omCurrentObj->objId] == 0) && (D_800E83E0[omCurrentObj->objId] == 0)
+            && (func_8015550C_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4],
+                                   D_801982F8_ovl3[omCurrentObj->objId - 4]) == 0)
+            && (D_800E8920[omCurrentObj->objId] == 0)) {
+            o = (GObj *) D_800EA520[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unk10 = gEntitiesAngleXArray[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unk14 = gEntitiesAngleYArray[omCurrentObj->objId];
+            ((struct PlyshotFx *) o->unk4C)->unk18 = gEntitiesAngleZArray[omCurrentObj->objId];
+            func_80162150_ovl3();
+            func_80111C4C(func_801117BC(D_80190C38_ovl3, omCurrentObj->objId));
+            return;
+        }
+        D_800E6690[omCurrentObj->objId] = 0;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        D_800E3750[omCurrentObj->objId] = 0;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+        D_800E3C90[omCurrentObj->objId] = 65535.0f;
+        D_800E98E0[omCurrentObj->objId] = 1;
+        func_800A22D4(D_800EA520[omCurrentObj->objId]);
+        return;
+    }
+    s = D_800DFBD0[omCurrentObj->objId][1]->scale.v.x;
+    func_8016854C_ovl3((s32) D_801915B4_ovl3, 0, s);
+    func_80152070_ovl3(D_801943A8_ovl3, (f32 (*)[4]) D_80198438_ovl3, 0xB, s);
+    func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4], (s32) D_80194458_ovl3, 0,
+                       omCurrentObj->objId);
+}
+
 #endif
 
 #ifdef NON_MATCHING
