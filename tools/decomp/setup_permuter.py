@@ -54,8 +54,31 @@ def unguard(text, func):
     if idx + 1 >= len(lines) or lines[idx + 1].strip() != '#endif':
         return text, False
     e, n = idx - 1, idx + 1
-    o = next((i for i in range(e - 1, -1, -1)
-              if lines[i].strip().startswith(('#ifdef ', '#ifndef '))), None)
+    # Walk backwards BALANCED to find the `#if*` this `#else` belongs to.
+    #
+    # The previous version took the nearest `#ifdef`/`#ifndef` above the
+    # `#else`, which is wrong whenever a COMPLETE guard block sits between the
+    # real opening and the `#else` -- the nearest opener is then that inner
+    # block's, the "body" picked up runs from inside it, and the refusal check
+    # below rejects the whole function. It also only recognised `#ifdef` and
+    # `#ifndef`, so a draft opened with `#if defined(MIPS_TO_C) || defined(PORT)`
+    # was invisible.
+    #
+    # func_8017232C_ovl5 is both faults at once: opened at `#if defined(...)`,
+    # with func_801721CC_ovl5's closed `#ifdef NON_MATCHING` block in between.
+    # setup_permuter fell through to "already plain C", cpp then dropped the
+    # guarded body, and permuter.py exited in one second with "does not contain
+    # any function!" -- a wasted queue slot that reads like a fast failure.
+    depth, o = 0, None
+    for i in range(e - 1, -1, -1):
+        t = lines[i].strip()
+        if t.startswith('#endif'):
+            depth += 1
+        elif t.startswith(('#ifdef ', '#ifndef ', '#if ', '#if(')):
+            if depth == 0:
+                o = i
+                break
+            depth -= 1
     if o is None:
         return text, False
     body = lines[o + 1:e]
@@ -139,6 +162,19 @@ def main():
     pp = '\n'.join(l for l in r.stdout.split('\n')
                    if not l.lstrip().startswith('#pragma'))
     open(f'{outdir}/base.c', 'w').write(pp)
+
+    # The draft must have SURVIVED the preprocessor. If unguard() did not fire
+    # and the body sits behind a guard cpp does not take, base.c holds the
+    # file's other functions and none of this one -- permuter.py then dies with
+    # "does not contain any function!" a second into a 420-second slot, and the
+    # queue logs it as an exception rather than as a setup failure. Say so here
+    # instead, where the reason is still visible.
+    if not re.search(rf'\b{re.escape(func)}\s*\(', pp):
+        raise SystemExit(
+            f'{func}: not present after preprocessing. The draft is behind a '
+            f'guard unguard() did not recognise, so there is nothing to '
+            f'permute. Check the `#if`/`#else`/`#endif` shape around the '
+            f'GLOBAL_ASM pragma in {cfile}.')
 
     r = subprocess.run([sys.executable, f'{PERM}/strip_other_fns.py',
                         f'{outdir}/base.c', func], capture_output=True, text=True)
