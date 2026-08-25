@@ -1585,28 +1585,28 @@ void func_801E03B0_ovl12(GObj *arg0) {
 }
 
 // regalloc
-#ifdef NON_MATCHING
-void func_801E05E8_ovl12(GObj *arg0) {
-    s32 pad;
-    // right here
-    s32 sp18 = gEntityFuncListIDArray[omCurrentObj->objId] + D_800D7098.unk14;
-
-    func_801DED9C_ovl12(2);
-    if (D_800EA360[omCurrentObj->objId] == 1) {
-        func_801DBD00_ovl12();
-    }
-    if (D_800D7098.unk18 == -1) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 9;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DFFA8_ovl12);
-    } else if (D_800E9E20[omCurrentObj->objId] != 0) {
-        D_800E9720[omCurrentObj->objId] = 0;
-        gEntityFuncListIDArray[omCurrentObj->objId] = sp18;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DFFA8_ovl12);
-    }
+void func_801E05E8_ovl12(GObj *arg0)
+{
+  s32 pad;
+  s32 sp18 = gEntityFuncListIDArray[omCurrentObj->objId] + ((0, D_800D7098.unk14));
+  func_801DED9C_ovl12(2);
+  if (D_800EA360[omCurrentObj->objId] == 1)
+  {
+    func_801DBD00_ovl12();
+  }
+  if (D_800D7098.unk18 == (-1))
+  {
+    gEntityFuncListIDArray[omCurrentObj->objId] = 9;
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DFFA8_ovl12);
+  }
+  else
+    if (D_800E9E20[omCurrentObj->objId] != 0)
+  {
+    D_800E9720[omCurrentObj->objId] = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = sp18;
+    assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DFFA8_ovl12);
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801E05E8_ovl12.s")
-#endif
 
 void func_801E0714_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 2;
