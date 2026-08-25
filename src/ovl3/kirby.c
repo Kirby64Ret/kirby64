@@ -3480,7 +3480,7 @@ void func_80171E00_ovl3(GObj *arg0) {
             D_800E3210[omCurrentObj->objId] = 0;
             D_800E3C90[omCurrentObj->objId] = 0;
             func_800AA78C(0x200DB, 0x20007, 6.0f);
-            if (D_800E98E0[omCurrentObj->objId] == 0) { D_800E9AA0[omCurrentObj->objId].as_s32 = 1; D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_s32; }
+            if (D_800E98E0[omCurrentObj->objId] == 0) { D_800E9AA0[omCurrentObj->objId].as_u32 = 1; D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_u32; }
             func_801230E8(0x200DB, 0x200DC, 0);
             break;
         case 2:

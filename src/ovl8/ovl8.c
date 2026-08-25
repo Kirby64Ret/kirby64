@@ -118,7 +118,7 @@ void func_801D12A4_ovl8(void) {
     D_800E2250[omCurrentObj->objId] = 0.0;
 }
 
-/* 50/128, and instructions 0..32 are byte-identical. The whole residue starts
+/* FACTORY: 50/128. Instructions 0..32 are byte-identical. The whole residue starts
  * at the D_800E3210 copy in the first arm: the ROM materialises &D_800E3210 into
  * a base register ($t4) and addresses BOTH sides off it, IDO emits two separate
  * `lui $at` + %lo pairs. Same instruction count either way; the base register
@@ -159,16 +159,15 @@ void func_801D152C_ovl8(void) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-/* 8/107: instruction-for-instruction identical, the residue is pure frame
- * layout -- the ROM's local block sits 4 bytes higher (vectors at 0x30/0x3C,
- * spills at 0x48/0x4C/0x50, frame 0x60) as if IDO had allocated a FOURTH,
- * unused compiler spill slot. Leading/trailing s32, u8 and f64 pads all move
- * the block in 8-byte steps and cannot land on +4. */
+/* The dead `pad` word is a REAL declaration in the ROM's list and it sits
+ * BEFORE a/b/c, not after them: later declarations take the lower stack
+ * addresses, so with the pad trailing, a/b/c homed at 0x4C/0x50/0x54 and the
+ * ROM homes them at 0x48/0x4C/0x50 (LEVERS 13/57). Moving the one line is the
+ * whole difference; the frame is 0x60 either way. */
 /* K&R definition kept, MEASURED: func_801D17F4_ovl8 (ovl8.c:214) calls this
  * with no argument and relies on the GObj already sitting in $a0. With the
  * head written `void func_801D1648_ovl8(struct GObj *arg0)` the build fails
  * there with "too few arguments to function 'func_801D1648_ovl8'". */
-#ifdef NON_MATCHING
 void func_801D1648_ovl8(arg0)
 struct GObj *arg0;
 {
@@ -179,10 +178,10 @@ struct GObj *arg0;
     void func_800B26D8(Vector *, struct DObj *, u32);
     s32 idx;
     struct DObj **p;
+    s32 pad;
     struct DObj *a;
     struct DObj *b;
     struct DObj *c;
-    s32 pad;
     Vector sp3C;
     Vector sp30;
 
@@ -212,9 +211,6 @@ struct GObj *arg0;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp3C.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp3C.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1648_ovl8.s")
-#endif
 
 void func_801D17F4_ovl8(void) {
     func_801D1648_ovl8();
@@ -272,7 +268,7 @@ void func_801D1BB0_ovl8(void) {
     func_800B31B4();
 }
 
-/* 94/106 but structurally instruction-for-instruction: the whole residue is a
+/* FACTORY: 94/106, but structurally instruction-for-instruction: the whole residue is a
  * 4-byte frame displacement (the ROM's local block starts at 0x20 with a
  * FOURTH, unused compiler spill slot at 0x3C; IDO only ever allocates three)
  * plus the temp-register renumbering that follows from it. Leading/trailing
@@ -289,6 +285,11 @@ struct Ovl8Unk80 {
     /* 0x20 */ u8 unk20;
 };
 
+/* FACTORY: 94/106 -- see the note above the struct. Re-measured 2026-08-25:
+ * `p` and `d` also carry each other's registers (ROM $a2=p/$v1=d, IDO the
+ * reverse). Swapping their declaration order costs one (95); swapping the two
+ * ASSIGNMENTS scores 87 but moves the Vector off the ROM's sp+0x20, so 94 with
+ * the frame right is the better seed. */
 #ifdef NON_MATCHING
 void func_801D1CAC_ovl8(void) {
     extern void **D_800E1B50[];
@@ -345,7 +346,13 @@ void func_801D1E58_ovl8(s32 arg0) {
 
 /* PADDING TRAP: this listing carries 7 words of linker alignment fill after
  * its own .size, so converting it would leave the TU short under kirby.ld's
- * SUBALIGN(16). Draft kept for whoever owns kirby64.yaml. */
+ * SUBALIGN(16). It is the LAST function of this translation unit, so the fix is
+ * a `pad` subsegment in kirby64.yaml plus the matching kirby.ld edit -- a
+ * coordinator job, not a source one. Draft kept for whoever owns that.
+ * Measured 2026-08-25 with the trap check bypassed: 83/98, i.e. the draft is
+ * far from exact as well, so the yaml change alone would not close it.
+ * measure_seeds reports this one as "unscorable" -- that is the trap, not a
+ * compile failure. */
 #ifdef NON_MATCHING
 void func_801D1E98_ovl8(void) {
     extern void **D_800E1B50[];

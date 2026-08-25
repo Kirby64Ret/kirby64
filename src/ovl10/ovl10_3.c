@@ -789,7 +789,7 @@ void func_801E5B08_ovl10(f32 *arg0, u8 arg1, f32 arg2) {
 }
 
 #ifdef NON_MATCHING
-// 23/41 diffs (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
+// FACTORY: 23/41 (was 32). Two levers found: reading arg0[0]/arg0[2] into locals
 // first reproduces the ROM's FP allocation order, and quotient temps keep both
 // divisions before the first store (the store otherwise forces a reload of
 // omCurrentObj->objId). Residue: the ROM converts arg1 to f32 LATE (into $f16,
@@ -1333,7 +1333,7 @@ void func_801E78D4_ovl10(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 72/170, same length and every stack offset correct (the trailing dead
+/* FACTORY: 72/170, same length and every stack offset correct (the trailing dead
    `f32 pad[4]` is the ROM's 16 bytes at the bottom of the local block: frame
    0x60 not 0x50). The residue is a one-slot rotation of the $t register file
    -- the ROM has one more temp live before the `addiu $t1,$zero,1`, so it runs
@@ -1840,7 +1840,7 @@ void func_801E9770_ovl10(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 46/129: structure, frame, saved-register set and every offset are the ROM's
+/* FACTORY: 46/129: structure, frame, saved-register set and every offset are the ROM's
    (`s32 i = 0;` at declaration is worth 25 diffs over an `i = 0;` statement).
    Residue: the hoisted base addresses land in a rotated set of saved registers
    -- the ROM runs s1=&D_800E3750, s2=&omCurrentObj, s3=&D_800E3210,
@@ -2440,7 +2440,7 @@ void func_801EB9DC_ovl10(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 44/109: fully decoded and the same length; every CSE decision is the ROM's
+/* FACTORY: 44/109: fully decoded and the same length; every CSE decision is the ROM's
    (the D_800E1B50 read shares the first objId<<2, the D_800DEF90 store gets a
    fresh one -- that is what the `ent` initializer at declaration buys). The
    residue is the one-slot register rotation: the ROM puts the first index in

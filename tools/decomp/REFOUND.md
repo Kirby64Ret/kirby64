@@ -517,3 +517,19 @@ the same shape as the existing `pad` entries at 0x49B0, 0x1EF90 and 0x21b20.
 Then drop the guard block from src/ovl12/code_1EB520.c. Do it in ONE
 sha1-gated commit and only when the tree is quiet: a re-split rewrites
 build/kirby.ld and the ovl12 listings underneath every running lane.
+
+## MEASURE_SEEDS BLIND SPOT: A PORT SHORT-CIRCUIT INSIDE THE DRAFT ARM
+
+src/ovl6/ovl6.c's func_80154A40_ovl6 held the N64 draft and the PORT stub in
+ONE `#ifdef NON_MATCHING` arm, with the port's `return 128;` two statements
+into the body and the real draft as dead code after it. Every automatic
+measurement therefore scored the STUB -- 53/53, "nothing matches" -- while the
+in-tree note said 8/53, so the note looked like a lane's transcription error
+and the seed was skipped. It is now split (MIPS_TO_C draft / NON_MATCHING port
+stub / pragma) and measures 8/53.
+
+So a draft arm that ALSO serves as the port body is a place where the two jobs
+can silently fight. When a note and the measurement disagree by roughly the
+whole function, read the arm for an early `return` before believing either.
+Worth a sweep: grep the guarded arms for a `return` that precedes the bulk of
+the body.

@@ -502,9 +502,16 @@ void func_80152A48_ovl4(void) {
 }
 
 #ifdef NON_MATCHING
-// Only the register allocation differs: the ROM rematerialises the
-// D_8015A8F8_ovl4 base inside the loop while IDO keeps it in a saved
-// register for the whole function.
+// FACTORY: 45/57. Only the register allocation differs: the ROM rematerialises
+// the D_8015A8F8_ovl4 base into $s0 in the loop preheader (0x80152BB0) while
+// IDO CSEs it with the `&D_8015A8F8_ovl4[arg1]` at the top and keeps one copy
+// in a saved register for the whole function; that also permutes the three
+// saved registers (ROM s1=p, s2=arg0, s0=base; IDO s0=p, s1=arg0, s2=base).
+// Swept 2026-08-25, all 45/57: `D_8015A8F8_ovl4 + arg1` for the subscript,
+// `&arg1[D_8015A8F8_ovl4]` (reversed subscript, to flip the addu operands),
+// comparing against `&D_8015A8F8_ovl4[0]`, the compare written the other way
+// round, splitting the declaration from the assignment, and nested ifs instead
+// of the `&&`. The frame is 0x30 and correct in every one of them.
 void func_80152B50_ovl4(GObj *arg0, s32 arg1) {
     Unk8015A8F8 *p = &D_8015A8F8_ovl4[arg1];
 

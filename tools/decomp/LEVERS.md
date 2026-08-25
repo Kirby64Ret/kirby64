@@ -437,6 +437,45 @@ the pool allocator's real stride is 0x78.
     (func_801E05A8_ovl15, 2/615 either way). Reach for this whenever the
     residue is a rotation INSIDE an unrolled or scheduled loop body.
 
+58. **A `(void)` om-proc that the ROM calls with $a0 UNTOUCHED is really a
+    `(GObj *)` proc handing its own parameter on.** This is lever 55's family
+    seen from the callee side, and it is the cheapest closure in the tree when
+    it fits. Signature to look for: the residue is a ONE-SLOT ARGUMENT
+    ROTATION, every value the function holds sits one register low ($a0 where
+    the ROM uses $a1), and somewhere there is a `jal` whose $a0 nothing in the
+    function ever writes. That untouched $a0 is the incoming parameter being
+    passed through; declaring it and passing it occupies $a0, and every temp
+    below falls onto the ROM's register. Measured 2026-08-25, two closures in
+    one file: func_801B726C_ovl7 7/85 -> MATCH and func_801B793C_ovl7 7/28 ->
+    MATCH, both by adding `GObj *arg0` and writing `func_801A0D74_ovl7(arg0)`.
+    Three cautions, all measured:
+      - The parameter must be USED. An unused one is homed (`sw $a0, N($sp)`),
+        which ADDS an instruction and makes the score worse -- that is the
+        negative control, and it is how you tell the two cases apart.
+      - The callee may have no prototype in the TU. If an earlier function
+        already calls it bare, that call created an implicit `int f()` and any
+        disagreeing declaration is a hard IDO error (lever 49). Spell the
+        in-body declaration `s32 f();` to match the implicit one rather than
+        "correcting" it at file scope.
+      - Check the function-pointer table the proc is stored in first --
+        ovl7_11's `D_800DF150` is declared `void (*[])(struct GObj *)`, so the
+        `(void)` head was a type error too and the fix is a real correction.
+    Negative control on the same page: func_801B73C0_ovl7 has the identical
+    $a0-rotation smell but its ROM prologue HOMES $a0 and both its calls set
+    $a0 themselves, and it stays at 99/125.
+
+59. **An early test that shares a load with a later argument makes IDO
+    duplicate the whole argument setup into every exit.** func_800BB198 tests
+    `head->item->unk10` at the top and passes `head->item` to the call after the
+    loop; IDO CSEs the two `head->item` loads and then copies `lw item / move
+    $a0 / move $a1` into BOTH loop exits -- four words over the ROM, and a
+    45-instruction function reading 28/49. Spelling the argument through the
+    other name for the same value (`cont->unk04->item`, since `head` is only
+    ever assigned from `cont->unk04`) breaks the CSE and it went straight to
+    MATCH. A `(volatile T *)` cast on the early test does the same thing and is
+    uglier. Reach for this when the draft is LONGER than the ROM and the excess
+    is a repeated argument-setup tail rather than a repeated branch.
+
 57. **The frame law behind lever 54, in the form that lets you predict a
     shape you cannot reach.** Re-derived on func_801720D8_ovl5 and
     func_801721CC_ovl5 (both of which had been sealed as "frame only" after

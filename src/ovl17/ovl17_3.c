@@ -216,18 +216,36 @@ void func_801E1424_ovl17(struct GObj *arg0) {
 /* 3/61: objId must live in $v0 and move into $a0 in the jal delay slot; IDO
  * coalesces it into $a0. Swept (all 3/61): `void *` prototype + cast at the
  * call (the guide's coalescing lever), inlining omCurrentObj->objId at one or
- * both uses, s32 vs u32. Dropping/moving the leading temp gives 6/61 (frame). */
+ * both uses, s32 vs u32. Dropping/moving the leading temp gives 6/61 (frame).
+ *
+ * 2026-08-25, the clone lever (LEVERS 1) run properly and RULED OUT, which is
+ * worth more than another guess because the donor is a strong one.
+ * find_jal_clones.py pairs this with func_801E19D0_ovl15, whose first three
+ * calls are the same and which is MATCHED. That donor spells the prologue with
+ * NO local at all -- `ent = D_800E1B50[omCurrentObj->objId];
+ * func_80111550(omCurrentObj->objId);` -- so the inline form looked like the
+ * answer. It is not: the donor's own listing loads straight into $a0
+ * (`lw $a0, 0x0($t6)` / `sll $t7, $a0, 2`, no move) which is EXACTLY what IDO
+ * already produces here. The donor confirms the coalescing rather than
+ * defeating it. Copying its spelling costs 6/61, because dropping the
+ * declaration lifts sp2C from 0x2C to 0x30 (lever 57: later declarations take
+ * lower addresses) on top of leaving the three register diffs untouched.
+ * Also measured: declaring the local s32 against func_80111550's u32
+ * parameter, on the theory that the conversion would have to be materialised
+ * as the `or $a0, $v0, $zero` the ROM has -- byte-identical at 3/61, IDO emits
+ * nothing for a same-width signedness change. Whatever puts this value in $v0
+ * is not reachable from the local's type or from the donor's shape. */
 s32 func_801E14B0_ovl17(void) {
-    u32 temp_v0;
+    u32 objId;
     struct Ovl17AnimInfo sp2C;
     struct EnemyRecord *temp_s0;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_s0 = D_800E1B50[temp_v0];
+    objId = omCurrentObj->objId;
+    temp_s0 = D_800E1B50[objId];
     if (temp_s0->unk8C == NULL) {
         return 0;
     }
-    func_80111550(temp_v0);
+    func_80111550(objId);
     func_80111ECC(func_80111C88(temp_s0->unk8C, omCurrentObj->objId));
     if (func_80110150(&sp2C) != 0) {
         D_800E83E0[omCurrentObj->objId] = sp2C.unk2;

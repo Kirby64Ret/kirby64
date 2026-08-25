@@ -1254,10 +1254,13 @@ void func_80154464_ovl6(void) {
     func_80154628_ovl6();
 }
 
-/* 87/89 but structurally instruction-for-instruction: the residue is one
- * saved-register assignment (the ROM shares s1 between &D_8015A564 and
- * &D_8015A7C0, IDO allocates six saved regs instead of five, shifting every
- * s-number). Semantics verified against the listing token by token. */
+/* FACTORY: 87/89, but structurally instruction-for-instruction -- the score is
+ * misleading. The residue is one saved-register assignment: the ROM REUSES $s1
+ * for two disjoint live ranges (&D_8015A564_ovl6 up to the first block, then
+ * &D_8015A7C0_ovl6 rematerialised into the same register in the loop
+ * preheader at 0x8015459C), so it spends five saved registers where IDO spends
+ * six, and every s-number below shifts. Semantics verified against the listing
+ * token by token; this is a coalescing choice, not a source shape. */
 #ifdef NON_MATCHING
 void func_801544E8_ovl6(GObj *gobj) {
     s32 func_80154284_ovl6(void);
@@ -1306,7 +1309,7 @@ inc:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_801544E8_ovl6.s")
 #endif
 
-/* 20/27: 27 insns vs the ROM's 26. IDO addresses the two peeled elements the
+/* FACTORY: 20/27. 27 insns vs the ROM's 26. IDO addresses the two peeled elements the
  * ROM's way (%lo(A570)($at) / %lo(A574)($at)) but schedules the first store
  * immediately after its own lui and re-materialises $at for the second.
  * Re-swept 2026-08 fresh from the listing: explicit 2-element peel + 60-loop
@@ -1428,12 +1431,26 @@ void func_80154938_ovl6(void) {
     D_8015A688_ovl6 = NULL;
 }
 
-/* 8/53: every instruction and register exact; residue is two scheduling
- * clusters (prev=cnt vs the beqz delay slot, and the savep-restore lbu/move
- * order). Swept: u8-vs-u32 token type (u32 required), sentinel local for the
- * 0x22 constant (required), n-temp (required), switch arms (required),
- * branch polarity, duplicated prev-store, (u32) bias casts. */
-#ifdef NON_MATCHING
+/* The N64 draft and the PORT stub used to live in ONE `#ifdef NON_MATCHING`
+ * arm, with the port's `return 128;` short-circuit sitting two statements into
+ * the body -- so every automatic measurement of this draft scored the STUB
+ * (53/53, i.e. nothing matches) and the 8/53 in the note below looked like a
+ * lane's transcription error. They are separated now: the draft is the
+ * MIPS_TO_C arm and is measurable, the port keeps its stub. */
+#ifdef MIPS_TO_C
+/* FACTORY: 8/53, two scheduling clusters -- (a) the ROM fills the `max < t`
+ * branch's delay slot with `prev = cnt` and leaves `cnt = 0` after the merge,
+ * IDO does the reverse; (b) on the savep restore the ROM materialises
+ * `p = savep + 1` and reads `2($v0)` where IDO folds the +8 and reads
+ * `0xA($a0)`. Swept and re-measured 2026-08-25: u8-vs-u32 token type (u32
+ * required), sentinel local for 0x22 (required), n-temp (required), switch
+ * arms (required), branch polarity, duplicated prev-store, (u32) bias casts,
+ * `prev = cnt` moved after the if (36/54, grows the function), `cnt = 0`
+ * hoisted above the if, `n = q[1]; q++` hoisted, `t > max`, `prev + cnt`
+ * (9/53), unbraced if, goto form, `&savep[1]`, a `(u32)` cast on the restore
+ * pointer, and dropping the volatile cast -- all 8/53 or worse. Clearing
+ * `savep` BEFORE the restore read does fix (b) but moves the `move $a0,$zero`
+ * ahead of the lbu: 9/53. */
 s32 func_80154A40_ovl6(void) {
     UnkStruct8015A560_ovl6 *p;
     UnkStruct8015A560_ovl6 *savep;
@@ -1448,19 +1465,6 @@ s32 func_80154A40_ovl6(void) {
 
     p = D_8015A560_ovl6;
     q = D_8015A564_ovl6;
-    /* PORT: this function is a #pragma GLOBAL_ASM on the matching build, so the
-     * body here is a non-matching DRAFT and is only ever compiled for the port.
-     * The draft's traversal is untrustworthy: it walks the script lists past
-     * the end and faults at `p[1].unk2` (and gtlStart's postInitFunc can reach
-     * it while both list pointers are still NULL BSS). The real function is
-     * assembly, and its result feeds func_800AE048 as the SPObj pool size --
-     * returning 0 starves the pool and pop_spobj() hands NULL to callers that
-     * never check (measured crash: func_80154938_ovl6 storing through a NULL
-     * SPObj). Over-provision instead until this is genuinely matched:
-     * 128 objects x 0x100 bytes = 32KB out of the 64MB port arena. */
-    (void)p;
-    (void)q;
-    return 128;
     savep = NULL;
     max = 0;
     prev = 0;
@@ -1508,6 +1512,19 @@ dispatch:
     goto top;
 ret:
     return max + 1;
+}
+#elif defined(NON_MATCHING)
+/* PORT: the matching build reaches this function through the #pragma below, so
+ * the port needs a body of its own. The MIPS_TO_C draft above cannot be it:
+ * its traversal walks the script lists past the end and faults at `p[1].unk2`
+ * (and gtlStart's postInitFunc can reach it while both list pointers are still
+ * NULL BSS). The result feeds func_800AE048 as the SPObj pool size -- returning
+ * 0 starves the pool and pop_spobj() hands NULL to callers that never check
+ * (measured crash: func_80154938_ovl6 storing through a NULL SPObj). So
+ * over-provision until the draft is genuinely matched: 128 objects x 0x100
+ * bytes = 32KB out of the 64MB port arena. */
+s32 func_80154A40_ovl6(void) {
+    return 128;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl6/ovl6/func_80154A40_ovl6.s")
@@ -1657,7 +1674,12 @@ void func_80154C38_ovl6(s32 arg0) {
  * NOTE: the block-scope trick that closed func_80156560_ovl4 (a loop-body local
  * with an initialiser gets NO frame slot) does NOT apply here -- measured, a
  * local declared in an if/else branch body still costs a full slot. Whatever
- * spelling wins here has to keep the bound hoisted and name neither pointer. */
+ * spelling wins here has to keep the bound hoisted and name neither pointer.
+ * Re-confirmed 2026-08-25: declaring p and end at FUNCTION scope WITH
+ * initialisers (lever 57's "an initialised pointer gets no home slot") is
+ * still 24/63, and inlining the bound at both `while` tests explodes to 70
+ * instructions. The N=1 requirement stands. */
+/* FACTORY: 24/63 */
 #ifdef NON_MATCHING
 void func_80154C64_ovl6(void) {
     extern u16 gFrameBuffer[];

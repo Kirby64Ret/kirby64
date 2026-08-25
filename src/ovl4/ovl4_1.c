@@ -365,7 +365,8 @@ extern void auSetBGMVolume(s32 playerID, u32 vol);
 extern void func_800A74D8(void);
 extern void func_800BB3F0(void);
 
-/* 14/59.  Every instruction is right; the residue is the induction choice plus a
+/* FACTORY: 13/59 (the old 14/59 counted the scratch-copy jump-table artifact).
+ * Every instruction is right; the residue is the induction choice plus a
  * $v0/$v1 swap.  IDO makes the SECOND-written array the loop's induction
  * pointer, and this ROM makes the FIRST-written one (D_803D6900) the induction
  * while gFrameBuffer keeps $a0.  Swept: both store orders, all four vu16/u16

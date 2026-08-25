@@ -48,7 +48,7 @@ void func_800B78AC(s32);
 void func_801A3E80_ovl7(struct GObj *);
 void func_801B6B88_ovl7(GObj *);
 void func_801B6E28_ovl7(void);
-void func_801B793C_ovl7(void);
+void func_801B793C_ovl7(GObj *);
 void lbvector_Rotate(Vector *, s32, f32);
 
 void play_sound(s32);
@@ -666,7 +666,15 @@ void func_801B6E88_ovl7(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 11/165 */
+/* FACTORY: 11/165. Measured 2026-08-25 (the bare `11/165` here was right).
+ * Structure, instruction count and every store are the ROM's; the residue is a
+ * three-way FP register rotation in the SECOND ABSF comparison only. The first
+ * pair (D_800E3050 vs D_800E3590) matches exactly -- loads into $f0, results in
+ * $f12 and $f2, `c.le.s $f12,$f2`. The ROM then ROTATES for the second pair
+ * (D_800E33D0 vs D_800E3910): loads into $f2, results into $f0 and $f12,
+ * `c.le.s $f0,$f12`. IDO reuses the first pair's assignment instead. Both
+ * operands are memory loads in both comparisons, so lever 20 (operand KIND)
+ * has nothing to move here. */
 void func_801B6F18_ovl7(GObj *arg0) {
     void func_801B6B88_ovl7(GObj *);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -709,23 +717,21 @@ void func_801B71AC_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* 7 diffs: stack layout, spill slot and every instruction are exact; the
-   D_800E1B50 element lives in $a0 where the ROM uses $a1 (one-slot argument
-   register rotation). Callee return types, prototypes and a dummy parameter
-   were all swept. */
-#ifdef NON_MATCHING
-extern s32 D_800EA360[], D_800E9E20[], D_800E9C60[];
-void func_80199F1C_ovl7(void);
-void func_8019CFD0_ovl7(void *);
-void func_801B6B88_ovl7(struct GObj *);
-
-void func_801B726C_ovl7(void) {
+/* The ROM's `jal func_80199F1C_ovl7` leaves $a0 untouched, so the argument it
+   passes is this function's OWN incoming GObj * -- which is why `ent` lives in
+   $a1 here and in $a0 in every (void) sibling. Note func_80199F1C_ovl7 has no
+   prototype anywhere in this TU: the earlier call at func_801B6178_ovl7 makes
+   it an implicit `int f()`, so the in-body declaration has to be spelled that
+   way (ovl9_10.c/ovl9_16.c know it as `void f(struct GObj *)`). */
+void func_801B726C_ovl7(GObj *arg0) {
+    s32 func_80199F1C_ovl7();
+    void func_8019CFD0_ovl7(void *);
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     Vector sp20;
 
     if (D_800E9E20[omCurrentObj->objId] != 0) {
         if (D_800E9C60[omCurrentObj->objId] == 0) {
-            func_80199F1C_ovl7();
+            func_80199F1C_ovl7(arg0);
             D_800E9C60[omCurrentObj->objId] = 1;
         }
         if (ent->unk3C == 0) {
@@ -738,12 +744,14 @@ void func_801B726C_ovl7(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B726C_ovl7.s")
-#endif
 #ifdef NON_MATCHING
-// 99/125 diffs: all stores are right; every base-address temp is rotated
-// one register (ROM $a2/$a3/$t0.., IDO $t0/$t1..) and $v0/$v1 are swapped.
+// FACTORY: 99/125. All stores are right; every base-address temp is rotated
+// one register (ROM $a2/$a3/$t0.., IDO $t0/$t1..), $v0/$v1 are swapped and the
+// FP set shifts with them ($f12 vs $f0 for the shared 0.0f). Note this proc's
+// GObj * really is unused -- the ROM homes it (`sw $a0, 0x18($sp)`) and both
+// its calls set $a0 themselves -- so the func_801B726C/func_801B793C fix
+// (pass the incoming GObj * to a callee that leaves $a0 alone) does NOT
+// apply here; it was checked.
 void func_801B73C0_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -836,17 +844,18 @@ void func_801B7780_ovl7(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
-// 7/28 diffs: only the D_800E98E0 value lands in $a0 where the ROM uses $a1.
-void func_801B793C_ovl7(void) {
+/* Same shape as func_801B726C_ovl7: the ROM's `jal func_801A0D74_ovl7` leaves
+   $a0 untouched, so what it receives is this proc's own incoming GObj *. That
+   is also what D_800DF150 is declared to hold -- `void (*[])(struct GObj *)` --
+   so the old `(void)` head was a type error as well as a matching one. With the
+   parameter live across the call, $a0 is taken and the D_800E98E0 element lands
+   in $a1 the way the ROM has it. */
+void func_801B793C_ovl7(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801ACF84_ovl7);
     } else {
         D_800E98E0[omCurrentObj->objId] -= 1;
-        func_801A0D74_ovl7();
+        func_801A0D74_ovl7(arg0);
         func_801A03B4_ovl7();
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_11/func_801B793C_ovl7.s")
-#endif

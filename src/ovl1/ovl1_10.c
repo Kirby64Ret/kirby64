@@ -70,82 +70,83 @@ void func_800BAC0C(RumbleCmd3 *arg0);
 s32 func_800BAA64(RumbleItem *arg0);
 void func_800BAA04(RumbleCont *arg0, RumbleNode *arg1);
 
+/* This arm is BOTH the N64 draft and the PORT body: it is derived from the
+   listing, so the port gets the ROM's semantics instead of a sketch. */
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* FACTORY: 27/91, and structurally instruction-for-instruction. Re-derived
+ * 2026-08-25 from the listing plus its matched-shape sibling func_800BA90C
+ * (the old body here was a raw m2c sketch scoring 84/95, and its
+ * `temp_v0 + 2` on a `u16 *` stepped FOUR bytes where the ROM steps two --
+ * that was a live PORT bug, not just a matching one).
+ * Residue is register naming only: the ROM parks D_800D5238 in $s3 and the
+ * constant 1 in $s4, IDO picks them the other way round, and from case 2
+ * onward every scratch temp is one register low ($t4/$t5 for the ROM's
+ * $t5/$t6) because the ROM burns a temp number in case 1 that IDO does not.
+ * Measured here: the `continue` in case 4 is load-bearing exactly as it is in
+ * func_800BA90C -- without it the `lhu $a3, 0x2($s0)` loop-condition read is
+ * not duplicated into both arms and the function is one word short (46/91).
+ * `ptr++` in case 3 beats `ptr + 1` written twice (27 vs 33), same as in
+ * func_800BA90C. */
 void func_800BA7A0(RumbleCont *arg0, RumbleItem *arg1, s32 arg2) {
-    u16 *temp_t0;
-    u16 *temp_v0;
-    u16 temp_t3;
-    u16 temp_v1;
-    u16 var_a3;
-    u32 temp_t6;
+    u16 *ptr;
+    u16 v;
 
-    var_a3 = arg1->unk02;
-    if (var_a3 == 0) {
-        do {
-            temp_v0 = arg1->unk10;
-            temp_v1 = *temp_v0;
-            temp_t6 = temp_v1 >> 0xD;
-            switch (temp_t6) {
+    while (arg1->unk02 == 0) {
+        ptr = arg1->unk10;
+        v = *ptr;
+        switch (v >> 13) {
             case 0:
-                var_a3 = arg1->unk02;
                 arg1->unk10 = D_800D5238[arg1->unk00];
                 break;
             case 1:
-                arg1->unk02 = temp_v1 & 0x1FFF;
-                arg1->unk10 = temp_v0 + 2;
+                arg1->unk02 = v & 0x1FFF;
+                arg1->unk10 = ptr + 1;
                 if (arg0->unk00 == 0) {
                     contRumbleInit(arg2);
                     func_800047B0(arg2);
                     arg1->unk01 = 1;
                     arg0->unk00 = 1;
                 }
-                var_a3 = arg1->unk02;
                 break;
             case 2:
-                arg1->unk02 = temp_v1 & 0x1FFF;
-                arg1->unk10 = temp_v0 + 2;
+                arg1->unk02 = v & 0x1FFF;
+                arg1->unk10 = ptr + 1;
                 if (arg0->unk00 != 0) {
                     contRumbleStop(arg2);
                     arg1->unk01 = 0;
                     arg0->unk00 = 0;
                 }
-                var_a3 = arg1->unk02;
                 break;
             case 3:
-                temp_t0 = temp_v0 + 2;
-                arg1->unk04 = temp_v1 & 0x1FFF;
-                arg1->unk10 = temp_t0;
-                arg1->unk0C = temp_t0;
-                var_a3 = arg1->unk02;
+                arg1->unk04 = v & 0x1FFF;
+                ptr++;
+                arg1->unk10 = ptr;
+                arg1->unk0C = ptr;
                 break;
             case 4:
-                temp_t3 = arg1->unk04 - 1;
-                arg1->unk04 = temp_t3;
-                if (temp_t3 & 0xFFFF) {
-                    var_a3 = arg1->unk02;
+                arg1->unk04--;
+                if (arg1->unk04 != 0) {
                     arg1->unk10 = arg1->unk0C;
-                } else {
-                    var_a3 = arg1->unk02;
-                    arg1->unk10 += 2;
+                    continue;
                 }
+                arg1->unk10 = arg1->unk10 + 1;
                 break;
-            }
-        } while (var_a3 == 0);
+        }
     }
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BA7A0.s")
 #endif
 
-// Draft, 13/62: structure and instruction count are exact. Residue is one
-// register: the ROM computes `ptr + 1` in case 3 into a fresh temp ($t6) and
-// every case-4 temp shifts up with it. Any spelling that gives case 3 its own
-// value (ptr+1 twice, a named local, chained assignment, store-forwarding)
-// makes IDO promote it to $a2 and pushes D_800D5238 to $a3 -- 27 diffs. The
-// `continue` in case 4 is load-bearing: without it the loop test is not
-// duplicated into both arms (43 diffs).
+/* FACTORY: 13/62. Structure and instruction count are exact.
+ * Residue is one register: the ROM computes `ptr + 1` in case 3 into a fresh
+ * temp ($t6) and every case-4 temp shifts up with it. Re-measured 2026-08-25:
+ * every spelling that gives case 3 its own VALUE rather than mutating ptr
+ * (ptr+1 twice, a function-scope named local, a block-scope named local,
+ * chained assignment, store-forwarding through arg1->unk10) makes IDO promote
+ * it to $a2 and pushes D_800D5238 to $a3 -- 28 diffs, every one. `ptr += 1`
+ * followed by a chained store is still 13. The `continue` in case 4 is
+ * load-bearing: without it the loop test is not duplicated into both arms. */
 #ifdef NON_MATCHING
 void func_800BA90C(RumbleCont *arg0, RumbleItem *arg1) {
     u16 *ptr;
@@ -299,9 +300,11 @@ s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2) {
  * retracing at 60 Hz, so the process looked alive and drew nothing: gGameState
  * stuck at 1 and gtlDrawnFrameCounter at 0 forever.
  *
- * NOT BYTE-EXACT YET, so it stays behind NON_MATCHING; the jump table is the
- * shape below (cases 0..5 in table order 0,1,2,3,4,5 -> BAC48, BAC74, BAC60,
- * BAC84, BACA8, BACB8) and case >= 5 falls through to the reply like the rest.
+ * Byte-exact. The jump table (jtbl_800D691C) sends 0,1,2,3,4,5 to BAC48,
+ * BAC74, BAC60, BAC84, BACA8, BACB8, i.e. case 2's block is laid down BEFORE
+ * case 1's -- so the arms are written here in the ROM's 0,2,1,3,4,5 source
+ * order. case >= 5 falls through to the reply like the rest. The reply is
+ * OS_MESG_NOBLOCK (`or $a2, $zero, $zero`), not OS_MESG_BLOCK.
  *
  * ONE SIGNATURE CORRECTION comes with it. This was declared `void
  * func_800BAC0C(void)` and called with no arguments from func_800BAD0C, but
@@ -313,19 +316,21 @@ s32 func_800BAB68(u8 *arg0, RumbleItem *arg1, s32 arg2) {
  * whatever was last in %rdi. Neither the declaration nor the corrected call
  * site is compiled into the ROM -- func_800BAD0C's ROM path is the
  * #pragma below -- so the matching build is untouched. */
-#ifdef NON_MATCHING
 void func_800BAC0C(RumbleCmd3 *arg0) {
+    void func_800BB08C(s32, s32, s32);
+    void func_800BB12C(s32);
+    void func_800BB198(s32, s32);
     s32 i;
 
     switch (arg0->cmd) {
         case 0:
             func_800BB08C(arg0->arg0, arg0->arg1, arg0->arg2);
             break;
-        case 1:
-            func_800BB12C(arg0->arg0);
-            break;
         case 2:
             func_800BB198(arg0->arg0, arg0->arg1);
+            break;
+        case 1:
+            func_800BB12C(arg0->arg0);
             break;
         case 3:
             for (i = 0; i != 4; i++) {
@@ -343,21 +348,21 @@ void func_800BAC0C(RumbleCmd3 *arg0) {
             break;
     }
     if (arg0->queue != NULL) {
-        osSendMesg(arg0->queue, (OSMesg) arg0->unk04, OS_MESG_BLOCK);
+        osSendMesg(arg0->queue, (OSMesg) arg0->unk04, OS_MESG_NOBLOCK);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAC0C.s")
-#endif
 
 /* The rumble-pak service thread. Decompiled for the PC PORT, which was
  * aborting here: until this landed it was the single undecompiled symbol a
  * running port reached, with the whole game loop already live behind it.
  *
- * It is NOT byte-exact yet and sits behind NON_MATCHING deliberately. The
- * residue is the dead epilogue after `while (1)`, which IDO 32-byte-aligns
- * from the object's .text base -- the same mechanism blocking game_tick, and
- * not something the source controls.
+ * FACTORY: 74/105, and every instruction is the ROM's. Measured 2026-08-25:
+ * the residue is a pure CALLEE-SAVED PERMUTATION -- the ROM parks D_800ED4C8 in
+ * $fp, D_800ED4A0 in $s7, the constant 1 in $s6 and &msg in $s5, IDO shifts the
+ * whole set one register ($s5/$s8/$s7/$s6). Nothing else differs; there is no
+ * instruction-count, frame or scheduling error left in this body, so it is
+ * permuter fuel and not source work. (The older note here blamed a dead
+ * epilogue after `while (1)`; that is not what the measurement shows.)
  *
  * Structure read straight off the listing: register the thread as a scheduler
  * client, then block on D_800ED4C8 forever. Message 1 is the retrace tick and
@@ -370,6 +375,7 @@ void func_800BAC0C(RumbleCmd3 *arg0) {
  * falling out on a NULL next, which reaches the same increment by falling
  * through L800BAE44. That is why the inner loop uses break rather than goto.
  */
+/* FACTORY: 74/105 */
 #ifdef NON_MATCHING
 void func_800BAD0C(void *arg) {
     SCClient client;
@@ -431,6 +437,15 @@ void func_800BAD0C(void *arg) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BAD0C.s")
 #endif
 
+/* FACTORY: 34/39, and the count is what is really wrong: the ROM is 40 words
+ * and this body is 39. The missing word is `or $a0, $v1, $zero` -- the ROM
+ * copies `item` out of $v1 before reusing $v1 for `item->unk08`, and does every
+ * STORE through that copy while every READ still goes through $v1. Nearly all
+ * 34 reported diffs are the branch displacements that follow from being one
+ * word short. Swept 2026-08-25 with no effect: an `s32 t = item->unk08;` temp
+ * (declared first, declared last, assigned inside the condition), `arg2 > t`
+ * instead of `t < arg2`. IDO puts the temp in $a0 and keeps item in $v1, i.e.
+ * exactly the ROM's two registers with the roles exchanged. */
 #ifdef NON_MATCHING
 s32 func_800BAEB0(RumbleCont *arg0, s32 arg1, s32 arg2) {
     RumbleNode *node;
@@ -557,7 +572,11 @@ void func_800BB12C(s32 arg0) {
     }
 }
 
-#ifdef NON_MATCHING
+/* The final argument is spelled `cont->unk04->item` rather than `head->item`
+ * (the two are always equal here -- `head` is only ever assigned from
+ * `cont->unk04`). Written as `head->item` IDO shares that load with the
+ * `head->item->unk10` test at the top and then duplicates the whole argument
+ * setup into both loop exits, four words over the ROM. */
 void func_800BB198(s32 arg0, s32 arg1) {
     RumbleCont *cont;
     RumbleNode *head;
@@ -582,20 +601,29 @@ void func_800BB198(s32 arg0, s32 arg1) {
                 break;
             }
         }
-        func_800BAB68((u8 *)cont, head->item, arg0);
+        func_800BAB68((u8 *)cont, cont->unk04->item, arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_10/func_800BB198.s")
-#endif
-// Draft, 8/70: correct and structurally exact. Residue is (a) the outer loop's
-// node/cont pointer bumps emitted in the opposite order, and (b) the trailing
-// 64-bit canary store: the ROM materialises 0xFEDCBA98 and a separate `li 0`
-// FIRST and then shares one `lui $at` between both stores. `extern u64` gets the
-// `li $t4, 0` right but splits the lui; a 2-word array, a 2-field struct, split
-// named externs and a hoisted local all keep the lui unshared.
-// The interleaved head (node/item pointer assignments BETWEEN the stores) is
-// load-bearing -- grouping them before or after costs 5-12 diffs.
+/* FACTORY: 8/70. Correct and structurally exact. Two independent residues.
+ * (a) TWO words: the outer loop's node/cont induction bumps are emitted in the
+ *     opposite order (ROM `addiu $t0,0x24` then `addiu $t1,8`).
+ * (b) SIX words: the trailing 64-bit canary store. The ROM materialises
+ *     0xFEDCBA98 into $t5 and a separate `li $t4, 0` FIRST, then shares ONE
+ *     `lui $at` between the two `sw`s. Re-swept 2026-08-25 and every shape is
+ *     either 8 or worse, with the failure mode named:
+ *       s32[2] / a 2-field struct / a struct written in either field order
+ *           -> a lui+addiu base in $v0 and `sw $zero` (8, the best known);
+ *       extern u64 / s64 / a u64 local / an explicit ULL / a (u64) cast
+ *           -> the right pair $t4=0/$t5=const and $at addressing, but the
+ *              constants are built per-store so the lui is emitted TWICE (15);
+ *       volatile u64 -> a $t6 base instead of $at (15);
+ *       two separate u32 externs, either source order -> $at addressing but one
+ *           lui each and `sw $zero` for the 0 (9).
+ *     The pair $t4/$t5 says the ROM's type IS 64-bit; what no spelling reaches
+ *     is IDO building both halves before the address.
+ * The interleaved head (node/item pointer assignments BETWEEN the stores) is
+ * load-bearing -- grouping them before or after costs 5-12 diffs. */
+/* FACTORY: 8/70 */
 #ifdef NON_MATCHING
 extern RumbleItem D_800ED320[][3];
 extern RumbleNode D_800ED410[][3];
