@@ -2339,6 +2339,25 @@ the pool allocator's real stride is 0x78.
         comment "unk8 MUST be a different 32bit type than
         gEntityFuncListIDArray", so this mechanism was already known there and
         recorded only for the fork direction.
+      - **THIRD CONFIRMATION, and a new face of the same knob: THE SWITCH
+        VALUE'S SIGNEDNESS.** func_801DD950_ovl15 switches on
+        `D_800D7098.unk20`, a `u32`, so its `case 1:` constant is u32 and IDO
+        will not share it with the `1` its two entry stores
+        (`D_800DDFD0[objId] = 1;`, `gEntityFuncListIDArray[objId] = 1;`, both
+        s32 arrays) already hold in a register -- the draft pays a whole extra
+        `li`. `switch ((s32) D_800D7098.unk20)` shares it, 125/150 -> 70/150.
+        LEVER 34's "the switch value's WIDTH matters" is this observation about
+        a narrowing; this is the same thing about the signedness of a value
+        that is already 32 bits wide.
+        The last 53 on that function were the same field again: case 2's
+        `D_800D7098.unk20 = 1;`, where the ROM stores the very register the
+        `beq $v0, $a0` case-1 test used. `*(s32 *) &D_800D7098.unk20 = 1;`
+        takes it and the function matches.
+        So across one stint the cast-at-the-store form was the LAST edit on
+        two functions and the switch cast was worth 55 words on a third. When a
+        draft is one `li` long around a constant that appears more than once,
+        look at the TYPES of everything the constant is written to, not at the
+        constant.
 
 
 110. **A DECLARATION-ORDER SWEEP NEEDS THE LAYOUT LAW, AND LEVER 57's IS OFF BY
