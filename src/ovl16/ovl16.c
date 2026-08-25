@@ -941,7 +941,27 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * corollary would apply (10/43 in all three declaration orders), and sp1C
  * initialised at declaration with the struct second (7/43). So the nested
  * initialised pointer does NOT give up its word here, which is a real
- * counter-example to that corollary worth knowing. */
+ * counter-example to that corollary worth knowing.
+ *
+ * 2026-08-25, THE TWO EXTRA WORDS ARE NOW ATTRIBUTED, and it is not the third
+ * declaration -- LEVER 110's layout law says three declarations FIT in 0x40
+ * (struct at 0x20..0x3F, rec at 0x1C, the anim pointer at 0x18, align8(0x18 +
+ * 0x28) = 0x40 with no slack).  What does not fit is t=2, and t is bought by
+ * the objId CSE ACROSS THE FIRST CALL.  Changing EITHER of the first two reads
+ * of `omCurrentObj->objId` to any other value drops the frame to exactly 0x40:
+ *     `D_800E1B50[0]`          40/42, FRAME EXACT
+ *     `func_80111550(arg0)`    21/43, FRAME EXACT
+ * and every spelling that keeps both reads is 0x48, including a named `s32 id`
+ * used for both (7/43, 4 decls), `*(D_800E1B50 + objId)`, `&arr[objId][0]`,
+ * an `(s32)` cast on the index, on the call argument, and both; retyping the
+ * file-scope `void func_80111550(u32)` to `(s32)` (inert, and note ovl13.h and
+ * ovl15.h already declare it `s32`); and swapping the two statements (39/42).
+ * So the third declaration is a red herring and the question for the next lane
+ * is narrow: what source shape reads objId once for BOTH the D_800E1B50 index
+ * and the func_80111550 argument without IDO reserving a spill pair for it?
+ * The ROM does it in one `lw $a0, 0x0($t6)` feeding both the `sll` and the
+ * call, which is exactly what this draft already emits -- instructions 0..13
+ * are byte-identical and all 7 diffs are still only the sp offsets. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
     struct EnemyRecord *sp1C;
     struct Ovl16AnimObj *temp_v0;

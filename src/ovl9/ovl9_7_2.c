@@ -330,7 +330,7 @@ void func_801F3870_ovl9(GObj *arg0) {
     f32 a;
 
     tmp = D_800E1B50[omCurrentObj->objId];
-    if (0.0f == D_800E6690[omCurrentObj->objId]) {
+    if (0 == D_800E6690[omCurrentObj->objId]) {
         if (tmp->unk3C == 0) {
             func_8019C71C_ovl7(-0.5f);
         } else {
@@ -345,9 +345,9 @@ void func_801F3870_ovl9(GObj *arg0) {
         sp28.z = 3.0f;
         func_801F2B80_ovl9(&sp28);
     }
+    p = &D_800E3750[omCurrentObj->objId];
     v = D_800E3210[omCurrentObj->objId];
     a = (v < 0.0f) ? -v : v;
-    p = &D_800E3750[omCurrentObj->objId];
     if (D_800E3C90[omCurrentObj->objId] <= a) {
         *p = -*p;
     }
