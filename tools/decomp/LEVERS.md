@@ -667,3 +667,108 @@ the pool allocator's real stride is 0x78.
 
     Diff the two blocks instruction by instruction before deciding; the offset
     alone does not tell you which case you have.
+
+67. **LEVER 58, SCOPED BY MEASUREMENT: the test is a call REACHED with $a0
+    untouched, not a prologue that lacks `sw $a0`.** A bloc of 36 guarded
+    drafts was enumerated mechanically as "declared `(void)`, has a `jal`, no
+    `$a0` write in the prologue, no `sw $a0` anywhere". Only SEVEN of the 36
+    have the shape the lever needs. Four facts, each measured on that bloc:
+
+    a) **$a0 is caller-saved, so only the FIRST call on each path can be a
+       pass-through**, and a `jal`'s DELAY SLOT executes before the transfer.
+       Screening for "no `$a0` write before the jal" in listing order without
+       those two rules produced 13 false candidates out of 36; with them, 8.
+       `tools/decomp/lever58_screen.py` is that screen written down -- it walks
+       the listing's CFG (jump tables included) and prints, per function, the
+       calls that are reached with $a0 still holding the incoming argument.
+
+    b) **The callee must actually CONSUME $a0.** Of the 8 survivors, three
+       call a genuinely 0-argument function (func_8011C8F8 -> func_80112A0C,
+       func_8011E548 -> func_80121194, func_800A34C8 -> six `(void)` procs;
+       all matched, all verified against their objects not their declarations)
+       and two call an `(f32)` one, where the argument goes in $f12 and $a0 is
+       simply unused (func_801543C8_ovl4 / func_801548BC_ovl4 ->
+       func_800AECC0). Untouched $a0 in front of a call that does not read it
+       is not evidence of anything.
+
+    c) **FRAME SIZE IS NOT THE DISCRIMINATOR.** The three closures that found
+       this lever all had frame 0x18 and the ovl9_13 negative control has
+       0x20, so the note there asked for "a theory for why the ROM can hold a
+       live parameter in $a0 through a frame that has stack locals". There is
+       none to find: func_801AEE04_ovl7 closed at frame 0x20 WITH a stack
+       spill slot at 0x18. What separates them is only the home store, and the
+       home slot for an incoming argument is at **frame+0**, outside the
+       frame -- `sw $a0, 0x20($sp)` for a 0x20 frame. Read that offset, not
+       the frame size.
+
+    d) **A SECOND signature the "clean jal" screen misses: the function READS
+       $a0 before anything writes it.** `lw $s1, 0x3C($a0)` (func_801E4668_
+       ovl17) and `or $s0, $a0, $zero` (func_8015CE74_ovl5) are both incoming
+       parameters used directly rather than handed on, and neither function
+       has a pass-through call at all. Screen for a read as well as a call.
+
+    e) **A ROM home store is NOT a veto, and lever 58's caution reads more
+       sharply split three ways.** What the caution is really about is a
+       parameter YOUR DRAFT cannot use:
+         - ROM homes $a0            -> the source had a parameter, used or
+           not, and declaring it REPRODUCES that store. func_801DBA8C_ovl17
+           matches with an unused one.
+         - ROM does not home it, but a call or a read consumes it -> a
+           parameter that is used. Declare it AND use it.
+         - ROM does not home it and nothing consumes it -> there is no
+           parameter, and declaring one costs a word, because IDO homes what
+           your draft cannot use. That is the 38/40 func_801B3C54_ovl7's note
+           recorded before its callee was retyped (LEVER 68).
+
+68. **Retyping a `(void)` callee that only ever passes $a0 on is BYTE-INERT,
+    which is what makes LEVER 58's cluster version safe.** func_801B3C54_ovl7
+    sat at 4/40 with a note recording that the `GObj *` parameter had been
+    tried and scored WORSE (38/40) -- correctly, because an unused parameter is
+    homed, and it was unused only because the one function it calls,
+    func_801AC840_ovl7, was declared `(void)`. So the caller could not be fixed
+    without fixing the callee, and the callee is matched, live C in another
+    file.
+
+    Measured: giving func_801AC840_ovl7 its real `(GObj *)` head and passing
+    the parameter to the `func_801A0D74_ovl7` call it already makes produces a
+    BYTE-IDENTICAL object. Same for func_801B41BC_ovl7, and for
+    func_801E4178_ovl17 and func_8015CD00_ovl5's call site in two other
+    overlays -- eight objects across four files, .text identical every time,
+    objdump A/B against the known-good build. Then func_801B3C54_ovl7 matches.
+
+    The general fact: **a parameter that is only ever passed straight to a
+    call whose $a0 the ROM never writes compiles to the same bytes whether it
+    is declared or not.** That is why these functions ended up `(void)` in the
+    first place, it is why retyping them cannot break the ROM, and it is why
+    the `(void)` spelling then blocks every CALLER that needs $a0 occupied.
+    When a lever-58 candidate's pass-through target is declared `(void)`, do
+    not write a local prototype that contradicts it (LEVER 49 rejects that) --
+    retype the definition and every declaration, gate each affected object
+    with the byte diff, and expect all of them to be identical. If one is not,
+    that callee was doing something else with $a0 and the whole reading was
+    wrong.
+
+    Corollary for triage: these functions are almost always stored into a
+    function-pointer table that already declares the right type --
+    D_800DF150 is `void (*[])(struct GObj *)` and every one of the nine
+    assignments of func_801AC840_ovl7 into it was raising IDO warning 709.
+    **Grep the warnings, not the listings, to find the next cluster.**
+
+69. **Where diff ZERO is the stack adjustment, LEVER 58 cannot pay.** Two
+    negatives, both with unimpeachable evidence for the parameter and both
+    worth nothing. func_800BCA5C (ovl1_13) dispatches through D_800D55BC,
+    whose four entries all take an argument, from the first call in the
+    function with $a0 untouched and no home store -- and declaring the
+    parameter moved not one instruction (236/293 either way), because that
+    function allocates five callee-saved registers where the ROM uses four
+    and its first diff is `addiu $sp, -0x50` against `-0x40`.
+    func_8015CE74_ovl5 (`or $s0, $a0, $zero`, so the parameter is certain)
+    went 270/277 to 272/277, two words WORSE, for the same reason: frame
+    -0x70 against -0x68 and three `lui` bases where the ROM shares one.
+    The lever moves a value out of $a0 and lets the values below it fall onto
+    the ROM's registers. That is a register-allocation effect, and it has
+    nothing to reach when the draft is the wrong SHAPE. Look at where diff
+    zero is before spending the compile; if it is in the prologue, fix the
+    shape first. Keep the truthful head either way -- but say in the note that
+    the score went the wrong way, so the next lane does not read the number as
+    a refutation of the lever.
