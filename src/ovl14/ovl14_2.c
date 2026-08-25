@@ -791,27 +791,37 @@ void func_801E2610_ovl14(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2610_ovl14.s")
 #endif
 
-#ifdef NON_MATCHING
-/* FACTORY: 10/103, re-measured 2026-08-24. The listing has NO `sw $a0` at
-   all, so the ROM's definition takes no parameter -- src/ovl14/ovl14_2.h's
-   `void func_801E2834_ovl14(GObj *arg0);` is a wrong prototype, not just a
-   matching detail. Measured both ways: keeping the parameter is 10/103 (the
-   home store at word 4 displaces the ROM's `nop` at word 12, so the counts
-   still agree and the two streams re-sync at word 13); changing the header to
-   `void func_801E2834_ovl14();` and the definition to `(void)` drops the home
-   store but comes out 102 words and 93 diffs, because IDO then materialises
-   %hi(gEntityGObjProcessArray) above the branch where the ROM materialises
-   %hi(func_801A3E80_ovl7). So the prototype fix is necessary but not
-   sufficient; whoever finishes this needs the argument-evaluation order of
-   `assign_new_process_entry(gEntityGObjProcessArray[objId],
-   func_801A3E80_ovl7)` to put the SECOND argument's %hi first, and the header
-   change must then be A/B'd across every TU that includes ovl14_2.h. */
+/* MATCHED 2026-08-25 from 10/103, by ONE argument: `func_801A0D74_ovl7(arg0)`.
+   LEVER 58, in the shape LEVER 67 spells out and this function's own note got
+   backwards. The note read "the listing has NO `sw $a0` at all, so the ROM's
+   definition takes no parameter -- ovl14_2.h's `(GObj *)` prototype is wrong",
+   and went on to cost a `(void)` experiment (102 words, 93 diffs) plus an
+   11-placement barrier sweep. That inference is exactly the rule LEVER 67(e)
+   retired: no home store plus a call that CONSUMES $a0 means a parameter that
+   IS USED, not the absence of one. `jal func_801A0D74_ovl7` at 801E2880 is
+   reached only down the D_800E83E0 == 0 arm, where nothing has written $a0 --
+   the only $a0 writes are in the other arm's assign_new_process_entry setup --
+   and func_801A0D74_ovl7 is `s32 (GObj *)`. The draft declared the parameter
+   and could not use it, so IDO homed it, and that home store was the whole
+   residue: it displaced the ROM's branch-delay `nop` at word 12 and the two
+   streams re-synced at word 13, which is why the count agreed and the diff
+   looked like an evaluation-order problem in the OTHER arm. The header was
+   right all along; nothing outside this file needed to change.
+
+   One un-guarding trap on the way, caught by check_rodata_bytes.py and not by
+   verify.py: this function owns three migrated `.late_rodata` words and the
+   draft spelled them `-0.4875f` / `-0.975f`, which round to 0xBEF9999A and
+   0xBF79999A -- one ULP ABOVE the ROM's 0xBEF99999 / 0xBF799999. .text was
+   byte-exact, check_tu_size was clean, and the linked sha1 was wrong. Take the
+   literal from the listing's own `.float` text (-0.4874999821 / -0.9749999642),
+   not from the pretty decimal it looks like. Note also that the ROM keeps TWO
+   separate words for the two -0.975f sites: IDO does not merge late_rodata
+   entries, so both spellings must stay written out. */
 extern u32 D_8012BCA0;
 extern s32 D_801CA738_ovl7;
 extern s32 func_801117BC(s32 *, u32);
 extern void func_80111C4C(s32);
 
-/* barrier_sweep.py (LEVER 71) 2026-08-25: all 11 statement placements tried, none beats the base 10/103. */
 void func_801E2834_ovl14(GObj *arg0) {
     u32 temp;
 
@@ -819,7 +829,7 @@ void func_801E2834_ovl14(GObj *arg0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
         return;
     }
-    func_801A0D74_ovl7();
+    func_801A0D74_ovl7(arg0);
     temp = D_8012BCA0 >> 19;
     if (temp != 0) {
         if ((temp & 0xE00) != 0) {
@@ -832,19 +842,16 @@ void func_801E2834_ovl14(GObj *arg0) {
     if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
         D_800E3C90[omCurrentObj->objId] = 5.0f;
         if (0.0f < D_800E3210[omCurrentObj->objId]) {
-            D_800E3750[omCurrentObj->objId] = -0.4875f;
+            D_800E3750[omCurrentObj->objId] = -0.4874999821f;
         } else {
-            D_800E3750[omCurrentObj->objId] = -0.975f;
+            D_800E3750[omCurrentObj->objId] = -0.9749999642f;
         }
     } else {
-        D_800E3750[omCurrentObj->objId] = -0.975f;
+        D_800E3750[omCurrentObj->objId] = -0.9749999642f;
         D_800E3C90[omCurrentObj->objId] = 10.0f;
     }
     func_80111C4C(func_801117BC(&D_801CA738_ovl7, omCurrentObj->objId));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14_2/func_801E2834_ovl14.s")
-#endif
 
 void func_801E29D0_ovl14(GObj *arg0) {
     D_800DF150[omCurrentObj->objId] = func_801E2AD8_ovl14;
