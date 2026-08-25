@@ -697,8 +697,26 @@ block_59:
 #endif
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* m2c draft, for the PORT only. 204/243, and unlike the rest of its class this
+   one does NOT come apart on LEVER 108's cleanup -- measured 2026-08-25, so
+   nobody re-spends it.
+     - Deleting the seven temp_ declarations and writing every subscript
+       omCurrentObj->objId is 204 -> 212, because the declaration COUNT carries
+       the frame (LEVER 54): 0x58 -> 0x50 and every sp offset with it.  Two
+       reserved `s32` slots put the frame back and the score back to exactly
+       204, i.e. the cleanup is byte-neutral here.
+     - `sp2C->unk3A = -1;` for m2c's `-1U` is inert (unk3A is u8, so the store
+       is 0xFF either way and the `li 255` vs `addiu -1` is positional).
+   THE REAL RESIDUE IS STRUCTURAL and aligndiff (LEVER 104) names it:
+     a) the ROM holds `&D_800D7098` in $a2 through the whole dispatch --
+        `lui`+`addiu` twice more inside the arms -- where this draft reaches
+        every field through its own `lui %hi / lw %lo`.  LEVER 85's rule
+        (count the %hi/%lo pairs against the base registers) says the source
+        references that symbol more than once per block.
+     b) the ROM reads `D_800E83E0[omCurrentObj->objId]` into $v1 in a block of
+        its own ending `b .L801DC6D0_ovl16`, eight words this draft does not
+        have at all.
+   That is a re-derivation of the dispatch, not a lever. */
 void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl16AnimInfo sp38;
     EnemyRecord *sp2C;

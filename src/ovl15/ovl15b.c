@@ -659,20 +659,30 @@ void func_801E48E4_ovl15(struct GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-void func_801E5080_ovl15(GObj *arg0) {
-    u32 temp_v1;
-    u32 temp_v1_2;
+/* Boss entry: bind the two procs, face left, inherit the parent's heading,
+   fall to y = 40 at -10, land, and after 75 ticks hand off to
+   func_801ACF84_ovl7 with the D_801D7BC4 cue table installed.
 
+   Byte-exact.  It carried "m2c draft, for the PORT only. Not byte-exact and
+   not claimed to be" (LEVER 88/108's shape) at 12/167 with a SHAPE DISTANCE OF
+   ZERO -- and the whole of it was m2c's two `temp_v1 = omCurrentObj->objId`
+   caches, one shared between D_800E17D0 and D_800E0D50, one between D_800E3210
+   and D_800E3750.  Writing both subscripts `omCurrentObj->objId` is MATCH.
+
+   **THAT IS A CORRECTION TO HOW SHAPE 0 IS BEING READ.** aligndiff reduces
+   every word to its MNEMONIC, so an extra LOCAL that only rotates the register
+   allocation is invisible to it -- shape 0 means "no instruction was added,
+   removed or changed KIND", not "no source edit can reach this".  LEVER 65b's
+   companion claim, that a shape-0 draft is permuter fodder, is true only after
+   the declaration list has been cleaned.  Clean it first, then believe the
+   shape. */
+void func_801E5080_ovl15(GObj *arg0) {
     func_8019BA3C_ovl7();
     D_800DEF90[omCurrentObj->objId] = func_800B7790;
     D_800DF150[omCurrentObj->objId] = func_801E531C_ovl15;
     D_800E8920[omCurrentObj->objId] = 0;
     gEntitiesAngleYArray[omCurrentObj->objId] = -1.5707964f;
-    temp_v1 = omCurrentObj->objId;
-    D_800E17D0[temp_v1] = D_800E17D0[D_800E0D50[temp_v1]];
+    D_800E17D0[omCurrentObj->objId] = D_800E17D0[D_800E0D50[omCurrentObj->objId]];
     D_800E9020[omCurrentObj->objId] = 0.0f;
     func_800B33F4();
     func_800A9864(0x10092, 0x2A, 0x10);
@@ -687,8 +697,7 @@ void func_801E5080_ovl15(GObj *arg0) {
     func_800AA018(0x10539);
     gEntitiesNextPosYArray[omCurrentObj->objId] = 40.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3050[omCurrentObj->objId] = 0.0f;
     D_800E3590[omCurrentObj->objId] = -0.5f;
@@ -699,10 +708,6 @@ void func_801E5080_ovl15(GObj *arg0) {
     D_800E1B50[omCurrentObj->objId]->unk94 = (struct EnemyAnimCue *) &D_801D7BC4;
     func_801ACF84_ovl7(arg0);
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15b/func_801E5080_ovl15.s")
-#endif
 
 extern struct GObjProcess *gEntityGObjProcessArray[];
 /* FACTORY: 53/236 measured, and the number is misleading -- the INSTRUCTION
