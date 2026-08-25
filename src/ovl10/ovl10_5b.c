@@ -975,7 +975,6 @@ void func_801F11A8_ovl10(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F11A8_ovl10.s")
 #endif
 
-#ifdef NON_MATCHING
 /* 1/64.  Was 11/64 with the three constants as `extern f32`; this TU's rodata
    is MIGRATED, and writing them as literals fixed the load scheduling that the
    earlier sweep (a `lim` local at four positions, both operand orders of the
@@ -1009,25 +1008,30 @@ void func_801F11A8_ovl10(GObj *arg0) {
    So the residue is a REGISTER-ALLOCATION cost of the only spelling that
    fixes the slot, not an unreachable canonicalisation. Exactly what the
    permuter is for. */
-void func_801F1454_ovl10(struct GObj *arg0) {
-    f32 v;
+void func_801F1454_ovl10(struct GObj *arg0)
+{
+  f32 new_var;
+  f32 v;
+  if (D_800E6A10[omCurrentObj->objId] == 1.0f)
+  {
+    v = -1.5707964f;
+  }
+  else
+  {
+    v = 1.5707964f;
+  }
+  gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + (new_var = v);
+  while (6.2831855f <= gEntitiesAngleYArray[omCurrentObj->objId])
+  {
+    gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
+  }
 
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        v = -1.5707964f;
-    } else {
-        v = 1.5707964f;
-    }
-    gEntitiesAngleYArray[omCurrentObj->objId] = v + D_800E17D0[omCurrentObj->objId];
-    while (6.2831855f <= gEntitiesAngleYArray[omCurrentObj->objId]) {
-        gEntitiesAngleYArray[omCurrentObj->objId] -= 6.2831855f;
-    }
-    while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f) {
-        gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
-    }
+  while (gEntitiesAngleYArray[omCurrentObj->objId] < 0.0f)
+  {
+    gEntitiesAngleYArray[omCurrentObj->objId] += 6.2831855f;
+  }
+
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5b/func_801F1454_ovl10.s")
-#endif
 #ifdef MIPS_TO_C
 /* FACTORY: 198/199. This draft also OWNS the N64-side prototype for func_800A9864:
  * ovl10_5b.c keeps that prototype in the PORT-only block at the top of the file, so
