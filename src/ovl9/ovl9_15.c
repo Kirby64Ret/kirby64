@@ -551,7 +551,6 @@ void func_80216700_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
 /* FACTORY: 3/42 words DIFFER (the old "39/42" was the matched-word count in
  * the opposite convention -- re-measured 2026-08-24 with measure_seeds.py).
  * Pure lwc1 scheduling: everything except a 3-word rotation of the
@@ -569,38 +568,20 @@ void func_80216700_ovl9(struct GObj *arg0) {
  *     = 4; the rest 16-23.
  * The muls, subs, adds, the c.le.s tail and the frame are all already exact,
  * so this is the LEVERS "second variant" load-scheduling class. Permuter. */
-s32 func_8021679C_ovl9(f32 arg0) {
-    f32 dz;
-    f32 dx;
-    f32 dy;
-
-    dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
-    dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
-    dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0];
-    if (sqrtf((dz * dz) + ((dx * dx) + (dy * dy))) <= arg0) {
-        return 1;
-    }
-    return 0;
-}
-#elif defined(PORT)
 extern f32 sqrtf(f32);
 
-s32 func_8021679C_ovl9(f32 arg0) {
-    f32 dz;
-    f32 dx;
-    f32 dy;
-
-    dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0];
-    dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0];
-    dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0];
-    if (sqrtf((dz * dz) + ((dx * dx) + (dy * dy))) <= arg0) {
-        return 1;
-    }
-    return 0;
+s32 func_8021679C_ovl9(f32 arg0)
+{
+  f32 dz;
+  f32 dx;
+  f32 dy;
+ do { dz = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[0]; dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[0]; dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[0]; } while (0);
+  if (sqrtf((dz * dz) + ((dx * dx) + (dy * dy))) <= arg0)
+  {
+    return 1;
+  }
+  return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_15/func_8021679C_ovl9.s")
-#endif
 
 IN_FILE void func_8021690C_ovl9(void);
 void func_80216844_ovl9(struct GObj *arg0) {
