@@ -270,7 +270,12 @@ void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];
     extern f32 D_801DB058_ovl8[];
-    void func_800B2340(Vector *, struct DObj *, s32);
+    /* NO LOCAL PROTOTYPE FOR func_800B2340 HERE. src/ovl1/ovl1_7.h is
+     * included above and declares it `(Vector *, struct DObj *, u32)`; the
+     * `s32` spelling that used to sit here contradicted it and gcc rejects
+     * the pair outright -- "conflicting types for 'func_800B2340'" -- which
+     * broke the PC build of this whole TU. IDO never saw it, because the
+     * ROM build takes neither this arm nor the draft above. */
     void func_801D560C_ovl8(struct GObj *);
     s32 dir;
     s32 i;
@@ -350,7 +355,12 @@ void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];
     extern f32 D_801DB058_ovl8[];
-    void func_800B2340(Vector *, struct DObj *, s32);
+    /* NO LOCAL PROTOTYPE FOR func_800B2340 HERE. src/ovl1/ovl1_7.h is
+     * included above and declares it `(Vector *, struct DObj *, u32)`; the
+     * `s32` spelling that used to sit here contradicted it and gcc rejects
+     * the pair outright -- "conflicting types for 'func_800B2340'" -- which
+     * broke the PC build of this whole TU. IDO never saw it, because the
+     * ROM build takes neither this arm nor the draft above. */
     void func_801D560C_ovl8(struct GObj *);
     s32 dir;
     s32 i;
