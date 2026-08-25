@@ -1260,50 +1260,68 @@ void func_801E3990_ovl17(struct GObj *arg0) {
  * and flags D_800E98E0[info.unkC]; on a hit (2) plays 0x1BD, sets the
  * counter to 3 (flare) and sparks effect 6/3/2 on one random DObj of each
  * of the parent wing's three segment pairs; otherwise clears the counter. */
-void func_801E3A20_ovl17(void) {
+/* FACTORY: 334/387, down from 374/387. Three findings, taken from the MATCHED
+   sibling func_801E373C_ovl17 sixty lines above -- same service for the other
+   wing piece, and the only body in the file whose shape is known correct.
+
+     - IT RETURNS s32. rettype_screen.py flags it: the `ent->unk8C` guard exits
+       through `b .L801E4020_ovl17` with `or $v0, $zero, $zero` in the delay
+       slot, and five later paths put `addiu $v0, $zero, 0x1` there. The
+       sibling is already written `s32` with exactly that 0/1 pattern. The
+       prototype lives in src/ovl17/ovl17.h, so this is LEVER 81's class and
+       the linked ROM is the gate, not the object.
+     - THE ARMS ARE INVERTED. The sibling writes `if (k != 1) { if (k == 2) ...
+       } else { ... }`, not the straight `== 1 / == 2 / else` chain. Measured:
+       inverted 360, straight 364, and the gap survives every other edit.
+     - `parent` IS NOT A LOCAL. Spelling D_800E0D50[omCurrentObj->objId] at
+       its four uses is 360 -> 341; the sibling holds no such local either.
+
+   Then one reserved word, which the sibling also carries as `u8 sp4C[4]`:
+   341 -> 334 declared FIRST, 338 after `ent` or after `pd`, 341 after `sp2C`
+   (dropped entirely -- LEVER 13's trailing position), and 342 for two. LEVER
+   110's rule that the POSITION matters as much as the count, reproduced.
+
+   Inert or worse, so do not retry: inlining objId as well (360 -> 364 -- this
+   function's cached objId is NOT LEVER 4's shape, unlike func_801E073C_ovl17
+   in the file next door where the same edit was worth ten words), dropping
+   `pd` (368), dropping `kind` (no change), and `s32 pad0;` in place of the
+   u8 array (identical at 334).
+
+   What is left is a whole-body shift: the record spill still sits four bytes
+   off the ROM's, so the count is right and the offsets are not. */
+s32 func_801E3A20_ovl17(void) {
+    u8 sp4C[4];
     struct EnemyRecord *ent;
     struct DObj **pd;
     struct Ovl17AnimInfo sp2C;
-    s32 objId;
     s32 kind;
-    s32 parent;
-
     ent = D_800E1B50[omCurrentObj->objId];
     func_80111ECC(func_801A0464_ovl7());
-    if (ent->unk8C != NULL) {
-        if (func_80110B00(&sp2C) != 0) {
-            D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
-            ent->unk43 = sp2C.unk3;
-        } else {
-            D_800E83E0[omCurrentObj->objId] = 0;
-            ent->unk43 = 0;
-        }
-        objId = omCurrentObj->objId;
-        kind = D_800E83E0[objId];
-        parent = D_800E0D50[objId];
-        if (kind == 1) {
-            if (D_800E7880[objId] == 0) {
-                D_800E9C60[parent] = 1;
-            } else {
-                D_800E9E20[parent] = 1;
-            }
-            assign_new_process_entry(gEntityGObjProcessArray[objId], func_801A3E80_ovl7);
-            if (sp2C.unkC != 0) {
-                D_800E98E0[sp2C.unkC] = 1;
-            }
-        } else if (kind == 2) {
-            D_800E7CE0[objId] = 1;
+    if (ent->unk8C == NULL) {
+        return 0;
+    }
+    if (func_80110B00(&sp2C) != 0) {
+        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
+        ent->unk43 = sp2C.unk3;
+    } else {
+        D_800E83E0[omCurrentObj->objId] = 0;
+        ent->unk43 = 0;
+    }
+    kind = D_800E83E0[omCurrentObj->objId];
+    if (kind != 1) {
+        if (kind == 2) {
+            D_800E7CE0[omCurrentObj->objId] = 1;
             play_sound(0x1BD);
             if (sp2C.unkC != 0) {
                 D_800E98E0[sp2C.unkC] = 1;
             }
-            if (D_800E7880[objId] == 0) {
-                D_800E9C60[parent] = 3;
+            if (D_800E7880[omCurrentObj->objId] == 0) {
+                D_800E9C60[D_800E0D50[omCurrentObj->objId]] = 3;
             } else {
-                D_800E9E20[parent] = 3;
+                D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 3;
             }
-            pd = D_800DFBD0[parent];
-            if (D_800E7880[objId] == 0) {
+            pd = D_800DFBD0[D_800E0D50[omCurrentObj->objId]];
+            if (D_800E7880[omCurrentObj->objId] == 0) {
                 func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[5] : pd[6]);
                 func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[8] : pd[9]);
                 func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0xB] : pd[0xC]);
@@ -1312,14 +1330,27 @@ void func_801E3A20_ovl17(void) {
                 func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0x13] : pd[0x14]);
                 func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0x16] : pd[0x17]);
             }
+            return 1;
         } else {
-            if (D_800E7880[objId] == 0) {
-                D_800E9C60[parent] = 0;
+            if (D_800E7880[omCurrentObj->objId] == 0) {
+                D_800E9C60[D_800E0D50[omCurrentObj->objId]] = 0;
             } else {
-                D_800E9E20[parent] = 0;
+                D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 0;
             }
         }
+    } else {
+        if (D_800E7880[omCurrentObj->objId] == 0) {
+            D_800E9C60[D_800E0D50[omCurrentObj->objId]] = 1;
+        } else {
+            D_800E9E20[D_800E0D50[omCurrentObj->objId]] = 1;
+        }
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
+        if (sp2C.unkC != 0) {
+            D_800E98E0[sp2C.unkC] = 1;
+        }
+        return 1;
     }
+    return 0;
 }
 
 #elif defined(PORT)

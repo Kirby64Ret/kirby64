@@ -54,7 +54,7 @@ s32 func_801E30BC_ovl17(void);
 void func_801E36AC_ovl17(struct GObj *);
 s32 func_801E373C_ovl17(void);
 void func_801E3990_ovl17(struct GObj *);
-void func_801E3A20_ovl17(void);
+s32 func_801E3A20_ovl17(void);
 void func_801E40F4_ovl17(struct GObj *);
 void func_801E4178_ovl17(struct GObj *);
 void func_800B4B9C(struct GObj *);
