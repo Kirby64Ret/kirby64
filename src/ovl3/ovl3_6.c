@@ -1940,10 +1940,20 @@ void func_8017C1FC_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 415 of 440 words differ (94%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the mounted-friend ride coroutine (track action 0x27), from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017C418_ovl3.s (via m2c with the
@@ -2552,10 +2562,20 @@ void func_8017CAF8_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 281 of 308 words differ (91%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the ability dash-attack coroutine (track action 0x28, model
  * 0x20013), from asm/nonmatchings/ovl3/ovl3_6/func_8017CF60_ovl3.s (via
@@ -2797,10 +2817,20 @@ done:
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 176 of 301 words differ (58%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the dash-attack per-frame render/service routine (paired with the
  * 0x28 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
@@ -3420,10 +3450,20 @@ void func_8017E284_ovl3(s32 arg0)
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 274 of 303 words differ (90%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the ability ride/jump per-tick handler (paired with the 0x2B
  * coroutine above), from asm/nonmatchings/ovl3/ovl3_6/func_8017E54C_ovl3.s
@@ -3770,10 +3810,20 @@ void func_8017EA0C_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 208 of 248 words differ (83%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
  * class documented across ovl3_1.c/kirby.c/plyshot.c). Also gives
  * D_80198830_ovl3 a local-scope view (LocalUnk80198830) since the real
@@ -3981,10 +4031,20 @@ void func_8017EDDC_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 395 of 446 words differ (88%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the mini-stone-form coroutine (track action 0x2D), from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017F1C0_ovl3.s (via m2c) -- the
@@ -5047,10 +5107,20 @@ void func_80180818_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 272 of 302 words differ (90%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the needle-spray (action 0x2E) per-tick handler (paired with the
  * func_80180818_ovl3 coroutine above), from asm/nonmatchings/ovl3/ovl3_6/
@@ -5335,10 +5405,20 @@ void func_801810D0_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 289 of 313 words differ (92%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the burning-dash coroutine (track action 0x30, model 0x20014),
  * from asm/nonmatchings/ovl3/ovl3_6/func_80181110_ovl3.s (via m2c).
@@ -5554,10 +5634,20 @@ void func_80181110_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 275 of 318 words differ (86%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the burning-dash (action 0x30) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_801815F4_ovl3.s (via m2c). Latches
@@ -5887,10 +5977,20 @@ void func_80181CFC_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 363 of 445 words differ (81%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the ice-skate phase coroutine (track action 0x32, model
  * 0x2001E), from asm/nonmatchings/ovl3/ovl3_6/func_80181F64_ovl3.s (via
@@ -6234,10 +6334,20 @@ void func_80182658_ovl3(s32 arg0, s32 arg1, f32 arg2) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 363 of 415 words differ (87%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the ice-skate (action 0x32) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8018271C_ovl3.s (via m2c). Services
@@ -6603,10 +6713,20 @@ phase_check:
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 241 of 278 words differ (86%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the spark-ball hop coroutine (track action 0x33, model 0x2001B),
  * from asm/nonmatchings/ovl3/ovl3_6/func_80182D9C_ovl3.s (via m2c).
@@ -6913,10 +7033,20 @@ void func_80183428_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 271 of 283 words differ (95%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the drill-run coroutine (track action 0x34, model 0x2001D), from
  * asm/nonmatchings/ovl3/ovl3_6/func_801835AC_ovl3.s (via m2c). Arms the
@@ -7118,10 +7248,20 @@ void func_801835AC_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 255 of 262 words differ (97%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the drill-run (action 0x34) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_80183A1C_ovl3.s (via m2c). Services
@@ -7431,10 +7571,20 @@ void func_80183E38_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 256 of 336 words differ (76%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the propeller-blade (action 0x35) per-tick handler (paired with
  * the func_80183E38_ovl3 coroutine above), from asm/nonmatchings/ovl3/
@@ -7895,10 +8045,20 @@ void func_80184C64_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 218 of 311 words differ (70%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the UFO-charge phase coroutine (track action 0x38), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80184CA4_ovl3.s (via m2c). First
@@ -8134,10 +8294,20 @@ void func_80185180_ovl3(s32 arg0, s32 arg1, f32 arg2) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 219 of 287 words differ (76%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the UFO (action 0x38) per-tick handler, from asm/nonmatchings/
  * ovl3/ovl3_6/func_80185224_ovl3.s (via m2c). Runs the alternate tick
@@ -8435,10 +8605,20 @@ void func_80185968_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 466 of 490 words differ (95%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the spring-legs phase coroutine (track action 0x3B, model
  * 0x2001F), from asm/nonmatchings/ovl3/ovl3_6/func_80185A9C_ovl3.s (via
@@ -8750,10 +8930,20 @@ void func_80185A9C_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 195 of 321 words differ (60%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the spring-legs (action 0x3B) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_80186248_ovl3.s (via m2c). Services
@@ -9104,10 +9294,20 @@ void func_80186750_ovl3(s32 arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 211 of 260 words differ (81%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the vacuum-mouth (action 0x3C) per-tick handler (paired with
  * the func_80186750_ovl3 coroutine above), from asm/nonmatchings/ovl3/
@@ -12266,10 +12466,20 @@ void func_8018B188_ovl3(s32 arg0, s32 arg1, f32 arg2) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 1628 of 1674 words differ (97%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the mixed-copy (action 0x3E) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8018B228_ovl3.s (via m2c). While
@@ -13577,10 +13787,20 @@ tail:
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 471 of 523 words differ (90%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
 /* PORT: the dash-runner phase coroutine (track action 0x3F, model
  * 0x2002A), from asm/nonmatchings/ovl3/ovl3_6/func_8018CC54_ovl3.s (via

@@ -2014,10 +2014,20 @@ void func_801ED634_ovl16(struct GObj *arg0) {
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
    this a register/permutation floor; 187 of 450 words differ (41%). A
    permutation RENAMES registers -- it does not change what the function
-   computes, so it cannot account for this. At this fraction the draft is
-   simply not this function yet. Re-derive from the listing before spending a
-   compile on register spelling, and do NOT queue it for the permuter:
-   mutation has no purchase at this distance.
+   computes -- so if the claim really is a permutation it cannot account for
+   this, the draft is simply not this function yet, and it should be
+   re-derived from the listing rather than swept for register spellings.
+
+   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
+   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
+   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
+   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
+   and every diff after it is the same instruction one slot late, so a note
+   reading 3/213 from an ALIGNING differ and a positional score of 210/213
+   are both true and both useful. Where the cause shifts the stream,
+   near-total positional disagreement is EXPECTED and the note should be
+   believed. Only where the claim is a pure rename does this annotation
+   stand.
 
  *
  * Instruction count, schedule, every branch and every branch-likely, the whole
