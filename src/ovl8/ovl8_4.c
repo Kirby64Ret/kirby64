@@ -1145,17 +1145,33 @@ void func_801D7240_ovl8(struct GObj *arg0) {
  * X velocity, take a point of damage and clear the two gKirbyState fields the
  * grab used. */
 #ifdef MIPS_TO_C
-/* FACTORY: 97/179 words DIFFER -- 82 already match, and the instruction count
- * is EXACT. Residue is a frame-size divergence and the cascade it causes: the
- * ROM builds a 0x30 frame and spills the objId to 0x18(sp) and the
- * func_801128A4 result to 0x2C(sp) across the func_800F8728 call, while IDO
- * keeps both in registers and builds 0x20. Everything sp-relative and every
- * later register name follows from that.
+/* FACTORY: 93/179 words DIFFER -- was 97/179; the instruction count is EXACT.
+ * 2026-08-25: THE FRAME IS NOW RIGHT. Four reserved `s32` slots declared
+ * AHEAD of every named local take the frame from 0x20 to the ROM's 0x30
+ * (LEVER 78, and see the correction to this note below). 97 -> 93.
  *
- * Swept with no effect: pad locals in every position (IDO drops them -- they
- * are unused, so lever 13 has nothing to push), `!(dx == 0 && dz == 0)` in
+ * The note this replaces said "pad locals in every position (IDO drops them --
+ * they are unused, so lever 13 has nothing to push)". That is WRONG, and it is
+ * the LEVER 13/78 confusion: LEVER 13 says a pad goes LAST, and last is the one
+ * place an unreferenced pad reliably evaporates. Declared FIRST, all four are
+ * kept and each reserves its word.
+ *
+ * What is left is the register cascade the old note describes, minus the frame
+ * size: the ROM spills the objId to 0x18(sp) and the func_801128A4 result to
+ * 0x2C(sp) across the func_800F8728 call. This draft still spills only the
+ * second one, and at 0x1C -- because the four reserved slots are DECLARED
+ * locals and LEVER 57 puts declarations above compiler temps, so they take
+ * 0x2C..0x20 and push the temps to 0x1C/0x18. Reading the ROM's slots through
+ * LEVER 57 says its source has NO stack-resident declaration here at all: six
+ * compiler temps, the first (0x2C) holding `hits` and the sixth (0x18) the
+ * objId. That is the shape to reach; the reserved slots buy the SIZE only,
+ * and the two offset diffs at 0x2C/0x1C are the price.
+ *
+ * Swept with no effect: `!(dx == 0 && dz == 0)` in
  * place of `dx != 0 || dz != 0` (the ROM shares one `mtc1 $zero,$f12` between
- * the two compares; IDO materialises two, and neither spelling changes it).
+ * the two compares; IDO materialises two, and neither spelling changes it),
+ * and spelling BOTH compares against the integer `0` (LEVERS 90/99) -- 93 ->
+ * 131/178, and it loses a word, so the pair does not fork on that knob here.
  * Fixed on the way down (136 -> 97): testing the EQUAL case first on
  * D_800E8920 (LEVERS lever 5), and giving the objId and the probe result
  * named locals.
@@ -1173,6 +1189,13 @@ void func_801D75A8_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
     s32 func_801128A4(void *);
     f32 func_800F8728(u32, f32, f32);
+    /* RESERVED: four words the ROM's source had and this draft has not
+       identified (LEVER 78).  Delete them in the same edit that names the
+       real locals. */
+    s32 reserved0;
+    s32 reserved1;
+    s32 reserved2;
+    s32 reserved3;
     s32 hits;
     f32 dx;
     f32 dz;

@@ -455,9 +455,27 @@ void func_801F3D2C_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 139/153 [was noted 14/153], frame 0x48 vs the ROM's 0x50 plus the objId register
-   ($v0 in the ROM, $v1 here).  Everything else -- the arg0 home store, the
-   two table lookups and the tail -- lines up once those two are set. */
+/* FACTORY: 134/153 [was 139/153, and noted 14/153 before that].
+   2026-08-25: THE FRAME IS NOW RIGHT, and its POSITION matters as much as its
+   size (LEVER 78). Two reserved `s32` slots take it from 0x48 to the ROM's
+   0x50 wherever they are declared -- but declared AHEAD of every named local
+   they take 0x4C/0x48 and push `rec` and `tp` DOWN 8 bytes, so every
+   sp-relative diff survives and the score only goes 139 -> 137. Declared
+   BETWEEN `tp` and `id` they take the two dead words the ROM has below `tp`,
+   `rec` lands on the ROM's 0x4C and `tp` on 0x44/0x48, and it is 134.
+   So "reserved slots ahead of every named local" is the wrong rule in general:
+   the rule is to put them where the ROM's DEAD words are, read off the
+   listing's sp offsets. Here the ROM's used slots are rec 0x4C, tp 0x44-0x4B,
+   ang 0x38, acc 0x2C-0x37, with 0x3C/0x40 dead between tp and ang.
+   What is left is two things, both scoreable now:
+     - the objId register, $v0 in the ROM (which overwrites the objId with its
+       own shifted index) against $v1 here (which keeps both live);
+     - a scheduling hoist. The ROM emits `lwc1 $f4, 0x48($sp)` -- tp.unk4, for
+       the atan2f on the OTHER side of the `bgtz` -- at 801F3ED0, and this
+       draft emits it at its use. Everything from there on is one word out of
+       phase, which is what makes 134 of 153 differ on what is really a
+       handful of causes.
+   Measured inert: `s32 id` in place of `u32 id`, 134 either way. */
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
 extern f32 eneGetPlayerHeight(void);
 extern void func_80199F1C_ovl7(GObj *);
@@ -478,6 +496,11 @@ void func_801F399C_ovl9(struct GObj *);
 void func_801F3E60_ovl9(GObj *arg0) {
     EnemyRecord *rec;
     struct PcTrackPosition tp;
+    /* RESERVED: two words the ROM's source had and this draft has not
+       identified (LEVER 78).  They stand in for real locals; whoever names
+       those locals deletes these in the same edit. */
+    s32 reserved0;
+    s32 reserved1;
     u32 id;
 
     id = omCurrentObj->objId;
