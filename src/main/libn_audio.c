@@ -412,8 +412,10 @@ KToneX *func_80023B34(u8 *pc);
 KNoteX *func_80023D5C(u8 *pc);
 void func_80023E80(KToneX *tone);
 void func_80024750(KNoteX *note);
-u32 func_8002581C(ALCSeq *seq, u32 track);
-u8 func_80025758(ALCSeq *seq, u32 track);
+/* func_80025758 / func_8002581C are `static` and defined above every use, so
+   they must NOT be re-declared here: a non-static file-scope prototype ahead of
+   a static definition is an error for gcc and changes what uopt -O3 may assume
+   for IDO. */
 Acmd *func_80026A10(Acmd *ptr, N_PVoice *f, s32 tsam, s32 nbytes, s32 outp,
                     s32 inp, u32 flags);
 s16 func_80026898(f32 tgt, f32 vol, s32 count, u16 *ratel);
@@ -1180,9 +1182,15 @@ void func_80024748(void) {
  * the same instructions one slot out.  Swept: inverted condition, `!= 0`,
  * `> 0`, early return with no else, post-increment dereferences, and an extra
  * pointer local.  Verbatim upstream libreultra/src/audio/cseq.c __getTrackByte;
- * the ALCSeq field offsets are confirmed exact by the listing. */
-#ifdef NON_MATCHING
-u8 func_80025758(ALCSeq *seq, u32 track) {
+ * the ALCSeq field offsets are confirmed exact by the listing.
+ *
+ * SEALED 2026-08-25 at 49/49.  The one scheduling decision above was never the
+ * residue: it was the o32 calling convention.  `uopt -O3` -- which
+ * tools/decomp/cc_o3.py has run all along -- gives a `static` callee whose call
+ * sites it can all see its own register assignment, which is what the ROM used.
+ * The only change needed was the word `static`.  It must STAY static; dropping
+ * it restores the o32 entry moves and breaks this and its two callers. */
+static u8 func_80025758(ALCSeq *seq, u32 track) {
     u8 theByte;
 
     if (seq->curBULen[track]) {
@@ -1219,9 +1227,7 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
 
     return theByte;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80025758.s")
-#endif
+
 /* __readVarLen (upstream libreultra/src/audio/cseq.c).
  *
  * The three m2c holes that used to stand here -- `$t1`, `$t2` and `$t3` read
@@ -1248,25 +1254,28 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
  * the 3-word excess is o32 saving $s0/$s1/$s2 (6 words) less the four
  * `or $aN, $tN` argument moves the ROM needs and an o32 build does not.
  *
- * READY TO SEAL, measured 2026-08-25: the cause is NOT the missing ujoin.
- * `uopt -O3` -- which tools/decomp/cc_o3.py already runs -- hands a `static`
- * callee a custom convention on its own, and the only thing wrong here was
- * that the definition is not spelled `static`.  Spell BOTH this function and
- * its own callee func_80025758 `static`, un-guard alCSeqNew alongside them,
- * and write the swallowed stub out as `void func_80025874(void) {}` after this
- * one: verify.py then reports MATCH for all three (func_8002581C 22 insns,
- * func_80025758 49, alCSeqNew 66) with the DEFAULT compiler.  alCSeqNextEvent
- * does not have to be un-guarded for that, and drops 209 -> 87 if it is.
- * Settle one thing first: a `static` callee has no global symbol, while
- * alCSeqNextEvent's surviving `#pragma GLOBAL_ASM` still carries
- * `jal func_8002581C`.  Confirm that reloc resolves in the merged object
- * before trusting the ROM sha1.
+ * SEALED 2026-08-25, byte-exact, and the ujoin story above is WRONG about the
+ * cause.  `uopt -O3` -- which tools/decomp/cc_o3.py has run all along --
+ * assigns the interprocedural convention itself; the only defect was that this
+ * definition and func_80025758's were not spelled `static`.  Both are now, and
+ * the "3-word excess" (the o32 $s0/$s1/$s2 save) is gone.
  *
- * The body is plain ANSI C, so the port takes it too. */
-#if defined(MIPS_TO_C) || defined(PORT)
-u8 func_80025758(ALCSeq *seq, u32 track);
-
-u32 func_8002581C(ALCSeq *seq, u32 track) {
+ * THE RELOC QUESTION IS SETTLED, and the answer is that nothing breaks.  A
+ * `static` definition keeps a LOCAL FUNC symbol in the object, and
+ * asm-processor assembles the surviving `#pragma GLOBAL_ASM` listings into the
+ * same object, so alCSeqNextEvent.s's `jal func_8002581C` binds to it:
+ *   readelf -r  ->  R_MIPS_26  000024bc  func_8002581C
+ *   readelf -s  ->  000024bc  FUNC  LOCAL  func_8002581C
+ * and 0x24bc + the TU base 0x80023360 is 0x8002581C.  `nm -u` lists neither
+ * name.  So a caller left as a pragma does NOT have to be sealed in the same
+ * change.  What DOES break is verify.py's report: it resolves a reloc through
+ * the global symbol map, finds no global, and prints
+ * `RELOC TARGET 80023360 != 8002581C` -- a tooling artifact on the TU base,
+ * not a defect.  Read the object, not that line.
+ *
+ * The body is plain ANSI C, so the port takes it too -- but it must stay
+ * `static`: an exported spelling puts the o32 entry moves back. */
+static u32 func_8002581C(ALCSeq *seq, u32 track) {
     u32 value;
     u32 c;
 
@@ -1280,9 +1289,12 @@ u32 func_8002581C(ALCSeq *seq, u32 track) {
     }
     return value;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_8002581C.s")
-#endif
+
+/* The next, uncalled function of the TU: the ROM folds its `jr $ra; nop` inside
+   func_8002581C's own `.size` (padtrap.py class 'swallowed'), so it has to be
+   written out here or the TU comes up two words short. */
+void func_80025874(void) {
+}
 
 /* Upstream libreultra/src/audio/cseq.c alCSeqNextEvent, re-derived from the
  * listing rather than pasted: the event-type constants (3 AL_TEMPO_EVT, 0x12
@@ -1413,23 +1425,20 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
  * lastDeltaTicks 0x10, deltaFlag 0x14, curLoc 0x18, curBUPtr 0x58, curBULen
  * 0x98, lastStatus 0xA8, evtDeltaTicks 0xB8, and ALCMidiHdr.division at 0x40).
  *
- * FACTORY: 70 of 70 words DIFFER against a 66-word ROM, but the residue is one
- * decidable thing repeated: the ROM runs this loop with SEVEN live values and
- * parks two of them -- the index `i` and the word-indexed base `seq + 4*i` --
- * in CALLER-saved $t5/$t4 ACROSS the `jal func_8002581C`, which also takes its
- * own arguments in $t2/$t3.  That is IDO's -O3 ujoin custom convention (see
- * func_8002581C's own listing), and tools/decomp/cc_o3.py has no ujoin, so an
- * o32 build must spend $s5/$s6 on those two and pay 2 extra sw + 2 extra lw --
- * exactly the 4-word excess -- which then renames every register after it.
- * Swept: `((ALCMidiHdr *) ptr)->trackOffset[i]` for `seq->base->trackOffset[i]`
- * (68 words, but REJECTED -- it drops the `lw $t7, 0x0($s0)` the ROM performs
- * every iteration, so it is a smaller diff against a wrong shape, LEVERS 48),
- * `|=` written out as `x = x | y`, and `i` as s32 (both unchanged at 70).
+ * SEALED 2026-08-25, byte-exact, WITHOUT changing a character of this body.
+ * The 70-of-70 note above diagnosed the right effect and the wrong cause: the
+ * ROM does park `i` and `seq + 4*i` in caller-saved $t5/$t4 across the
+ * `jal func_8002581C`, but that is legal only because uopt -O3 knows
+ * func_8002581C's clobber set, and it knows that for a `static` callee whose
+ * call sites are all in the TU.  Spelling func_8002581C `static` -- no ujoin,
+ * no source change here -- made all 66 words fall out at once.  A `#pragma
+ * GLOBAL_ASM` caller elsewhere in the TU does not spoil that; see the reloc
+ * note on func_8002581C.
+ * Rejected sweeps kept for the record: `((ALCMidiHdr *) ptr)->trackOffset[i]`
+ * for `seq->base->trackOffset[i]` drops the `lw $t7, 0x0($s0)` the ROM performs
+ * every iteration (a smaller diff against a wrong shape, LEVERS 48).
  *
  * The body is plain ANSI C over the public ALCSeq, so the port takes it too. */
-#if defined(MIPS_TO_C) || defined(PORT)
-u32 func_8002581C(ALCSeq *seq, u32 track);
-
 void alCSeqNew(ALCSeq *seq, u8 *ptr) {
     u32 i;
     u32 tmpOff;
@@ -1457,9 +1466,6 @@ void alCSeqNew(ALCSeq *seq, u8 *ptr) {
 
     seq->qnpt = 1.0f / (f32) seq->base->division;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/alCSeqNew.s")
-#endif
 
 void alCSeqNewMarker(ALCSeq *seq, ALCSeqMarker *m, u32 ticks)
 {

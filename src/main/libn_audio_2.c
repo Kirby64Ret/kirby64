@@ -2,7 +2,10 @@
 #include <macros.h>
 #include <PR/n_libaudio.h>
 
-s32 func_8002C9FC(ALSeq *seq);
+/* func_8002C9FC is `static` (see its definition) and every caller follows it,
+   so it must NOT be declared here: gcc rejects a static definition after a
+   non-static file-scope declaration, and IDO would be entitled to drop the
+   interprocedural convention the ROM depends on. */
 char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks);
 void alSeqSetLoc(ALSeq *seq, ALSeqMarker *m);
 s32 alSeqGetTicks(ALSeq *seq);
@@ -603,22 +606,17 @@ void func_8002C9F4(void) {
  * types, a separate loop variable, while(1)+break, if/else, goto-loop, nested
  * block, pointer local, explicit increments, early return, and a volatile
  * pointer read. */
-#ifdef NON_MATCHING
-/* FACTORY: 4/19, temp-register numbering only. This is upstream libnaudio's
-   __readVarLen verbatim and every instruction is the ROM's; the residue is
-   that the ROM REUSES $t6/$t7 inside the do-while (its four temps are
-   t6,t7,t8,t9) where IDO wraps on to $t0/$t1 (six temps). Swept 2026-08-25
-   with no improvement: `(c & 0x7f) + (value << 7)` (5/19 -- it also moves the
-   `sll`), `value <<= 7; value += c & 0x7f;` (5/19), and hoisting the
-   continuation test into a shared `s32 more` local so both `c & 0x80` sites
-   are one variable (4/19, byte-identical to this). Allocator floor.
+/* NOT AN ALLOCATOR FLOOR, and SEALED 2026-08-25 at 0/19.  The $t6/$t7-vs-$t0/$t1
+   residue the note above chased through 17 variants was the o32 calling
+   convention, not the register free list: spelled `static`, `uopt -O3` sees
+   every C call site, picks its own numbering, and emits the ROM's words.
 
-   NOT AN ALLOCATOR FLOOR -- measured 2026-08-25.  Spell this definition
-   `static` and it is 0/19, byte-exact, with the default compiler.  Both of its
-   ROM callers (__alSeqNextDelta, alSeqNextEvent) live in this TU, so `uopt -O3`
-   can see every call site and picks its own register numbering -- the ROM's.
-   The $t6/$t7-vs-$t0/$t1 residue was the o32 convention, not the free list. */
-s32 func_8002C9FC(ALSeq *seq) {
+   It must stay `static` AND it must keep at least one UN-GUARDED C caller.
+   With both callers left as `#pragma GLOBAL_ASM` (uopt sees no call at all)
+   IDO deletes the function outright -- measured: verify.py reports all 19
+   words `<none>` and the TU comes up 76 bytes short.  __alSeqNextDelta below
+   is that caller; do not re-guard it without re-guarding this too. */
+static s32 func_8002C9FC(ALSeq *seq) {
     s32 value;
     s32 c;
 
@@ -633,9 +631,7 @@ s32 func_8002C9FC(ALSeq *seq) {
     }
     return value;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/func_8002C9FC.s")
-#endif
+
 /* IPA-BLOCKED, and ipascan cannot see this shape: the ROM moves `seq` and
  * `event` into $a2/$a3 and keeps them live ACROSS the jal to func_8002C9FC,
  * so that callee must preserve two caller-saved registers -- a ujoin custom
@@ -745,41 +741,37 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
  * delta without consuming it.  The listing pins every field -- base 0x0,
  * curPtr 0x8, len 0x10 -- and func_8002C9FC is __readVarLen.
  *
- * FACTORY: 20 of 25 words DIFFER against a 22-word function.  Needs IDO's
- * interprocedural register allocation (-O3/ujoin): the ROM keeps seq,
- * pDeltaTicks and savePtr in $a2/$t0/$a3 -- all caller-saved -- ACROSS the call
- * to func_8002C9FC, so an o32 build has to home all three on the stack, which
- * is the whole 3-word excess and renames the rest.  tools/decomp/cc_o3.py has
- * no ujoin, so no source spelling reaches this.
+ * SEALED 2026-08-25, byte-exact, and ujoin was never involved.  The ROM keeps
+ * seq/pDeltaTicks/savePtr in $a2/$t0/$a3 -- all caller-saved -- across the
+ * `jal` because `uopt -O3` knows func_8002C9FC's clobber set, and it knows that
+ * for a `static` callee whose C call sites it can all see.  Spelling
+ * func_8002C9FC `static` (it went 4/19 -> 0/19 at the same time) closed the
+ * whole 3-word excess here with no change to this body.
  *
- * A SOURCE SPELLING DOES REACH IT -- measured 2026-08-25, and ujoin is not
- * involved.  What lets the ROM keep seq/pDeltaTicks/savePtr in caller-saved
- * registers across the `jal` is that `uopt -O3` knows func_8002C9FC's clobber
- * set, and it only knows that for a `static` callee whose call sites are all in
- * the TU.  Both of func_8002C9FC's callers are in this file, so: spell
- * func_8002C9FC `static` (it goes 4/19 -> byte-exact at the same time) and
- * write the two swallowed stubs out as `void func_8002CD44(void) {}` /
- * `void func_8002CD4C(void) {}` BEFORE this function.  verify.py then reports
- * MATCH (22 insns), with the DEFAULT compiler.  alSeqNextEvent drops 97 -> 87
- * in the same shape.
- * Before sealing, screen the tail: this is the LAST function of the TU and its
- * listing carries three nops AFTER `.size`, so check_tu_size is the gate, not
- * verify.py.  Its listing also carries two
- * unnamed empty functions (8002CD44/8002CD4C) inside its own `.size`.  That is
- * NOT a padding trap and does NOT block an un-guard -- padtrap.py now calls the
- * class 'swallowed': they are simply the next two functions of the TU, which
- * splat folded in because nothing calls them, and a conversion writes them out
- * as `void func_8002CD44(void) {}` / `void func_8002CD4C(void) {}` after this
- * one (same shape as func_80160A70_ovl5 in ovl5_2.c).  Note verify.py only
- * accounts for ONE folded stub, so with both defined it still shows the second
- * pair as a tail diff; the object A/B is the gate here.  Only the BODY blocks
- * this site.
+ * The two `jr $ra; nop` pairs at 0x8002CD44/0x8002CD4C that splat folded inside
+ * this listing's `.size` (padtrap.py class 'swallowed') are the next two,
+ * uncalled functions of the TU and are written out below.  Note verify.py only
+ * accounts for ONE folded stub, so with both defined it may still show a tail
+ * diff; the object is the gate.
+ *
+ * WHAT ACTUALLY BLOCKED THIS FOR TWO PASSES was neither the body nor the fold:
+ * the listing carries THREE NOPS AFTER `.size`, 0x8002CD54..0x8002CD5C.  Those
+ * are not padding -- they are the 16-byte alignment gap in front of alCSPSetSeq,
+ * which was its own object in libn_audio.a.  Converting this function used to
+ * shorten libn_audio_2.o by 12 bytes and drag every later segment with it.  A
+ * `- [0x2D990, pad]` subsegment does NOT supply them (tried 2026-08-24, moved
+ * 778 bytes).  What does: give alCSPSetSeq back its own object.  It now lives
+ * in src/main/libn_audio_2a.c with its own `c` subsegment at 0x2D960, and IDO's
+ * own 16-byte .text padding emits the three nops as this object's tail --
+ * measured, libn_audio_2.o .text = 0x1FD0 exactly, and libn_audio_2a.o = 0x40.
+ * That is the same shape libn_audio_2b..2f already use, and the same fix the
+ * notes in libn_audio_2e.c / libn_audio_2f.c ask for.
+ *
  * Swept: the upstream `if (curPtr < base + len) { ...; return TRUE; }
  * return FALSE;` polarity measures 21; the negated early-return below measures
- * 20 and is kept (LEVERS 5).
+ * 20 without the static lever and is kept (LEVERS 5).
  *
  * The body is plain ANSI C over the public ALSeq, so the port takes it too. */
-#if defined(MIPS_TO_C) || defined(PORT)
 char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks) {
     u8 *savePtr;
 
@@ -791,19 +783,20 @@ char __alSeqNextDelta(ALSeq *seq, s32 *pDeltaTicks) {
     seq->curPtr = savePtr;
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2/__alSeqNextDelta.s")
-#endif
+
+/* The next two, uncalled functions of the TU.  splat folded them inside
+   __alSeqNextDelta's `.size` because nothing references them; written out here
+   they land at 0x8002CD44 and 0x8002CD4C exactly as the ROM has them. */
+void func_8002CD44(void) {
+}
+
+void func_8002CD4C(void) {
+}
 
 /* This file ends here because the n_audio functions that follow were each their
- * own object in libn_audio.a and so are 16-byte aligned; they now live in
- * src/main/libn_audio_2b.c .. libn_audio_2f.c, one C file per object, and
- * kirby.ld's SUBALIGN(16) supplies the fill between them.  See libn_audio_2.h. */
-void alCSPSetSeq(ALCSPlayer *seqp, ALCSeq *seq) {
-    N_ALEvent evt;
-
-    evt.type = AL_SEQP_SEQ_EVT;
-    evt.msg.spseq.seq = seq;
-
-    n_alEvtqPostEvent(&((N_CSPlayer *) seqp)->evtq, &evt, 0);
-}
+ * own object in libn_audio.a and so are 16-byte aligned; they live in
+ * src/main/libn_audio_2a.c and libn_audio_2b.c .. libn_audio_2f.c, one C file
+ * per object, and kirby.ld's SUBALIGN(16) supplies the fill between them.  The
+ * 12 bytes of that fill which belong to THIS object are emitted by IDO's own
+ * 16-byte .text padding: .text is 0x1FC4 of code and 0x1FD0 on disk.  See
+ * libn_audio_2.h. */
