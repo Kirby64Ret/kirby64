@@ -1484,6 +1484,26 @@ extern void func_8012307C(s32, s32, f32, s32);
    ("redeclaration ... previous declaration at line 159"). Forking this one
    word means retyping the SHARED header, which re-types every call site in
    the tree; not worth one word. */
+/* FACTORY: 1/190. The single wrong word is
+ *     ROM  addiu $a2, $zero, 0x1        (materialise the literal)
+ *     IDO  move  $a2, $s2               (reuse the register that holds 1)
+ * for the third argument of `func_801230E8(0x200FF, 0x20100, 1)`. $s2 is
+ * IDO's hoisted constant 1: it serves the `case 1:` comparison
+ * (`beq $a0, $s2`) and both `sw $s2, 0x44($s0)` stores. Everything else in
+ * 190 words is byte-exact, so this is a value-numbering decision and not a
+ * shape: two one-instruction encodings of the same constant, and IDO picked
+ * the move because it could see $s2 already held it.
+ *
+ * MEASURED AND REVERTED 2026-08-25: `gKirbyState.unk44 = 1;` in place of
+ * `gKirbyState.unk44 = gKirbyState.unk44 + 1;`. The ROM stores $s2 (i.e. the
+ * constant 1) at both 0x44 sites, which makes the plain assignment look like
+ * the honest reading -- it is not, it costs 76/190. The increment is
+ * load-bearing: with it, $s3 takes %hi(D_800E64D0) and $s2 the constant; with
+ * the assignment those two swap and the whole saved-register file rotates.
+ * Do not "simplify" it again.
+ *
+ * A one-word constant-materialisation choice is what mutation reaches and
+ * source spelling does not, so this sits in priority_queue.py's TARGETS. */
 void func_8016DA14_ovl3(GObj *arg0) {
     f32 temp;
     f32 temp2;
