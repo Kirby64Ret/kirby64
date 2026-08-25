@@ -128,8 +128,28 @@ def run_one(cf, fn, seconds, jobs):
     t0 = time.time()
     with open(logf, 'wb') as fh:
         p = subprocess.Popen(
+            # --stack-diffs IS NOT OPTIONAL HERE, and leaving it off cost a
+            # whole afternoon of false matches.
+            #
+            # decomp-permuter scores through asm-differ, which by DEFAULT
+            # normalises stack offsets away so that a reshuffled frame does
+            # not swamp the diff. Under that default a function whose only
+            # residue is the FRAME SIZE scores 0. verify.py -- and the linked
+            # ROM -- disagree, because `addiu $sp, $sp, -0x28` and
+            # `addiu $sp, $sp, -0x30` are two different words.
+            #
+            # Measured 2026-08-25: func_801720D8_ovl5 and func_801721CC_ovl5
+            # both logged '*** MATCH' in about a second, and the winning
+            # source the permuter wrote out was BYTE-IDENTICAL to the draft
+            # already in the tree. Both are 2/61 and 2/88 by verify.py, and
+            # both diffs are the prologue and epilogue `addiu $sp`. factory.py
+            # rejected them on the ROM gate, as it must, and the queue would
+            # have gone on re-finding and re-rejecting them for ever -- with
+            # both logs reporting progress.
+            #
+            # With the flag the score means what the ROM means.
             [sys.executable, os.path.join(TOOLS, 'decomp-permuter', 'permuter.py'),
-             '-j', str(jobs), '--better-only', '--stop-on-zero', d],
+             '-j', str(jobs), '--better-only', '--stop-on-zero', '--stack-diffs', d],
             stdout=fh, stderr=subprocess.STDOUT)
         try:
             p.wait(timeout=seconds)
@@ -208,8 +228,13 @@ def scan(q, jobs):
         logf = os.path.join(d, 'scan.out')
         with open(logf, 'wb') as fh:
             p = subprocess.Popen(
+                # --stack-diffs for the same reason as in run_one: without it
+                # a draft whose only residue is the frame size scans as
+                # "base score 0, already matches", which is the most
+                # misleading answer this mode can give.
                 [sys.executable, os.path.join(TOOLS, 'decomp-permuter', 'permuter.py'),
-                 '-j', str(jobs), '--better-only', '--stop-on-zero', d],
+                 '-j', str(jobs), '--better-only', '--stop-on-zero',
+                 '--stack-diffs', d],
                 stdout=fh, stderr=subprocess.STDOUT)
             # 25s is generous for one compile plus one diff even on a cold
             # cache; anything slower is a broken directory, not a slow one.
