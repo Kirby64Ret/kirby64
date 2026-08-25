@@ -2549,3 +2549,95 @@ the pool allocator's real stride is 0x78.
     measurement from the other side: 80 aligned renames and 0 genuinely
     different words is a description of the CURRENT draft's declaration list,
     not of the function.
+
+117. **LEVER 55'S SECOND FORM HAS A MECHANICAL SCREEN, IT IS `cvt.d.s` IN YOUR
+    OWN OUTPUT, AND IT PAID FIVE TIMES IN ONE STINT.** LEVER 55 says a callee
+    declared NOWHERE, or only under `#ifdef PORT`, makes every call an implicit
+    `int f()`. Its own scope correction then measured three cases where that
+    was true and the score did not move, and the entry has read as
+    "audit the prototypes, expect nothing" ever since. That is right for the
+    `$v0`/`$v1` rotation it was written about and wrong in general: **when the
+    call passes or returns a FLOAT, an implicit declaration is not a colouring
+    difference, it is extra instructions.** K&R default promotion turns the f32
+    argument into a double (`cvt.d.s`, then `mfc1`/`mfc1` into a GPR pair or
+    `sdc1` into the stack argument area) and the return into an int
+    (`mtc1 $v0,$fN` / `cvt.s.w`), where the ROM moves one word.
+
+    THE SCREEN. Score the draft, then grep the diff's OUR column:
+
+        VERIFY_MAXDIFF=4000 python3 tools/decomp/scratchverify.py <f.c> <fn> \
+          | grep -E 'current=.*cvt\.(d\.s|s\.w)'
+
+    `cvt.d.s` is near-conclusive (nothing in this codebase computes in double).
+    `cvt.s.w` alone can be an honest int-to-float in the source, so read it.
+    Run over all 182 guarded drafts in ovl2/ovl7/ovl11/ovl13/ovl14 it flagged
+    twenty-one, ten of them with `cvt.d.s`. What they were worth:
+
+        func_8019AC60_ovl7   82 -> 56   func_800F98EC undeclared, then MATCHED
+        func_8019AAD0_ovl7   89 -> 45   func_800F98EC undeclared
+        func_8019B2C0_ovl7   63 -> 29   func_800F8824 undeclared, then MATCHED
+        func_8010AC1C       177 -> 95   func_80108078 PORT-arm-only prototype
+        func_80106C5C       238 -> 228  func_80108858 PORT-arm-only prototype
+        func_801073C4       258 -> 253  same
+        func_80108E08       272 -> 253  same
+        func_801ABBA0_ovl7  365 -> 362 words  func_800F98EC, plus m2c had
+                                        invented a THIRD argument for it
+
+    `check_local_protos.py` cannot find this class and LEVER 80's corollary
+    should say so: that tool reports a definition and its DISAGREEING
+    declarations, and here there is no declaration at all. Nor does a grep of
+    the headers work by itself -- `func_800F98EC` is prototyped in three .c
+    files and `func_80108078` inside its own file's `#elif defined(PORT)` arm,
+    so both look declared to any text search that does not follow the include
+    graph.
+
+    a) **THE FIX SHAPE.** Hoist the PORT arm's own prototype to file scope, or
+       add one with the types the ROM's argument registers show. Both are
+       byte-inert for the matching build (all four TUs gated: sha1 6cea2d46,
+       check_tu_size 0). Where the callee's own guarded draft heads different
+       types -- func_80108078's m2c draft is all `void *` -- check whether that
+       draft is already UNSCORABLE before worrying about the clash; ovl2_7.c's
+       was, so the file-scope prototype cost nothing. Do NOT reach for LEVER
+       89's K&R `()` relaxation here: `()` still default-promotes, so it fixes
+       the type disagreement and leaves the `cvt.d.s` in place.
+
+    b) **A NEGATIVE MEASURED THROUGH A WRONG PROTOTYPE IS NOT A NEGATIVE, AND
+       THIS COST A REAL LEVER.** func_8019B2C0_ovl7's note recorded that
+       caching `omCurrentObj->objId` in a local was worth 3 words and that
+       inlining it (LEVER 4) made things WORSE, 63 -> 66. With the
+       func_800F8824 prototype added, the identical edit is 29 -> 22 and the
+       function goes on to MATCH. The double promotion had been changing the
+       register pressure the lever acts on. Re-run the cvt screen before
+       trusting any note whose experiments predate it.
+
+    c) **WHERE IT DOES NOT PAY, so the population is bounded.** In this scope
+       four flagged drafts did not move at all -- func_80102570 (32 `cvt.s.w`,
+       all honest int-to-float), func_80109318, func_801A8CDC_ovl7 and
+       func_801A7524_ovl7. The last two still show `cvt.d.s` after
+       func_800F98EC was declared in their TU, so they have a second
+       undeclared callee that has not been named yet. That is the next pass.
+
+118. **THE LEVER 89 SWEEP IS COMPLETE AND EMPTY IN ovl2/ovl7/ovl11/ovl13/ovl14,
+    AND THE SCREEN SCRIPT AS WRITTEN OVER-REPORTS TWICE.** Re-run 2026-08-25
+    over all five overlays: ten sites where `lever58_screen.py` names a CALL and
+    the draft writes that call with no argument, and every one dies on LEVER
+    67(b) -- I read all six distinct callees' definitions
+    (func_80112A0C, func_80121194, func_8019BB58_ovl7, func_801A6610_ovl7,
+    func_800AF408, func_801C0588_ovl7) and every one is a MATCHED, unguarded
+    `(void)` function reaching its object through `omCurrentObj` or writing
+    globals. func_801E2610_ovl14 is the eleventh and the previous lane already
+    measured its edit exactly inert. ovl11 and ovl14 hold only 4 and 7 guarded
+    drafts between them, so the "ovl11/ovl14 were never swept" gap did not
+    exist. Nothing is left here.
+
+    Two defects in the screen the next lane should not re-inherit, both of
+    which produced phantom sites for me:
+      - `guard_blocks` returns the span of the WHOLE three-arm construct, so a
+        bare call in the `#elif defined(PORT)` arm reads as a hit even though
+        scratchverify only ever scores the FIRST arm (LEVER 83). Cut the body
+        at the first `#elif`/`#else`/`#endif`.
+      - comments are searched. `func_80104D2C`'s note quotes the line
+        `extern s32 func_80103AA0();` while explaining why that workaround does
+        NOT compile, and the screen read that quotation as a bare call site.
+    Strip comments and cut to the first arm and the same run gives 10 instead
+    of 11, all real.
