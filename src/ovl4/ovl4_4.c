@@ -400,6 +400,28 @@ void func_800B3070(s32, f32);
 void func_800B9C50(s32);
 void animUpdateModelTreeAnimation(GObj *);
 
+/* FACTORY: 3/163. All three are one fact: at the join after the
+ * func_800A9F98 if/else, the ROM materialises the 0.0f into $f16
+ * (`mtc1 $zero, $f16`, hoisted into BOTH arms -- once into the `b` delay slot
+ * and once right after the jal) and reloads sp24 into $f18 at the join. IDO
+ * fills those same slots the other way round: it hoists the `lwc1` of sp24
+ * and materialises the constant at the join, so the two operands of
+ * `c.eq.s $f16, $f18` swap registers.
+ *
+ * The comparison is ALREADY written constant-first (`0.0f == sp24`), which is
+ * the operand order the ROM's register assignment implies, so lever 20 is
+ * already satisfied and is not the lever here.
+ *
+ * Measured and rejected 2026-08-25:
+ *   - a named `f32 zero = 0.0f;` local declared before the branches, to give
+ *     the constant a source position ahead of them: 4/163, worse.
+ *   - LEVER 61's empty `do { } while (0);` before the `if`: byte-identical at
+ *     3/163. A barrier stops motion ACROSS it; here both compilers already
+ *     hoist something into the same slots and the disagreement is over WHICH,
+ *     which a barrier cannot express.
+ * The likely cause of the preference is that sp24 has a second use further
+ * down (`func_800B2F54(..., sp24)`), so IDO ranks its load above the constant
+ * in the ready list. That points at the later use, not at this comparison. */
 void func_80158E98_ovl4(s32 arg0, s32 arg1, s32 arg2) {
     f32 sp24;
     s32 pad0;
