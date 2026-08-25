@@ -1817,7 +1817,7 @@ the pool allocator's real stride is 0x78.
     on. Cheap to check -- count the declarations in the candidate against the
     draft before spending the compile.
 
-94. **Two housekeeping confirmations for the levers added today, so the next
+95. **Two housekeeping confirmations for the levers added today, so the next
     lane does not re-run them.**
 
     a) `harvest_zero_scores.py` (LEVER 72, and LEVER 84's transfer rule) has
@@ -1839,3 +1839,102 @@ the pool allocator's real stride is 0x78.
        (32 -> 80 and 125 -> 304). A source change that moves the score by
        exactly zero in a three-arm function is a reason to check the arm before
        it is a reason to believe anything about IDO.
+
+80. **THE objId LEVER, WITH THE SCREEN CORRECTED AND THE COST MEASURED.**
+    LEVER 4 says to inline `omCurrentObj->objId` where m2c cached it. Six
+    plyshot.c/ovl3_6.c functions were re-derived on it in one stint (500/505 ->
+    29, 509/513 -> 69, 531/533 -> 52, 262/267 -> 129, 388/391 -> 22,
+    86/180 -> 8), and three things about it were written down wrong.
+
+    a) **THE SCREEN IS POINTER RE-READS, NOT `%hi(omCurrentObj)` COUNT.** The
+       note that found this lever said to look for "%hi(omCurrentObj) more than
+       once". Both of its own closures have exactly ONE: the ROM materialises
+       the address once into a saved register and the re-reads are
+       `lw $x, 0x0($sN)` off that held base. Counting `%hi` finds the functions
+       where the scheduler split the address instead, which is a different and
+       weaker signal, and it MISSES the strongest candidates.
+       `tools/decomp/objid_screen.py` counts the reads: `lw` through
+       `%lo(omCurrentObj)` plus `lw $x, 0x0($held)` for any register that
+       received `addiu $held, .., %lo(omCurrentObj)`, and compares that against
+       the `->objId` occurrences already inline in the draft.
+
+    b) **IT HAS A THRESHOLD, AND ONE INLINE READ TOO MANY COSTS A WHOLE FRAME.**
+       func_8015DBE4_ovl3's ROM allocates NO callee-saved register at all and
+       re-materialises lui/lw at all twenty uses. Writing its third effect
+       pointer inline instead of naming it added five objId reads, which pushed
+       IDO over its threshold for hoisting `&omCurrentObj` into $s0, and every
+       stack offset moved with it: 517/548 inline against 77/534 named. So
+       "spell every objId inline" is not the rule. The rule is to match the
+       ROM's read count, and a value the ROM holds across six `lw 0x4C(..)`
+       re-reads is a local no matter how much the objId lever says otherwise.
+
+    c) **THE FRAME COMES WITH IT.** In every one of the six, deleting the cache
+       changed the stack adjustment, so the old score was measured through a
+       wrong prologue and meant nothing (LEVERS 69/74). Two of them needed a
+       trailing pad afterwards and one needed four declarations removed. Score
+       the objId edit and the frame together; neither is readable alone.
+
+81. **A "LOCAL" THAT THE ROM KEEPS IN A SAVED REGISTER AND RE-READS IS OFTEN A
+    FILE-SCOPE SCRATCH GLOBAL.** Three functions in src/ovl3/plyshot.c hold
+    `lui $sN, %hi(D_800D71E8 + 0x50)` -- spimdisasm naming the nearest
+    preceding symbol -- and read and write `0x0($sN)` as if it were a local
+    `f32 spd`. It is the global `D_800D7238`, and the already-matched
+    func_8015F950_ovl3 in the same TU spells it that way. Worth 254 -> 129 on
+    func_8015CF9C_ovl3 and part of 326 -> 22 on func_8015FD58_ovl3.
+
+    **The tell that separates it from a stack temp is an ARGUMENT.** In
+    func_8015CF9C_ovl3 the ROM computes `40.0f - sinf(angle) * 63.6396f`,
+    STORES it to the global, and then passes `lw $a1, 0x0($sN)` to the next
+    call. A draft that writes the expression at the call site can never produce
+    that store/reload pair, and no amount of local-declaration sweeping
+    reaches it. Whenever a draft has an f32 local that the ROM neither homes
+    nor spills yet re-reads through one register, grep the listing's `%hi` for
+    a data symbol instead of assuming a register allocation floor.
+
+82. **INTEGER ZEROS COME IN PAIRS, AND THE PAIR CAN BE TWO COMPARES.**
+    func_801712F8_ovl3 recorded that two zero STORES must be written as the
+    integer `0` together. Measured twice more, on comparisons:
+      - func_8015C00C_ovl3: the two velocity-sign tests in one arm,
+        `D_800E64D0[objId] < 0` and `> 0`, must BOTH use the integer literal.
+        Either alone is worth nothing (`> 0` alone 210, `< 0` alone 206);
+        together they fork the two `mtc1 $zero` the ROM has off the shared one,
+        209 -> 54.
+      - func_8015FD58_ovl3: `D_800E6690[objId] = 0` forks the store's zero off
+        the one its neighbouring `< 0.0f` compare uses, 150 -> 22 -- and doing
+        the same to D_800E3750 in the same function is INERT, because that pair
+        already forks. So the unit is the PAIR that currently shares one
+        `mtc1 $zero`, not the file and not the operator.
+
+83. **A LOCAL AND A LITERAL HOLDING THE SAME CONSTANT DECIDE HOW A STORE TO A
+    GLOBAL IS ADDRESSED.** func_8017E284_ovl3 emitted two extra
+    `lui $at, %hi(gKirbyState)`, one for each `swc1` to `unk40` inside its
+    loop, while every LOAD in the same block used the $s0 the function already
+    holds. The cause was not the store and not the loop: it was that the value
+    stored is the loop clamp, and the draft spelled it through an `f32 lim`
+    local. Spelling those two uses as the literal `0.78539819f` -- and leaving
+    the loop's `if (lim != cur)` test on the local -- put both stores back on
+    $s0: 86/180 -> 8/178, with the word count exact. Literal at all three
+    sites is 88. Same operand-KIND family as LEVERS 7/20/21, reaching a STORE's
+    base register rather than an FP register assignment.
+
+84. **`arr[i - C]` AND `arr[i + C]` FOLD THE CONSTANT IN DIFFERENT PLACES.**
+    With the minus form IDO computes `(i - C) * 4` and adds the symbol, which
+    costs an `sll` and an `addiu` AND breaks the sharing of `i * 4` with the
+    surrounding block; with the plus form against the earlier symbol it folds
+    into the symbol and reuses the shared index. On func_8015FD58_ovl3,
+    `D_800E1ED0[objId - 112]` measures 326 and the identical address written
+    `D_800E1B50[objId + 112]` measures 163. Where the listing shows
+    `%hi(SYM + N)` for an array your headers name at a HIGHER address, write it
+    against SYM. (The remaining 4-word residue there is the ROM putting `+ N`
+    in the addiu's %lo where this C puts it in the load displacement -- same
+    linked address; that one needs a real symbol at the offset, which is a
+    splat change.)
+
+85. **DECLARATION ORDER IS ACROSS TYPES, NOT WITHIN THEM.** m2c writes
+    aggregates first out of habit and lanes sweep scalar order among scalars.
+    func_8015FD58_ovl3's ROM puts its four scalars ABOVE its three Vectors
+    (0x58/0x5C/0x60/0x64 against vb 0x4C, va 0x40, vc 0x34), so the two f32s
+    had to be declared BEFORE the two Vectors -- worth 163 -> 153, and it is
+    what puts every `NN($sp)` on the ROM's slot. Read the slots off the
+    listing and sort ALL the declarations by address descending; that is the
+    order, whatever their types.
