@@ -1659,6 +1659,27 @@ the pool allocator's real stride is 0x78.
     already-matched bare call sites (full rebuild, sha1 6cea2d46, 5615
     byte-exact, 0 real defects).
 
+    **AND "NO `sw $a0` HOME STORE ANYWHERE" IS NOT THE DISCRIMINATOR -- it is
+    the rule LEVER 67(e) retired, and it fails in BOTH directions on the eight
+    functions measured here.** Counted with
+    `grep -c 'sw \$a0, 0x[0-9A-Fa-f]*(\$sp)'` on each listing:
+
+        func_801E2834_ovl14   0 home stores   lever PAID (MATCH)
+        func_801B0C20_ovl7    1 home store    lever PAID (39 diffs)
+        func_801B1300_ovl7    1 home store    lever PAID (48 diffs)
+        func_801B3EC8_ovl7    1 home store    lever PAID (67 diffs)
+        func_801B46C4_ovl7    1 home store    lever PAID (36 diffs)
+        func_801B7C30_ovl7    1 home store    inert
+        func_801E2610_ovl14   1 home store    inert
+        func_801DE6C8_ovl14   0 home stores   parameter must be KEPT; deleting
+                                              it costs THREE words
+
+    A "no home store anywhere" screen throws away the four biggest payers of the
+    day and admits the one function where the lever's premise is false. What the
+    home store tells you is which of LEVER 67(e)'s three cases you are in, and
+    the case that pays most is the SECOND one: the ROM DOES home it, next to a
+    `jal`, because it had to keep $a0 live for the call.
+
     Two NEGATIVES with the identical edit, so the lever is not automatic:
     func_801B7C30_ovl7 (65/147) and func_801E2610_ovl14 (9/137) are EXACTLY
     inert -- neither ROM listing has an $a0 home store to misplace. Six more
@@ -1795,3 +1816,26 @@ the pool allocator's real stride is 0x78.
     evidence, whichever side of the structural/scheduling line the diff falls
     on. Cheap to check -- count the declarations in the candidate against the
     draft before spending the compile.
+
+94. **Two housekeeping confirmations for the levers added today, so the next
+    lane does not re-run them.**
+
+    a) `harvest_zero_scores.py` (LEVER 72, and LEVER 84's transfer rule) has
+       NOTHING to offer ovl2, ovl7, ovl11, ovl13 or ovl14. Run 2026-08-25: 53
+       functions with a zero-score candidate on disk, 10 still guarded, and not
+       one of the ten is in those five overlays. LEVER 84's
+       "classify the diff before compiling" is real and is simply not
+       actionable there -- there is no diff to classify.
+
+    b) LEVER 83's "check WHICH ARM you are editing" bites in this scope and the
+       test it gives is the right one. Two of the drafts worked today are
+       three-arm (`#ifdef MIPS_TO_C` / `#elif defined(PORT)` / pragma for
+       func_801DD270_ovl11, `#ifdef NON_MATCHING` / `#elif defined(PORT)` /
+       pragma for func_801DE6C8_ovl14) and BOTH have a PORT arm whose body is a
+       near-copy of the scored one -- func_801DE6C8_ovl14's PORT arm even has
+       the `(void)` head that the experiment was about, so editing the wrong one
+       would have produced exactly LEVER 83's false result. scratchverify.py
+       cuts the FIRST arm, and the proof in both cases was that the score MOVED
+       (32 -> 80 and 125 -> 304). A source change that moves the score by
+       exactly zero in a three-arm function is a reason to check the arm before
+       it is a reason to believe anything about IDO.
