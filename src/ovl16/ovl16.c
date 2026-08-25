@@ -1274,9 +1274,32 @@ void func_801DD9FC_ovl16(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 218/250 and ~10 instructions long. Register naming dominates, but the
- * count overshoot says one expression is being evaluated more than the ROM does --
- * worth a count-first pass before any register work. */
+/* FACTORY: 37/239 (was 218/250).  The count note was right and the cause was
+ * the FIRST while loop's shape, not an expression: written as a four-term
+ * `while (A && B && C && D)`, IDO pre-tests all four AND re-tests all four at
+ * the bottom, which is the 11 extra words and also the 16 bytes of extra
+ * frame (the duplicated tests spill `other * 4` instead of holding it).  The
+ * ROM tests only the Y term at both ends and the other three at the loop
+ * head, which is what `while (A) { if (!B) break; if (!C) break; if (!D)
+ * break; body }` compiles to -- the loop head is then the join of the entry
+ * path and the back edge instead of a copy of it.  218/250 -> 37/239 in one
+ * edit, instruction count and frame both exact afterwards.
+ *
+ * The 37 that remain are ONE saved-register permutation, in two independent
+ * cycles, with nothing else moving:
+ *     other * 4        ROM $s3   IDO $s2
+ *     &yArray[other]   ROM $s2   IDO $s1     (3-cycle s3->s2->s1->s3)
+ *     the constant 5   ROM $s1   IDO $s3
+ *     &omCurrentObj    ROM $s6   IDO $s7     (2-cycle)
+ *     &yArray          ROM $s7   IDO $s6
+ * $s0 (other), $s4 (the constant 1) and $s5 (&gEntityFuncListIDArray) agree.
+ * This is the same shape as the priority-list family tabulated on
+ * func_801ED9AC_ovl9 in src/ovl9/ovl9_6.c.  One knock-on worth noting for
+ * whoever attacks it: the ROM spells ohSleep(1) as `or $a0, $s4, $zero`
+ * (reusing the held 1) and IDO materialises it fresh -- same word count,
+ * so it is a consequence of the permutation rather than a separate defect.
+ * Swept and inert: splitting `other`'s declaration from its initialiser
+ * (37).  Worse: an empty do-while barrier ahead of the loop body (48). */
 /* Wall-crusher side panel: face inward per the D_800E98E0 side flag, park
  * offscreen (y=-1000) while the parent entity is above y=45 during stage 5,
  * then snap to y=0, play the extend anims, wait for the parent to rise past
@@ -1296,8 +1319,16 @@ void func_801DDA98_ovl16(s32 arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     func_800B33F4();
     func_800A9864(D_801EF728_ovl16[D_800E98E0[omCurrentObj->objId]], 0x23, 0x10);
-    while ((gEntitiesNextPosYArray[other] > 45.0f) && (D_800D7098.unk4 == 5) && (D_800D7098.unk18 == 0) &&
-           (gEntityFuncListIDArray[other] != 1)) {
+    while (gEntitiesNextPosYArray[other] > 45.0f) {
+        if (D_800D7098.unk4 != 5) {
+            break;
+        }
+        if (D_800D7098.unk18 != 0) {
+            break;
+        }
+        if (gEntityFuncListIDArray[other] == 1) {
+            break;
+        }
         gEntitiesNextPosYArray[omCurrentObj->objId] = -1000.0f;
         ohSleep(1);
     }
