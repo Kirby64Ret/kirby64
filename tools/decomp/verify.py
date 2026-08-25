@@ -164,7 +164,16 @@ def compile_file(cfile):
     # looking current even though it would fail to link.
     obj = os.path.join('build/verify', cfile[:-2] + '.o')
     os.makedirs(os.path.dirname(obj), exist_ok=True)
-    opt = OPT_OVERRIDES.get(cfile, '-O2')
+    # A SCRATCH COPY must be compiled as its ORIGINAL would be. Both maps are
+    # keyed by source path, and measure_seeds.py scores copies under /tmp, so
+    # the lookup missed and every libn_audio* draft was silently measured at
+    # -O2 -- an -O3 translation unit scored with the wrong compiler. Measured:
+    # alSeqNextEvent reads 98 that way and 88 correctly. Every bare
+    # measure_seeds number ever quoted for that family was an -O2 number.
+    # VERIFY_SECBASE_SRC already carries the original path for the .rodata
+    # base; key the compiler off it too.
+    _key = os.environ.get('VERIFY_SECBASE_SRC', cfile)
+    opt = OPT_OVERRIDES.get(_key, OPT_OVERRIDES.get(cfile, '-O2'))
     # n_audio was built at -O3, so main/libn_audio*.c cannot match at -O2 no
     # matter how good the source is. tools/decomp/cc_o3.py drives the four IDO
     # phases directly, which the cc driver cannot (ujoin is missing).
@@ -177,7 +186,7 @@ def compile_file(cfile):
     # attempt on its 38 remaining pragmas -- the largest single pool in main --
     # was being scored against the wrong compiler. The Makefile picks the
     # compiler per file; so does this now. VERIFY_CC still overrides both.
-    CC = CC_OVERRIDES.get(cfile, 'tools/ido-7.1recomp/cc')
+    CC = CC_OVERRIDES.get(_key, CC_OVERRIDES.get(cfile, 'tools/ido-7.1recomp/cc'))
     CC = os.environ.get('VERIFY_CC', CC)
     has_asm = 'GLOBAL_ASM' in open(cfile).read()
     if has_asm:

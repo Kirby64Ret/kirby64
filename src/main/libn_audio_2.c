@@ -565,8 +565,26 @@ void func_8002C790(KSeqPlayer *seqp) {
    of the ROM, while check_tu_size still reads 0. The ovl15 shape this imitates
    -- pad BETWEEN two `c` subsegments, covering real inter-object fill -- does
    not transfer to fill at the END of an object whose successor already starts
-   on the boundary. Do not repeat it without a different mechanism; the
-   function is eight bytes and is not worth a third attempt. */
+   on the boundary.
+
+   THE MECHANISM THAT DOES WORK is not a `pad` at all, and it is now proven
+   three times over in this family (see __alSeqNextDelta below, func_8002CFE4
+   in libn_audio_2e.c and func_8002D0D0/func_8002D120 in libn_audio_2f.c): give
+   the NEXT function back its own object. splat gets a new `c` subsegment, the
+   function gets a new C file, and IDO's own 16-byte .text padding then emits
+   the fill as the PREVIOUS object's tail -- exactly the bytes the listing shows
+   after `.size`. Here that means splitting at 0x2D5B0 (0x8002C9B0,
+   func_8002C9B0) so this function ends libn_audio_2.o.
+
+   NOT DONE, deliberately, and this is the one place the recipe has a real
+   cost: everything from func_8002C9B0 to __alSeqNextDelta would move to the
+   new file, and that includes alSeqNextEvent's `#pragma GLOBAL_ASM`, whose
+   listing lives in asm/nonmatchings/main/libn_audio_2/. A pragma whose listing
+   directory no longer matches its own subsegment is a landmine for the next
+   `splat split`, which writes listings under the new subsegment's name. The
+   four splits already made moved only pragma-free code, which is why they were
+   safe. Twenty bytes is not worth that; do this one only together with
+   alSeqNextEvent's own closure, or after the listings are regenerated. */
 void func_8002C990(N_ALVoice *voice, s16 priority) {
     voice->priority = priority;
 }

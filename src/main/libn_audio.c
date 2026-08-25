@@ -3,6 +3,26 @@
 #include <PR/n_libaudio.h>
 #include "synthInternals.h"
 #include <PR/abi.h>
+/* MEASURING ANYTHING IN THIS FAMILY: EXPORT THE COMPILER FIRST.
+ *
+ *     VERIFY_CC="python3 tools/decomp/cc_o3.py" \
+ *         python3 tools/decomp/measure_seeds.py src/main/libn_audio.c
+ *
+ * verify.py picks the -O3 compiler for main/libn_audio*.c by reading the
+ * Makefile, but it keys that off the FILE PATH, and measure_seeds.py scores a
+ * scratch COPY in /tmp -- which matches no path, so the override is lost and
+ * the whole family is silently scored at -O2.  Measured 2026-08-25 on
+ * alSeqNextEvent: 98 without VERIFY_CC, 88 with it.  Every bare measure_seeds
+ * number ever quoted for these files is an -O2 number.  The same applies to
+ * scoring a scratch copy of one of these TUs by hand.
+ *
+ * A `static` function has a LOCAL symbol, so verify.py's reloc check resolves
+ * `jal <it>` through the global map, finds nothing, and prints
+ * `RELOC TARGET <TU base> != <target>`.  That is a tooling artifact, not a
+ * defect: read `readelf -r` / `readelf -s` on the object, where the relocation
+ * points at the local definition and `nm -u` does not list the name.  The
+ * linked ROM is the authority (tools/decomp/verify_rom.py). */
+
 
 extern N_ALGlobals *n_alGlobals;
 extern N_ALSynth *n_syn;
@@ -780,22 +800,39 @@ void func_80023AE4(void *arg0) {
 
 /* The SFX tone allocator: pops the free-tone list and initialises the record.
  *
- * IPA-BLOCKED, and this one is decidable rather than suspected: the ROM reads
- * the tone-bytecode pointer out of $s1 and returns the record in $s0, yet its
- * frame is 0x18 and saves only $ra -- both callee-saved registers are clobbered
- * without ever being written.  That is IDO's -O3 `ujoin` custom convention, and
- * tools/decomp/cc_o3.py cannot reproduce it because ujoin is not shipped with
- * tools/ido-7.1recomp.  An o32 definition must home the parameter (`sw $a0,
- * 0x20($sp)`) and spill the record across the second osSetIntMask, which is the
- * whole 3-word count excess and rotates every register after it.
+ * The ROM reads the tone-bytecode pointer out of $s1 and returns the record in
+ * $s0, yet its frame is 0x18 and saves only $ra -- both callee-saved registers
+ * are clobbered without ever being written.  The old note called that a `ujoin`
+ * custom convention beyond cc_o3.py's reach.  It is NOT: `uopt -O3`, which
+ * cc_o3.py already runs, hands exactly this convention to a `static` callee
+ * whose C call sites it can all see, and the same lever closed func_8002581C
+ * and func_8002C9FC outright.  MEASURED HERE 2026-08-25.
  *
- * FACTORY: 67 of 68 words DIFFER (ROM 69 words), whole-function register
- * rotation on top of the two ujoin spills.  Swept: a held `KMgrToneView *` base
- * local vs an inline cast at each use (76 -> 72 words), the duration copy as a
- * `for` loop vs written out (72 -> 68 -- the ROM peels two iterations and bases
- * the other four off `mgr + 4`, which the loop form does not reproduce either
- * way), and `id` as u16 vs s32 (no change; the u16 spelling is the field's own
- * type and is kept). */
+ * FACTORY: 42 of 69 words DIFFER and the COUNT IS NOW EXACT (was 67 of 68).
+ * The remaining residue is register naming ($a2-vs-$a1 for the D_800978E0 base,
+ * and the four constants 0x40/0x80/0xFF/0x7F materialised in a different order)
+ * plus one extra word in the id-wrap block: the ROM masks `++toneIdSeq` ONCE
+ * into $v0 and branches on it, where this emits the mask and then a `move`.
+ * `id` as u16 and as s32 both give 42, so that is not the spelling.
+ *
+ * THIS SITE CANNOT BE MEASURED ALONE, and measure_seeds.py will report it as
+ * gibberish if you try: spelled `static` with both callers left as pragmas,
+ * uopt sees no call at all and DELETES the function.  The trio has to be
+ * un-guarded together --
+ *
+ *   func_80023B34  static, this draft (the `for` loop form)      42 / 69
+ *   func_80023C48  un-guarded                                     4 / 26
+ *   func_80023D00  un-guarded                                     0 / 23  EXACT
+ *
+ * -- and then only this body is left.  Both callers are byte-exact or nearly
+ * so ONLY under that shape; alone they measure 26 and 23.  So this one function
+ * now gates three, and it is the highest-value permuter seed in the file.
+ * Two levers found while getting there, both kept in the drafts below: the
+ * duration copy must be a `for` loop (IDO peels iterations 0 and 1 to absolute
+ * %hi/%lo references and bases the other four off `mgr + 4`; writing the six
+ * assignments out gives 68 words and cannot reproduce that), and a `u16`
+ * parameter is what makes func_80023D00 home its incoming $a0 -- its live
+ * neighbour func_80023CB0 is the same shape and is already matched. */
 #ifdef MIPS_TO_C
 typedef struct KToneFull {
     /* 0x00 */ struct KToneFull *next;
@@ -832,10 +869,11 @@ typedef struct KMgrToneView {
     /* 0x4E */ u16 durDefaults[6];
 } KMgrToneView;
 
-KToneFull *func_80023B34(u8 *pc) {
+static KToneFull *func_80023B34(u8 *pc) {
     KToneFull *tone;
     OSIntMask mask;
     u16 id;
+    s32 i;
 
     mask = osSetIntMask(OS_IM_NONE);
     tone = (*(KMgrToneView *) &D_800978E0).freeTones;
@@ -846,12 +884,9 @@ KToneFull *func_80023B34(u8 *pc) {
         tone->loopPc = pc;
         tone->unk1E = 0x30;
         tone->priority = (*(KMgrToneView *) &D_800978E0).defPriority;
-        tone->dur[0] = (*(KMgrToneView *) &D_800978E0).durDefaults[0];
-        tone->dur[1] = (*(KMgrToneView *) &D_800978E0).durDefaults[1];
-        tone->dur[2] = (*(KMgrToneView *) &D_800978E0).durDefaults[2];
-        tone->dur[3] = (*(KMgrToneView *) &D_800978E0).durDefaults[3];
-        tone->dur[4] = (*(KMgrToneView *) &D_800978E0).durDefaults[4];
-        tone->dur[5] = (*(KMgrToneView *) &D_800978E0).durDefaults[5];
+        for (i = 0; i < 6; i++) {
+            tone->dur[i] = (*(KMgrToneView *) &D_800978E0).durDefaults[i];
+        }
         tone->unk20 = 0;
         tone->unk21 = 0;
         tone->note = NULL;
@@ -913,30 +948,36 @@ KToneX *func_80023B34(u8 *pc) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023B34.s")
 #endif
 
-#ifdef NON_MATCHING
-#ifndef PORT
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-KChan *func_80023B34();                             /* extern */
+/* FACTORY: 4 of 26 words, and ONLY with func_80023B34 above un-guarded and
+ * `static` -- see its note; alone this measures 26.  The four are the stack
+ * SLOTS of the two spilled locals: the ROM puts the interrupt mask at 0x24($sp)
+ * and the returned record at 0x2C($sp), leaving 0x28 unused, where this puts
+ * them at 0x28 and 0x24 with no hole.  The frame size (0x30) and every
+ * instruction are already right.  IDO assigns slots in declaration order
+ * ascending, so the hole says the ROM had a third local between them that it
+ * kept in a register; four declaration orders were swept (5, 5, 7 and 9 words)
+ * and this one is the best.  The separate `ret` copy is load-bearing: folding
+ * it back into `return tone` costs the frame size as well. */
+#ifdef MIPS_TO_C
+KToneFull *func_80023C48(u8 *pc) {
+    KToneFull *ret;
+    OSIntMask mask;
+    KToneFull *tone;
 
-KChan *func_80023C48(s32 arg0) {
-    KChan *sp2C;
-    u32 sp24;
-    KChan *temp_v0;
-
-    sp24 = osSetIntMask(1U);
-    temp_v0 = func_80023B34();
-    if (temp_v0 != NULL) {
-        temp_v0->next = D_80097920;
-        D_80097920 = temp_v0;
+    mask = osSetIntMask(OS_IM_NONE);
+    tone = func_80023B34(pc);
+    if (tone != NULL) {
+        tone->next = (KToneFull *) D_80097920;
+        D_80097920 = (KChan *) tone;
     }
-    sp2C = temp_v0;
-    osSetIntMask(sp24);
-    return sp2C;
+    ret = tone;
+    osSetIntMask(mask);
+    return ret;
 }
-#else
-/* The ROM passes the tone-bytecode pointer to func_80023B34 in $s1 (ujoin
- * custom convention); the earlier draft dropped the argument. */
+#elif defined(PORT)
+/* The ROM passes the tone-bytecode pointer to func_80023B34 in $s1 (the
+ * interprocedural convention uopt gives a static callee); an earlier draft
+ * dropped the argument. */
 KToneX *func_80023C48(u8 *pc) {
     OSIntMask mask = osSetIntMask(OS_IM_NONE);
     KToneX *tone = func_80023B34(pc);
@@ -948,7 +989,6 @@ KToneX *func_80023C48(u8 *pc) {
     osSetIntMask(mask);
     return tone;
 }
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023C48.s")
 #endif
@@ -962,22 +1002,24 @@ call:
     return func_80023C48(D_800978E0.unk1C[arg0]);
 }
 
-#ifdef NON_MATCHING
-#ifndef PORT
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-KChan *func_80023D00(s32 arg0) {
-    s32 temp_a0;
-
-    temp_a0 = arg0 & 0xFFFF;
-    if (temp_a0 >= (s32) D_800978E0.unk28) {
+/* FACTORY: BYTE-EXACT, 0 of 23, but only with func_80023B34 above un-guarded
+ * and `static` -- see its note.  Alone it measures 23, and it cannot be sealed
+ * until func_80023B34's body closes, because the argument reaches that callee
+ * in $s1.  Two levers, both read off its already-matched live twin
+ * func_80023CB0 three lines up: the parameter is `u16` (that is what makes IDO
+ * home the incoming $a0 at 0x20($sp) before masking it, which an `s32`
+ * parameter with an explicit `& 0xFFFF` does not do -- worth 19 words), and the
+ * index goes into func_80023B34 through D_800978E0.unk1C, not as itself. */
+#ifdef MIPS_TO_C
+KToneFull *func_80023D00(u16 arg0) {
+    if (arg0 >= D_800978E0.unk28) {
         return NULL;
     }
-    return func_80023B34(temp_a0);
+    return func_80023B34((u8 *) D_800978E0.unk1C[arg0]);
 }
-#else
-/* The draft passed the INDEX where the ROM loads the tone-bytecode pointer
- * out of the table before the custom-convention call. */
+#elif defined(PORT)
+/* An earlier draft passed the INDEX where the ROM loads the tone-bytecode
+ * pointer out of the table before the call. */
 KToneX *func_80023D00(s32 arg0) {
     s32 idx = arg0 & 0xFFFF;
 
@@ -986,7 +1028,6 @@ KToneX *func_80023D00(s32 arg0) {
     }
     return func_80023B34(kMgr.toneTable[idx]);
 }
-#endif
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023D00.s")
 #endif
@@ -1307,7 +1348,12 @@ void func_80025874(void) {
  * `.s`.  The uninitialised `track` is real: the ROM reads its stack home at
  * 0x24($sp) before the scan loop has written it.
  *
- * FACTORY: 209 of 210 words DIFFER against a 190-word ROM.  The 20-word excess
+ * FACTORY: 98 as of 2026-08-25, measured after func_8002581C and func_80025758
+ * were sealed `static` -- their custom convention is now real in the object, so
+ * this function's ten `jal`s no longer force the o32 homing.  The 209 below was
+ * measured before that and is kept only for the reasoning.
+ *
+ * PREVIOUSLY: 209 of 210 words DIFFER against a 190-word ROM.  The 20-word excess
  * is one cause, ten times over: `minDelta` and `track` live in $t1/$t3 in the
  * ROM and stay there ACROSS all ten `jal`s -- the -O3 ujoin custom convention,
  * which also hands func_8002581C its arguments in $t2/$t3 (see its own
@@ -1738,8 +1784,16 @@ void func_800263F0(KCSeqp *seqp) {
  * write the swallowed 0x80026494 stub out as `void func_80026494(void) {}`
  * BEFORE this function: verify.py then reports MATCH (13 insns), with today's
  * default compiler and no ujoin at all.
- * NOT SEALABLE YET: func_8002649C must be live C for that, and it is still
- * 137/138.  This site is now blocked on its CALLER, not on the toolchain.
+ * NOT SEALABLE, and the caller chain is now traced to its root.  This function
+ * has TWO ROM callers, func_8002649C and func_8002901C, and uopt only assigns
+ * the convention if it can see them as C.  func_8002649C is 141/127 and cannot
+ * be un-guarded, and its OWN residue is the same lever one level up: its
+ * listing reads `lw $s7, 0x2C($s6)` at entry -- seqp arrives in $s6 -- and it
+ * uses $s0..$s7 while saving none of them, so IT needs to be `static` with its
+ * caller visible, and its only caller is func_8002901C at 422/425.  So the
+ * chain is func_80026460 <- func_8002649C <- func_8002901C, and nothing below
+ * func_8002901C can close.  Do not spend another pass on this leaf; the work
+ * is func_8002901C's body.
  * Its listing also swallows the next, unnamed function of the TU inside its own
  * `.size` (`jr $ra; nop` at 0x80026494 -- padtrap.py class 'swallowed').  That
  * is not a padding trap: a conversion writes it out as
@@ -2242,9 +2296,12 @@ Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
  * to save $s0/$s1, home $a1, and reload both around the two calls, which is
  * the whole 9-word excess.
  *
- * 133 -> 16, measured 2026-08-25, with the DEFAULT compiler: spell this
+ * 133 -> 18, re-measured 2026-08-25 with the DEFAULT compiler: spell this
  * function and its callee func_80026898 `static` and un-guard n_alEnvmixerPull
- * with them.  ujoin is not needed -- `uopt -O3` gives a static callee its own
+ * with them.  NOT SEALABLE in that shape -- n_alEnvmixerPull itself measures
+ * 393/401 there, so it cannot be un-guarded, and without it uopt sees no C call
+ * site for this function and deletes it outright.  The 18 is a permuter target,
+ * not a closure: this leaf is blocked on n_alEnvmixerPull's body.  ujoin is not needed -- `uopt -O3` gives a static callee its own
  * convention.  What is left is a register-naming cascade only ($t6/$t7 and
  * $f4/$f6 role swaps), i.e. a permuter seed rather than an ABI wall.
  * func_80026898 goes 57 -> 51 in the same shape, and its first 42 words become
@@ -3777,7 +3834,14 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * `void func_800299F0(void) {}` written out after this one accounts for it in
  * full and verify.py trims the pair. RE-CONFIRMED 2026-08-25 with the stub in
  * place on a scratch copy: exactly 2 words differ, and they are the two stores
- * above. This site is body-blocked only. */
+ * above. This site is body-blocked only.
+ *
+ * And the `static` lever that closed func_8002581C and func_8002C9FC is NOT
+ * available here, nor is it needed: ipascan reports this function's live-ins
+ * clean, and its only ROM caller is alAudioFrame, which is still a pragma --
+ * so spelling it `static` would leave uopt with no visible call site and it
+ * would be deleted outright (measured on func_8002C9FC).  Two words of
+ * delay-slot scheduling; permuter work, nothing structural. */
 #ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
