@@ -2569,23 +2569,34 @@ void func_80160E6C_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160E6C_ovl5.s")
 #endif
 
-// FACTORY: 38/76, one-register rotation and two spill slots. The 14/76 this
-// replaces was measured THROUGH A WRONG STACK ADJUSTMENT (0x48 against the
-// ROM's 0x40), which LEVERS 69/74 say cannot be scored at all; dropping `t`
-// and writing the index inline gives the ROM's frame exactly, so 38 is the
-// first honest number this function has had.
+// FACTORY: 34/76, and the residue is exactly one thing: IDO never uses $v0.
+// The 14/76 this note replaces was measured THROUGH A WRONG STACK ADJUSTMENT
+// (0x48 against the ROM's 0x40), which LEVERS 69/74 say cannot be scored at
+// all. The frame, every stack offset and every spill slot are now the ROM's,
+// and the whole diff is a uniform +1 rotation of the $t sequence because the
+// ROM parks D_800E98E0[objId] in $v0 for three instructions and this C parks
+// it in $t9.
 //
-// The ROM's slots, read off the listing so nobody re-derives them:
-//     0x3C  a 4-byte local that is DECLARED AND NEVER WRITTEN
+// THE DEAD LOCAL IS REAL AND IT IS WHAT FIXES THE SLOTS. The ROM's map:
+//     0x3C  a 4-byte local DECLARED AND NEVER WRITTEN
 //     0x30..0x3B  sp30      (addiu $a0, $sp, 0x30)
 //     0x24..0x2F  sp24
 //     0x20  dobj            (sw $a1, 0x20($sp))
 //     0x1C  p               (sw $v1, 0x1C($sp))
-// so the declaration order is [dead scalar], sp30, sp24, dobj, p -- this C has
-// dobj, sp30, sp24, p, which puts dobj at 0x3C and p at 0x20, i.e. both spills
-// one slot high. Nine declared words plus one compiler temp is n+t = 10, which
-// is what align8(0x18 + 4*10) = 0x40 needs (LEVER 57); adding `t` back cost
-// TWO words, not one, because it also bought a temp.
+// so the declaration order is [dead scalar], sp30, sp24, dobj, p. Measured at
+// that order: with the dead `s32 pad` 34; without it 46 (dobj and p both land
+// one slot high); with a live `s32 t` in its place 22 BUT the frame grows to
+// 0x48, because `t` buys a compiler temp as well as a declaration -- and 22
+// through a wrong frame is worth less than 34 through the right one.
+// `p = &D_8018E040_ovl5[t = D_800E98E0[...]]` is the same 22. This is LEVER 30
+// in the flesh: the function already has real stack locals, so an unreferenced
+// scalar DOES reserve its word.
+//
+// Swept and negative at 34: every barrier placement (tools/decomp/
+// barrier_sweep.py, 17 placements), and the permuter's `if (1) { }` wrap
+// round the func_800B2340 block, which is what its zero-score candidate was
+// -- that candidate was a LEVER 72 artifact, scored before --stack-diffs went
+// into the queue, so it never saw the frame it was really fixing.
 // Previously swept and negative at the old order: 24 declaration permutations
 // with and without `t`, pointer arithmetic instead of &arr[i], a (u8 *) byte
 // bias, and reusing the parameter as the scratch (72).
@@ -2594,9 +2605,10 @@ extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
 
 void func_80161078_ovl5(GObj *arg0) {
-    void *dobj;
+    s32 pad;
     Vector sp30;
     Vector sp24;
+    void *dobj;
     s32 *p;
 
     p = &D_8018E040_ovl5[D_800E98E0[omCurrentObj->objId]];
