@@ -60,7 +60,6 @@ TARGETS = [
     # Re-derive after any measure_seeds run with the snippet in the module
     # docstring. priority_queue skips any entry whose function no longer has a
     # guarded draft, so a stale line costs a log message rather than a slot.
-    (  2, 'src/ovl1/ovl1_13.c', 'func_800BDE0C'),   # of 72
     (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),   # of 88
     (  2, 'src/ovl5/ovl5_5.c', 'func_8017232C_ovl5'),   # of 88
     (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),   # of 10, one-slot temp rotation, no frame

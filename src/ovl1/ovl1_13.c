@@ -895,7 +895,20 @@ void func_800BDD98(void) {
  *   - writing the condition constant-first, `(u8 *) D_800F4324 != ra`
  *     (lever 20): byte-identical at 2/72.
  *   - assigning ra before rb: 5/72, worse, same reason as the first.
- * Permuter fuel, and a narrow target: two words, both %lo addends. */
+ * NOT permuter fuel, and this is now measured rather than assumed. The queue
+ * has produced TWO zero-score candidates for this function and NEITHER
+ * transfers to the real translation unit:
+ *   - one whose diff is whitespace only (eleven lines of the loop collapsed
+ *     onto one), which cannot change codegen at all;
+ *   - one that adds a SECOND `do { } while (0)` wrap around the first, plus
+ *     two commutative operand swaps. Applied by hand: 2/72, unchanged.
+ * Both score 0 in decomp-permuter's own preprocessed standalone file, which is
+ * LEVER 72's second failure mode showing up twice on one function. The two
+ * remaining words are the `addiu` %lo addends for D_800F4324 and D_800EDA10
+ * emitted in the opposite order, and the permuter's environment evidently
+ * schedules that pair differently from the TU. Removed from
+ * priority_queue.py's TARGETS: it will keep re-finding this and the queue slot
+ * is better spent elsewhere. */
 void func_800BDE0C(s32 arg0) {
     extern s32 D_800F4D14;
     extern s32 D_800F6198;
