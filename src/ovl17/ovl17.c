@@ -417,7 +417,6 @@ void func_801DBA8C_ovl17(struct GObj *arg0) {
     }
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
 /* 02's free-look integrator, called by func_801DBA8C_ovl17 above while the
  * intro camera is down. The D-pad steers a per-frame angular VELOCITY
  * (D_800EAC20 pitch, D_800EADE0 yaw) that is clamped to D_800D7170 -- divided
@@ -433,17 +432,34 @@ void func_801DBA8C_ovl17(struct GObj *arg0) {
  * not leave a new undefined symbol. It calls nothing that is still assembly,
  * so this closes the chain.
  *
- * FACTORY: 263/331 words differ and the draft is 1 word long (ROM 330). Every
- * branch, every call and all eight late_rodata constants are accounted for.
- * The residue starts at instruction 0 and cascades: the ROM keeps the button
- * word in $a1 straight out of its `lhu` and the 0xC00 mask in $v0, while IDO
- * loads into $v0 and needs a `move` -- from there the temp registers are
- * permuted for the rest of the function, and the frame comes out 0xD0 against
- * the ROM 0xD8.
- * What paid: hoisting `btn & 0xC00` into a local (the ROM tests it twice from
- * one register), typing the button word s32 rather than u16, and re-reading
- * omCurrentObj inline instead of caching it before the dispatch -- the ROM
- * sinks that load into each arm (316 -> 263).
+ * MATCHED 2026-08-25, byte-exact at 330 words. The old note here read
+ * "263/331, the residue starts at instruction 0 and cascades"; four edits
+ * account for all of it and none of them is a register lever.
+ *
+ *   zerofork_sweep.py (LEVER 90/99) found `rot.z = 0.0f`: 263 -> 33. One
+ *   character. rot.x and rot.y come from expressions, so rot.z's 0.0f CSE'd
+ *   with a zero already live and every word after it shifted. The other
+ *   three `0.0f` stores in this function were each tried on their own and
+ *   every one is 290/334 -- WORSE -- which is LEVER 99's pairing rule: the
+ *   unit is whichever pair currently shares one `mtc1 $zero`.
+ *
+ *   D_801E5530_ovl17 is a MIGRATED LITERAL, not an extern. Spelled
+ *   `rate / 1.414213538f` (LEVER 91: copy the decimal, do not read it) the
+ *   sqrt(2) joins this TU's late_rodata pool at its head, and the four-byte
+ *   shift that made every other constant reference report disappears:
+ *   33 -> 26.
+ *
+ *   THE FRAME IS A DECLARATION ORDER, NOT A COUNT. Both frames are 0xD8 and
+ *   the ROM's two Mat4s sit 0x10 LOWER, so sixteen bytes of scalars belong
+ *   ABOVE them: `rate, lim, step, btn` moved before `finalMtx` is 26 -> 10.
+ *   Adding a reserved word instead is 28 -- a pad grows the locals by 4, the
+ *   frame by 8 under align8, and shifts everything again (LEVER 57).
+ *
+ *   Then `btn` FIRST, above `rot`: 10 -> MATCH. The ROM's rot sits at 0xC8
+ *   where this had it at 0xCC, and the four bytes above it belong to the
+ *   button word. `vert` or `horiz` in that position is 16, a pad before rot
+ *   is 16, and five scalars ahead of the mats is 26 -- the position is
+ *   exact, not approximate (LEVER 110).
  *
  * PORT: shared rather than duplicated -- Mat4/Vector and f32 throughout. */
 #include "main/lbmatrix.h"
@@ -457,13 +473,13 @@ void utilWrapRotation(Vector *);
 void HS64_MkRotationMtxF(Mat4, f32, f32, f32);
 
 void func_801DBDA8_ovl17(void) {
+    s32 btn;
     Vector rot;
-    Mat4 finalMtx;
-    Mat4 tmpMtx;
     f32 rate;
     f32 lim;
     f32 step;
-    s32 btn;
+    Mat4 finalMtx;
+    Mat4 tmpMtx;
     s32 horiz;
     s32 vert;
 
@@ -472,7 +488,7 @@ void func_801DBDA8_ovl17(void) {
     vert = btn & 0x300;
     if ((horiz != 0) && ((btn & 3) != 0)) {
         rate = D_800D7170;
-        lim = rate / D_801E5530_ovl17;
+        lim = rate / 1.414213538f;
     } else {
         rate = D_800D7170;
         lim = rate;
@@ -552,9 +568,6 @@ void func_801DBDA8_ovl17(void) {
     D_800EA8A0[omCurrentObj->objId] = rot.y;
     D_800EAA60[omCurrentObj->objId] = rot.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17/func_801DBDA8_ovl17.s")
-#endif
 
 
 void func_801DC2D0_ovl17(void) {
