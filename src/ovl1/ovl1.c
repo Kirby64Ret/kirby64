@@ -707,6 +707,11 @@ void func_8009BA68(s32 arg0) {
  * hoisting the redundant `val = 0;` out of both if/else arms to a single
  * post-merge statement (WORSE, 35/117 -- rotates $v0/$a0 through most of
  * the function). Not source-reachable within the swept forms. */
+UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 texture_id,
+                           u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z,
+                           f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity,
+                           f32 friction, u32 texture_flags, UnkGenerator *gn);
+
 #ifdef NON_MATCHING
 /* FACTORY: 18/117 -- MEASURED 2026-08-25. Structure, count and every store
  * offset match; the residue is ONE MISSING INSTRUCTION and a one-slot temp
@@ -814,7 +819,6 @@ UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 tex
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BA74.s")
 #endif
-#ifdef NON_MATCHING
 UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
     UnkScript *script;
     s32 id = bank_id & 7;
@@ -831,10 +835,6 @@ UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
                          0, 0, 0, script->velX, script->velY, script->velZ, script->size, script->gravity,
                          script->friction, D_800D6A98[id][script->texture_id]->flags, NULL);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BC4C.s")
-#endif
-#ifdef NON_MATCHING
 UnkParticle *func_8009BD3C(s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
     UnkParticle *pc = func_8009BA74(NULL, bank_id, flags, texture_id, bytecode, lifetime, pos_x, pos_y, pos_z,
                                     vel_x, vel_y, vel_z, size, gravity, friction, texture_flags, gn);
@@ -844,9 +844,6 @@ UnkParticle *func_8009BD3C(s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode,
     }
     return pc;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BD3C.s")
-#endif
 UnkParticle *func_8009BE04(s32 bank_id, s32 script_id) {
     UnkParticle *pc = func_8009BC4C(NULL, bank_id, script_id);
 
@@ -856,7 +853,6 @@ UnkParticle *func_8009BE04(s32 bank_id, s32 script_id) {
     return pc;
 }
 
-#ifdef NON_MATCHING
 UnkParticle *func_8009BE54(s32 bank_id, s32 script_id, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z) {
     UnkParticle *pc;
     UnkScript *script;
@@ -879,9 +875,6 @@ UnkParticle *func_8009BE54(s32 bank_id, s32 script_id, f32 pos_x, f32 pos_y, f32
     }
     return pc;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1/func_8009BE54.s")
-#endif
 UnkParticle *func_8009BF7C(s32 bank_id, s32 script_id) {
     return func_8009BC4C(NULL, bank_id, script_id);
 }
