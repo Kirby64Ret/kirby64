@@ -3459,11 +3459,20 @@ void func_801E4698_ovl16(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 707/782, and 23 instructions SHORT. Same bloc-wide pattern as
- * func_801E538C/func_801E5AE4/func_801E62C0: the draft is structurally faithful and
- * well named, but IDO CSEs entity-array loads that the ROM re-reads, so the body
- * comes out short and every later word is displaced. Close the COUNT first (find the
- * loads the ROM repeats and force them), then the remainder is register naming. */
+/* FACTORY: 702/782, and 23 -> 18 instructions SHORT.  The old note's "IDO CSEs
+ * entity-array loads that the ROM re-reads" is the right reading and LEVERS 70
+ * names the mechanism for five of them: the abs of the X position is
+ * `ABS(gEntitiesNextPosXArray[omCurrentObj->objId])`, and the macro spells its
+ * operand THREE times, so the ROM loads the array three times per site where
+ * `v = X[..]; if (v < 0.0f) v = -v;` loads it once.  Five sites converted.
+ * It is ABS(), not ABSF(): with ABSF the 0.0f is hoisted into callee-saved
+ * $f20 (`sdc1 $f20` appears and the compare reads $f20), where the ROM
+ * re-materialises `mtc1 $zero, $f4` at each site -- LEVERS 3, measured both
+ * ways here, 709 for ABSF against 702 for ABS.  `f32 v` is then dead and
+ * removed; it never had a stack slot, so that costs nothing.
+ * Still 18 short and the frame is 0x40 against the ROM's 0x38 with the same
+ * zero stack locals, so two compiler temps are the difference.  There will be
+ * more repeated-load sites of this kind; this one is not finished. */
 /* Phase-0x11 ram attack: rock in place for 60 frames drifting away from the
  * player, spawn the four 0x34 debris entities, drop to y=35, then perform
  * three horizontal dashes (out to +/-200, across to the other side, and back
@@ -3472,7 +3481,6 @@ void func_801E4698_ovl16(s32 arg0) {
 void func_801E4754_ovl16(s32 arg0) {
     s32 i;
     s32 t;
-    f32 v;
     f32 next;
 
     D_800DDFD0[omCurrentObj->objId] = 0x11;
@@ -3544,11 +3552,7 @@ void func_801E4754_ovl16(s32 arg0) {
         D_800EA1A0[omCurrentObj->objId] = 1;
     }
     D_800E3050[omCurrentObj->objId] = ((f32 *) D_801EF9C0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
-    v = gEntitiesNextPosXArray[omCurrentObj->objId];
-    if (v < 0.0f) {
-        v = -v;
-    }
-    D_800EA8A0[omCurrentObj->objId] = (v + 200.0f) / 12.0f;
+    D_800EA8A0[omCurrentObj->objId] = (ABS(gEntitiesNextPosXArray[omCurrentObj->objId]) + 200.0f) / 12.0f;
     D_800EA8A0[omCurrentObj->objId] *= 2.0f;
     if (D_800EA8A0[omCurrentObj->objId] == 0.0f) {
         D_800EA8A0[omCurrentObj->objId] = 0.00001f;
@@ -3558,11 +3562,7 @@ void func_801E4754_ovl16(s32 arg0) {
     D_800E3050[omCurrentObj->objId] -= D_800E3590[omCurrentObj->objId];
     ohSleep(1);
     for (i = 1; i < (s32) D_800EA8A0[omCurrentObj->objId]; i++) {
-        v = gEntitiesNextPosXArray[omCurrentObj->objId];
-        if (v < 0.0f) {
-            v = -v;
-        }
-        if (v >= 200.0f) {
+        if (ABS(gEntitiesNextPosXArray[omCurrentObj->objId]) >= 200.0f) {
             break;
         }
         ohSleep(1);
@@ -3589,11 +3589,7 @@ void func_801E4754_ovl16(s32 arg0) {
     D_800E3050[omCurrentObj->objId] -= D_800E3590[omCurrentObj->objId];
     ohSleep(1);
     for (i = 1; i < (s32) D_800EA8A0[omCurrentObj->objId]; i++) {
-        v = gEntitiesNextPosXArray[omCurrentObj->objId];
-        if (v < 0.0f) {
-            v = -v;
-        }
-        if (v >= 200.0f) {
+        if (ABS(gEntitiesNextPosXArray[omCurrentObj->objId]) >= 200.0f) {
             break;
         }
         ohSleep(1);
@@ -3610,11 +3606,7 @@ void func_801E4754_ovl16(s32 arg0) {
         D_800EA1A0[omCurrentObj->objId] = 1;
     }
     D_800E3050[omCurrentObj->objId] = ((f32 *) D_801EF9C0_ovl16)[D_800EA1A0[omCurrentObj->objId]];
-    v = gEntitiesNextPosXArray[omCurrentObj->objId];
-    if (v < 0.0f) {
-        v = -v;
-    }
-    D_800EA8A0[omCurrentObj->objId] = v / 12.0f;
+    D_800EA8A0[omCurrentObj->objId] = ABS(gEntitiesNextPosXArray[omCurrentObj->objId]) / 12.0f;
     D_800EA8A0[omCurrentObj->objId] *= 2.0f;
     if (D_800EA8A0[omCurrentObj->objId] == 0.0f) {
         D_800EA8A0[omCurrentObj->objId] = 0.00001f;
@@ -3629,11 +3621,7 @@ void func_801E4754_ovl16(s32 arg0) {
         if (next < 0.0f) {
             next = -next;
         }
-        v = gEntitiesNextPosXArray[omCurrentObj->objId];
-        if (v < 0.0f) {
-            v = -v;
-        }
-        if (v < next) {
+        if (ABS(gEntitiesNextPosXArray[omCurrentObj->objId]) < next) {
             break;
         }
         ohSleep(1);
@@ -4020,10 +4008,22 @@ void func_801E5A28_ovl16(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 452/503, and 58 instructions SHORT -- the largest shortfall in this file,
- * so the best specimen for diagnosing the bloc-wide CSE gap described on
- * func_801E538C. Structure and naming are good; the missing words are repeated
- * entity-array reads that IDO merges and the ROM does not. */
+/* FACTORY: 424/503 (was 452/503).  The "bloc-wide CSE gap" this note used to
+ * blame is at least partly LEVERS 70/40: the listing holds TWELVE `jal sinf`
+ * for FOUR source sites, because each site is
+ *   D_800EAC20[omCurrentObj->objId] = ABSF(sinf(D_800EA6E0[omCurrentObj->objId]));
+ * and ABSF names its operand three times, so the CALL is made three times
+ * (LEVERS 40).  Written as `v = sinf(..); if (v < 0.0f) v = -v;` each site is
+ * two calls and about seven words short.  That is 28 of the 58.
+ * Still 6 words short and the residue is a saved-register rotation from the
+ * prologue on, so read the shape before spending on registers (LEVERS 69).
+ * Two leads for whoever takes it, both visible in the diff:
+ *   - the `for (state = 0; state != 14; state++)` head: the ROM's
+ *     `sltiu $at, $t8, 14` sits well before its `beqz`, which is the shape of
+ *     a jump table's own bounds check rather than a source range test -- the
+ *     same misreading that cost func_801DB400_ovl15 70 words, see its note.
+ *   - the first two ternary blocks (`bc1fl` at ROM [124] and [148]) are 5 and
+ *     4 words shorter in the draft than in the ROM. */
 /* Phase-0x14 orbit attack script: 14 sequential steps.  Spin-up/spin-down
  * ramps (steps 0/13) halve the angular speed and squash the orbit radii from
  * |sin| of the heading; steps 2/4/6/8 re-roll the x-radius from the
@@ -4057,16 +4057,8 @@ void func_801E5AE4_ovl16(s32 arg0) {
             D_800EA8A0[omCurrentObj->objId] = v * 0.5f;
             D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
             for (i = 0; i != 0x30; i++) {
-                v = sinf(D_800EA6E0[omCurrentObj->objId]);
-                if (v < 0.0f) {
-                    v = -v;
-                }
-                D_800EAC20[omCurrentObj->objId] = v;
-                v = sinf(D_800EA6E0[omCurrentObj->objId]);
-                if (v < 0.0f) {
-                    v = -v;
-                }
-                D_800EADE0[omCurrentObj->objId] = v;
+                D_800EAC20[omCurrentObj->objId] = ABSF(sinf(D_800EA6E0[omCurrentObj->objId]));
+                D_800EADE0[omCurrentObj->objId] = ABSF(sinf(D_800EA6E0[omCurrentObj->objId]));
                 ohSleep(1);
             }
             if (D_800EA8A0[omCurrentObj->objId] > 0.0f) {
@@ -4087,16 +4079,8 @@ void func_801E5AE4_ovl16(s32 arg0) {
             }
             D_800EAA60[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * -2.0f;
             for (i = 0; i != 0x18; i++) {
-                v = sinf(D_800EA6E0[omCurrentObj->objId]);
-                if (v < 0.0f) {
-                    v = -v;
-                }
-                D_800EAC20[omCurrentObj->objId] = v;
-                v = sinf(D_800EA6E0[omCurrentObj->objId]);
-                if (v < 0.0f) {
-                    v = -v;
-                }
-                D_800EADE0[omCurrentObj->objId] = v;
+                D_800EAC20[omCurrentObj->objId] = ABSF(sinf(D_800EA6E0[omCurrentObj->objId]));
+                D_800EADE0[omCurrentObj->objId] = ABSF(sinf(D_800EA6E0[omCurrentObj->objId]));
                 ohSleep(1);
             }
             D_800EA6E0[omCurrentObj->objId] = 3.1415927f;
