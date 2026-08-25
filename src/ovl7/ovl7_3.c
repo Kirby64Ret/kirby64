@@ -68,7 +68,7 @@ struct PcOvl7ColBlock {
 #define PC_WATER_ACTIVE(p) (((u8 *) (p))[4] != 0)
 extern s32 func_8010DF9C(void *);
 extern s32 func_8010E048(void *, s32, void *, void *, void *, void *);
-extern f32 func_800F8728(s32, f32, f32);
+extern f32 func_800F8728(u32, f32, f32);
 extern s32 func_801AE73C_ovl7(s32, f32, f32, f32);
 #endif
 
@@ -86,7 +86,7 @@ extern s32 func_801AE73C_ovl7(s32, f32, f32, f32);
  * local. The PORT-only copies above stay as they are; these are the ones the
  * N64 build sees. */
 struct WaterData;
-f32 func_800F8728(s32, f32, f32);
+f32 func_800F8728(u32, f32, f32);
 s32 func_801AE73C_ovl7(s32, f32, f32, f32);
 
 /* Hoisted out of individual function bodies. All of these are defined in
@@ -1370,27 +1370,27 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
     func_801051AC(&D_801CE6D0_ovl7);
 }
 
-/* FACTORY: 3/152 words differ, and all three are one register choice in the
- * tail block. The ROM loads omCurrentObj->objId straight into a0 and leaves
- * the jal's delay slot empty; IDO here loads it into a3, indexes with a3, and
- * spends the delay slot on `move a0,a3`. Everything else is byte-exact.
- *
- * Structure is confirmed correct, not assumed: caching the index in a local
- * (`s32 id = omCurrentObj->objId;` over the tail block) costs 90 words, so
- * the ROM really does re-load it at each use, as written below. Swapping the
- * two f32 declarations and moving the block-scope prototypes around are both
- * neutral; reversing the `||` operands costs 50 (it is a short-circuit, and
- * the ROM tests dx first). The callee prototype cannot be varied from here --
- * func_800F8728 is already declared at file scope.
- *
- * This is a register-allocation floor, not a structural one. Handed to the
- * permuter rather than ground on by hand.
- *
- * NOTE: this draft was previously left un-guarded as `#ifndef PORT`, so the
- * ROM build took it INSTEAD of the pragma below and shipped those three wrong
- * words in the linked image. tools/decomp/check_live_pragmas.py now fails the
- * build for that. */
-#ifdef MIPS_TO_C
+/* MATCHED 2026-08-25 (was 3/152).  Harvested from a permuter output-0-1 that
+ * the queue had scored zero and never published.
+ * The old note called this "a register-allocation floor, not a structural
+ * one" and specifically ruled the fix out of reach: "the callee prototype
+ * cannot be varied from here -- func_800F8728 is already declared at file
+ * scope."  The prototype IS the fix; it just had to be varied AT the file
+ * scope declarations rather than in the body.  `f32 func_800F8728(u32, f32,
+ * f32)` in place of the `s32` first parameter closes the function outright.
+ * The three diffs were the ROM loading objId straight into $a0 with an empty
+ * jal delay slot where we loaded $a3, indexed with it, and spent the slot on
+ * `move $a0, $a3`: with an unsigned parameter IDO stops treating the index as
+ * needing its own signed temp.
+ * The permuter's candidate spelled it `volatile unsigned int`.  The
+ * `volatile` is a crutch and is NOT needed -- plain `u32` matches, measured
+ * both ways.  u32 is also the honest type: the argument is omCurrentObj->objId.
+ * Gated: `verify.py --all` on this TU is unchanged by the retype.
+ * OPEN, needs a coordinator task (out of this lane's scope): the DEFINITION in
+ * src/ovl2/ovl2_2.c:2255/2287 and the declarations in src/ovl2/ovl2_2.h,
+ * src/ovl1/ovl1_8.c:16, src/ovl3/ovl3_1.c:73 and four block-scope ones in
+ * src/ovl8/ovl8_4.c still say s32.  Same register class, so nothing is broken,
+ * but the tree now disagrees with itself about this parameter. */
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
     f32 dx;
     f32 dz;
@@ -1425,52 +1425,6 @@ void func_801A33B8(struct Ovl7TrackParams *arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_801CE6D0_ovl7.posY;
     func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
 }
-#elif defined(PORT)
-/* Facing-aware variant of func_801A32EC above: prime the shared probe
- * record with the entity's position and the caller's five params, mirror
- * the near/far reach pair (unkC/unk10 hold f32 bits; the asm moves them
- * with lwc1/swc1, so these are bit copies) by the D_800E6A10 facing sign,
- * cast floor (airborne, func_80109F60) or ground-march (func_8010B238),
- * carry the resolved XZ delta through func_800F8728, and publish the
- * contact flags. */
-void func_801A33B8(struct Ovl7TrackParams *arg0) {
-    u32 id = omCurrentObj->objId;
-    f32 dx;
-    f32 dz;
-
-    D_801CE6D0_ovl7.posX = gEntitiesNextPosXArray[id];
-    D_801CE6D0_ovl7.posY = gEntitiesNextPosYArray[id];
-    D_801CE6D0_ovl7.posZ = gEntitiesNextPosZArray[id];
-    D_801CE6E0_ovl7 = *arg0;
-    if (D_800E6A10[id] == 1.0f) {
-        D_801CE6D0_ovl7.forwardReachPos = arg0->unkC;
-    } else {
-        D_801CE6D0_ovl7.forwardReachPos = arg0->unk10;
-    }
-    if (D_800E6A10[id] == 1.0f) {
-        D_801CE6D0_ovl7.forwardReachNeg = arg0->unk10;
-    } else {
-        D_801CE6D0_ovl7.forwardReachNeg = arg0->unkC;
-    }
-    D_801CE6D0_ovl7.facingAngle = D_800E17D0[id];
-    if (D_800E8920[id] == 0) {
-        D_800E8920[id] = func_80109F60(&D_801CE6D0_ovl7);
-    } else {
-        D_800E8920[id] = func_8010B238(&D_801CE6D0_ovl7);
-    }
-    dx = D_801CE6D0_ovl7.posX - gEntitiesNextPosXArray[id];
-    dz = D_801CE6D0_ovl7.posZ - gEntitiesNextPosZArray[id];
-    if (dx != 0.0f || dz != 0.0f) {
-        func_800F8728(id, dx, dz);
-        gEntitiesNextPosXArray[id] = D_801CE6D0_ovl7.posX;
-        gEntitiesNextPosZArray[id] = D_801CE6D0_ovl7.posZ;
-    }
-    gEntitiesNextPosYArray[id] = D_801CE6D0_ovl7.posY;
-    func_80105238(&D_801CE6D0_ovl7, &D_8012BCA0);
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A33B8.s")
-#endif
 
 void func_801A3618_ovl7(struct UnkOvl7Track *arg0) {
     arg0->unk0 = gEntitiesNextPosXArray[omCurrentObj->objId];
