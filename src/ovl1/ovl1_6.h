@@ -34,6 +34,19 @@ extern s32 D_800E0D50[];
 extern f32 **D_800E0490[];
 extern s32 *D_800E0650[];
 extern s32 D_800E1ED0[];
+/* Forward declaration, and it is load-bearing. Without it the `struct GObj *`
+   in the three proc-table types below is a FRESH incomplete type declared by
+   the prototype itself, so every assignment of a correctly-typed
+   `void (GObj *)` function into one of these tables raises IDO warning 709
+   "Incompatible pointer type assignment". There are 64 such sites and they
+   warn regardless of the callee's type, which made LEVER 68's corollary
+   ("grep the warnings to find the next cluster") report a tree full of false
+   positives -- a lane verified both directions before this went in.
+   `check_local_protos.py`'s CONFLICT section is the screen that actually
+   works. This declaration cannot move a byte: it names a type, defines
+   nothing, and the ROM is byte-identical with and without it. */
+struct GObj;
+
 extern void (*D_800DEDD0[])(struct GObj *);
 extern void (*D_800DEF90[])(struct GObj *);
 extern void (*D_800DF150[])(struct GObj *);
