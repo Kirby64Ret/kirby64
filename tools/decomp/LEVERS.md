@@ -1003,10 +1003,18 @@ the pool allocator's real stride is 0x78.
 
     `absf_sweep.py --screen` now scores every candidate and prints where its
     FIRST diff is, flagging the ones whose diff 0 is the frame. That is not a
-    refinement, it is a precondition: four of the strongest-looking entries --
-    func_801DF5D0_ovl13 (32 compares), func_801A7524_ovl7 (23),
-    func_801DEA5C_ovl17 (20), func_801567B8_ovl3 (14) -- are wrong at
-    instruction 0, and a macro edit anywhere in the body cannot move the score
-    until the shape is fixed. LEVER 69 makes the identical point about LEVER
-    58, and it generalises: **before spending a compile on any body-level
-    lever, look at where diff 0 is.**
+    refinement, it is a precondition -- and the size of the problem is bigger
+    than the four functions that prompted it. **Screened 2026-08-25: of 123
+    candidates, 55 are wrong at instruction 0.** Forty-five per cent of the
+    list cannot move on a macro edit at all, including the four strongest by
+    compare count: func_801DF5D0_ovl13 (32), func_801A7524_ovl7 (23),
+    func_801DEA5C_ovl17 (20), func_801567B8_ovl3 (14). For those the job is the
+    FRAME -- `addiu $sp, -408` against `-0x70` is a declaration-count problem
+    (LEVER 54) -- and the macro is downstream of it.
+
+    LEVER 69 makes the identical point about LEVER 58, and between them the
+    rule generalises to every lever that edits a function BODY: **look at where
+    diff 0 is before spending the compile.** A body edit cannot be scored
+    through a wrong prologue. The screen also reports `unscorable` for drafts
+    that do not compile alone; those need the compile fixed before anything
+    else, and there are eight of them.
