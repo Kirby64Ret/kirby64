@@ -3577,21 +3577,21 @@ void func_801717F0_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_801717F0_ovl3.s")
 #endif
 
-#ifdef NON_MATCHING
-/* FACTORY: 6/269, instruction-SCHEDULING floor -- re-confirmed 2026-08-23,
-   identical 6/269. Every instruction is present and the whole prologue,
-   switch and the other five arms are exact. In the case 0/1 arm the ROM
-   schedules `li $t3,1` and `lui $at,%hi(D_800E9AA0)` into the block BEFORE
-   the `bnez`, filling the delay slot with `ori $a0`; this C leaves both
-   inside the taken block and the delay slot takes `lui $at`. Swept: as_s32
-   vs as_u32, `== 0` vs an inverted `!= 0`/empty-then, and the body
-   collapsed onto one line -- all 6/269. The integer `0` (not `0.0f`) in
-   the two arm stores and in the angle.v.y store IS load-bearing: it forks
-   the zero the ROM materialises per store, and `0.0f` there CSEs into one
-   register and costs 210 diffs. Both instructions being hoisted (li $t3,1
-   and lui $at) have no side effects, so this is pure IDO delay-slot/
-   scheduling choice, not reachable by restructuring the guarded store
-   (which would change semantics on the false path). Good permuter seed. */
+/* MATCHED 2026-08-25. Two notes had sealed this at 6/269 as an
+ * "instruction-SCHEDULING floor ... not reachable by restructuring", with
+ * a correct reading of the symptom: in the case 0/1 arm the ROM schedules
+ * `li $t3,1` and `lui $at,%hi(D_800E9AA0)` into the block BEFORE the
+ * `bnez` and fills the delay slot with `ori $a0`, and this C left both
+ * inside the taken block.
+ * It IS reachable, by a dead read placed between the guarded store and the
+ * func_801230E8 call -- see the comment at the barrier below. Note the
+ * form matters: an empty `do {} while (0);` there is inert (6/269), so
+ * this is not the LEVER 61 scheduling barrier, it is a value that has to
+ * exist in the IR at that point and then be dropped. Found by the permuter
+ * and harvested by hand.
+ * Still true from the old note, and still load-bearing: the integer `0`
+ * (not `0.0f`) in the two arm stores and in the angle.v.y store forks the
+ * zero the ROM materialises per store; `0.0f` there costs 210 diffs. */
 void func_80171E00_ovl3(GObj *arg0) {
     extern s16 D_80198838_ovl3;
 
@@ -3624,6 +3624,14 @@ void func_80171E00_ovl3(GObj *arg0) {
             D_800E3C90[omCurrentObj->objId] = 0;
             func_800AA78C(0x200DB, 0x20007, 6.0f);
             if (D_800E98E0[omCurrentObj->objId] == 0) { D_800E9AA0[omCurrentObj->objId].as_u32 = 1; D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_u32; }
+            /* Scheduling barrier, LEVER 61/71. IDO drops this dead load
+             * (the word count is 269 either way) but it pins the 0x200DB /
+             * 0x200DC argument materialisation after the D_800E9AA0 store
+             * instead of before it. An empty `do {} while (0);` here does
+             * NOT do it -- the barrier has to be a READ. Found by the
+             * permuter. */
+            if (!gKirbyState.previousAction) {
+            }
             func_801230E8(0x200DB, 0x200DC, 0);
             break;
         case 2:
@@ -3658,9 +3666,6 @@ void func_80171E00_ovl3(GObj *arg0) {
     }
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_80171E00_ovl3.s")
-#endif
 
 
 #ifdef MIPS_TO_C
