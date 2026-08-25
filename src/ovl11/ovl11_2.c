@@ -353,27 +353,36 @@ void func_801DFEA8_ovl11(void) {
    (still 2), and giving the y-diff its own two-step (4/44 -- that DOES put the
    y-diff in $f14 but then the z-diff takes $f0). The two constraints trade
    against each other; an extra live range spanning the y-diff is what is needed. */
-s32 func_801E00B8_ovl11(s32 arg0)
-{
-  f32 temp_f12;
-  f32 temp_f14;
-  float new_var;
-  f32 temp_f2;
-  s32 var_v1;
-  var_v1 = 0;
-  temp_f14 = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
-  temp_f2 = temp_f14;
-  temp_f12 = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
-  temp_f14 = gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[arg0] + 20.0f);
-  temp_f14 = temp_f14;
-  new_var = (temp_f12 * temp_f12) + (temp_f14 * temp_f14);
-  temp_f14 = (temp_f2 * temp_f2) + new_var;
-  temp_f12 = temp_f14;
-  if (temp_f12 <= 1600.0f)
-  {
-    var_v1 = 1;
-  }
-  return var_v1;
+/* Is entity `arg0` within 40 units of this one? The 20.0f is a height offset
+ * applied to the other entity, and the comparison is against 1600.0f because
+ * both sides are squared -- there is no sqrt here.
+ *
+ * `d` IS DELIBERATELY REUSED for the Z difference, then the Y difference,
+ * then the total, and that reuse is load-bearing rather than leftover m2c
+ * noise. Written with one named local per quantity -- dz, dx, dy, distSq, in
+ * that order and any other -- IDO starts its FP temps at $f0 where the ROM
+ * starts at $f2 and the whole chain rotates: 17/45, and one instruction
+ * LONGER than the ROM. Keeping the single reused local and the separate `zd`
+ * copy of the Z difference is what holds $f0 occupied across the subtractions
+ * so dz lands on $f2, dx on $f12 and dy on $f14. */
+s32 func_801E00B8_ovl11(s32 arg0) {
+    f32 dx;
+    f32 d;
+    f32 sumXY;
+    f32 zd;
+    s32 ret;
+
+    ret = 0;
+    d = gEntitiesNextPosZArray[omCurrentObj->objId] - gEntitiesNextPosZArray[arg0];
+    zd = d;
+    dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[arg0];
+    d = gEntitiesNextPosYArray[omCurrentObj->objId] - (gEntitiesNextPosYArray[arg0] + 20.0f);
+    sumXY = (dx * dx) + (d * d);
+    d = (zd * zd) + sumXY;
+    if (d <= 1600.0f) {
+        ret = 1;
+    }
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11_2/func_801E00B8_ovl11.s")
