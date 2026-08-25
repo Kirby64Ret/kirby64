@@ -737,19 +737,22 @@ void func_801E7628_ovl9(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Wait for func_8019B834_ovl7 to go non-zero, then flip the facing, swap in
+   the second animation/proc pair, and ride D_800E1B50[objId]->unk80->unk10 up
+   to 20.0 in steps of 2.0 before handing the entity to func list 4.
+
+   Byte-exact.  It had carried "m2c draft, for the PORT only. Not byte-exact
+   and not claimed to be" (LEVER 88's shape again) at 107/152, and the whole of
+   it was two m2c artefacts: the named `&D_800E6A10[objId]` pointer, which
+   costs a second read of the omCurrentObj GLOBAL where the ROM shares one
+   pointer in $v0 across the negation and the func_800B19F4 call; and
+   `var_v1 = objId * 4` carried out of the wait loop, which is IDO's own CSE of
+   the last loop-condition index into the gEntityFuncListIDArray store, not a
+   source local.  Writing both plainly is MATCH. */
 void func_800B74B8(s32);                            /* extern */
 s32 func_8019B834_ovl7(void);                       /* extern */
 
 void func_801E76EC_ovl9(s32 arg0) {
-    f32 *temp_v1;
-    s32 var_v1;
-    struct Sub800E1B50_80 *temp_v0;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-
     func_800B19F4(0x7D, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = func_800B74B8;
@@ -760,8 +763,7 @@ void func_801E76EC_ovl9(s32 arg0) {
             ohSleep(1);
         } while (func_8019B834_ovl7() == 0);
     }
-    temp_v1 = &D_800E6A10[omCurrentObj->objId];
-    *temp_v1 = -*temp_v1;
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
     func_800B19F4(0x30, omCurrentObj->objId);
     func_800AFBB4(1, omCurrentObj);
     D_800DEF90[omCurrentObj->objId] = func_800B6A2C;
@@ -771,23 +773,12 @@ void func_801E76EC_ovl9(s32 arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0xA;
     func_800B33F4();
     D_800E1B50[omCurrentObj->objId]->unk80->unk10 = 0.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    var_v1 = temp_v1_2 * 4;
-    if (D_800E1B50[temp_v1_2]->unk80->unk10 < 20.0f) {
-        do {
-            ohSleep(1);
-            temp_v0 = D_800E1B50[omCurrentObj->objId]->unk80;
-            temp_v0->unk10 += 2.0f;
-            temp_v1_3 = omCurrentObj->objId;
-            var_v1 = temp_v1_3 * 4;
-        } while (D_800E1B50[temp_v1_3]->unk80->unk10 < 20.0f);
+    while (D_800E1B50[omCurrentObj->objId]->unk80->unk10 < 20.0f) {
+        ohSleep(1);
+        D_800E1B50[omCurrentObj->objId]->unk80->unk10 += 2.0f;
     }
-    *(gEntityFuncListIDArray + var_v1) = 4;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 4;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E76EC_ovl9.s")
-#endif
 
 void func_801E7944_ovl9(GObj *arg0) {
 }
