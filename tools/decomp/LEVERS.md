@@ -1615,3 +1615,161 @@ the pool allocator's real stride is 0x78.
     measurement of the same source was 101/143. verify.py refuses these
     listings, so every number and every claim attached to one is unbacked until
     the pad exists. Pad first, then read the note.
+
+89. **LEVER 58's PAYING POPULATION IS NOT THE `(void)`-HEADED DRAFTS -- IT IS
+    THE DRAFTS THAT DECLARE A PARAMETER AND CANNOT USE IT.** Screening
+    ovl2/ovl7/ovl11/ovl13/ovl14 with `lever58_screen.py --all-guarded` produced
+    158 CANDIDATE lines and only THREE drafts whose C head is `(void)`, two of
+    which LEVER 67(b) had already refuted. Read that way the lever looked
+    exhausted in that whole scope. It was not: the filter that finds the work is
+
+        a CANDIDATE whose screen line names a CALL, and whose draft writes that
+        call with NO ARGUMENT
+
+    which found 15 sites and paid on five functions in one sitting:
+
+        func_801E2834_ovl14   10/103 -> MATCH   (func_801A0D74_ovl7)
+        func_801B0C20_ovl7    60/128 -> 21/128  (func_801ABBA0_ovl7)
+        func_801B1300_ovl7    67/139 -> 19/139  (func_801ABBA0_ovl7)
+        func_801B3EC8_ovl7   138/189 -> 71/189  (func_801ABBA0_ovl7)
+        func_801B46C4_ovl7   144/159 -> 108/159 (func_801ABBA0_ovl7)
+
+    **The mechanical tell in the listing is a `sw $a0, N($sp)` that is NOT in
+    the prologue.** A home store sitting next to a `jal` is IDO keeping $a0 live
+    for the call and homing it on the way past; a draft that cannot use the
+    parameter homes it in the prologue instead, and that ONE misplaced word
+    shifts the positional diff from instruction ~8 onward and reads as "every
+    temp is rotated one register slot". Three of these drafts carried a note
+    saying exactly that, and func_801B46C4_ovl7's went further -- it identified
+    the misplaced store and named both offsets -- without asking WHY the ROM
+    could sink it there.
+
+    Also settled: `func_801ABBA0_ovl7` was a LEVER 68 cluster hiding in plain
+    sight. Five files declared it `void func_801ABBA0_ovl7(void);` while its own
+    definition in ovl7_5.c heads `(GObj *arg0)`, its listing opens
+    `sw $a0, 0x28($sp)`, src/ovl15/ovl15.h prototypes it
+    `(struct EnemyRecord *)`, and ovl7_5.c:2006 already calls it with an
+    argument. `check_local_protos.py` does not report it, because the
+    disagreeing spellings are in DIFFERENT translation units -- the one class
+    its CONFLICT section excludes. So LEVER 80's "the discriminator that does
+    work is check_local_protos.py" needs this caveat: it finds the intra-TU
+    class only, and the cross-TU class needs the lever58 screen plus a grep of
+    the definition. Changing those five declarations to K&R `()` -- the honest
+    form while two headers disagree about the type -- is byte-inert for the ~25
+    already-matched bare call sites (full rebuild, sha1 6cea2d46, 5615
+    byte-exact, 0 real defects).
+
+    Two NEGATIVES with the identical edit, so the lever is not automatic:
+    func_801B7C30_ovl7 (65/147) and func_801E2610_ovl14 (9/137) are EXACTLY
+    inert -- neither ROM listing has an $a0 home store to misplace. Six more
+    screen candidates die on LEVER 67(b): func_800AF408, func_801A6610_ovl7,
+    func_801C0588_ovl7 and func_8019BB58_ovl7 are all genuine `(void)`
+    functions that reach their object through omCurrentObj, so the untouched
+    $a0 in front of them means nothing -- check the callee's DEFINITION before
+    spending a compile, it takes one grep. And one counter-example to the third
+    case of LEVER 67(e) read mechanically: func_801DE6C8_ovl14 screens as "$a0
+    never read, never homed: there is no parameter", its draft emits a spurious
+    `sw $a0` at word 6 -- and deleting the parameter is 125/346 -> 304/346 and
+    THREE words short, not one. Keep the parameter.
+
+90. **INTEGER `0` FORKS AN FP CONSTANT; `0.0f` SHARES IT.** LEVER 7 says a
+    DOUBLE literal forks IDO's shared FP constant. The same knob exists one step
+    lower down: a store of `0` to an `f32[]` and a comparison against `0.0f` are
+    DIFFERENT constants to IDO, and a store of `0.0f` is the SAME one. Measured
+    in both directions on the same day:
+
+      - func_801E09C4_ovl11 (MATCHED on this): `D_800E3750[objId] = 0.0f;` is
+        CSE'd with the four `== 0.0f` compare zeros already in $f0, and the
+        draft comes out TWO WORDS SHORT -- no `mtc1 $zero, $f16`, no
+        branch-delay `nop`. Spelled `= 0` it forks, and the function matches.
+      - func_801E2610_ovl14 (the control): its ROM wants the fork, its draft
+        already says `= 0`, and changing the three stores to `= 0.0f` CSEs them
+        into the ABSF macro's compare zero for 9/137 -> 54/136.
+
+    When a draft is one or two words SHORT around a materialised zero, look at
+    how the zero is spelled before looking at anything else.
+
+91. **A `.float` in a listing is a decimal you must COPY, not read.** verify.py
+    scores `.text` only, so a draft can be byte-exact, check_tu_size can be
+    clean, and the linked ROM can still be wrong because a migrated
+    `.late_rodata` word is one ULP out. func_801E2834_ovl14's listing carries
+    `.float -0.4874999821` and `.float -0.9749999642`; the draft spelled them
+    `-0.4875f` and `-0.975f`, which round to 0xBEF9999A / 0xBF79999A against the
+    ROM's 0xBEF99999 / 0xBF799999. Three words wrong, sha1 06cdac28, and only
+    `check_rodata_bytes.py` named it. Run that gate on every un-guard in a TU
+    with migrated late_rodata (LEVER 53 makes the same point about the block
+    SHIFTING; this is the block's CONTENT). Note also that IDO does NOT merge
+    late_rodata entries -- that listing keeps two separate words for the two
+    -0.975f sites, so both must stay written out in the source.
+
+92. **LEVER 77's population is entirely in ovl2, and its only near-miss member
+    does not pay.** Enumerated across every guarded draft in ovl11, ovl13 and
+    ovl14 with the entry's own rule (a `mult`/`multu` whose second operand is a
+    register loaded only by `addiu $rX, $zero, imm`, imm not a power of two):
+    ZERO functions. And of the six the entry still lists in ovl2, only
+    func_80114A14 (32/174) has a residue small enough for the lever to show in
+    -- `VERIFY_MAXDIFF=200` on its diff contains no `multu` at all, so its
+    stride is already matching and there is nothing to convert. The other five
+    sit at 74/278, 98/126, 203/206, 457/484 and 650/706; LEVER 75's closing
+    lesson applies -- a lever needs a score that can move. Treat LEVER 77 as
+    closed unless a NEW ovl2 draft comes down far enough to read.
+
+93. **A LOOP COUNTER THAT LOOKS LIKE A SEPARATE LOCAL IS OFTEN A REUSED ONE,
+    AND THAT IS WORTH FAR MORE THAN THE FOUR BYTES IT COSTS.**
+    func_801DBEAC_ovl14 sat at 30/196 with three branch displacements off by
+    one, a caller-saved rotation, and one word missing. The whole of it was a
+    declaration: its trailing search loop counts in `r`, the local its three
+    random draws already use, not in a second `s32 i`. With `i` declared, IDO
+    allocates it $a1 -- ahead of the last of the three hoisted loop-invariant
+    array loads -- so `func_801DC674_ovl14(2, i)` needs no argument move, the
+    ROM's `or $a1, $a2, $zero` has nothing to fill the jal delay slot,
+    `addiu $a0, 2` goes there instead, and the `bnel` that copies it out of the
+    loop-exit block collapses to `bne`+`nop`. Deleting the declaration puts the
+    counter in $a2 after all three temps and the function MATCHES.
+    This is LEVERS 54/60 with a new symptom to recognise: **when a draft is one
+    word short at a call whose argument the ROM MOVES between registers, ask
+    which local the ROM did not have.** Three negatives from the same function,
+    all inert or worse: `for (i = 0;; i++)` instead of `i = 0; while (1) {...
+    i++; }`; the honest `while ((i==a)||(i==b)||(i==c)) i++;` form, as a for
+    header AND as a plain while, 197/201 both ways because the `||` chain
+    promotes a third array base into a fourth callee-saved register; and
+    swapping the `r`/`i` declaration order, 36/196 (LEVER 57's top-down rule
+    moves r's spill slot 0x34 -> 0x30).
+
+84. **A permuter zero on a SCHEDULING residue is a coin flip; on a STRUCTURAL
+    change it is reliable. Here is the proof.** func_800BDE0C's residue is two
+    `addiu` completing the %hi/%lo pairs for D_800F4324 and D_800EDA10,
+    emitted in the opposite order. Objdump of three builds of the SAME function
+    source, all with the same compile line (`tools/decomp/perm/<fn>/compile.sh`
+    is the ROM build's flags verbatim):
+
+        ROM                       addiu $t0 (F4324), $a2 (EDA24), $a3 (EDA10)
+        permuter base, standalone addiu $a3, $a2, $t0      <- agrees with the tree
+        permuter WINNING mutation,
+          compiled standalone     addiu $t0, $a2, $a3      <- agrees with the ROM
+        the SAME mutation applied
+          in the real TU          addiu $a3, $a2, $t0      <- 2/72, unchanged
+
+    So the two environments agree on the unmutated draft and DISAGREE on the
+    mutation. That rules out the easy explanation -- it is not that the
+    permuter's preprocessed standalone file is systematically different from
+    the translation unit, because then the base would differ too. What it
+    means is that this particular decision sits on a tipping point, and
+    whatever the real TU carries that the standalone does not (the other forty
+    functions, the asm-processor placeholders that every `#pragma GLOBAL_ASM`
+    in the file expands to) is enough to tip it back. I did not isolate which;
+    the fact is measured, the mechanism is a hypothesis.
+
+    The operational rule that follows is sharper than "re-measure everything":
+
+      - a permuter zero whose diff CHANGES THE PROGRAM -- a declaration added
+        or removed, a loop rewritten, a barrier introduced where there was
+        none, a type changed -- is worth applying and usually transfers. Most
+        of today's harvested closures were this kind.
+      - a permuter zero whose diff only PERTURBS a schedule -- commutative
+        operand swaps, a second barrier next to an existing one, reflowed
+        whitespace -- is not evidence about the real TU at all. Three of them
+        landed on func_800BDE0C alone and none transferred; it is now out of
+        priority_queue.py's TARGETS with the reason in its note.
+
+    Read the diff and classify it before spending the compile.
