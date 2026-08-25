@@ -2569,30 +2569,37 @@ void func_80160E6C_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160E6C_ovl5.s")
 #endif
 
-// Draft, 14/76, verify.py-confirmed. Instruction-exact; the ROM keeps
-// D_800E98E0[objId] in $v0 with no stack home, we need an `s32 t` local to
-// get $v0 and that grows the frame 0x40 -> 0x48. All 24 declaration
-// permutations swept, with and without t.
-// Wave 10: DROPPING `t` and writing the index inline gives the ROM's exact
-// frame (0x40) and spill slots with declaration order dobj, sp30, sp24, p --
-// 38 diffs, ALL of them the same one-slot temp rotation ($t9/$t0/$t1 where the
-// ROM has $v0/$t9/$t0), i.e. IDO never uses $v0 at all.  Every local costs a
-// word here because sp30/sp24 are address-taken, so no 5th local can buy $v0.
-// Also swept at that order: pointer arithmetic instead of &arr[i], a (u8 *)
-// byte bias, and reusing the parameter as the scratch (72). Floor.
+// FACTORY: 38/76, one-register rotation and two spill slots. The 14/76 this
+// replaces was measured THROUGH A WRONG STACK ADJUSTMENT (0x48 against the
+// ROM's 0x40), which LEVERS 69/74 say cannot be scored at all; dropping `t`
+// and writing the index inline gives the ROM's frame exactly, so 38 is the
+// first honest number this function has had.
+//
+// The ROM's slots, read off the listing so nobody re-derives them:
+//     0x3C  a 4-byte local that is DECLARED AND NEVER WRITTEN
+//     0x30..0x3B  sp30      (addiu $a0, $sp, 0x30)
+//     0x24..0x2F  sp24
+//     0x20  dobj            (sw $a1, 0x20($sp))
+//     0x1C  p               (sw $v1, 0x1C($sp))
+// so the declaration order is [dead scalar], sp30, sp24, dobj, p -- this C has
+// dobj, sp30, sp24, p, which puts dobj at 0x3C and p at 0x20, i.e. both spills
+// one slot high. Nine declared words plus one compiler temp is n+t = 10, which
+// is what align8(0x18 + 4*10) = 0x40 needs (LEVER 57); adding `t` back cost
+// TWO words, not one, because it also bought a temp.
+// Previously swept and negative at the old order: 24 declaration permutations
+// with and without `t`, pointer arithmetic instead of &arr[i], a (u8 *) byte
+// bias, and reusing the parameter as the scratch (72).
 #ifdef NON_MATCHING
 extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
 
 void func_80161078_ovl5(GObj *arg0) {
     void *dobj;
-    s32 *p;
-    s32 t;
     Vector sp30;
     Vector sp24;
+    s32 *p;
 
-    t = D_800E98E0[omCurrentObj->objId];
-    p = &D_8018E040_ovl5[t];
+    p = &D_8018E040_ovl5[D_800E98E0[omCurrentObj->objId]];
     dobj = D_800DFBD0[*p][D_801868FC_ovl5];
     func_800B2340(&sp30, dobj, *p);
     gEntitiesNextPosXArray[omCurrentObj->objId] = sp30.x;
@@ -4119,38 +4126,44 @@ void func_80163CC0_ovl5(GObj *gobj, u32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80163CC0_ovl5.s")
 #endif
 
-/* Faithful, not byte-exact (60/76), verify.py-confirmed. Frame, locals
-   and every instruction are right; the residue is the one-slot temp
-   rotation -- the ROM parks the D_800E98E0 value in $a2 and shifts
-   D_8018E030's load in place in $v0, this C takes $t7/$t8 and every
-   later temp follows. Swept: 16 declaration and statement orders, five
-   callee-prototype forms, and the parameter-as-scratch form (71).
-   Floor. */
-#ifdef NON_MATCHING
-struct UnkStruct8015C9B4;
-struct UnkStruct8015C9B4 *func_800A6F40(s32);
-void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *, Vector *, f32 *, f32 *);
+/* MATCHED 2026-08-25, un-guarded (was 60/76, sealed as a floor after 16
+   declaration and statement orders, five callee-prototype forms and the
+   parameter-as-scratch form).
 
+   The whole residue was WHICH OF THE TWO INDICES IS THE NAMED LOCAL. The
+   draft named the outer one, `t = D_8018E030_ovl5[D_800E98E0[objId]]`, and
+   used `t` three times; the ROM names the INNER one and subscripts
+   D_8018E030_ovl5 at each of the three position reads. That is LEVER 11 --
+   a reused table index wants to be the local -- read one level further in
+   than usual, and it is also why the old note's symptom read as a temp
+   rotation: with the outer value named, IDO has nothing to put in $v0 and
+   every later temp shifts by one.
+
+   Found by decomp-permuter (its candidate spelled the same change as an
+   assignment inside the first subscript) and applied by hand; the permuter's
+   two cosmetic companions, `(*sp).xOffset` and an integer `15`, are inert
+   here -- both spellings MATCH. The prototypes the draft needed have moved
+   into the function body so that un-guarding adds nothing at file scope. */
 void func_80164174_ovl5(GObj *arg0) {
+    struct UnkStruct8015C9B4;
+    struct UnkStruct8015C9B4 *func_800A6F40(s32);
+    void func_8015C9B4_ovl5(struct UnkStruct8015C9B4 *, Vector *, f32 *, f32 *);
     s32 t;
     SPObj *sp;
     f32 x;
     f32 y;
     Vector pos;
 
-    t = D_8018E030_ovl5[D_800E98E0[omCurrentObj->objId]];
+    t = D_800E98E0[omCurrentObj->objId];
     sp = D_800E9AA0[omCurrentObj->objId].as_ptr;
-    pos.x = gEntitiesNextPosXArray[t];
-    pos.y = gEntitiesNextPosYArray[t];
-    pos.z = gEntitiesNextPosZArray[t];
+    pos.x = gEntitiesNextPosXArray[D_8018E030_ovl5[t]];
+    pos.y = gEntitiesNextPosYArray[D_8018E030_ovl5[t]];
+    pos.z = gEntitiesNextPosZArray[D_8018E030_ovl5[t]];
     func_8015C9B4_ovl5(func_800A6F40(0x10), &pos, &x, &y);
     sp->xOffset = (x * 150.0f + 160.0f) - sp->width * 0.5f;
     ((SPObj *) sp->unk8)->xOffset = sp->xOffset + 8.0f;
     ((SPObj *) ((SPObj *) sp->unk8)->unk8)->xOffset = sp->xOffset + 15.0f;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80164174_ovl5.s")
-#endif
 
 void func_801642A4_ovl5(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 #ifdef PORT
