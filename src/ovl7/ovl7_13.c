@@ -756,9 +756,25 @@ void func_801BB34C_ovl7(void) {
     func_8019F3B0_ovl7();
 }
 
+/* FACTORY: 140/178 diffs (words DIFFERING), measured 2026-08-25.
+   LEVER 70 WORKED AND FLAT -- do not re-spend the compile on the macro.
+   The reading IS the macro, and it is a DOUBLE one: at .L801BB590 the ROM
+   expands `ABSF(ABSF(D_800E3210[objId]))`. The outer macro names its operand
+   three times, and its operand is itself an ABSF, so the listing holds three
+   complete inner expansions (each `c.lt.s $f0,$f12` + mov/b/neg/mov -> $f2)
+   -- one for the outer compare, one under `neg.s $f6,$f2` in the then-arm,
+   one plain in the else-arm. That is what m2c's three nested if/else pairs
+   below are transcribing. `D_800E3C90[id] = ABSF(ABSF(temp_f0));` compiles to
+   the identical 178-word score, 140/178, so the spelling is confirmed but
+   buys nothing.
+   The real residue is the PROLOGUE (diff 0 of 140): the ROM saves $s0 and
+   $f20 in a frame that homes $a0 at 0x28, and our draft allocates $s1 as well
+   and lays $f20 at 0x10 instead of 0x18. Per LEVER 69, fix the register/frame
+   shape before spending anything else here -- nothing downstream can line up
+   while the save set differs.
+   m2c's verbose form is kept below because it scores the same and is the
+   PORT arm. */
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
 void func_801BB3D4_ovl7(s32 arg0) {
     GObj *temp_v1;
     f32 *temp_a0_2;

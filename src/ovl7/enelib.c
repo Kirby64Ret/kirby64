@@ -1959,7 +1959,33 @@ void func_8019CD68_ovl7(void) {
     *(f32 *)&ent->unk14 = gEntitiesNextPosZArray[omCurrentObj->objId] + vec.z;
 }
 
-// m2c draft, measured 70/106 diffs
+/* FACTORY: 70/106 diffs (words DIFFERING), re-measured 2026-08-25.
+ * LEVER 70 candidate, WORKED AND NEGATIVE -- do not re-spend on the macro here.
+ * The listing really does hold FOUR ABSF expansions (the sweep's 10 cmp / 4 neg
+ * is right; a mid-session note claiming this function has no `neg.s` and should
+ * be dropped from the ABSF list is WRONG -- grep the .s, there are four, each
+ * the textbook `bc1fl / mov.s / b / neg.s / mov.s` ternary with the third,
+ * unreachable `mov.s` at .L8019CEC4 that only the macro's else-arm produces).
+ * Measured, all three at VERIFY_MAXDIFF=200 on a scratch copy:
+ *   m2c's hand-written if/else expansions (this draft)   70/106
+ *   ABSF(temp_f0) / ABSF(temp_f2) at all four sites      70/106  (FLAT)
+ *   ABS()  instead of ABSF() (lever 3)                   78/112  WORSE --
+ *     the integer 0 forces a conversion and the draft grows past the ROM's 106
+ *   short-circuit rewrite (`(a >= 0.0f || ABSF(a) <= 0.001f) && (...)`,
+ *     one `return 1` arm and one `var_a0 = 1` arm)       83/106  WORSE
+ * Why the macro does not pay here: the residue is NOT a missing negation, it is
+ * that BOTH source spellings let IDO reuse the outer sign test's zero. Our
+ * build emits `c.lt.s $f0, $f14` against the $f14 the `temp_f0 >= 0.0f` test
+ * already loaded; the ROM re-materialises a fresh `mtc1 $zero, $f4` (and $f8,
+ * $f16, $f4) for each expansion, so each of the four sites is exactly two words
+ * short (the mtc1 and one nop) and everything after slides. Lever 7's
+ * double-literal fork cannot be spelled inside the macro, and the explicit
+ * if/else forks no better than ABSF does.
+ * Second, independent residue: a whole-prologue register rename. The ROM holds
+ * the shifted objId in $v1 and the accumulator in $a0 (`or $a0, $zero, $zero`
+ * ... `or $v0, $a0, $zero`); every draft shape gets $a1/$v1. Fix that before
+ * the zero -- diff 3 is in the prologue (lever 69's rule).
+ */
 #ifdef NON_MATCHING
 s32 func_8019CE28_ovl7(void) {
     EnemyRecord *temp_v0;
