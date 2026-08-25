@@ -1468,8 +1468,20 @@ the pool allocator's real stride is 0x78.
     re-deriving the same 5/235 case from scratch, which had already happened
     once.
 
-82. **LEVER 58 is EXHAUSTED in ovl1, main and ovl18, and here is the list so
-    nobody re-screens it.** Nineteen guarded drafts in those overlays are
+82. **CORRECTED BY LEVER 89 -- THIS NEGATIVE WAS SCREENED ON THE WRONG
+    POPULATION.** What follows is still true of the `(void)`-headed drafts, and
+    that is not where the lever pays. Re-screened with LEVER 89's filter (the
+    screen names a CALL and the draft writes that call with NO argument),
+    ovl1/main/ovl18 yields five sites, and func_80225FA8_ovl18 went 94/97 to
+    48/97 on one of them -- func_801A0D74_ovl7, the same callee another lane
+    used to close func_801E2834_ovl14 the same evening. The function heads
+    `(struct GObj *arg0)` and already HAS its parameter; what was missing was
+    passing it on, which no `(void)`-headed screen can see.
+
+    The original entry, kept because the nineteen negatives are real:
+
+    **LEVER 58 is exhausted among the `(void)`-HEADED drafts of ovl1, main and
+    ovl18, and here is the list so nobody re-screens THAT set.** Nineteen guarded drafts in those overlays are
     declared `(void)`. `lever58_screen.py` walks the control-flow graph of each
     and reports the same verdict for every one of the nine worth checking:
     `$a0 never read, never homed: there is no parameter`.

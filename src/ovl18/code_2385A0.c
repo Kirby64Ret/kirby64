@@ -67,7 +67,7 @@ void func_80111550(s32);
 struct Unk2385A0_24 *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Unk2385A0_24 *);
 void func_801A0D50_ovl7(void *);
-s32 func_801A0D74_ovl7(void);
+s32 func_801A0D74_ovl7();
 void func_801ACF5C_ovl7(struct GObj *);
 void func_801ACF84_ovl7(s32);
 void func_8021F4A0_ovl18(void);
@@ -128,10 +128,41 @@ void func_80225EB8_ovl18(s32 arg0) {
 
 // near-match (94/97): identical instruction stream, but the ROM frame is 0x30
 // (8-byte hole at 0x24) and spills arg0 lazily in the jal delay slot.
-/* FACTORY: 94/97 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 45/97 -- MEASURED 2026-08-25, was 94/97. Two causes, and the first
+   is LEVER 58 found through LEVER 89's filter rather than mine.
+
+   (a) func_801A0D74_ovl7 TAKES THE GObj. It was declared `(void)` here and
+       called bare; the screen names it as a CALL reached with $a0 untouched.
+       Passing arg0 -- with the declaration relaxed to K&R `()` so the ~25 bare
+       call sites elsewhere in this file and the tree still compile -- takes it
+       94 -> 48. Another lane closed func_801E2834_ovl14 outright on the same
+       callee an hour earlier.
+
+       MY OWN SCREEN WOULD HAVE MISSED THIS. LEVERS 82 recorded LEVER 58 as
+       "exhausted in ovl1, main and ovl18" on the strength of screening the
+       nineteen `(void)`-HEADED drafts, all of which came back negative. That
+       is the wrong population: this function heads `(struct GObj *arg0)` and
+       already has its own parameter -- what was missing was passing it ON.
+       LEVER 89 is the correct filter and LEVERS 82 is corrected to point at it.
+
+   (b) The frame was 8 bytes short, 0x28 against the ROM's 0x30, so every
+       stack displacement was off: the ROM homes arg0 at 0x30($sp) and sp2C at
+       0x2C, the draft at 0x28 and 0x24. Two reserved slots ahead of the named
+       locals put it on 0x30 exactly, 48 -> 45. LEVER 78: the position matters
+       -- the same two words declared AFTER the named locals are dropped
+       whole and score 48, and interleaved they also give 45.
+
+   Measured and WORSE, so the s32 return is confirmed rather than assumed:
+   declaring func_801A0D74_ovl7 to return f32, on the reading that the ROM
+   stores $f18 into sp2C, is 71/96 with the pads and 73/96 without. The ROM
+   does an int-to-float conversion on the return value and the draft must too.
+
+   The 45 that remain are register class: the ROM reads D_800E1B50[objId] into
+   $v0 and the draft into $t9, and the temps below follow. Permuter fuel. */
 #ifdef NON_MATCHING
 void func_80225FA8_ovl18(struct GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
     f32 sp2C;
     struct DObj *sp20;
     struct EnemyRecord *sp1C;
@@ -148,7 +179,7 @@ void func_80225FA8_ovl18(struct GObj *arg0) {
         temp_a1->unk14 = temp_v1->pos.v.y + temp_v1->firstChild->pos.v.y + temp_v0->pos.v.y + D_8022A91C_ovl18;
         temp_a1->unk10 = temp_a1->unk14 * 0.5f;
     }
-    sp2C = func_801A0D74_ovl7();
+    sp2C = func_801A0D74_ovl7(arg0);
     eneTurnCommon2(6);
     if (sp2C == 0.0f) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_8022AD10_ovl18);
