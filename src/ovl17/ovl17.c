@@ -728,7 +728,22 @@ void func_801DC98C_ovl17(void) {
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+   claimed to be: the N64 build takes the pragma below.
+
+   MEASURED 2026-08-25: 200/291 positionally, frame 0x88 against the ROM's
+   0x48 -- the twenty m2c `temp_*`/`var_*` locals are the whole story
+   (LEVER 31), and until they are pruned no local edit can be read.
+   LEVER 70 (ABSF) is a FALSE POSITIVE here and absf_sweep will keep listing
+   it: the two `mtc1 $zero` compares at 801DCDB0 and 801DCEBC really are
+   ABSF macros -- `if (D_801E5568_ovl17 < ABSF(dx))` and the same on dy --
+   but the draft already spells them as the equivalent if/else statement
+   form, which IDO compiles to the ROM's bc1fl/mov/b/neg/mov shape word for
+   word.  Rewriting both as `if (0.0001f < ABSF(x))` scores 200/291 exactly,
+   flat, and was reverted.  The macro is textually identical to the ternary,
+   so on any draft that already writes the ternary the lever has nothing to
+   buy; it only pays against a `v = x; if (x < 0) v = -x;` statement pair.
+   The third `mtc1 $zero` site (801DCE08) is NOT an ABSF at all -- it is a
+   symmetric clamp of D_801E56E0_ovl17 to +/- the sqrtf result. */
 extern f32 D_801E56D8_ovl17;
 extern f32 D_801E56DC_ovl17;
 extern f32 D_801E56E0_ovl17;

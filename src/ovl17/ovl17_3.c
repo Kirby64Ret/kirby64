@@ -77,6 +77,18 @@ void func_801E3324_ovl17(Vector *);
 void func_801E109C_ovl17(struct GObj *);
 void func_801E15A4_ovl17(struct GObj *);
 
+/* FACTORY: 139/230.  Divergence starts at word 53 and is an FP register
+   rotation through the whole 50.0f/(sp3C + 20.0f) block ($f18/$f4/$f6 against
+   the ROM's $f4/$f18/$f8) -- everything downstream of it renames.
+   LEVER 70 (ABSF) MEASURED AND BYTE-INERT here, 139/230 either way, and the
+   three sites are now spelled with the macro so absf_sweep stops listing
+   them.  The scope correction that follows from it: ABSF() and the if/else
+   STATEMENT pair are the same bytes whenever both arms assign the SAME
+   lvalue -- here `D_800E3AD0[objId]` -- because IDO sinks the store into both
+   arms either way (the ROM recomputes the subscript address separately in
+   each arm at 801E0F4C and 801E0F68).  LEVER 70 only pays against
+   `v = x; if (x < 0.0f) v = -x;`, which reads the operand once; it buys
+   nothing against a two-armed if/else that already names the operand twice. */
 #ifdef NON_MATCHING
 void func_801E0D00_ovl17(struct GObj *arg0) {
     s32 sp3C;
@@ -114,27 +126,15 @@ void func_801E0D00_ovl17(struct GObj *arg0) {
     temp_f0 = sp2C * 15.0f;
     D_800E3050[omCurrentObj->objId] = temp_f0;
     D_800E3590[omCurrentObj->objId] = (sp2C * -0.3f) * sp20;
-    if (temp_f0 < 0.0f) {
-        D_800E3AD0[omCurrentObj->objId] = -temp_f0;
-    } else {
-        D_800E3AD0[omCurrentObj->objId] = temp_f0;
-    }
+    D_800E3AD0[omCurrentObj->objId] = ABSF(temp_f0);
     temp_f0 = sp30 * 15.0f;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3750[omCurrentObj->objId] = (sp30 * -0.3f) * sp20;
-    if (temp_f0 < 0.0f) {
-        D_800E3C90[omCurrentObj->objId] = -temp_f0;
-    } else {
-        D_800E3C90[omCurrentObj->objId] = temp_f0;
-    }
+    D_800E3C90[omCurrentObj->objId] = ABSF(temp_f0);
     temp_f0 = sp34 * 15.0f;
     D_800E33D0[omCurrentObj->objId] = temp_f0;
     D_800E3910[omCurrentObj->objId] = (sp34 * -0.3f) * sp20;
-    if (temp_f0 < 0.0f) {
-        D_800E3E50[omCurrentObj->objId] = -temp_f0;
-    } else {
-        D_800E3E50[omCurrentObj->objId] = temp_f0;
-    }
+    D_800E3E50[omCurrentObj->objId] = ABSF(temp_f0);
     D_800E98E0[omCurrentObj->objId] = 0;
     ohSleep(sp3C + 0x14);
     func_801E1170_ovl17(arg0);
