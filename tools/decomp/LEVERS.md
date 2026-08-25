@@ -499,3 +499,29 @@ the pool allocator's real stride is 0x78.
     gets NO home slot (`Unk801875F0 *p = &arr[i];` as the only local gave frame
     0x20, two words), so "declared" and "homed" are different things and n
     counts the former.
+
+60. **A sweep over declaration ORDER at a fixed COUNT cannot find a residue
+    whose cause is the count.** func_800A8CE0 carried a note recording 120
+    declaration permutations swept at a 2/33 floor, plus a table of five
+    named arrangements and their scores. Every one of the 120 held the same
+    five declarations and only moved them; the ROM has FOUR declarations and
+    ONE compiler temp. Reading the ROM's slots (0x1C, 0x20, 0x2C in a 0x30
+    frame) through lever 57's law says which it is, and the arrangement that
+    matched was not in the search space:
+
+        size(0x2C)  pad0(0x28)  base(0x24)  buf(0x20)   + temp(0x1C)
+
+    The variable the sweep could not give up was the ADVANCED POINTER, and in
+    the ROM that is not a local at all -- it is the temp. So the question to
+    ask when a spill lands one word off and every ordering has been tried is
+    not "which order" but **which of the ROM's values is a temp rather than a
+    local**, and then which source shape makes it one. Here that shape was
+    keeping the base live and subscripting it (`base[arg0]`, `base[arg0 + 1]`)
+    instead of advancing it (`entry += arg0`) -- which, as a bonus, is also
+    what fixes the register half of the residue, because two live values are
+    what make IDO use the ROM's $v0/$v1 pair instead of reusing $v1 for both.
+
+    The general form: a note that says "all N permutations swept" is a claim
+    about a search space, not about the function. Check what the space held
+    fixed. Lever 57's corollary that "declared" and "homed" are different
+    things is the same observation from the other side.
