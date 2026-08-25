@@ -10,7 +10,7 @@ extern f32 D_801F4D30_ovl10[];
 extern FUNCLIST D_801F4290_ovl10;
 
 void func_801A0D74_ovl7();
-f32 func_801DD760_ovl10(void);
+f32 func_801DD760_ovl10(GObj *);
 extern s32 D_800DDFD0[], D_800EA360[];
 extern struct EnemyEventTable D_801F4094_ovl10;
 void func_800AECC0(f32);
@@ -551,7 +551,7 @@ void func_801DD390_ovl10(GObj *arg0) {
 }
 
 void func_801DD674_ovl10(GObj *arg0) {
-    if (func_801DD760_ovl10() != 0.0f) {
+    if (func_801DD760_ovl10(arg0) != 0.0f) {
         D_800EA520[omCurrentObj->objId] = 0x3E8;
     }
     if (func_8019A7E8_ovl7(160.0f) != 0) {
@@ -566,9 +566,18 @@ void func_801DD674_ovl10(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 198/207 [was noted 202/207] with the instruction count EXACT -- register naming only.
+/* FACTORY: 186/207 (was 198) with the instruction count EXACT.
+   LEVER 58 in its HOMED form, 2026-08-25, worth 12 words. The ROM's prologue
+   does `sw $a0, 0x18($sp)` at 801DD770 into a 0x18 frame -- that is the
+   incoming-argument slot, which lives at frame+0 -- and nothing reads it back,
+   so this proc takes a parameter and does not use it, the same shape as the
+   matched func_801DBA8C_ovl17. Declaring it reproduces the store and the
+   twelve words below it fall into place. All five call sites in this file
+   already had a GObj * of their own to pass, and the change is byte-inert for
+   the rest of the TU: verify.py still 11 match / 0 diff and .text identical to
+   the known-good build by objdump.
    DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 198 of 207 words differ (95%). A
+   this a register/permutation floor; 186 of 207 words still differ (90%). A
    permutation RENAMES registers -- it does not change what the function
    computes, so it cannot account for this. At this fraction the draft is
    simply not this function yet. Re-derive from the listing before spending a
@@ -585,7 +594,7 @@ void func_801DD674_ovl10(GObj *arg0) {
  * D_800E98E0[parent] track when facing -1).  When the target is unreachable
  * (9999) or already passed, it snaps to the target's path segment/offset,
  * cancels the pending X/Z step, and returns the facing sign; else 0. */
-f32 func_801DD760_ovl10(void) {
+f32 func_801DD760_ovl10(GObj *arg0) {
 
     s32 tgt;
     f32 dist;
@@ -628,7 +637,7 @@ f32 func_801DD760_ovl10(void) {
  * D_800E98E0[parent] track when facing -1).  When the target is unreachable
  * (9999) or already passed, it snaps to the target's path segment/offset,
  * cancels the pending X/Z step, and returns the facing sign; else 0. */
-f32 func_801DD760_ovl10(void) {
+f32 func_801DD760_ovl10(GObj *arg0) {
     s32 tgt;
     f32 dist;
 
@@ -781,7 +790,7 @@ void func_801DDEB8_ovl10(GObj *arg0)
   s32 timer;
   struct Ovl10AnimInfo0 sp30;
   struct Ovl10EA360 *temp;
-  func_801DD760_ovl10();
+  func_801DD760_ovl10(arg0);
   temp = (struct Ovl10EA360 *) D_800EA360[omCurrentObj->objId];
   if (((struct Ovl10EA360 *) D_800EA360[omCurrentObj->objId]) != 0)
   {
@@ -899,7 +908,7 @@ void func_801DE124_ovl10(s32 arg0) {
 }
 
 void func_801DE5CC_ovl10(GObj *arg0) {
-    func_801DD760_ovl10();
+    func_801DD760_ovl10(arg0);
     func_801A0D74_ovl7(arg0);
     func_801E28C8_ovl10(0);
     if (D_800E83E0[omCurrentObj->objId] == 1) {
@@ -987,7 +996,7 @@ struct Ovl10AnimInfo1 {
 void func_801DEA98_ovl10(GObj *arg0) {
     struct Ovl10AnimInfo1 sp24;
 
-    func_801DD760_ovl10();
+    func_801DD760_ovl10(arg0);
     func_801A0D74_ovl7(arg0);
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801F3A18_ovl10;
     func_801E28C8_ovl10(0);
@@ -1234,7 +1243,7 @@ f32 func_801DF234_ovl10(void) {
 }
 
 void func_801DF310_ovl10(GObj *arg0) {
-    func_801DD760_ovl10();
+    func_801DD760_ovl10(arg0);
     func_801A0D74_ovl7(arg0);
     func_801E28C8_ovl10(0);
     if (D_800E83E0[omCurrentObj->objId] == 1) {
