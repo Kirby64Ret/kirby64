@@ -287,6 +287,19 @@ linked sha1 is what decides; it took two builds.
 
 ## MEASURED IN THE RE-FOUNDATION WAVE (ovl7 lane, 5 closures / 17 seeds)
 
+NUMBERING, and it has bitten twice today. The entries in THIS section restart
+at 20 and collide with the 20 and 21 above; they are kept as they are because
+both sets are cross-referenced from source notes, so read a reference to
+"LEVER 20/21" in context. Everything from 22 onward is unique.
+
+**Claiming a number: `git pull` FIRST, take (highest existing + 1), and if you
+lose the race, renumber YOUR entry after the collision and leave a
+"(written as N)" line in it** -- which is what the three collisions on
+2026-08-25 did. Nine entries collided that day because five lanes appended
+concurrently; 80-85 and 95 from one lane are now 97-103, and one 84 is now 94.
+Do not renumber someone else's entry that is already referenced from a .c file
+without fixing those references in the same commit.
+
 20. **A difference used in a float comparison must be materialised into a
     named local**, or IDO folds it into a direct `c.eq.s` of the two loads
     and never forms the subtraction at all. Worth 51 diffs on
@@ -1864,7 +1877,9 @@ the pool allocator's real stride is 0x78.
        exactly zero in a three-arm function is a reason to check the arm before
        it is a reason to believe anything about IDO.
 
-80. **THE objId LEVER, WITH THE SCREEN CORRECTED AND THE COST MEASURED.**
+97. **THE objId LEVER, WITH THE SCREEN CORRECTED AND THE COST MEASURED.**
+    (Written as "80" and renumbered to 97 on 2026-08-25: several lanes
+    numbered concurrently and 80 was already taken. Content unchanged.)
     LEVER 4 says to inline `omCurrentObj->objId` where m2c cached it. Six
     plyshot.c/ovl3_6.c functions were re-derived on it in one stint (500/505 ->
     29, 509/513 -> 69, 531/533 -> 52, 262/267 -> 129, 388/391 -> 22,
@@ -1898,7 +1913,9 @@ the pool allocator's real stride is 0x78.
        trailing pad afterwards and one needed four declarations removed. Score
        the objId edit and the frame together; neither is readable alone.
 
-81. **A "LOCAL" THAT THE ROM KEEPS IN A SAVED REGISTER AND RE-READS IS OFTEN A
+98. **A "LOCAL" THAT THE ROM KEEPS IN A SAVED REGISTER AND RE-READS IS OFTEN A
+    (Written as "81" and renumbered to 98 on 2026-08-25: several lanes
+    numbered concurrently and 81 was already taken. Content unchanged.)
     FILE-SCOPE SCRATCH GLOBAL.** Three functions in src/ovl3/plyshot.c hold
     `lui $sN, %hi(D_800D71E8 + 0x50)` -- spimdisasm naming the nearest
     preceding symbol -- and read and write `0x0($sN)` as if it were a local
@@ -1915,7 +1932,9 @@ the pool allocator's real stride is 0x78.
     nor spills yet re-reads through one register, grep the listing's `%hi` for
     a data symbol instead of assuming a register allocation floor.
 
-82. **INTEGER ZEROS COME IN PAIRS, AND THE PAIR CAN BE TWO COMPARES.**
+99. **INTEGER ZEROS COME IN PAIRS, AND THE PAIR CAN BE TWO COMPARES.**
+    (Written as "82" and renumbered to 99 on 2026-08-25: several lanes
+    numbered concurrently and 82 was already taken. Content unchanged.)
     func_801712F8_ovl3 recorded that two zero STORES must be written as the
     integer `0` together. Measured twice more, on comparisons:
       - func_8015C00C_ovl3: the two velocity-sign tests in one arm,
@@ -1929,7 +1948,9 @@ the pool allocator's real stride is 0x78.
         already forks. So the unit is the PAIR that currently shares one
         `mtc1 $zero`, not the file and not the operator.
 
-83. **A LOCAL AND A LITERAL HOLDING THE SAME CONSTANT DECIDE HOW A STORE TO A
+100. **A LOCAL AND A LITERAL HOLDING THE SAME CONSTANT DECIDE HOW A STORE TO A
+    (Written as "83" and renumbered to 100 on 2026-08-25: several lanes
+    numbered concurrently and 83 was already taken. Content unchanged.)
     GLOBAL IS ADDRESSED.** func_8017E284_ovl3 emitted two extra
     `lui $at, %hi(gKirbyState)`, one for each `swc1` to `unk40` inside its
     loop, while every LOAD in the same block used the $s0 the function already
@@ -1941,7 +1962,9 @@ the pool allocator's real stride is 0x78.
     sites is 88. Same operand-KIND family as LEVERS 7/20/21, reaching a STORE's
     base register rather than an FP register assignment.
 
-84. **`arr[i - C]` AND `arr[i + C]` FOLD THE CONSTANT IN DIFFERENT PLACES.**
+101. **`arr[i - C]` AND `arr[i + C]` FOLD THE CONSTANT IN DIFFERENT PLACES.**
+    (Written as "84" and renumbered to 101 on 2026-08-25: several lanes
+    numbered concurrently and 84 was already taken. Content unchanged.)
     With the minus form IDO computes `(i - C) * 4` and adds the symbol, which
     costs an `sll` and an `addiu` AND breaks the sharing of `i * 4` with the
     surrounding block; with the plus form against the earlier symbol it folds
@@ -1954,7 +1977,9 @@ the pool allocator's real stride is 0x78.
     linked address; that one needs a real symbol at the offset, which is a
     splat change.)
 
-85. **DECLARATION ORDER IS ACROSS TYPES, NOT WITHIN THEM.** m2c writes
+102. **DECLARATION ORDER IS ACROSS TYPES, NOT WITHIN THEM.** m2c writes
+    (Written as "85" and renumbered to 102 on 2026-08-25: several lanes
+    numbered concurrently and 85 was already taken. Content unchanged.)
     aggregates first out of habit and lanes sweep scalar order among scalars.
     func_8015FD58_ovl3's ROM puts its four scalars ABOVE its three Vectors
     (0x58/0x5C/0x60/0x64 against vb 0x4C, va 0x40, vc 0x34), so the two f32s
@@ -1963,7 +1988,9 @@ the pool allocator's real stride is 0x78.
     listing and sort ALL the declarations by address descending; that is the
     order, whatever their types.
 
-95. **LEVER 58/89 IS EXHAUSTED IN ovl8, ovl9, ovl12, ovl15 AND ovl16 -- the
+103. **LEVER 58/89 IS EXHAUSTED IN ovl8, ovl9, ovl12, ovl15 AND ovl16 -- the
+    (Written as "95" and renumbered to 103 on 2026-08-25: several lanes
+    numbered concurrently and 95 was already taken. Content unchanged.)
     list, so nobody re-screens it.** `lever58_screen.py --all-guarded` over
     every guarded draft in those five overlays produces exactly EIGHT
     CANDIDATE lines that name a CALL, and LEVER 89's filter (the draft writes
