@@ -1264,78 +1264,59 @@ void func_802184E0_ovl9(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* FACTORY: 64/121, was 116/123 as an untouched m2c dump ("m2c draft, for the
+   PORT only. Not byte-exact and not claimed to be" -- LEVER 88's shape).
+   Deleting m2c's nine temp_ and var_ declarations and writing every subscript
+   `omCurrentObj->objId` is 116 -> 64 on the first compile, and it also removes
+   the PORT defect the long note below used to describe: `var_v0` was a BYTE
+   offset used as an element index into gEntityFuncListIDArray, so this
+   object's state id was never cleared and func_802180D8_ovl9 spun without
+   yielding.  The plain `gEntityFuncListIDArray[omCurrentObj->objId] = 0;`
+   is both the ROM's spelling and the correct one.
+
+   WHAT IS LEFT is one constant-CSE grouping, and it is LEVER 45 refusing to
+   move.  Three stores of `1` -- D_800DDFD0[objId] (s32), D_800E8920[objId]
+   (s32) and rec->unk3C (u8).  The ROM groups them {D_800DDFD0} and
+   {D_800E8920, unk3C}: `addiu $t7, 1` for the first, `addiu $t0, 1` for the
+   second, and `sb $t0, 0x3C($a0)` reuses $t0 across two nested branch-likelys.
+   IDO here groups them {D_800DDFD0, D_800E8920} and materialises a third for
+   unk3C, which is what rotates every register below.
+   MEASURED INERT, all three separately, all exactly 64/121: spelling the
+   literal `1U` at each of the three sites.  So LEVER 45's knob is the
+   DESTINATION's type, not a suffix on the literal -- and the ROM's grouping
+   crosses an s32/u8 boundary, which LEVER 45 as written says should not
+   happen.  Somebody with a reason to retype one of these arrays should look
+   again; a `U` suffix is not it.
+   The other run is a `mtc1 $zero, $f0` emitted seven words early. */
 extern struct EnemyEventTable D_801CCF28;
 
 void func_80218520_ovl9(s32 arg0) {
-    EnemyRecord *temp_a0;
-    s32 *temp_v0_2;
-    s32 *temp_v0_3;
-    s32 var_v0;
-    u32 temp_a1;
-    u32 temp_v0;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
+    EnemyRecord *rec;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a0 = D_800E1B50[temp_v0];
-    D_800DDFD0[temp_v0] = 1;
-    temp_a0->unk98 = &D_801CCF28;
+    rec = D_800E1B50[omCurrentObj->objId];
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    rec->unk98 = &D_801CCF28;
     D_800E8920[omCurrentObj->objId] = 1;
-    temp_a1 = omCurrentObj->objId;
-    temp_v0_2 = &D_800E98E0[temp_a1];
-    if (D_800E7880[temp_a1] == 0) {
-        *temp_v0_2 += 1;
-        temp_v0_3 = &D_800E98E0[omCurrentObj->objId];
-        if (*temp_v0_3 >= 2) {
-            *temp_v0_3 = 0;
-            if (temp_a0->unk3C == 0) {
-                temp_a0->unk3C = 1;
+    if (D_800E7880[omCurrentObj->objId] == 0) {
+        D_800E98E0[omCurrentObj->objId] += 1;
+        if (D_800E98E0[omCurrentObj->objId] >= 2) {
+            D_800E98E0[omCurrentObj->objId] = 0;
+            if (rec->unk3C == 0) {
+                rec->unk3C = 1;
             }
         }
     }
     D_800E6690[omCurrentObj->objId] = 0.0f;
-    temp_v0_4 = omCurrentObj->objId;
-    D_800E64D0[temp_v0_4] = D_800E6690[temp_v0_4];
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v0_5 = omCurrentObj->objId;
-    D_800E3210[temp_v0_5] = D_800E3750[temp_v0_5];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     func_800A9EA4(0x1002F);
-    temp_v0_6 = omCurrentObj->objId;
-    var_v0 = temp_v0_6 * 4;
-    if (D_800DE350[temp_v0_6]->data.dobj->timeRemaining != -3.4028235e38f) {
+    if (D_800DE350[omCurrentObj->objId]->data.dobj->timeRemaining != -3.4028235e38f) {
         func_800AF27C();
-        var_v0 = omCurrentObj->objId * 4;
     }
-    /* var_v0 IS A BYTE OFFSET, NOT AN ELEMENT INDEX, and the draft dropped
-     * that distinction. The listing's tail is
-     *
-     *     sll  $v0, $v0, 2                          # v0 = objId * 4 (BYTES)
-     *     lui  $at, %hi(gEntityFuncListIDArray)
-     *     addu $at, $at, $v0
-     *     sw   $zero, %lo(gEntityFuncListIDArray)($at)
-     *
-     * -- i.e. gEntityFuncListIDArray[objId] = 0. gEntityFuncListIDArray is
-     * `s32[]`, so `*(gEntityFuncListIDArray + objId * 4)` clears element
-     * objId*4, four times too far, and THIS OBJECT'S state id is never
-     * cleared. func_802180D8_ovl9 (src/ovl9/ovl9_15.c) is a `while (1)` that
-     * re-dispatches on that id every iteration, so state 1 re-enters here for
-     * ever; on the frame where timeRemaining == -FLT_MAX the func_800AF27C
-     * yield above is skipped too, and the loop then spins WITHOUT yielding.
-     * That starves the whole cooperative scheduler: measured on the PC port
-     * as a total wedge of world 1-1 at x = -536.54 (gdb, three stack samples
-     * two seconds apart, all identical: func_80218520_ovl9 <-
-     * utilFuncTableJump(idx=1, max=3, D_8021CDA0_ovl9) <- func_802180D8_ovl9
-     * <- func_8021817C_ovl9 <- func_80218020_ovl9 <- func_800FCF0C).
-     * The byte-offset spelling below is the one the rest of the tree already
-     * uses for this array (src/ovl11/ovl11.c:1690, src/ovl18/code_236F20.c).
-     * N64 build unaffected: this arm is NON_MATCHING, the ROM takes the
-     * pragma. */
-    *(s32 *) ((u8 *) gEntityFuncListIDArray + var_v0) = 0;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
