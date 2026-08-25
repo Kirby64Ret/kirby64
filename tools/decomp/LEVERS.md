@@ -2487,3 +2487,34 @@ the pool allocator's real stride is 0x78.
     Corroboration that this is the file's own idiom and not a trick: the
     function immediately above func_800B1378 in ovl1_7.c is already a switch
     over the same three cases, and it matches.
+
+110. **SHAPE DISTANCE 0 DOES NOT MEAN "PERMUTER ONLY". CLEAN THE DECLARATION
+    LIST FIRST, THEN BELIEVE THE SHAPE.** `shapescan.py` (LEVER 104's tool)
+    found 101 guarded drafts tree-wide with shape distance zero, and the
+    reading being put on them is "no structural disagreement, only register
+    names". That reading is half right and the missing half is expensive.
+
+    aligndiff reduces every word to its MNEMONIC. An extra LOCAL that only
+    rotates the register allocation adds no instruction and changes no
+    instruction's KIND, so it is INVISIBLE to the shape number. Shape 0 means
+    "nothing was inserted, deleted or changed kind" -- not "no source edit can
+    reach this".
+
+    Measured: **func_801E5080_ovl15 was shape 0 at 12/167 and closed on a
+    source edit** -- m2c's two `temp_v1 = omCurrentObj->objId` caches, one
+    shared between D_800E17D0 and D_800E0D50 and one between D_800E3210 and
+    D_800E3750. Writing both subscripts `omCurrentObj->objId` is byte-exact.
+    Its own FACTORY note had already read the residue as "the same register
+    rotation ... exactly what decomp-permuter closes for free".
+
+    So the order of operations on a shape-0 draft is:
+      1. delete every m2c `temp_*` / `var_*` that re-expresses a subscript, a
+         pointer or an induction variable (LEVER 108) and re-measure;
+      2. check the frame, because deleting declarations moves it (LEVER 54) --
+         func_801DC314_ovl16 goes 204 -> 212 on the same cleanup for exactly
+         that reason, and two reserved slots put it back to 204;
+      3. only then read the shape as a verdict.
+    The same caution applies to LEVER 65b's opcode test, which is the same
+    measurement from the other side: 80 aligned renames and 0 genuinely
+    different words is a description of the CURRENT draft's declaration list,
+    not of the function.
