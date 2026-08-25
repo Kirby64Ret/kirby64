@@ -107,8 +107,30 @@ void func_800BB6B0(GObj *gobj);
 #endif
 
 // 7/131 (6 real): ROM keeps the omMakeGObj result in $v0 and dobj in $v0; we get $s0/$v1.
-/* FACTORY: 6/131 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 6/131 -- MEASURED 2026-08-25, the first measurement this draft has
+   had, and it turned up only because the annotate pass scored every unnoted
+   draft in the overlay. Six words from byte-exact and nobody knew.
+
+   TWO independent register residues, both allocation and neither structural:
+
+   (a) indices 16 and 19. The ROM keeps HS64_omMakeGObj's return value in $v0
+       for the `sw $v0, %lo(D_800D6B24)` and the `or $a0, $v0, $zero` that
+       follow, while ALSO copying it to $s0 in the branch delay slot for later.
+       The draft makes the same copy and then reads $s0 for both immediate
+       uses. Two spellings of one value; the source says `gobj` either way.
+
+   (b) indices 118-123. dobj lands in $v0 in the ROM and $v1 in the draft, so
+       the two `swc1` and the `addiu ..., 0x40` that forms the return value all
+       name the other register. Same instructions, same offsets.
+
+   Measured and much WORSE, so do not retry: writing the two scale stores
+   through `omCurrentObj->data.dobj` and taking `dobj` afterwards is 37/135 --
+   the local is load-bearing and inlining it costs four instructions as well as
+   the registers.
+
+   Both residues are register choices over an exact instruction stream. Queued
+   in priority_queue.py's TARGETS; this is the best permuter seed in ovl1
+   after func_800A84F0. */
 #ifdef NON_MATCHING
 extern struct {
     u32 unk0;

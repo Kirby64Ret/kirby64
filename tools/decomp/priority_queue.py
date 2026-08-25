@@ -67,6 +67,7 @@ TARGETS = [
     (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),   # of 169
     (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),   # of 146
     (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),   # of 138
+    (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),   # of 131, two register residues
     (  7, 'src/main/render.c', 'func_8001479C'),   # of 13
     (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),   # of 70
     ( 12, 'src/ovl5/ovl5_4.c', 'func_8016F40C_ovl5'),   # of 201
