@@ -279,24 +279,45 @@ struct PcPlyshotFx {
 };
 #endif
 #ifdef MIPS_TO_C
-/* FACTORY: 365/370 [was noted 5/370], whole-function callee-saved permutation (same floor class documented across this cluster). Replaces pc_sndpair_start with the real N64 call func_800A77E8, same pattern as func_80161058_ovl3. Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 365 of 370 words differ (98%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 110/371, word count exact. Was 365/370 [noted 5/370], and the ROM
+   is 371 words. The first 124 words are byte-exact and the whole residue from
+   there is register naming plus one `lui` rotated a slot early; the aligned
+   opcode stream has four real disagreements, and two of those are objdump
+   printing `li` for `addiu $x, $zero, n` and `bnezl` for `bnel $x, $zero`.
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+   Six defects, re-derived from the listing 2026-08-25:
+   1. `s32 id = omCurrentObj->objId;` inline.
+   2. FOUR of its locals are file-scope scratch GLOBALS, not stack: `speed`,
+      `vert`, `cap` and `grav` are D_800D7238, D_800D723C, D_800D7240 and
+      D_800D7244 -- the listing's `%hi(D_800D71E8 + 0x50 / +0x54 / +0x58 /
+      +0x5C)`, spimdisasm naming the nearest preceding symbol. The ROM holds
+      all four addresses in registers, stores each once and re-reads it at
+      each use. See LEVERS 81; D_800D7238 alone appears in three other
+      functions in this TU. This is why the frame is 0x30 with nothing on the
+      stack but the sound pair.
+   3. `static const f32 pc_rock_tbl[3][4]` is the ROM's data table
+      `D_80196720_ovl3`, read with `sll 4` (a 16-byte row) and subscripts
+      `*4 + 0/1/2/3`. The static const also emitted 48 bytes of its own into
+      .rodata, which is why every float reloc after it was landing late.
+   4. `const f32 *row` is not a local either -- the ROM re-derives the row
+      address at each of the four uses.
+   5. The wet test is spelled out FOUR TIMES, once per assignment, and its
+      polarity is not uniform: the D_800E9720/grav pair is
+      `if (flags & 4) { wet } else { dry }` (the ROM's `beqz` goes to the dry
+      arm) while speed, vert and cap are `((flags & 4) == 0) ? dry : wet`
+      (their `bnez`/`bnel` goes to the wet arm). One `s32 wet` local held for
+      all four is worth 128 words.
+   6. Two constant-kind edits, both LEVERS 45/82:
+        `D_800E9AA0[objId].as_s32 = 1` rather than `.as_u32` -- the ROM
+        materialises the 1 ONCE and reuses it for `D_800E98E0[objId] = 1`
+        three statements later, and it will only do that when both stores have
+        the same type (239 -> 142);
+        `D_800E6690[objId] = 0` with the INTEGER literal, which forks the
+        `mtc1 $zero` the ROM keeps separate from its `< 0.0f` compare zero
+        (142 -> 110).
+
+   Swept and negative at 110: all 28 barrier placements
+   (tools/decomp/barrier_sweep.py). Queue it for the permuter. */
 
 /* PORT: the throw/carry rock init coroutine, from asm/nonmatchings/ovl3/
  * plyshot/func_8015B190_ovl3.s. Parks the shot on effect anim 0xC and waits
@@ -309,80 +330,82 @@ struct PcPlyshotFx {
  * translation emitted row 0's first word as the string "B", so the rows are
  * spelled here as literals instead of read through that emission. */
 void func_8015B190_ovl3(s32 arg0) {
-    static const f32 pc_rock_tbl[3][4] = {
-        { 32.0f, 37.0f, 6.0f, -2.0f },
-        { 30.0f, 40.0f, 8.0f, 6.0f },
-        { 0.0f, 57.0f, 10.0f, 12.0f },
-    };
     extern f32 **D_80192B78_ovl3;
     extern f32 D_8012E7FC[];
-    s32 id = omCurrentObj->objId;
+    extern f32 D_80196720_ovl3[];
+    extern f32 D_800D7238;
+    extern f32 D_800D723C;
+    extern f32 D_800D7240;
+    extern f32 D_800D7244;
     u32 sndpair[2];
-    const f32 *row;
-    f32 speed;
-    f32 vert;
-    f32 cap;
     s32 charge;
 
-    D_800DEF90[id] = func_800B5064;
-    D_800DF150[id] = func_8015B75C_ovl3;
-    D_800E0F10[id] = 0xE;
-    gEntitiesScaleXArray[id] = 0.2f;
-    gEntitiesScaleYArray[id] = 0.2f;
-    gEntitiesScaleZArray[id] = 0.2f;
+    D_800DEF90[omCurrentObj->objId] = func_800B5064;
+    D_800DF150[omCurrentObj->objId] = func_8015B75C_ovl3;
+    D_800E0F10[omCurrentObj->objId] = 0xE;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x2002D, 0x21, 0x10);
     func_800AA018(0x2027D);
-    D_800EA520[id] = func_800A8234(1, 1, 0xC);
-    D_800E9AA0[id].as_u32 = 0;
+    D_800EA520[omCurrentObj->objId] = func_800A8234(1, 1, 0xC);
+    D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
     while (*(s32 *) &D_8012E7FC[0] == 0) {
         ohSleep(1);
     }
-    D_800DEF90[id] = func_800B4954;
-    D_800E83E0[id] = 0;
-    D_800E9AA0[id].as_u32 = 1;
-    charge = D_800E9720[D_800E0D50[id]];
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800E83E0[omCurrentObj->objId] = 0;
+    D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
+    charge = D_800E9720[D_800E0D50[omCurrentObj->objId]];
     if (charge < 5) {
-        D_800E98E0[id] = 0;
+        D_800E98E0[omCurrentObj->objId] = 0;
     } else if (charge < 10) {
-        D_800E98E0[id] = 1;
+        D_800E98E0[omCurrentObj->objId] = 1;
     } else {
-        D_800E98E0[id] = 2;
+        D_800E98E0[omCurrentObj->objId] = 2;
     }
     func_80161CE0_ovl3(arg0);
-    row = pc_rock_tbl[D_800E98E0[id]];
-    func_80161EC0_ovl3(0, row[0], row[1]);
-    D_800E0490[id] = &D_80192B78_ovl3;
-    func_80154648_ovl3(D_800E0D50[id], D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
+    func_80161EC0_ovl3(0, D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4],
+                       D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4 + 1]);
+    D_800E0490[omCurrentObj->objId] = &D_80192B78_ovl3;
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId],
+                       D_80197F60_ovl3[omCurrentObj->objId - 4],
+                       D_801982F8_ovl3[omCurrentObj->objId - 4]);
     func_800AF314();
     func_800A9760(0x2002D);
-    func_80155424_ovl3(D_80197F60_ovl3[id - 4]);
-    /* Looping sound pair: as on N64, the pair lives in this sleeping
-     * coroutine's frame and its address is parked in D_800EA360 for the
-     * service routine to release later -- but laid out {low word, id}
-     * so the LP64 handle store cannot shear it. */
-    D_800EA360[id] = (s32) (uintptr_t) sndpair;
+    func_80155424_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4]);
+    /* The looping sound pair lives in this sleeping coroutine's frame and its
+     * address is parked in D_800EA360 for the service routine to release. */
+    D_800EA360[omCurrentObj->objId] = (s32) (uintptr_t) sndpair;
     func_800A77E8(0x1E, (s32 *) &sndpair[0], (s32 *) &sndpair[1]);
-    {
-        s32 wet = D_800E8AE0[id] & 4;
-        f32 grav;
-
-        if (wet) {
-            D_800E9720[id] = 0x3C;
-            grav = -0.4f;
-        } else {
-            D_800E9720[id] = 0x1E;
-            grav = -0.980665f;
-        }
-        speed = wet ? row[2] * 0.5f : row[2];
-        vert = wet ? row[3] * 0.5f : row[3];
-        cap = wet ? 8.0f : 16.0f;
-        D_800E64D0[id] = D_800E6A10[id] * speed;
-        D_800E6690[id] = 0.0f;
-        D_800E6850[id] = (speed < 0.0f) ? -speed : speed;
-        D_800E3210[id] = vert;
-        D_800E3750[id] = grav;
-        D_800E3C90[id] = (cap < 0.0f) ? -cap : cap;
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
+        D_800E9720[omCurrentObj->objId] = 0x3C;
+        D_800D7244 = -0.4f;
+    } else {
+        D_800E9720[omCurrentObj->objId] = 0x1E;
+        D_800D7244 = -0.980665f;
     }
+    if ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) {
+        D_800D7238 = D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4 + 2];
+    } else {
+        D_800D7238 = D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4 + 2] * 0.5f;
+    }
+    if ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) {
+        D_800D723C = D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4 + 3];
+    } else {
+        D_800D723C = D_80196720_ovl3[D_800E98E0[omCurrentObj->objId] * 4 + 3] * 0.5f;
+    }
+    if ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) {
+        D_800D7240 = 16.0f;
+    } else {
+        D_800D7240 = 8.0f;
+    }
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_800D7238;
+    D_800E6690[omCurrentObj->objId] = 0;
+    D_800E6850[omCurrentObj->objId] = (D_800D7238 < 0.0f) ? -D_800D7238 : D_800D7238;
+    D_800E3210[omCurrentObj->objId] = D_800D723C;
+    D_800E3750[omCurrentObj->objId] = D_800D7244;
+    D_800E3C90[omCurrentObj->objId] = (D_800D7240 < 0.0f) ? -D_800D7240 : D_800D7240;
     curObjSleepForever();
 }
 #elif defined(PORT)
