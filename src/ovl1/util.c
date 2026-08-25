@@ -54,8 +54,20 @@ void utilPrintf(char* fmt, ...) {
 
 #ifdef MIPS_TO_C
 
+/* FACTORY: 72/98 -- MEASURED 2026-08-25, and the first measurement this draft
+   has ever had. It carried no note and could not have: `var_s1->unk-1 =
+   temp_v0;` is not C, so un-guarding it failed on a Syntax Error and
+   measure_seeds has always reported it UNSCORABLE. m2c writes `->unk-1` when
+   the ROM stores through a pointer it has already advanced; it is `[-1]`.
+   The other defect was the buffer -- see below.
+   Instruction count is exact (98); 72 words differ, so this is raw m2c and
+   not a permuter candidate. */
 s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
-    u8 sp48;
+    /* The line buffer. m2c wrote `u8 sp48;` -- one byte -- because it only saw
+       the address sp+0x48; the body flushes at 0x65 characters, and the ROM's
+       frame is 0xD8 with the saved registers ending at 0x3C, so the buffer is
+       everything from 0x48 to the top. */
+    u8 sp48[0x90];
     s32 temp_t0;
     s32 var_s5;
     u8 *var_s0;
@@ -67,7 +79,7 @@ s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
     u8 temp_v0;
 
     var_s6 = arg1;
-    var_s1 = &sp48;
+    var_s1 = sp48;
     var_s5 = 0;
     if (arg2 > 0) {
         do {
@@ -77,7 +89,7 @@ s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
                 if (temp_v0 != 0xA) {
                     var_s1 += 1;
                     D_800BE5C0 += 1;
-                    var_s1->unk-1 = temp_v0;
+                    var_s1[-1] = temp_v0;
                 } else {
                     *var_s1 = 0xA;
                     var_s1 += 1;
@@ -91,25 +103,25 @@ s32 func_800A428C(s32 arg0, u8 *arg1, s32 arg2) {
                     D_800BE5C0 = temp_t0;
                 } while ((temp_t0 % 8) != 0);
             }
-            if ((temp_v0 == 0xA) || ((var_s1 - &sp48) >= 0x65)) {
-                var_s0 = &sp48;
-                putPT(((var_s1 - &sp48) - 1) & 0xFF);
-                if (var_s1 != &sp48) {
+            if ((temp_v0 == 0xA) || ((var_s1 - sp48) >= 0x65)) {
+                var_s0 = sp48;
+                putPT(((var_s1 - sp48) - 1) & 0xFF);
+                if (var_s1 != sp48) {
                     do {
                         temp_a0 = *var_s0;
                         var_s0 += 1;
                         putPT(temp_a0);
                     } while (var_s0 != var_s1);
                 }
-                var_s1 = &sp48;
+                var_s1 = sp48;
             }
             var_s5 += 1;
         } while (var_s5 != arg2);
     }
-    if (var_s1 != &sp48) {
-        var_s0_2 = &sp48;
-        putPT(((var_s1 - &sp48) - 1) & 0xFF);
-        if (var_s1 != &sp48) {
+    if (var_s1 != sp48) {
+        var_s0_2 = sp48;
+        putPT(((var_s1 - sp48) - 1) & 0xFF);
+        if (var_s1 != sp48) {
             do {
                 temp_a0_2 = *var_s0_2;
                 var_s0_2 += 1;
@@ -1009,7 +1021,17 @@ void func_800A62D8(f32 d[4][3], f32 a[4][3], f32 b[4][3]) {
 }
 
 #ifdef MIPS_TO_C
-void func_800A6534(void *arg0, void *arg1) {
+/* FACTORY: 181/187 -- MEASURED 2026-08-25, the first measurement this draft
+   has ever had, and it had no note. Instruction count is exact (187) and
+   almost nothing else is: this is raw m2c, not a seed.
+
+   A 4x3 (four rows of three) float matrix inverse-transpose. m2c left both
+   parameters `void *` and addressed them as `->unkNN`, which does not compile
+   ("Selector requires struct/union pointer as left hand side", twelve times) --
+   that is why it was UNSCORABLE. The offsets are a plain float array, so they
+   are spelled as subscripts. The `loop_1: goto loop_1;` in the singular case
+   is m2c's rendering of the ROM's own infinite loop and is left alone. */
+void func_800A6534(f32 *arg0, f32 *arg1) {
     f32 temp_f0;
     f32 temp_f12;
     f32 temp_f14;
@@ -1017,46 +1039,46 @@ void func_800A6534(void *arg0, void *arg1) {
     f32 temp_f16_2;
     f32 temp_f2;
 
-    arg0->unk0 = (arg1->unk10 * arg1->unk20) - (arg1->unk1C * arg1->unk14);
-    temp_f2 = arg0->unk0;
-    arg0->unkC = (arg1->unkC * arg1->unk20) - (arg1->unk18 * arg1->unk14);
-    temp_f12 = arg0->unkC;
-    arg0->unk18 = (arg1->unkC * arg1->unk1C) - (arg1->unk18 * arg1->unk10);
-    temp_f0 = arg0->unk18;
-    arg0->unk24 = (arg0->unk18 * arg1->unk2C) + ((arg1->unk24 * arg0->unk0) - (arg1->unk28 * arg0->unkC));
-    arg0->unk4 = (arg1->unk4 * arg1->unk20) - (arg1->unk1C * arg1->unk8);
-    arg0->unk10 = (arg1->unk0 * arg1->unk20) - (arg1->unk18 * arg1->unk8);
-    arg0->unk1C = (arg1->unk0 * arg1->unk1C) - (arg1->unk18 * arg1->unk4);
-    arg0->unk28 = (arg0->unk1C * arg1->unk2C) + ((arg1->unk24 * arg0->unk4) - (arg1->unk28 * arg0->unk10));
-    arg0->unk8 = (arg1->unk4 * arg1->unk14) - (arg1->unk10 * arg1->unk8);
-    arg0->unk14 = (arg1->unk0 * arg1->unk14) - (arg1->unkC * arg1->unk8);
-    temp_f14 = arg0->unk14;
-    arg0->unk20 = (arg1->unk0 * arg1->unk10) - (arg1->unkC * arg1->unk4);
-    arg0->unk2C = (arg0->unk20 * arg1->unk2C) + ((arg1->unk24 * arg0->unk8) - (arg1->unk28 * temp_f14));
-    arg0->unkC = -temp_f12;
-    temp_f16 = (temp_f0 * arg1->unk8) + ((arg1->unk0 * temp_f2) - (arg1->unk4 * temp_f12));
-    arg0->unk24 = -arg0->unk24;
-    arg0->unk4 = -arg0->unk4;
-    arg0->unk1C = -arg0->unk1C;
-    arg0->unk14 = -temp_f14;
-    arg0->unk2C = -arg0->unk2C;
+    arg0[0] = (arg1[4] * arg1[8]) - (arg1[7] * arg1[5]);
+    temp_f2 = arg0[0];
+    arg0[3] = (arg1[3] * arg1[8]) - (arg1[6] * arg1[5]);
+    temp_f12 = arg0[3];
+    arg0[6] = (arg1[3] * arg1[7]) - (arg1[6] * arg1[4]);
+    temp_f0 = arg0[6];
+    arg0[9] = (arg0[6] * arg1[11]) + ((arg1[9] * arg0[0]) - (arg1[10] * arg0[3]));
+    arg0[1] = (arg1[1] * arg1[8]) - (arg1[7] * arg1[2]);
+    arg0[4] = (arg1[0] * arg1[8]) - (arg1[6] * arg1[2]);
+    arg0[7] = (arg1[0] * arg1[7]) - (arg1[6] * arg1[1]);
+    arg0[10] = (arg0[7] * arg1[11]) + ((arg1[9] * arg0[1]) - (arg1[10] * arg0[4]));
+    arg0[2] = (arg1[1] * arg1[5]) - (arg1[4] * arg1[2]);
+    arg0[5] = (arg1[0] * arg1[5]) - (arg1[3] * arg1[2]);
+    temp_f14 = arg0[5];
+    arg0[8] = (arg1[0] * arg1[4]) - (arg1[3] * arg1[1]);
+    arg0[11] = (arg0[8] * arg1[11]) + ((arg1[9] * arg0[2]) - (arg1[10] * temp_f14));
+    arg0[3] = -temp_f12;
+    temp_f16 = (temp_f0 * arg1[2]) + ((arg1[0] * temp_f2) - (arg1[1] * temp_f12));
+    arg0[9] = -arg0[9];
+    arg0[1] = -arg0[1];
+    arg0[7] = -arg0[7];
+    arg0[5] = -temp_f14;
+    arg0[11] = -arg0[11];
     if (temp_f16 == 0.0f) {
 loop_1:
         goto loop_1;
     }
     temp_f16_2 = 1.0f / temp_f16;
-    arg0->unk0 = temp_f2 * temp_f16_2;
-    arg0->unkC = arg0->unkC * temp_f16_2;
-    arg0->unk18 = temp_f0 * temp_f16_2;
-    arg0->unk24 = arg0->unk24 * temp_f16_2;
-    arg0->unk4 = arg0->unk4 * temp_f16_2;
-    arg0->unk10 = arg0->unk10 * temp_f16_2;
-    arg0->unk1C = arg0->unk1C * temp_f16_2;
-    arg0->unk28 = arg0->unk28 * temp_f16_2;
-    arg0->unk8 = arg0->unk8 * temp_f16_2;
-    arg0->unk14 = arg0->unk14 * temp_f16_2;
-    arg0->unk20 = arg0->unk20 * temp_f16_2;
-    arg0->unk2C = arg0->unk2C * temp_f16_2;
+    arg0[0] = temp_f2 * temp_f16_2;
+    arg0[3] = arg0[3] * temp_f16_2;
+    arg0[6] = temp_f0 * temp_f16_2;
+    arg0[9] = arg0[9] * temp_f16_2;
+    arg0[1] = arg0[1] * temp_f16_2;
+    arg0[4] = arg0[4] * temp_f16_2;
+    arg0[7] = arg0[7] * temp_f16_2;
+    arg0[10] = arg0[10] * temp_f16_2;
+    arg0[2] = arg0[2] * temp_f16_2;
+    arg0[5] = arg0[5] * temp_f16_2;
+    arg0[8] = arg0[8] * temp_f16_2;
+    arg0[11] = arg0[11] * temp_f16_2;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A6534.s")
@@ -1064,9 +1086,17 @@ loop_1:
 
 #ifdef MIPS_TO_C
 
-void func_800A6820(void *arg0, void *arg1) {
-    ? sp6C;
-    f32 sp48;
+/* FACTORY: 72/95 -- MEASURED 2026-08-25, the first measurement this draft has
+   ever had, and it had no note. Instruction count is exact (95); frame 0x80
+   against the ROM's 0x78 and a saved-register cascade from word 1, so 72 words
+   differ. Raw m2c, not a permuter candidate.
+
+   Matrix (four rows of three floats) to Euler angles. m2c could not type the
+   0x24-byte scratch at sp+0x48 and emitted `? sp6C;` for the address one past
+   its end -- which is a syntax error, so this draft had never compiled. The
+   whole block is nine floats: sp48..sp6B, with sp6C the loop's end marker. */
+void func_800A6820(f32 *arg0, f32 *arg1) {
+    f32 sp48[9];
     f32 *var_s1;
     f32 temp_f0;
     f32 temp_f0_2;
@@ -1075,41 +1105,41 @@ void func_800A6820(void *arg0, void *arg1) {
     f32 temp_f2;
     f32 var_f0;
     f32 var_f2;
-    void *var_s0;
+    f32 *var_s0;
 
     var_s0 = arg0;
-    var_s1 = &sp48;
+    var_s1 = sp48;
     do {
-        temp_f2 = var_s0->unk0;
-        temp_f14 = var_s0->unk4;
-        temp_f0 = var_s0->unk8;
+        temp_f2 = var_s0[0];
+        temp_f14 = var_s0[1];
+        temp_f0 = var_s0[2];
         temp_f0_2 = sqrtf((temp_f0 * temp_f0) + ((temp_f2 * temp_f2) + (temp_f14 * temp_f14)));
         var_f2 = temp_f0_2;
         if (temp_f0_2 != 0.0f) {
             var_f2 = 1.0f / temp_f0_2;
         }
-        temp_f16 = var_s0->unk0;
-        var_s1 += 0xC;
-        var_s0 += 0xC;
-        var_s1->unk-C = temp_f16 * var_f2;
-        var_s1->unk-8 = var_s0->unk-8 * var_f2;
-        var_s1->unk-4 = var_s0->unk-4 * var_f2;
-    } while (var_s1 != &sp6C);
-    if ((sp50 == -1.0f) || (sp50 == 1.0f)) {
-        if (sp50 == -1.0f) {
-            arg1->unk4 = 1.5707964f;
-            var_f0 = atan2f(sp54, sp58);
+        temp_f16 = var_s0[0];
+        var_s1 += 3;
+        var_s0 += 3;
+        var_s1[-3] = temp_f16 * var_f2;
+        var_s1[-2] = var_s0[-2] * var_f2;
+        var_s1[-1] = var_s0[-1] * var_f2;
+    } while (var_s1 != &sp48[9]);
+    if ((sp48[2] == -1.0f) || (sp48[2] == 1.0f)) {
+        if (sp48[2] == -1.0f) {
+            arg1[1] = 1.5707964f;
+            var_f0 = atan2f(sp48[3], sp48[4]);
         } else {
-            arg1->unk4 = -1.5707964f;
-            var_f0 = atan2f(-sp54, sp58);
+            arg1[1] = -1.5707964f;
+            var_f0 = atan2f(-sp48[3], sp48[4]);
         }
-        arg1->unk0 = var_f0;
-        arg1->unk8 = 0.0f;
+        arg1[0] = var_f0;
+        arg1[2] = 0.0f;
         return;
     }
-    arg1->unk4 = asinf(-sp50);
-    arg1->unk0 = atan2f(sp5C, sp68);
-    arg1->unk8 = atan2f(sp4C, sp48);
+    arg1[1] = asinf(-sp48[2]);
+    arg1[0] = atan2f(sp48[5], sp48[8]);
+    arg1[2] = atan2f(sp48[1], sp48[0]);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A6820.s")
