@@ -408,12 +408,42 @@ void func_8021FF90_ovl19(GObj *g) {
 }
 
 // Struct definition rabbit hole
+#ifdef PORT
+/* THE SWEEP RECORD IS AN f32[8] AND ITS LAST SLOT IS FOUR BYTES WIDE, so
+ * the descriptor cell must be spelled u32 rather than `void *`.
+ *
+ * With a native pointer as the last member, LP64 alignment inserts four
+ * bytes of padding after `c` and puts `d` at byte 32 -- measured with
+ * offsetof: sizeof 40, offsetof(d) == 32. Its only consumer,
+ * func_8011BF4C in ovl2/plylib.c, reads the descriptor as
+ * `*(u32 *)&rec[7]`, i.e. byte 28, which under that layout is the PADDING
+ * of an uninitialised stack local. The sweep then walked a garbage
+ * descriptor: `desc[0]`, `desc[1]` and `desc[2]` are all dereferenced
+ * before the first cast.
+ *
+ * ovl7_3.c's struct UnkOvl7Track already pins the convention for the same
+ * callee -- "The hitbox-descriptor slot stays a u32 host-address cell so
+ * the record keeps the N64's f32[8]/32-byte shape ... A real pointer here
+ * would move the slot to LP64 offset 32 and split the two callers'
+ * layouts" -- and plyshot's D_80198540_ovl3[][8] rows and
+ * func_80155D50_ovl3's `*(s32 *)&arg0[7] = arg1` are the other two. This
+ * struct was the only one of the four still declaring a pointer. Host
+ * addresses fit a u32 cell (the arena is below 4 GiB). The N64 build keeps
+ * `void *d`, where it is four bytes and sits at +0x1C already. */
+struct Ovl19Sp20 {
+    Vector a;
+    Vector b;
+    f32 c;
+    u32 d;      /* host address as a u32; N64 +0x1C */
+};
+#else
 struct Ovl19Sp20 {
     Vector a;
     Vector b;
     f32 c;
     void *d;
 };
+#endif
 
 void func_80220138_ovl19(GObj *arg0) {
     extern s32 func_8011BF4C(void *, void *);
@@ -428,7 +458,11 @@ void func_80220138_ovl19(GObj *arg0) {
         sp20.b.z = gEntitiesNextPosZArray[omCurrentObj->objId];
         sp20.a.z = sp20.b.z;
         sp20.b.y = gEntitiesNextPosYArray[omCurrentObj->objId] + 239.0f;
+#ifdef PORT
+        sp20.d = (u32) (uintptr_t) &D_801964E8;
+#else
         sp20.d = &D_801964E8;
+#endif
         sp20.c = 1.5707964f;
         func_8011BF4C(&sp20, func_80155ED8_ovl3);
         D_800E9AA0[omCurrentObj->objId] = NULL;

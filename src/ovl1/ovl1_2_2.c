@@ -22,8 +22,9 @@ typedef struct Ovl1Emitter {
 typedef struct Ovl1Generator {
     /* 0x00 */ u8 pad0[0x18];
     /* 0x18 */ Vector pos;
-    /* 0x24 */ u8 pad24[0x58 - 0x24];
-    /* 0x58 */ Ovl1Emitter *xf;
+    /* 0x24 */ u8 pad24[0x50 - 0x24];
+    /* 0x50 */ struct DObj *dobj;   /* N64 +0x48 */
+    /* 0x58 */ Ovl1Emitter *xf;     /* N64 +0x4C */
 } Ovl1Generator;
 #else
 typedef struct Ovl1Emitter {
@@ -396,7 +397,29 @@ Ovl1Generator *func_800A8100(s32 arg0, s32 arg1, s32 arg2, struct DObj *arg3) {
                 if (arg3 == NULL) {
                     arg3 = omCurrentObj->data.dobj;
                 }
+#ifdef PORT
+                /* +0x48 IS THE N64 OFFSET OF THE dobj SLOT, AND THIS BUILD
+                 * MOVED IT. UnkGenerator's LP64 shape (src/ovl1/ovl1.c,
+                 * pinned by struct PcGenNode / PC_GENNODE_SIZE) puts the
+                 * 8-byte `next` at the front, which shifts everything after
+                 * it: measured with offsetof on that layout, `frame` is at
+                 * 0x48 and `dobj` at 0x50 (sizeof 96). Writing a DObj
+                 * pointer at +0x48 therefore overwrites the f32 `frame`
+                 * and the four bytes of padding behind it, and leaves
+                 * `dobj` NULL.
+                 *
+                 * The port already knows the right number in two other
+                 * files: plylib.c's func_8011D0FC and ovl19_2.c both
+                 * declare `struct PcGenNodeRef { u8 pad[80]; struct DObj
+                 * *unk48; void *unk4C; }` -- pad[80] == 0x50 -- under the
+                 * comment "generator node: N64 +0x48/+0x4C on LP64". Reach
+                 * the field by name so there is no third spelling of the
+                 * number. The ROM is untouched: with 4-byte pointers the
+                 * N64 layout really does put dobj at +0x48. */
+                gen->dobj = arg3;
+#else
                 *(struct DObj **) ((u8 *) gen + 0x48) = arg3;
+#endif
             }
             return gen;
         } else {

@@ -1687,7 +1687,16 @@ void func_8020E694_ovl9(s32 arg0) {
     u32 temp_v1_3;
 
     temp_v1 = omCurrentObj->objId * 4;
+#ifdef PORT
+    /* objId * 4 is the correct byte bias for D_800DDFD0 (s32[]) on both
+     * targets, and for D_800E1B50 on the N64 only: on LP64 that array is
+     * `struct EnemyRecord *[]` with 8-byte elements, so the bias addresses
+     * element objId/2. See the fuller note in ovl9_9.c's func_801FFCE8_ovl9
+     * and the ovl2.c func_800F6350 PORT arm. */
+    sp24 = D_800E1B50[omCurrentObj->objId];
+#else
     sp24 = *(EnemyRecord **) ((u8 *) D_800E1B50 + temp_v1);
+#endif
     *(s32 *) ((u8 *) D_800DDFD0 + temp_v1) = 3;
     D_800E9C60[omCurrentObj->objId] = 1;
     func_800AA018(0x10089);

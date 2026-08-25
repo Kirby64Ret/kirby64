@@ -235,7 +235,21 @@ void func_801D184C_ovl8(struct GObj *arg0) {
     struct DObj *d;
 
     t = D_800E0D50[omCurrentObj->objId] * 4;
+#ifdef PORT
+    /* `t` is idx * 4, the right byte bias for the f32 arrays it is reused
+     * on below (gEntitiesNextPosXArray) and the wrong one for D_800DE350,
+     * which on LP64 is `GObj *[]` with 8-byte elements: `+ idx * 4`
+     * addresses element idx/2, and the result is dereferenced twice on this
+     * line. The port already carries the identical fix for the identical
+     * spelling -- see the PORT arm of func_800F6350 in ovl2.c, whose
+     * comment reads "D_800DE350 is an array of host GObj pointers (8-byte
+     * slots ...), so `(u8 *)D_800DE350 + i` with i advancing 4 per slot
+     * reads half-pointers". Nothing about the ROM changes: there a slot is
+     * four bytes and the two spellings are the same `lw`. */
+    d = D_800DE350[D_800E0D50[omCurrentObj->objId]]->data.dobj->firstChild;
+#else
     d = (*(struct GObj **) ((u8 *) D_800DE350 + t))->data.dobj->firstChild;
+#endif
     if (D_800EA520[omCurrentObj->objId] != 0) {
         gEntitiesNextPosXArray[omCurrentObj->objId] = *(f32 *) ((u8 *) gEntitiesNextPosXArray + t);
         gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];

@@ -1382,7 +1382,29 @@ void func_801FFCE8_ovl9(s32 arg0) {
     o = omCurrentObj;
     temp_v1 = o->objId * 4;
     *(s32 *) ((u8 *) D_800E9E20 + temp_v1) = 0;
+#ifdef PORT
+    /* THE BYTE BIAS IS ONLY VALID FOR THE 4-BYTE ARRAYS. `temp_v1` is
+     * objId * 4, which is the right byte offset into D_800E9E20 (s32[]) on
+     * both targets and into D_800E1B50 on the N64 ONLY -- there
+     * D_800E1B50 is an array of 4-byte pointers. On LP64 it is
+     * `struct EnemyRecord *[]` with 8-byte elements (measured:
+     * sizeof(void *) == 8; nm gives the whole object as 0x700 bytes, i.e.
+     * 224 slots of 8), so `(u8 *)D_800E1B50 + objId * 4` addresses element
+     * objId/2 for an even objId and straddles two elements for an odd one.
+     * Enemy slots start at 0xE, so this NEVER lands on the intended record
+     * -- and the record is dereferenced on the next line.
+     *
+     * This is the same class as func_800AB0F4 in ovl1_3.c (an 8-byte read
+     * of a 4-byte blob slot) seen from the index side, and the port has
+     * already fixed one instance of exactly this spelling: see the PORT arm
+     * of func_800F6350 in ovl2.c, whose comment reads "D_800DE350 is an
+     * array of host GObj pointers (8-byte slots ...), so `(u8 *)D_800DE350
+     * + i` with i advancing 4 per slot reads half-pointers". Index the
+     * array; the ROM's `lw` at objId*4 is unchanged. */
+    temp_s0 = D_800E1B50[o->objId];
+#else
     temp_s0 = *(EnemyRecord **) ((u8 *) D_800E1B50 + temp_v1);
+#endif
     D_800DDFD0[o->objId] = 1;
     if (temp_s0->unk3C != 0) {
         do {

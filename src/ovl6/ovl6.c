@@ -1207,7 +1207,28 @@ void func_80154100_ovl6(void) {
 
 void func_80154158_ovl6(void) {
     D_8015A7C0_ovl6 = D_8015A560_ovl6;
+#ifdef PORT
+    /* unk4 IS A FOUR-BYTE SLOT AND THIS READS EIGHT. UnkStruct8015A560_ovl6
+     * is {u16 unk0; u8 unk2; u8 unk3; union { u32 unk4; ... };} -- measured
+     * with offsetof/sizeof on the LP64 build: sizeof 8, unk4 at 4. Taking
+     * `&...->unk4` as a `UnkStruct8015A560_ovl6 **` therefore reads four
+     * bytes of unk4 AND the first four bytes of the NEXT element of the
+     * script array (D_80154E48_ovl6[] / D_8015A3B4_ovl6[]), so the high
+     * half of the resulting pointer is that element's unk0/unk2/unk3 --
+     * never zero for a real script node, and the value is stored straight
+     * back into the cursor D_8015A560_ovl6 and decremented.
+     *
+     * The slot holds a host address below 4 GiB (same convention as the
+     * bank tables, see the func_800A94F4 note in ovl1_3.c), so the N64's
+     * 4-byte load is the whole pointer. Read it at its own width and widen.
+     * This is the class described at the top of func_80152EA8_ovl6 in this
+     * same file, where an 8-byte read of a 4-byte layout slot manufactured
+     * a display list out of a float. */
+    D_8015A560_ovl6 =
+        (UnkStruct8015A560_ovl6 *) (uintptr_t) D_8015A560_ovl6->unk4;
+#else
     D_8015A560_ovl6 = *(UnkStruct8015A560_ovl6 **)&D_8015A560_ovl6->unk4;
+#endif
     D_8015A560_ovl6--;
 }
 
