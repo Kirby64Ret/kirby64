@@ -26,6 +26,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import permute_queue as pq
 
+TOOLS = os.path.dirname(os.path.abspath(__file__))
+
 # (diffs, cfile, func) -- REGENERATED from measure_seeds.py's own output, not
 # from the FACTORY notes. The notes cannot be used for this: 197 of them
 # currently disagree with the measurement, in both directions. Some claimed
@@ -67,7 +69,6 @@ TARGETS = [
     # Left in, it re-finds the same illegal answer on every pass. See the
     # note over the draft in src/ovl3/kirby.c.
     # func_800A8CE0 REMOVED 2026-08-25: closed by hand, see LEVER 60.
-    (  2, 'src/ovl11/ovl11_2.c', 'func_801E00B8_ovl11'),
     (  2, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
     (  2, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),
     (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
@@ -78,13 +79,11 @@ TARGETS = [
     (  3, 'src/ovl7/ovl7_3.c', 'func_801A33B8'),
     (  3, 'src/ovl4/ovl4_4.c', 'func_80158E98_ovl4'),
     (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),
-    (  4, 'src/ovl7/ovl7_10.c', 'func_801B3C54_ovl7'),
     (  4, 'src/ovl5/ovl5_5.c', 'func_8017462C_ovl5'),
     (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),
     (  4, 'src/ovl14/ovl14.c', 'func_801DF290_ovl14'),
     (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),
     (  5, 'src/ovl11/ovl11_2.c', 'func_801DF728_ovl11'),
-    (  5, 'src/ovl7/ovl7_7.c', 'func_801AEE04_ovl7'),
     (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),
     (  5, 'src/ovl8/ovl8_4.c', 'func_801D6534_ovl8'),
     (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),
@@ -102,10 +101,46 @@ TARGETS = [
 ]
 
 
+def still_guarded():
+    """Functions that still have a guarded draft, read from the tree right now.
+
+    TARGETS is a snapshot and the tree is not. Three entries in the list went
+    stale within a few hours of it being written -- func_801E00B8_ovl11 closed
+    by hand, func_801B3C54_ovl7 and func_801AEE04_ovl7 by a lane -- and a
+    closed function does not fail, it MATCHES instantly: the draft in the tree
+    IS the answer. So the queue logs '*** MATCH', factory rejects it with 'no
+    owning .c (already closed?)', and both logs read like progress while the
+    real targets further down the list wait.
+
+    Checking the tree costs one pass over src/ and removes the whole class.
+    """
+    import glob as _glob
+    sys.path.insert(0, TOOLS)
+    from measure_seeds import guard_blocks
+    live = set()
+    for c in _glob.glob('src/**/*.c', recursive=True):
+        if c.startswith('src/pc/'):
+            continue
+        try:
+            lines = open(c, errors='replace').read().split('\n')
+        except OSError:
+            continue
+        for st, en, pi, listing in guard_blocks(lines):
+            live.add(os.path.basename(listing)[:-2])
+    return live
+
+
 def main():
     seconds = int(sys.argv[1]) if len(sys.argv) > 1 else 900
     os.makedirs(pq.PERM, exist_ok=True)
-    pq.log(f'=== priority queue: {len(TARGETS)} measured drafts, {seconds}s each ===')
+    live = still_guarded()
+    queue = [t for t in TARGETS if t[2] in live]
+    closed = [t[2] for t in TARGETS if t[2] not in live]
+    if closed:
+        pq.log(f'skipping {len(closed)} target(s) closed since the list was '
+               f'written: {", ".join(closed)}')
+    pq.log(f'=== priority queue: {len(queue)} measured drafts, {seconds}s each ===')
+    TARGETS[:] = queue
     for i, (diffs, cf, fn) in enumerate(TARGETS, 1):
         if not os.path.exists(cf):
             pq.log(f'[{i}/{len(TARGETS)}] SKIP {fn}: {cf} gone')
