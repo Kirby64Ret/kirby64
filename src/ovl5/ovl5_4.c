@@ -70,7 +70,13 @@ Vector *func_801659DC_ovl5(Vector *, s32);
    `i * v` is byte-identical, and INLINING D_8018D6C0_ovl5 into the loop
    (with or without a dead `v`) is catastrophic (106/147 -- the LICM temp
    takes a callee-saved pair and the whole frame moves), so the named
-   double local is load-bearing. One-slot scheduling floor. */
+   double local is load-bearing. One-slot scheduling floor.
+   Added 2026-08-25: an empty `do {} while (0);` (LEVER 61) at BOTH seams --
+   before the assignment and between the assignment and the loop -- is inert,
+   4/146 either way. Also: the harvested permuter zero for this function is
+   WHITESPACE ONLY (it joins `v = ...;` and the `for` header onto one line),
+   so it is a permuter-baseline artifact and there is nothing to transcribe;
+   do not re-harvest it. */
 /* FACTORY: 4/146, one-slot scheduling. */
 #ifdef NON_MATCHING
 extern s32 D_8018736C_ovl5[];

@@ -3715,7 +3715,27 @@ void func_80176EFC_ovl5(void) {
  * Unk16Defs is declared inside the body on purpose: the file-scope
  * Unk12Colors/Unk12Defs typedefs above are reused as-is and nothing at
  * file scope is moved or added. */
-/* FACTORY: 5/138, temp-register rotation. */
+/* FACTORY: 5/138, temp-register rotation in a five-instruction window
+ * ($t7/$t9/$t8 against our $t8/$t0/$t9 around the D_801877D8_ovl5 index).
+ *
+ * HARVESTED PERMUTER ZERO, MEASURED 2026-08-25, and it does NOT close in
+ * the real TU. The candidate adds `s32 new_var; s32 *new_var2;` and reads
+ * arg1 back through `*(new_var2 = &arg1)`. Transcribed faithfully that
+ * DOES fix the rotation -- every one of the five words lands -- but the two
+ * extra declarations put the frame at 0x80 against the ROM's 0x78 and the
+ * score goes 5 -> 13, every remaining diff being the same +8 on an $sp
+ * offset. The permuter scored it without --stack-diffs, so the frame delta
+ * was invisible to it.
+ * Measured alternatives, all worse: dropping the existing `s32 pad` gives
+ * net +1 and align8 still lands on 0x80, and it slides the initialised
+ * struct block off 0x64 (24/138); folding new_var into arg1
+ * (`arg1 = *new_var2`) or dereferencing new_var2 twice both add two
+ * instructions (37/140); `*(volatile s32 *) &arg1` costs an
+ * `addiu $t7, $sp, 0x7C` of its own (39/138).
+ * So the rotation IS reachable and the open question is which TWO of this
+ * function's declarations the ROM does not have. Note both parameters are
+ * already re-read from their homes at 0x78/0x7C in our draft, so this is
+ * not a LEVER 67 re-read problem. */
 #ifdef MIPS_TO_C
 void func_80176F04_ovl5(GObj *arg0, s32 arg1) {
     typedef union Unk16Defs {
