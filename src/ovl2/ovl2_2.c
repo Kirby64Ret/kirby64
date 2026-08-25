@@ -488,10 +488,18 @@ void func_800F6E30(s32 arg0) {
  * DestructAnimBank reads; on this build they are separate 8-byte-capable
  * bss slots, written as full host pointers. */
 
-/* func_800A2550 is `void (void *)` in ovl1.c; the second argument here is the
- * IDO argument-register device described above func_800F72B0, kept PORT-local
- * so it cannot retype the rest of the TU. */
-void func_800A2550(void *, void *);
+/* func_800A2550 is `void (void *)` in ovl1.c, and that is what this says.
+ *
+ * It used to declare a fabricated second parameter, described as the IDO
+ * argument-register device from above func_800F72B0 and "kept PORT-local so
+ * it cannot retype the rest of the TU". Both halves of that were wrong. The
+ * device itself was WITHDRAWN -- see the note above func_800F72B0: neither
+ * ROM call site sets $a1 as an argument, and dropping the extra argument is
+ * byte-inert. And it was not PORT-local: this is file scope, so it collided
+ * with the honest one-argument declaration further down the same file and
+ * the PC build stopped with `conflicting types for 'func_800A2550'`. The
+ * withdrawal was written up but never carried out at this site. */
+void func_800A2550(void *);
 extern f32 gameTicksPerDraw;
 extern u32 D_800DFA10[];
 extern s32 D_801290D0;
@@ -510,7 +518,7 @@ void func_800F6E30(UNUSED s32 arg0) {
     func_800AF980(0x18);
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *))func_800F7258;
     func_800A9864(((u32 *)D_801290D8)[0], 0x26, 0x10);
-    func_800A2550((void *)(uintptr_t)D_800DFA10[D_801290D0], NULL);
+    func_800A2550((void *)(uintptr_t)D_800DFA10[D_801290D0]);
     func_800B3070(0x10, gameTicksPerDraw);
 
     seg = gSegment4StartArray[omCurrentObj->objId];
@@ -651,7 +659,7 @@ void func_800F72B0(UNUSED s32 arg0) {
         case 22:
             break;
         default:
-            func_800A2550((void *)D_800DFA10[idx]);
+            func_800A2550((void *)(uintptr_t)D_800DFA10[idx]);
             seg = gSegment4StartArray[omCurrentObj->objId];
             break;
     }
@@ -659,13 +667,13 @@ void func_800F72B0(UNUSED s32 arg0) {
     if (temp != 0) {
         if (temp != 1) {
             if (temp == 2) {
-                func_800AA018(((u32 *)seg[6])[1]);
+                func_800AA018(((u32 *)(uintptr_t)seg[6])[1]);
                 seg = gSegment4StartArray[omCurrentObj->objId];
             } else {
                 goto end;
             }
         }
-        func_800AA018(((u32 *)seg[6])[0]);
+        func_800AA018(((u32 *)(uintptr_t)seg[6])[0]);
     }
 end:
     curObjSleepForever();
