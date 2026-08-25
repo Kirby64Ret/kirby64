@@ -992,11 +992,27 @@ void init_save_file_maybe(s32);
 // refuses to score a padding-trapped listing at all, so measure_seeds has
 // always reported it UNSCORABLE. Scoring it needed padtrap.classify
 // neutralised for the measurement only; the trap is real and the guard stays.
-// 91 of 112 words differ, so "behaviourally complete" is as far as this goes --
-// it is nowhere near matching and should not be fed to the permuter as if it
-// were. The instruction count is right, which is the only encouraging part.
+// FACTORY: 86/112 as of 2026-08-25, was 91/112 -- see the reserved slots on the
+// declaration list. The instruction count was always right; what was wrong was
+// the frame, and with that fixed the first disagreement moves from instruction
+// 0 to instruction 24.
+// The 86 that remain are register naming and one branch FORM: at index 29 the
+// ROM has `beql $a1, $t1` where the draft emits `beq $a1, $t0`, so a
+// branch-likely is not being produced. That is structural work, not a frame
+// fix, and it is where the next attempt starts.
 #ifdef NON_MATCHING
 void saveForceCompleteFile(s32 fileNum) {
+    /* LEVER 78: three reserved slots. The draft's frame was 0x28 against the
+       ROM's 0x38 and its one spill landed at 0x20 where the ROM uses 0x24, so
+       nothing in the body could be scored through it (LEVERS 69/74/79). Three
+       slots ahead of `i` put both right and take the score 91/112 -> 86/112.
+       The count is measured, not guessed: 1 -> 89, 2 -> 91, 3 -> 86, 4 -> 88,
+       5 -> 89, 6 -> 91, and four declared AFTER `i` also give 88. They stand
+       in for three values the ROM's source had that this draft has not
+       identified; delete them in the same edit that names the real ones. */
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
     s32 i;
 
     if ((gSaveBuffer1.files[fileNum].level == SAVE_INIT_MAGIC) || (gSaveBuffer1.files[fileNum].level >= 6)) {
