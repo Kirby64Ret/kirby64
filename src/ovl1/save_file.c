@@ -333,7 +333,42 @@ void func_800B9008(void) {
 /* FACTORY: 25/30 positionally -- MEASURED 2026-08-25; the note said 1/30, an
    ALIGNED count.  Same missing zero-trip guard as func_800B9008 above, and the
    same one-slot shift behind it; see that comment, including which of its
-   claims the measurement does NOT confirm. */
+   claims the measurement does NOT confirm.
+
+   Here the shift is the WHOLE residue and there is nothing else wrong.  The
+   draft emits 29 instructions against the ROM's 30, the missing one is
+   `beq $a3, $a2, .L800B90D8` at index 7, and indices 8..29 are the ROM's
+   stream shifted one slot early -- opcode for opcode, register for register,
+   displacement for displacement, including the unrolled body's
+   0x0/0x4/0x8/0xC loads and the 0x10 bump.  That is an insertion, not a
+   register disagreement (LEVER 66's discriminator), and one instruction is the
+   entire distance to byte-exact.
+
+   The family floor is real and the reason is now measured rather than asserted.
+   IDO folds the residual count to the constant `addiu $a1, $zero, 0xC` only
+   when it can see p and end as offsets into ONE symbol, and in that state it
+   also folds the guard away.  Spelling end as a genuinely separate symbol
+   (`extern u32 D_800ECA04; end = &D_800ECA04;`) brings the guard back and
+   costs the constant: 29 of 31 instructions, with `subu $a2,$t0,$a3` /
+   `andi $a2,$a2,0xf` where the ROM has the literal 12.  The old note called
+   that case "7 diffs"; that was an aligned count and the positional number is
+   29/31, i.e. WORSE than doing nothing.
+
+   Measured 2026-08-25 and byte-identical at 25/30, so do not retry:
+     - `for (; p != end; p++)` instead of the while (LEVERS 56's edit -- it
+       closed func_800B8E00 in this same file and does not reach here either).
+     - `if (p != end) { do { ... } while (p != end); }`, the shape that spells
+       the ROM's guard out in source.  IDO folds the explicit `if` exactly as
+       it folds the implicit one.
+     - the bare `do { ... } while (p != end);`.
+     - barrier_sweep.py over all three placements (LEVER 71).
+   Measured and WORSE: assigning resultBuffer before end, 26/30; `p < end`
+   instead of `p != end`, 30/30 -- a signed compare changes the loop shape
+   entirely.
+
+   What is left wants IDO to know the difference for the residual and not know
+   it for the guard, and no spelling of one translation unit reaches that.  If
+   this family ever closes it will be from the compiler side. */
 #ifdef NON_MATCHING
 u32 saveCalcHeaderChecksum(void) {
     u32 *p;
