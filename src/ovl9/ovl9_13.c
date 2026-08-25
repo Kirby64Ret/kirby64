@@ -1777,73 +1777,69 @@ void func_8020EAD4_ovl9(struct GObj *arg0) {
     func_801A0C70_ovl7();
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
 extern void (*D_8021CAC8_ovl9)(GObj *);
 
+/* Entry for the two spin variants: normalise gEntitiesAngleZArray into
+   [0, 2pi), take the complement as the target angle, and dispatch on
+   D_800E7880 through D_8021CAC8_ovl9.
+
+   Byte-exact.  It carried "m2c draft, for the PORT only. Not byte-exact and
+   not claimed to be" (LEVER 88's shape) at 138/139.  Three edits, all of them
+   LEVER 108's list plus one:
+     - delete m2c's eleven temp_ and var_ declarations, including the
+       `var_v1 = temp_t0 * 4` byte offset threaded through both wrap loops and
+       the comma-expression `(var_v1 = temp_t0 * 4, (temp_v0 == 0))` in the
+       entry test.  138 -> 51.
+     - the complement angle is stored to TWO arrays out of ONE register:
+       `t = 6.2831855f - a; D_800EA6E0[objId] = t; D_800EB320[objId] = t;`.
+       Written as a re-read of D_800EA6E0 it costs a load and a base register.
+       51 -> 31.  (m2c had this one right in `temp_f12`; my first cleanup threw
+       it away with the rest, which is the caution on LEVER 108: not every
+       m2c temporary is an artefact -- the ones that carry a value between two
+       statements are real.)
+     - the last 31 were LEVERS 90/99.  `gEntitiesAngleZArray[objId] = 0;` with
+       the INTEGER zero forks IDO's shared `mtc1 $zero`; spelled `0.0f` it CSEs
+       with the three `< 0.0f` / `> 6.2831855f` compare zeros in the wrap loops
+       above and every float register rotates.  One character, 31 -> MATCH.
+   Measured inert: m2c's `(u32)` cast and `2U` on the utilFuncTableJump
+   arguments, 31/132 either way.
+
+   The `gEntitiesAngleZArray[objId] = gEntitiesAngleZArray[objId];` below is
+   real -- the ROM has `lwc1 $f4, 0($v0)` / `swc1 $f4, 0($v0)` at 8020ED34.
+   Weird is the match. */
 void func_8020EB60_ovl9(s32 arg0) {
-    f32 *temp_v0_2;
-    f32 *var_v0;
-    f32 temp_f12;
-    f32 var_f0;
-    s32 var_v1;
-    u32 temp_t0;
-    u32 temp_t0_2;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-    u8 temp_v0;
+    f32 a;
+    f32 t;
 
     D_800E8920[omCurrentObj->objId] = 0;
     D_800EB160[omCurrentObj->objId] = 0.0f;
     D_800EB320[omCurrentObj->objId] = 0.0f;
-    temp_t0 = omCurrentObj->objId;
-    temp_v0 = D_800E7880[temp_t0];
-    var_v1 = temp_t0 * 4;
-    if (((temp_v0 == 1) && (D_800E98E0[temp_t0] != 0)) || (var_v1 = temp_t0 * 4, (temp_v0 == 0))) {
-        var_v0 = gEntitiesAngleZArray + var_v1;
-        var_f0 = *var_v0;
-        if (var_f0 > 6.2831855f) {
-            do {
-                *var_v0 = var_f0 - 6.2831855f;
-                temp_v1 = omCurrentObj->objId;
-                var_v1 = temp_v1 * 4;
-                var_v0 = &gEntitiesAngleZArray[temp_v1];
-                var_f0 = *var_v0;
-            } while (var_f0 > 6.2831855f);
+    if (((D_800E7880[omCurrentObj->objId] == 1) && (D_800E98E0[omCurrentObj->objId] != 0)) ||
+        (D_800E7880[omCurrentObj->objId] == 0)) {
+        a = gEntitiesAngleZArray[omCurrentObj->objId];
+        while (a > 6.2831855f) {
+            gEntitiesAngleZArray[omCurrentObj->objId] = a - 6.2831855f;
+            a = gEntitiesAngleZArray[omCurrentObj->objId];
         }
-        if (var_f0 < 0.0f) {
-            do {
-                *var_v0 = var_f0 + 6.2831855f;
-                temp_v1_2 = omCurrentObj->objId;
-                var_v1 = temp_v1_2 * 4;
-                var_v0 = &gEntitiesAngleZArray[temp_v1_2];
-                var_f0 = *var_v0;
-            } while (var_f0 < 0.0f);
+        while (a < 0.0f) {
+            gEntitiesAngleZArray[omCurrentObj->objId] = a + 6.2831855f;
+            a = gEntitiesAngleZArray[omCurrentObj->objId];
         }
-        temp_f12 = 6.2831855f - var_f0;
-        *(D_800EA6E0 + var_v1) = temp_f12;
-        D_800EB320[omCurrentObj->objId] = temp_f12;
+        t = 6.2831855f - a;
+        D_800EA6E0[omCurrentObj->objId] = t;
+        D_800EB320[omCurrentObj->objId] = t;
         D_800E6A10[omCurrentObj->objId] = 1.0f;
     } else {
-        D_800EA6E0[temp_t0] = 1.5707964f;
-        temp_v1_3 = omCurrentObj->objId;
-        D_800EB320[temp_v1_3] = D_800EA6E0[temp_v1_3];
+        D_800EA6E0[omCurrentObj->objId] = 1.5707964f;
+        D_800EB320[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
     }
-    temp_t0_2 = omCurrentObj->objId;
-    if (D_800E7880[temp_t0_2] != 0) {
-        gEntitiesAngleZArray[temp_t0_2] = 0.0f;
-        temp_v0_2 = &gEntitiesAngleZArray[omCurrentObj->objId];
-        *temp_v0_2 = *temp_v0_2;
+    if (D_800E7880[omCurrentObj->objId] != 0) {
+        gEntitiesAngleZArray[omCurrentObj->objId] = 0;
+        gEntitiesAngleZArray[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
     }
     D_800E9C60[omCurrentObj->objId] = 8;
-    utilFuncTableJump((u32) D_800E7880[omCurrentObj->objId], 2U, &D_8021CAC8_ovl9);
+    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 2, &D_8021CAC8_ovl9);
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020EB60_ovl9.s")
-#endif
 
 /* The three constants must be LITERALS: as extern references IDO emitted the
    three callee-saved FP loads in source order, where the ROM has $f24 first.
