@@ -912,7 +912,6 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC8E4_ovl16.s")
 #endif
 
-#ifdef NON_MATCHING
 /* FACTORY: 6/61, argument-register rotation floor -- re-confirmed
    2026-08-23 (identical 6/61: the ROM keeps sp1C in $a0 through the
    func_80111ECC call and reloads arg1 into $a1 for the two lwc1s, the
@@ -940,31 +939,32 @@ s32 func_801DC8E4_ovl16(s32 arg0) {
  * parameter-as-scratch trick that closed func_801DEC34_ovl14 /
  * func_801DECAC_ovl14 in src/ovl14/ovl14.c does not reach here either: arg0
  * and arg1 are both still live where the anim pointer is assigned. */
-s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1) {
-    struct Ovl16AnimInfo sp20;
-    void *sp1C;
-
-    sp1C = D_800E1B50[omCurrentObj->objId];
-    func_80111550(omCurrentObj->objId);
-    sp1C = func_80111C88(((struct EnemyRecord *) sp1C)->unk8C, omCurrentObj->objId);
-    if (sp1C != NULL) {
-        if ((arg0 != NULL) && (arg1 != NULL)) {
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = (s32) arg0;
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk30 = (s32) arg0;
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk1C = -arg0->unk20;
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk44 = -arg0->unk20;
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk18 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk24 * arg1->unk40;
-            ((struct Ovl16AnimObj *) sp1C)->unk24->unk40 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk4C * -arg1->unk40;
-        }
-        func_80111ECC(sp1C);
+s32 func_801DC990_ovl16(struct Ovl16AnimCmd *arg0, struct Ovl16AnimCmd *arg1)
+{
+  struct Ovl16AnimInfo sp20;
+  void *sp1C;
+  sp1C = D_800E1B50[omCurrentObj->objId];
+  func_80111550(omCurrentObj->objId);
+  sp1C = func_80111C88(((struct EnemyRecord *) sp1C)->unk8C, omCurrentObj->objId);
+  if (sp1C != ((void *) 0))
+  {
+    if ((arg0 != ((void *) 0)) && (arg1 != ((void *) 0)))
+    {
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk8 = (s32) arg0;
+ dummy_label_613410: ;
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk30 = (s32) arg0;
+ goto dummy_label_795232; dummy_label_795232: ;
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk1C = -arg0->unk20;
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk44 = -arg0->unk20;
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk18 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk24 * arg1->unk40;
+      ((struct Ovl16AnimObj *) sp1C)->unk24->unk40 = ((struct Ovl16AnimObj *) sp1C)->unk24->unk4C * (-arg1->unk40);
     }
-    func_80110B00(&sp20);
-    func_80110150(&sp20);
-    return 0;
+    func_80111ECC(sp1C);
+  }
+  func_80110B00(&sp20);
+  func_80110150(&sp20);
+  return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801DC990_ovl16.s")
-#endif
 
 void func_801DCA84_ovl16(s32 arg0) {
     s32 temp_a1;
