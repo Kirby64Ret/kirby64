@@ -4724,16 +4724,48 @@ void func_801E7A38_ovl16(s32 arg0) {
     curObjSleepForever();
 }
 
-/* Unguarded non-matching draft at 129/197, committed by mistake in f563f41.
- * It made ovl16's .text 32 bytes too long and broke the ROM at HEAD.
- * Guarded NON_MATCHING: it compiles, so the PC port still executes it,
- * while the ROM assembles the listing below. */
+/* FACTORY: 16/196 [was 129/197].  Un-guarded non-matching draft committed by
+ * mistake in f563f41; it made ovl16's .text 32 bytes too long and broke the ROM
+ * at HEAD.  Guarded NON_MATCHING: it compiles, so the PC port still executes
+ * it, while the ROM assembles the listing below.
+ *
+ * NOT AN ABSF CANDIDATE, despite absf_sweep listing it (2 compares, 2 negs).
+ * The two compares are the 6.283185482f wrap loops and the two `neg.s` are
+ * `-sp38.x` and `-D_800EA8A0[]`; there is no macro here.  Two real defects,
+ * both found by reading the sp offsets:
+ *
+ *  1) DECLARATION ORDER, worth 129 -> 124 (LEVER 12/13).  The ROM's frame is
+ *     sp44 at 0x44, sp38 at 0x38, dx at 0x34, dy at 0x30 -- the Vectors ABOVE
+ *     the scalars.  Later declarations take the lower addresses, so the
+ *     Vectors have to be declared FIRST; with `f32 dx; f32 dy;` at the top
+ *     every local sat 8 bytes low and the whole body read as diffs.
+ *
+ *  2) `dx = sp38.x = expr` RELOADS; `sp38.x = dx = expr` does not.  Worth
+ *     124 -> 16 and an exact instruction count.  The ROM computes the
+ *     difference once and stores the same register to 0x38 and 0x34; the
+ *     m2c form assigns through the member and then re-READS it
+ *     (`swc1 0x38 / lwc1 0x38 / swc1 0x34`), two extra words per site and a
+ *     register rotation through everything after.  Both spellings store the
+ *     two slots in the same order, so this is not lever 2's evaluation-order
+ *     family -- it is which lvalue the value is IN when the second store
+ *     happens.
+ *
+ * THE REMAINING 16 are one instruction in the wrong place: `sp38.z = 0.0f`'s
+ * `swc1 $f16, 0x40($sp)` sits at index 71 where the ROM has it at 82, after
+ * the sp38.x/dx pair, and the $f8-for-$f16 rename at index 68 follows from it.
+ * The zero itself is materialised at exactly the ROM's index 68.  Swept and
+ * negative: barrier_sweep.py (LEVERS 71) tries 15 placements against this
+ * base and lands on none -- the placement between sp38.x and sp38.z, which is
+ * the one that should stop the hoist, scores 18.  Spelling the constant as the
+ * double `0.0` to fork IDO's shared FP zero (LEVER 7) is byte-inert, 16 either
+ * way.  This is a scheduler tie-break on an independent store, which is the
+ * class LEVERS says the permuter reaches and source spelling does not. */
 #ifdef NON_MATCHING
 void func_801E7BD0_ovl16(struct GObj *arg0) {
-    f32 dx;
-    f32 dy;
     Vector sp44;
     Vector sp38;
+    f32 dx;
+    f32 dy;
 
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -4745,9 +4777,9 @@ void func_801E7BD0_ovl16(struct GObj *arg0) {
     sp44.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesNextPosYArray[D_800D7098.unk34];
     sp44.z = 0.0f;
     lbvector_Normalize(&sp44);
-    dx = sp38.x = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
+    sp38.x = dx = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesPosXArray[omCurrentObj->objId];
     sp38.z = 0.0f;
-    dy = sp38.y = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
+    sp38.y = dy = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
     lbvector_Normalize(&sp38);
     func_800195D8(&sp38, &sp44);
     D_800EA6E0[omCurrentObj->objId] = atan2f(-sp38.x, sp38.y);

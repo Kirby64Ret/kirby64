@@ -1079,16 +1079,37 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
     }
 }
 
-/* PADDING TRAP -- padtrap.classify() = ('trap', 7), so verify.py refuses to
- * score it and it must stay guarded.  "It can never be C" as this note used to
- * say is now out of date: LEVERS.md's PADDING TRAPS section documents the
- * kirby64.yaml `pad` subsegment remedy, which is done six times in ovl5 and
- * once failed in ovl17 -- it needs its own sha1-gated build on a quiet tree,
- * so it is a COORDINATOR TASK, not a lane's.
+/* PADDING TRAP, class (a).  Guarded because the pad remedy is NOT yet green --
+ * see the two measurements below before spending anything on it.
  *
- * THE BODY IS NOW BYTE-EXACT.  Measured with padtrap.classify patched to
- * 'clean' (measurement only; that is not permission to un-guard): the spelling
- * below is MATCH at 42 insns, where `if (temp - rand - 3 >= 0)` is 32/41.
+ * THE PAD ADDRESS MUST BE 16-BYTE ALIGNED.  `.size` here falls at 0x1A9AD4
+ * with seven words of fill to ovl9_9's 0x1A9AF0, so the obvious subsegment is
+ * `- [0x1A9AD4, pad]`.  It BREAKS THE ROM (sha1 b3f7acf4) and the reason is
+ * measurable: the assembler gives .text alignment 2**4 and rounds the SECTION
+ * SIZE up to it, so ovl9_8.o's .text is 0x3360 whatever the subsegment extent
+ * says (0x3354 rounded), and a `. += 0x1C` on top of an already-rounded
+ * section overshoots ovl9_9's start by 16 bytes.  `- [0x1A9AE0, pad]` -- the
+ * next 16-byte boundary -- makes the arithmetic exact: splat leaves three nops
+ * in the listing, .text is 0x3360 with no rounding slack, and the linker's
+ * `. += 0x10` lands precisely on 0x1A9AF0.
+ *
+ * WITH THAT PAD AND THIS DRAFT STILL GUARDED THE ROM IS GREEN -- built and
+ * gated, sha1 6cea2d46, check_tu_size 0 wrong.  So the alignment rule is real
+ * and it is the missing half of LEVERS.md's padding-trap section; the ovl17_2
+ * failure at 0x22BED8 is the same 8-mod-16 address.
+ *
+ * WHAT IS STILL UNKNOWN is the un-guard.  With the pad in AND this function
+ * un-guarded the coordinator measured sha1 a6c1a859 and 29 REAL DEFECTS on the
+ * shared tree, and my own build of that combination was contaminated by
+ * another lane's -512 in src/ovl5/ovl5_5.c, so I have no clean measurement of
+ * it.  The arithmetic says it should work -- the C body is 42 words where the
+ * listing is 42 words plus three nops, so .text goes 0x3360 -> 0x3354 and the
+ * assembler rounds it straight back to 0x3360 with zero fill, which is what a
+ * nop encodes as.  Something in that chain is wrong and 29 is far too FEW
+ * defects for a 12-byte shift of everything after ovl9_8, so the next lane
+ * should get the defect LIST before theorising.  Both changes are reverted;
+ * re-apply the pad first, gate it guarded, and only then un-guard.
+ *
  * The `^ 0` is a CSE BARRIER and it is load-bearing.  The ROM recomputes
  * `subu / addiu -3` INSIDE the then-arm (801FBA34) after having already
  * computed it for the `bltz` at 801FBA20; with the plain spelling IDO computes
@@ -1096,8 +1117,7 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
  * every register after it.  Found by the permuter.  Swept and inert, all 32/41:
  * `0 <= temp - rand - 3`, `!(temp - rand - 3 < 0)`, and inverting the test so
  * the `+ 5` arm comes first.  If someone finds a spelling of this barrier that
- * is not a hack, it belongs here -- and if the pad remedy lands, this function
- * closes with it. */
+ * is not a hack, it belongs here. */
 #ifdef NON_MATCHING
 void func_801FB9DC_ovl9(struct GObj *arg0) {
     s32 temp;

@@ -157,9 +157,57 @@ preceding listing the way the subsegment extents say it should, so the six
 words are supplied twice and everything after 0x22BED8 shifts. Three builds,
 sha1 78f0632e (pad + un-guarded), ecb9c0a1 (pad only), 6cea2d46 (reverted).
 
-So: try the pad, and let the linked sha1 decide in one build. Do not assume it
-from the ovl5 precedent. What distinguishes the six working sites from this
-one is not yet known, and finding out is worth a note here when someone does. Class (c) is the same shape seen from the other side --
+**WHAT DISTINGUISHES THEM IS THE ADDRESS'S ALIGNMENT, measured 2026-08-25 on
+func_801FB9DC_ovl9 (ovl9_8, `.size` at 0x1A9AD4, seven words of fill to
+ovl9_9's 0x1A9AF0). THE PAD MUST START ON A 16-BYTE BOUNDARY.**
+
+The assembler gives an object's `.text` alignment 2**4 and rounds the SECTION
+SIZE up to it. ovl9_8's subsegment is 0x3354 bytes long, so ovl9_8.o's .text
+is 0x3360 whatever the yaml says -- objdump confirms it in every variant.
+A pad at the address the `.size` actually falls on is therefore laid on top of
+a section that has ALREADY been rounded past it, and it double-counts:
+
+    - [0x1A9AD4, pad]   ld gets `. += 0x1C` after a 0x3360 section
+                        -> ovl9_9 starts 16 bytes late.  sha1 b3f7acf4. RED.
+    - [0x1A9AE0, pad]   next 16-byte boundary.  splat leaves three nops in the
+                        listing, .text is 0x3360 with no rounding slack, ld's
+                        `. += 0x10` lands exactly on 0x1A9AF0.
+                        sha1 6cea2d46, check_tu_size 0 wrong. GREEN.
+
+Both builds gated with the draft still GUARDED, so this is the pad on its own
+and nothing else. The rule reads straight onto the known cases: every one of
+the six working ovl5 pads is 16-aligned (0x1261C0, 0x126AC0, ...), so is
+main's 0x49B0, and ovl17_2's failing 0x22BED8 is 8 mod 16 -- the same defect,
+not a mystery. Round the address UP to the next multiple of 16 and let the
+object's own alignment fill supply the words below it; alignment fill is zero
+and `nop` encodes as zero, which is why the two halves are interchangeable.
+
+STILL OPEN on that function: with the green pad in AND the draft un-guarded,
+the coordinator measured 29 real defects. My own build of that combination was
+contaminated by another lane's -512 in ovl5_5.c, so there is no clean
+measurement of it yet, and 29 is far too FEW defects for a 12-byte shift of
+everything after ovl9_8 -- get the defect LIST before theorising. Gate the pad
+guarded first; only then un-guard.
+
+**TWO BUILD-SYSTEM TRAPS THAT MAKE A CORRECT YAML EDIT PRODUCE A WRONG ROM,**
+and either of them alone reproduces the "it broke and I don't know why" report:
+  - `uv run splat split` writes `./kirby.ld` at the REPO ROOT. `build/kirby.ld`
+    -- the script the link actually uses -- is a Makefile-derived copy of it
+    (Makefile:251). Re-running splat by hand updates the listings and the root
+    script but NOT the linked one until make runs.
+  - **make does not treat a `.s` as a dependency of its object.** A pad edit
+    changes a listing without changing any `.c`, so mk.sh's source-hash pass
+    keeps the old object and links a stale `.text` against a new layout.
+    `rm build/src/<seg>/<file>.o` after every re-split that touched a listing.
+
+And a cheap way to answer alignment questions like this without touching the
+shared tree at all: splat resolves `base_path` relative to the YAML, so copying
+baserom.us.z64 + kirby64.yaml + src/ + include/ + tools/symbol_addrs.txt +
+tools/splat_ext into a scratch directory and running
+`uv run splat split <scratchdir>/kirby64.yaml` FROM the repo root splits
+entirely inside the scratch directory. It reproduced the real tree's asm and
+kirby.ld byte for byte, and it is where the listing-shortening half of the
+above was established before anything was risked in the tree. Class (c) is the same shape seen from the other side --
 write the unnamed function out rather than padding over it (func_801555AC_ovl4
 and func_80160A70_ovl5 both closed that way).
 
@@ -903,6 +951,26 @@ the pool allocator's real stride is 0x78.
     Swept and negative, do not re-run: func_800B9FE0 4/169, func_800BB24C
     8/70, func_800BA90C 13/62, func_800A238C 17/45, func_800A52F0 40/69.
 
+    ovl9/ovl15/ovl16, swept 2026-08-25, ALL NEGATIVE (18 sweeps, 0 wins) --
+    every draft in that scope whose residue was under ~30% of its instruction
+    count, which is the population LEVER 71 says to sweep:
+      func_801DC8E4_ovl16 7/43     func_801E5080_ovl15 12/167
+      func_801DCDA8_ovl15 19/165   func_801DDA98_ovl16 37/239
+      func_801EEC28_ovl9  7/277    func_801DCE6C_ovl9  8/260
+      func_801DE280_ovl9  27/227   func_801E27BC_ovl15 40/484
+      func_801DCBF8_ovl16 32/116   func_802071AC_ovl9  12/67
+      func_802050E4_ovl9  13/60    func_80205360_ovl9  20/86
+      func_801E8A80_ovl9  24/127   func_801EA190_ovl9  22/90
+      func_801D56D0_ovl9  21/96    func_801E85CC_ovl9  35/125
+      func_801EDBEC_ovl9  48/286   func_801E7BD0_ovl16 16/196
+    That is 18 negatives on top of the ovl1 lane's 5 and another lane's 14, so
+    the measured hit rate of the mechanical sweep is now about 1 in 37. It is
+    still worth running -- it is free and the one win was worth 11 diffs -- but
+    budget it as a lottery ticket, not as a step in a plan, and put the effort
+    into reading the listing instead. The two closures in this scope tonight
+    both came from reading (a clone-family ABSF on func_801E429C_ovl9, and the
+    sp offsets on func_801E7BD0_ovl16), and the sweep found nothing on either.
+
     The sweep tries the BEFORE placement only. Wrapping a following block is a
     different transform -- before stops motion up past the statement, a wrap
     stops motion out of the block -- so do the wrap by hand once the sweep
@@ -1018,6 +1086,30 @@ the pool allocator's real stride is 0x78.
     through a wrong prologue. The screen also reports `unscorable` for drafts
     that do not compile alone; those need the compile fixed before anything
     else, and there are eight of them.
+
+    **AND THE 55 IS A LOWER BOUND -- the flag only fires when the stack
+    adjustment is diff ZERO, and in this ROM it is routinely not instruction
+    zero.** func_801E429C_ovl9 (ovl9_4, the sweep's number eight at 22
+    compares) opens `lui $a1, %hi(omCurrentObj)` / `lw $a1, %lo(...)` and only
+    then `addiu $sp, -0x60`, so it screens as "first diff 2", reads as clear,
+    and is exactly as frame-blocked as the four the flag caught. Any prologue
+    that materialises a global before allocating the frame does this. Treat a
+    first diff of 1, 2 or 3 as suspect and go and look at the instruction.
+
+    Frame-blocked is not the same as worthless: converting four ABSF sites on
+    that function was still worth 422/479 -> 380/479. It means the score cannot
+    reach zero, not that it cannot move -- so do not read the leftover as a
+    refutation of the macro reading. (The frame there is LEVER 57's pinned n+t:
+    every spelling holds declarations-plus-temps at 12 words against the ROM's
+    10, and inlining one more local is the negative control at 394.)
+
+    Two false positives from the same sweep, in ovl9/ovl16, so nobody re-costs
+    them: func_801E7BD0_ovl16's two compares are 6.283185482f wrap loops and
+    its two `neg.s` are a real `-sp38.x` and `-D_800EA8A0[]`;
+    func_80205360_ovl9's are a `< 0.0f` clamp sitting next to an unrelated
+    `b->pos.v.y = -a->pos.v.y`. A `neg.s` near a compare is necessary evidence
+    and not sufficient -- LEVER 73's real tell is the operand computed more
+    times than the source needs it, with one copy unreachable.
 
 75. **A file-local helper that is not spelled `static` costs its callers the
     o32 entry sequence.** IDO assigns an interprocedural convention -- values
