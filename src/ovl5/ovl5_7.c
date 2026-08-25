@@ -173,7 +173,6 @@ s32 func_8017A174_ovl5(s32 arg0, s32 arg1) {
     }
 }
 
-#ifdef NON_MATCHING
 /* FACTORY: 2/101, and the two are a pure scheduling swap: the ROM emits
    `addiu $fp,%lo(D_800E9C60)` before `addiu $s6,%lo(D_8018ED38_ovl5)` in the
    loop preheader, IDO the other way round. Both registers, both %hi halves and
@@ -188,49 +187,17 @@ s32 func_8017A174_ovl5(s32 arg0, s32 arg1) {
    position, `p++` in the for-header vs the body tail, a pointer local for
    D_800E9C60 (that one grows the TU to 106), `1 ==` compare order and a named
    `one` constant. */
-void func_8017A1CC_ovl5(void) {
-    u8 *p;
-    s32 i;
-    s32 r;
-    s32 x;
-    s32 y;
-    s32 d;
-    s32 t;
-
-    p = &D_8018ED38_ovl5;
-    for (i = 0; i != 4; i++, p++) {
-        if (*p == 1) {
-            r = random_soft_s32_range(4);
-            if (r == D_8018ED18_ovl5[i]) {
-                D_800EA1A0[D_8018ED90_ovl5[i]] = 1;
-            } else {
-                x = func_8017A128_ovl5(D_8018ED18_ovl5[i]);
-                y = func_8017A128_ovl5(r);
-                if (func_8017A174_ovl5(D_8018ED18_ovl5[i], r) != 0) {
-                    D_800E9C60[D_8018ED90_ovl5[i]] = 2;
-                } else {
-                    D_800E9C60[D_8018ED90_ovl5[i]] = 1;
-                }
-                d = x - y;
-                if (d < 0) {
-                    t = -d;
-                } else {
-                    t = d;
-                }
-                if (t == 2) {
-                    D_800EA6E0[D_8018ED90_ovl5[i]] = 18.0f;
-                } else {
-                    D_800EA6E0[D_8018ED90_ovl5[i]] = 9.0f;
-                }
-                D_800E9FE0[D_8018ED90_ovl5[i]].as_s32 = D_8018ED18_ovl5[i];
-                D_8018ED18_ovl5[i] = r;
-            }
-        }
-    }
+void func_8017A1CC_ovl5(void)
+{
+  u8 *p;
+  s32 i;
+  s32 r;
+  s32 x;
+  s32 y;
+  s32 d;
+  s32 t;
+ do { p = &D_8018ED38_ovl5; for (i = 0; i != 4; i++, p++) { if ((*p) == 1) { r = random_soft_s32_range(4); if (r == D_8018ED18_ovl5[i]) { D_800EA1A0[D_8018ED90_ovl5[i]] = 1; } else { x = func_8017A128_ovl5(D_8018ED18_ovl5[i]); y = func_8017A128_ovl5(r); if (func_8017A174_ovl5(D_8018ED18_ovl5[i], r) != 0) { D_800E9C60[D_8018ED90_ovl5[i]] = 2; } else { D_800E9C60[D_8018ED90_ovl5[i]] = 1; } d = x - y; if (d < 0) { t = -d; } else { t = d; } if (t == 2) { D_800EA6E0[D_8018ED90_ovl5[i]] = 18.0f; } else { D_800EA6E0[D_8018ED90_ovl5[i]] = 9.0f; } D_800E9FE0[D_8018ED90_ovl5[i]].as_s32 = D_8018ED18_ovl5[i]; D_8018ED18_ovl5[i] = r; } } } } while (0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A1CC_ovl5.s")
-#endif
 
 void func_8017A360_ovl5(s32 arg0) {
     s32 i;
@@ -432,6 +399,7 @@ block_18:
         }
     }
 }
+
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017A71C_ovl5.s")
@@ -481,66 +449,41 @@ void func_8017ABC8_ovl5(void) {
     }
 }
 
-/* FACTORY: 85 of 99 words DIFFER (measured 2026-08-25).
-   The listing swallows the next, unnamed function of the TU inside its own
-   `.size` (`jr $ra; nop` at 0x8017AEE0 -- padtrap.py class 'swallowed'). Not a
-   padding trap: a conversion writes it out as `void func_8017AEE0_ovl5(void)
-   {}` after this one, the way ovl5_2.c does for func_80160A70_ovl5, and
-   verify.py then trims the pair. It is not what blocks this site. */
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below.
-   The three M2C_ERROR("read from unset register $v0") holes that used to sit
-   here were func_8017AB80_ovl5's return value -- m2c could not see it because
-   that function was typed `void`. It is typed s32 above now, so this draft
-   compiles and the native link no longer has an undefined M2C_ERROR. */
+/* Pause-menu input handler: the exact clone of func_8017ABC8_ovl5 above
+   with func_8017AB80_ovl5 for func_8017ABA4_ovl5 and D_8018ED10_ovl5 for
+   D_8018ED0C_ovl5 (LEVERS lever 1). */
 void func_8017AD54_ovl5(void) {
-    s32 *var_at;
-    s32 temp_t8;
-    u16 temp_v0;
-
-    temp_v0 = gPlayerControllers->buttonPressed;
-    if (temp_v0 & 0x9000) {
+    if (gPlayerControllers[0].buttonPressed & 0x9000) {
         play_sound(0xED);
         func_80179F90_ovl5();
         D_8018ED00_ovl5 = 1;
-        var_at = &D_800E98E0[omCurrentObj->objId];
-        goto block_13;
-    }
-    if (temp_v0 & 0x4000) {
+        D_800E98E0[omCurrentObj->objId] = 4;
+    } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
         play_sound(0x2B);
         D_8018ED04_ovl5 = 1;
         func_8017C6C8_ovl5();
         D_800E98E0[omCurrentObj->objId] = 4;
-        return;
-    }
-    if (func_8017AB80_ovl5() != 0) {
-        if (gPlayerControllers->buttonHeld & 0x200) {
+    } else if (func_8017AB80_ovl5() != 0) {
+        if (gPlayerControllers[0].buttonHeld & 0x200) {
             play_sound(0x113);
-            temp_t8 = D_8018ED10_ovl5 - 1;
-            D_8018ED10_ovl5 = temp_t8;
-            if (temp_t8 < 0) {
+            D_8018ED10_ovl5--;
+            if (D_8018ED10_ovl5 < 0) {
                 D_8018ED10_ovl5 = func_8017AB80_ovl5();
             }
             D_800E98E0[omCurrentObj->objId] = 4;
-            return;
-        }
-        if (gPlayerControllers->buttonHeld & 0x100) {
+        } else if (gPlayerControllers[0].buttonHeld & 0x100) {
             play_sound(0x113);
-            D_8018ED10_ovl5 += 1;
+            D_8018ED10_ovl5++;
             if (func_8017AB80_ovl5() < D_8018ED10_ovl5) {
                 D_8018ED10_ovl5 = 0;
             }
-            var_at = &D_800E98E0[omCurrentObj->objId];
-block_13:
-            *var_at = 4;
+            D_800E98E0[omCurrentObj->objId] = 4;
         }
     }
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017AD54_ovl5.s")
-#endif
+
+void func_8017AEE0_ovl5(void) {
+}
 
 /* 2/76: fully decoded, same length, same registers -- the residue is one
    scheduling swap of two independent address materialisations in the same
