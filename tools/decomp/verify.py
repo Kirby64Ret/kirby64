@@ -365,17 +365,27 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
     # sits at +4 -- so the evidence is only that the object defines a function
     # at exactly that address. Accept either a `jr $ra` + `nop` pair or a bare
     # trailing `jr $ra` (the object's own tail nop is trimmed below).
-    folded = None
-    tail2 = len(twords) == len(cur) + 2 and twords[-2] == 0x03E00008 and twords[-1] == 0
-    tail1 = len(twords) == len(cur) + 1 and twords[-1] == 0x03E00008
-    if tail2 or tail1:
+    #
+    # More than one stub can be folded into a single .size: __alSeqNextDelta
+    # in libn_audio_2.c carries TWO (func_8002CD44 and func_8002CD4C, four
+    # words), and accounting for only the last one left that site permanently
+    # unreadable through verify.py. Peel them in a loop instead.
+    folded = []
+    while len(twords) > len(cur):
+        tail2 = (len(twords) >= len(cur) + 2 and twords[-2] == 0x03E00008
+                 and twords[-1] == 0)
+        tail1 = twords[-1] == 0x03E00008
+        if not (tail2 or tail1):
+            break
         want = 'func_%08X' % tvrams[-2 if tail2 else -1]
         hit = next((k for k in objfuncs
                     if k == want or k.startswith(want + '_ovl')), None)
-        if hit:
-            folded = hit
-            k = 2 if tail2 else 1
-            twords = twords[:-k]; ttexts = ttexts[:-k]; tvrams = tvrams[:-k]
+        if not hit:
+            break
+        folded.append(hit)
+        k = 2 if tail2 else 1
+        twords = twords[:-k]; ttexts = ttexts[:-k]; tvrams = tvrams[:-k]
+    folded.reverse()
 
     trimmed = 0
     while len(twords) > len(cur) and twords[-1] == 0:
@@ -473,10 +483,12 @@ def verify(cfile, func, objfuncs, pragmas=frozenset()):
                           f'[{len(rodata_notes)} uncounted relocation note(s)]\n'
                           + '\n'.join(rodata_notes[:10]))
         if folded:
+            names = ', '.join(folded)
             return True, (f'{func}: MATCH ({len(cur)} insns) '
-                          f'[listing also carries {folded}, an unnamed function '
-                          f'splat folded into this .size; it is defined '
-                          f'separately in the C and accounted for]')
+                          f'[listing also carries {names}, '
+                          f'{"an unnamed function" if len(folded) == 1 else "unnamed functions"} '
+                          f'splat folded into this .size; defined separately in '
+                          f'the C and accounted for]')
         return True, f'{func}: MATCH ({len(cur)} insns)'
     return False, f'{func}: DIFF {len(diffs)}/{n} insns\n' + '\n'.join(diffs[:int(__import__("os").environ.get("VERIFY_MAXDIFF","40"))])
 
