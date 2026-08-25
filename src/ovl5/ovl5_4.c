@@ -364,94 +364,110 @@ s32 func_8016725C_ovl5(s32 arg0, s32 arg1) {
     return 0;
 }
 
+/* FACTORY: 176/183 -> 107/183, word count exact and EVERY `NN($sp)` on the
+ * ROM's slot (frame 0x48, x/y/z at 0x3C/0x40/0x44, the pointer spill at 0x2C,
+ * $s0-$s3 and $ra where the ROM puts them).  Four separate defects, in the
+ * order they paid:
+ *   1. IT RETURNS s32, NOT void.  Every exit sets $v0: `or $v0,$zero,$zero`
+ *      before the epilogue on both restore paths and `addiu $v0,$zero,0x1`
+ *      when the four-racer loop runs out.  Both call sites discard it, which
+ *      is why the wrong type survived.  The two file-scope prototypes further
+ *      down this TU had to move with it (sha1 unchanged by that, LEVER 55).
+ *   2. THE CALL ARITY WAS m2c FICTION.  The draft carried its own
+ *      `s32 func_80165FB8_ovl5(s32, f32 *, s32 *)` and passed three arguments.
+ *      The real callee is `s32 func_80165FB8_ovl5(s32)` and is already MATCHED
+ *      in src/ovl5/ovl5_3.c:370 -- m2c had read the live $a2/$a3 (which the
+ *      allocator happened to park the X pointer and the D_8018E268_ovl5
+ *      pointer in) as arguments.  Worth 181 -> 116 on its own.
+ *   3. THE SECOND SWITCH'S ARMS ARE IN SOURCE ORDER 1, 2, 0, 3.  IDO lays
+ *      switch BODIES out in source order while testing in value order, and
+ *      the ROM's bodies run z-25, x+25, z+25, x-25.  Writing the cases in
+ *      that order is what makes the two chains align (aligndiff run count
+ *      drops by a whole 7-word block).
+ *   4. THE RE-READ INDEX IS ONE LOCAL (LEVER 11).  `D_8018E268_ovl5[arg0]`
+ *      written inline at all three restore stores makes IDO reload it per
+ *      array, because each store may alias the next load; `e = ...` once and
+ *      three subscripts of `e` is the ROM's single `lw`+`sll`.  170/192 with
+ *      the wrong word count -> 181/184.
+ * Frame arithmetic that got the slots exact, for the next lane: the local
+ * region is align8(0x28 + 4*(ndecl+ntemp)) and the ROM's is 7 words, so the
+ * spill lands on the LAST slot at 0x2C.  Six declarations gave 8 words and put
+ * it at 0x28; the word that had to go was the `s32 *p` pointer local --
+ * spelling `D_8018E268_ovl5[arg0]` inline instead leaves IDO's own temp
+ * holding the pointer and drops the count to seven (109 -> 107).  Measured and
+ * REJECTED on the way: merging `e` into `r` (174/183 -- it also costs the 4th
+ * saved register, $s3 for arg0 becomes $s2), `u16 r` (151/184), `u16 e`
+ * (inert), initialised `f32 *px/*pz` pointer locals (116/183), all six
+ * permutations of the x/y/z read order (all exactly 109 -- IDO reschedules
+ * them), and all six positions for the `s32 *p` declaration (116/114/111/109
+ * /109/109 -- a pointer that is spilled does not use its home slot).
+ * WHAT IS LEFT is the prologue: the ROM issues `swc1 $f2,0x3C($sp)` and
+ * `swc1 $f0,0x44($sp)` immediately after the three loads, where IDO defers
+ * both to just before the func_80165FB8_ovl5 call, and the Y base is
+ * materialised one slot earlier.  Scheduling, not shape. */
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-s32 func_80165FB8_ovl5(s32, f32 *, s32 *);          /* extern */
+s32 func_80165FB8_ovl5(s32);
 extern f32 D_8018D6D8_ovl5;
 extern f32 D_8018D6DC_ovl5;
 extern f32 D_8018D6E0_ovl5;
 
-void func_80167374_ovl5(s32 arg0, s32 arg1) {
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    s32 *sp2C;
-    f32 *temp_a2;
-    f32 *temp_v0;
-    f32 temp_f0;
-    f32 temp_f2;
-    s32 *temp_a3;
-    s32 temp_v0_2;
-    s32 temp_v1;
-    s32 temp_v1_2;
-    s32 temp_v1_3;
-    s32 var_s0;
-    u8 *var_s1;
+s32 func_80167374_ovl5(s32 arg0, s32 arg1) {
+    f32 z;
+    f32 y;
+    f32 x;
+    s32 r;
+    s32 e;
 
-    temp_a3 = &D_8018E268_ovl5[arg0];
-    temp_v1 = *temp_a3;
-    temp_a2 = &gEntitiesNextPosXArray[temp_v1];
-    temp_v0 = &gEntitiesNextPosZArray[temp_v1];
-    temp_f2 = *temp_a2;
-    temp_f0 = *temp_v0;
-    sp3C = temp_f2;
-    sp40 = gEntitiesNextPosYArray[temp_v1];
-    sp44 = temp_f0;
-    switch (arg1) {                                 /* switch 1; irregular */
-    case 0:                                         /* switch 1 */
-        gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
-        break;
-    case 1:                                         /* switch 1 */
-        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6D8_ovl5;
-        break;
-    case 2:                                         /* switch 1 */
-        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6DC_ovl5;
-        break;
-    case 3:                                         /* switch 1 */
-        gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6E0_ovl5;
-        break;
+    x = gEntitiesNextPosXArray[D_8018E268_ovl5[arg0]];
+    y = gEntitiesNextPosYArray[D_8018E268_ovl5[arg0]];
+    z = gEntitiesNextPosZArray[D_8018E268_ovl5[arg0]];
+    switch (arg1) {
+        case 0:
+            gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+            break;
+        case 1:
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6D8_ovl5;
+            break;
+        case 2:
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6DC_ovl5;
+            break;
+        case 3:
+            gEntitiesAngleYArray[omCurrentObj->objId] = D_8018D6E0_ovl5;
+            break;
     }
-    switch (arg1) {                                 /* switch 2; irregular */
-    case 1:                                         /* switch 2 */
-        *temp_v0 = temp_f0 - 25.0f;
-        break;
-    case 2:                                         /* switch 2 */
-        *temp_a2 = temp_f2 + 25.0f;
-        break;
-    case 0:                                         /* switch 2 */
-        *temp_v0 = temp_f0 + 25.0f;
-        break;
-    case 3:                                         /* switch 2 */
-        *temp_a2 = temp_f2 - 25.0f;
-        break;
+    switch (arg1) {
+        case 1:
+            gEntitiesNextPosZArray[D_8018E268_ovl5[arg0]] = z - 25.0f;
+            break;
+        case 2:
+            gEntitiesNextPosXArray[D_8018E268_ovl5[arg0]] = x + 25.0f;
+            break;
+        case 0:
+            gEntitiesNextPosZArray[D_8018E268_ovl5[arg0]] = z + 25.0f;
+            break;
+        case 3:
+            gEntitiesNextPosXArray[D_8018E268_ovl5[arg0]] = x - 25.0f;
+            break;
     }
-    sp2C = temp_a3;
-    temp_v0_2 = func_80165FB8_ovl5(arg0, temp_a2, temp_a3);
-    if ((temp_v0_2 != 0x29A) && ((func_80165900_ovl5(temp_v0_2) != 0) || (D_800E9C60[D_8018E2A0_ovl5[temp_v0_2]] != 0))) {
-        var_s1 = D_8018E3C0_ovl5;
-        var_s0 = 0;
-loop_22:
-        if ((*var_s1 != 0) && (arg0 != var_s0) && (func_8016725C_ovl5(arg0, var_s0) != 0)) {
-            temp_v1_2 = *sp2C;
-            gEntitiesNextPosXArray[temp_v1_2] = sp3C;
-            gEntitiesNextPosYArray[temp_v1_2] = sp40;
-            gEntitiesNextPosZArray[temp_v1_2] = sp44;
-            return;
+    r = func_80165FB8_ovl5(arg0);
+    if ((r != 0x29A) && ((func_80165900_ovl5(r) != 0) || (D_800E9C60[D_8018E2A0_ovl5[r]] != 0))) {
+        for (r = 0; r < 4; r++) {
+            if ((D_8018E3C0_ovl5[r] != 0) && (arg0 != r) && (func_8016725C_ovl5(arg0, r) != 0)) {
+                e = D_8018E268_ovl5[arg0];
+                gEntitiesNextPosXArray[e] = x;
+                gEntitiesNextPosYArray[e] = y;
+                gEntitiesNextPosZArray[e] = z;
+                return 0;
+            }
         }
-        var_s0 += 1;
-        var_s1 += 1;
-        if (var_s0 == 4) {
-            return;
-        }
-        goto loop_22;
+        return 1;
     }
-    temp_v1_3 = *sp2C;
-    gEntitiesNextPosXArray[temp_v1_3] = sp3C;
-    gEntitiesNextPosYArray[temp_v1_3] = sp40;
-    gEntitiesNextPosZArray[temp_v1_3] = sp44;
+    e = D_8018E268_ovl5[arg0];
+    gEntitiesNextPosXArray[e] = x;
+    gEntitiesNextPosYArray[e] = y;
+    gEntitiesNextPosZArray[e] = z;
+    return 0;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80167374_ovl5.s")
 #endif
@@ -546,7 +562,7 @@ s32 func_80165AD0_ovl5(s32);
 s32 func_80165948_ovl5(s32);
 s32 func_8016A69C_ovl5(s32);
 s32 func_8016A6B0_ovl5(s32);
-void func_80167374_ovl5(s32, s32);
+s32 func_80167374_ovl5(s32, s32);
 s32 func_80168928_ovl5(s32, s32, f32);
 f32 func_80168804_ovl5(GObj *, s32, s32);
 void func_80168E84_ovl5(s32);
@@ -1081,7 +1097,7 @@ void func_8016A2B8_ovl5(s32);
 s32 func_80167898_ovl5(s32);
 void func_801671E8_ovl5(s32);
 s32 func_80165AD0_ovl5(s32);
-void func_80167374_ovl5(s32, s32);
+s32 func_80167374_ovl5(s32, s32);
 
 void func_801686E4_ovl5(GObj *arg0) {
     s32 t = ((s32 *) D_800E9AA0)[omCurrentObj->objId];
