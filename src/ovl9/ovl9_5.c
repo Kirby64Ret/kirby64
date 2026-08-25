@@ -612,11 +612,23 @@ void func_801E7320_ovl9(void) {
     }
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 89/153 [was noted 64/153].  The first 52 instructions are exact.  Residue: the ROM
-   holds the D_800E6A10 base in $a2 where ours uses $a3, and from the first
-   float compare on we run one instruction shorter than the ROM inside the
-   facing branch, so the bc1f displacements differ by one. */
+/* Byte-exact.  It sat at 89/153 with a note blaming "the ROM holds the
+   D_800E6A10 base in $a2 where ours uses $a3"; that was the symptom of two
+   source shapes, and aligndiff (LEVER 104) named both.
+     - The tumble-animation choice.  The ROM lays 0x101F2 in the entry block,
+       skips over 0x101F3 on `bc1f`, and ends the taken arm with a redundant
+       `b` to the merge.  m2c's `anim = 0x101F2; if (c) anim = 0x101F3;`
+       cannot emit that `b`; the if/ELSE form does, and IDO still hoists the
+       0x101F2 above the compare.  89 -> 13.  (LEVER 6 read from the other
+       side: the flag-variable form is per-function, and here it is if/else.)
+     - `id = omCurrentObj->objId;` ahead of the switch.  The ROM re-reads the
+       objId through the pointer it already holds in $v0 and keeps it in $a1;
+       a named local makes IDO copy it (`move $a2, $a1`) and that one extra
+       live value is what pushed the D_800E6A10 base from $a2 to $a3 and cost
+       the `beql` in the case-0 arm.  Spelling every subscript
+       `omCurrentObj->objId` is 13 -> MATCH (LEVERS 4/97).
+   Measured inert on the way: `s32 id` for `u32 id`, and swapping the anim/id
+   declaration order -- both 13/153. */
 extern struct EnemyEventTable D_801CBB9C;
 void func_800FB914(s32);
 void func_800AA018(s32);
@@ -627,7 +639,6 @@ void func_800AA018(s32);
  * into airborne state 6. */
 void func_801E73C4_ovl9(struct GObj *arg0) {
     s32 anim;
-    u32 id;
 
     D_800DDFD0[omCurrentObj->objId] = 7;
     D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB9C;
@@ -639,22 +650,22 @@ void func_801E73C4_ovl9(struct GObj *arg0) {
     D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = 0.0f;
     func_800FB914(1);
     play_sound(0x9A);
-    anim = 0x101F2;
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
         anim = 0x101F3;
+    } else {
+        anim = 0x101F2;
     }
     func_800AA018(anim);
     func_800AF27C();
     D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
-    id = omCurrentObj->objId;
-    switch (D_800E7880[id]) {
+    switch (D_800E7880[omCurrentObj->objId]) {
         case 0:
         case 1:
-            D_800E64D0[id] = D_800E6A10[id] * 6.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.0f;
             break;
         case 2:
         case 3:
-            D_800E64D0[id] = D_800E6A10[id] * 8.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 8.0f;
             break;
     }
     D_800E3210[omCurrentObj->objId] = 0.0f;
@@ -663,57 +674,6 @@ void func_801E73C4_ovl9(struct GObj *arg0) {
     D_800EA8A0[omCurrentObj->objId] = 0.0f;
     gEntityFuncListIDArray[omCurrentObj->objId] = 6;
 }
-#elif defined(PORT)
-extern struct EnemyEventTable D_801CBB9C;
-void play_sound();
-void func_800FB914(s32);
-void func_800AA018(s32);
-/* Hit-launch state: enter anim state 7 with the hit sound/flash,
- * zero bone 1's X spin, play the facing-specific tumble animation,
- * then reverse facing and launch backwards (6.0 for ground modes,
- * 8.0 for flying modes) with gravity -0.65 and 10.0 terminal speed,
- * into airborne state 6. */
-void func_801E73C4_ovl9(struct GObj *arg0) {
-    s32 anim;
-    u32 id;
-
-    D_800DDFD0[omCurrentObj->objId] = 7;
-    D_800E1B50[omCurrentObj->objId]->unk98 = &D_801CBB9C;
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    func_800B33F4();
-    D_800E8920[omCurrentObj->objId] = 0;
-    D_800EA8A0[omCurrentObj->objId] = 0.0f;
-    D_800DFBD0[omCurrentObj->objId][1]->angle.v.x = 0.0f;
-    func_800FB914(1);
-    play_sound(0x9A);
-    anim = 0x101F2;
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        anim = 0x101F3;
-    }
-    func_800AA018(anim);
-    func_800AF27C();
-    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
-    id = omCurrentObj->objId;
-    switch (D_800E7880[id]) {
-        case 0:
-        case 1:
-            D_800E64D0[id] = D_800E6A10[id] * 6.0f;
-            break;
-        case 2:
-        case 3:
-            D_800E64D0[id] = D_800E6A10[id] * 8.0f;
-            break;
-    }
-    D_800E3210[omCurrentObj->objId] = 0.0f;
-    D_800E3750[omCurrentObj->objId] = -0.65f;
-    D_800E3C90[omCurrentObj->objId] = 10.0f;
-    D_800EA8A0[omCurrentObj->objId] = 0.0f;
-    gEntityFuncListIDArray[omCurrentObj->objId] = 6;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_5/func_801E73C4_ovl9.s")
-#endif
 
 extern s32 D_800BE4EC;
 void func_801A0D74_ovl7();
