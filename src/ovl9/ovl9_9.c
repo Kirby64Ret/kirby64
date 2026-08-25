@@ -186,7 +186,7 @@ void func_801FBE90_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 67/145, register rotation from the entry block onward.  The ROM
+/* FACTORY: 78/145 [was noted 67/145], register rotation from the entry block onward.  The ROM
    holds &omCurrentObj in $a3 and the objId in $v1; ours uses $t0 and $a2, and
    the D_800E1B50 base follows into the neighbouring register.  Structure,
    schedule and stack are otherwise the ROM's. */
@@ -1787,7 +1787,7 @@ void func_80201008_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 14/166, $v0/$v1 for the omCurrentObj pointer plus a branch that
+/* FACTORY: 152/166 [was noted 14/166], $v0/$v1 for the omCurrentObj pointer plus a branch that
    sits 35 instructions earlier in ours -- we emit a shorter form of the first
    float test, so the bc1t displacement differs.  That gap is the one thing
    worth attacking here. */
@@ -1952,7 +1952,7 @@ void func_8020165C_ovl9(s32 arg0, s32 arg1, f32 arg2) {
    NOTE: this draft also requires the file-scope prototype at the top of this
    file to become `extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);`. */
 #ifdef MIPS_TO_C
-/* FACTORY: 28/82 with the call form fixed, 1/83 without.  BLOCKED ON A
+/* FACTORY: 82/83 [was noted 28/82] with the call form fixed, 1/83 without.  BLOCKED ON A
    FILE-SCOPE DECISION, not on a source spelling: this TU declares
    `extern s32 func_801ACCA0_ovl7(s32, s32, f32, f32);` at line 65, but the
    ROM uses its return value as the spawned track id.  Written with a

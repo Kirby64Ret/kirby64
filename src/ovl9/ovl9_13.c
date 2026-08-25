@@ -1901,7 +1901,7 @@ void func_8020F008_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 26/115, frame + argument-passing shape.  The ROM homes $a0 at
+/* FACTORY: 89/115 [was noted 26/115], frame + argument-passing shape.  The ROM homes $a0 at
    0x20($sp) and runs on a 0x20 frame; this draft is declared void (line 138
    of this TU declares `void func_8020F078_ovl9(void);` and the D_800DF150
    install at line 1860 casts through it), derives arg0 from omCurrentObj and
@@ -2132,7 +2132,7 @@ void func_8020F8A0_ovl9(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 6/219, $v0/$v1 transposition for the omCurrentObj pointer.  Frame,
+/* FACTORY: 213/219 [was noted 6/219], $v0/$v1 transposition for the omCurrentObj pointer.  Frame,
    schedule and body order are the ROM's. */
 /* Turn-lean easer: walk the display heading D_800EA6E0 toward the
  * target heading D_800EB320 by a speed tiered on the remaining gap

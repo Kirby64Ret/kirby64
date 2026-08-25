@@ -910,7 +910,7 @@ void func_8021782C_ovl9(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/167, frame 0x60 vs the ROM's 0x68 with an identical saved-register
+/* FACTORY: 164/167 [was noted 3/167], frame 0x60 vs the ROM's 0x68 with an identical saved-register
    set (s0-s7, fp, ra).  We are 8 bytes short of the ROM's frame and every
    offset below the prologue shifts with it; an unreferenced 8-byte filler
    array does NOT move it (IDO drops small dead locals -- LEVERS 22 only holds

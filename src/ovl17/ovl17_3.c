@@ -263,7 +263,7 @@ s32 func_801E14B0_ovl17(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E14B0_ovl17.s")
 #endif
 #ifdef MIPS_TO_C
-/* FACTORY: 18/187, &omCurrentObj hoisted into a saved register.  The ROM loads
+/* FACTORY: 169/187 [was noted 18/187], &omCurrentObj hoisted into a saved register.  The ROM loads
    the GObj POINTER once into $a3 at entry and re-materialises it after calls;
    ours keeps the ADDRESS of omCurrentObj in $s2 for the whole body, which
    renames most instructions.  Caching the pointer in a local (LEVERS 4) does
@@ -486,7 +486,7 @@ big:
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/262, frame 0x50 vs the ROM's 0x48 and the opposite hoisting
+/* FACTORY: 299/302 [was noted 4/262], frame 0x50 vs the ROM's 0x48 and the opposite hoisting
    decision: the ROM keeps &omCurrentObj in $s0 for the whole body (saving it
    at 0x18), ours re-materialises it into $t6 at each use and saves nothing.
    Sibling of func_801E1CB4_ovl17 in this file, which has the same pair of
@@ -718,7 +718,7 @@ void func_801E2320_ovl17(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 24/403, frame 0x130 vs the ROM's 0x120 -- 16 bytes of locals we
+/* FACTORY: 379/403 [was noted 24/403], frame 0x130 vs the ROM's 0x120 -- 16 bytes of locals we
    reserve and it does not, which slides all three matrices 0x20 up and
    renames the body with them.
    Layout read off the listing: three Mat4 at sp+0x50/0x90/0xD0 and five
@@ -1229,7 +1229,7 @@ void func_801E3990_ovl17(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 13/387.  The first 10 instructions are exact.  Two residues:
+/* FACTORY: 374/387 [was noted 13/387].  The first 10 instructions are exact.  Two residues:
    the record spill sits at 0x54 where the ROM uses 0x50 (our locals block is
    4 bytes larger, and it is NOT the anim record -- a 0x1C local view in place
    of the file-scope 0x20 struct Ovl17AnimInfo does not move it), and the
@@ -1503,7 +1503,7 @@ s32 func_801E4488_ovl17(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/212, and the draft below is NOT the right shape -- read this
+/* FACTORY: 208/212 [was noted 3/212], and the draft below is NOT the right shape -- read this
    before spending permuter time on it.
    What the listing actually does, which the PORT arm's comment gets wrong:
    - it reads TWO table entries, D_801E54E4_ovl17[hp] into a 4-byte record at
@@ -1613,7 +1613,7 @@ void func_801E4668_ovl17(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/302, frame 0x58 vs the ROM's 0x40 (24 bytes of locals we reserve
+/* FACTORY: 258/262 [was noted 3/302], frame 0x58 vs the ROM's 0x40 (24 bytes of locals we reserve
    and it does not) plus the same &omCurrentObj hoist as
    func_801E49B8_ovl17 above: the ROM holds it in $s0, ours re-materialises
    it.  Shed the extra 24 bytes first; the register choice usually follows. */

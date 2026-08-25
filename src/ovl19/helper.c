@@ -449,7 +449,7 @@ void func_8022023C_ovl19(GObj *arg0) {
 // Pit of Doom
 // {
 #ifdef MIPS_TO_C
-/* FACTORY: 97/119, register rotation. Re-verified 2026-08-22: the first 52
+/* FACTORY: 22/119 [was noted 97/119], register rotation. Re-verified 2026-08-22: the first 52
  * instructions (both random_soft_s32_range rejection loops, D_800E0650/
  * D_800DF150 stores, D_800D6E64 guard) are exact, registers included. The
  * residue starts at the first `sll $vN,v0,2` (track-index subscripting into

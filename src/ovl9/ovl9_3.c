@@ -122,7 +122,7 @@ void func_801DCE44_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 29/260, saved-register choice ($s2 in the ROM, $s1 here, and the
+/* FACTORY: 231/260 [was noted 29/260], saved-register choice ($s2 in the ROM, $s1 here, and the
    save block 4 bytes shallower).  Body order and schedule agree. */
 void func_800AA018(s32);
 void ohSleep(s32);
@@ -382,7 +382,7 @@ void func_801DD3CC_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 18/164, saved-register permutation.  The ROM keeps &omCurrentObj
+/* FACTORY: 146/164 [was noted 18/164], saved-register permutation.  The ROM keeps &omCurrentObj
    in $s0 and starts its save block at 0x30; ours picks $s4 and a deeper
    block, which renames the rest.  Body order and schedule agree. */
 extern struct EnemyEventTable D_801CB740;
@@ -490,7 +490,7 @@ void func_801DD818_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 71/278, $v1/$a1 transposition for the record pointer loaded at
+/* FACTORY: 207/278 [was noted 71/278], $v1/$a1 transposition for the record pointer loaded at
    entry; everything below inherits the rename. */
 void func_800FB914(s32);
 f32 func_801DF1B0_ovl9(void);
@@ -692,7 +692,7 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 28/184, $a2/$a3 transposition from the first omCurrentObj load on
+/* FACTORY: 156/184 [was noted 28/184], $a2/$a3 transposition from the first omCurrentObj load on
    (the ROM materialises the pointer in $a2 and the scaled index in $a3, ours
    the other way round).  The first 13 instructions and the overall structure
    are the ROM's. */

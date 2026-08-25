@@ -3573,7 +3573,7 @@ void func_8022889C_ovl19(GObj *arg0) {
  *                  func_80121A04; above that, park D_800EA6E0[objId].
  * Every arm re-reads omCurrentObj->objId, as the listing does. */
 #ifdef MIPS_TO_C
-/* FACTORY: 93/171 words DIFFER as measure_seeds.py reports it -- 92 real,
+/* FACTORY: 92/171 [was noted 93/171] words DIFFER as measure_seeds.py reports it -- 92 real,
  * the 93rd being the D_8022F968_ovl19 rodata word verify.py cannot resolve
  * on an out-of-tree copy. So 78 of 171 already match. Structure,
  * instruction count and frame (0x38, sp2C at 0x2C) are right; the residue is

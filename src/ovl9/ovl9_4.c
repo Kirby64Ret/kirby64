@@ -263,7 +263,7 @@ void func_801E1AB0_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 23/310, frame 0x78 vs the ROM's 0x80.  The first 19 instructions
+/* FACTORY: 287/310 [was noted 23/310], frame 0x78 vs the ROM's 0x80.  The first 19 instructions
    are exact; from the arg0 home store on, every sp offset is 8 low, and the
    ROM has one more store there (sw zero at 0x6C in ours lands where the ROM
    reloads the record). */
@@ -789,7 +789,7 @@ void func_801E34F8_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 69/222, saved-register choice: the ROM holds &omCurrentObj in $s2
+/* FACTORY: 153/222 [was noted 69/222], saved-register choice: the ROM holds &omCurrentObj in $s2
    with the save block at 0x1C, ours uses $s5 and a deeper block. */
 extern struct GObjProcess *gEntityGObjProcessArray5[];
 void setProcessMain(struct GObjProcess *, void (*)(struct GObj *));
@@ -951,7 +951,7 @@ void func_801E3578_ovl9(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 69/248, $t2/$t3 transposition where the func_800B6B8C address is
+/* FACTORY: 179/248 [was noted 69/248], $t2/$t3 transposition where the func_800B6B8C address is
    materialised, with the neighbouring temps renamed to follow.  The first 16
    instructions and the whole control flow are the ROM's. */
 extern s32 D_801C36F4;
@@ -1172,7 +1172,7 @@ void func_801E3FB4_ovl9(void) {
     func_801E4DC8_ovl9();
 }
 
-/* FACTORY: 173/174 insns -- instructions [81..] onward (both ABSF ternary
+/* FACTORY: 132/173 [was noted 173/174] insns -- instructions [81..] onward (both ABSF ternary
    blocks, ~90 insns) are byte-exact.  Residue is ONE instruction: the ROM
    materialises the literal 1 twice (addiu $t9 for D_800DDFD0, addiu $t8 for
    D_800E8920), IDO CSEs them into one register, which frees $a2 and rotates
@@ -1198,7 +1198,7 @@ void func_801E3FE4_ovl9(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 57/479, frame 0x68 vs the ROM's 0x60 plus the $v1/$a0 pair the
+/* FACTORY: 422/479 [was noted 57/479], frame 0x68 vs the ROM's 0x60 plus the $v1/$a0 pair the
    scaled objId lands in.  The largest function in this file; body order,
    branch structure and call sequence all agree. */
 extern s32 D_801CA4C0;
@@ -1576,7 +1576,7 @@ f32 func_801E4F18_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 7/153, one extra callee-saved register.  The ROM runs on a 0x40
+/* FACTORY: 146/153 [was noted 7/153], one extra callee-saved register.  The ROM runs on a 0x40
    frame saving s0, s1, f20 and f22 with &omCurrentObj in $s1; ours needs a
    third integer save (s2 holds &omCurrentObj) and a 0x48 frame, so every
    offset and register name below the prologue shifts.  Swept, all negative:

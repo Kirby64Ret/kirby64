@@ -1514,7 +1514,7 @@ void func_801EF354_ovl9(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 8/546, frame 0x58 vs the ROM's 0x60 and a different prologue
+/* FACTORY: 538/546 [was noted 8/546], frame 0x58 vs the ROM's 0x60 and a different prologue
    order (the ROM loads omCurrentObj before its first register save).  The
    largest function in this bloc; the body itself tracks the ROM. */
 extern struct EnemyEventTable D_801CB470_ovl7;

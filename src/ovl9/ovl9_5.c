@@ -613,7 +613,7 @@ void func_801E7320_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 64/153.  The first 52 instructions are exact.  Residue: the ROM
+/* FACTORY: 89/153 [was noted 64/153].  The first 52 instructions are exact.  Residue: the ROM
    holds the D_800E6A10 base in $a2 where ours uses $a3, and from the first
    float compare on we run one instruction shorter than the ROM inside the
    facing branch, so the bc1f displacements differ by one. */
@@ -854,7 +854,7 @@ void func_801E7C88_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 71/143, register rotation.  Control flow, frame and schedule are
+/* FACTORY: 72/143 [was noted 71/143], register rotation.  Control flow, frame and schedule are
    the ROM's; the residue is the saved/temp pair the flag constant and the
    gEntityFuncListIDArray base land in ($s0/$s1 and $a1/$v0 transposed). */
 extern s32 D_801C8880_ovl7[];
@@ -963,7 +963,7 @@ void func_801E7F0C_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 104/215, saved-register choice: the ROM keeps &omCurrentObj in
+/* FACTORY: 111/215 [was noted 104/215], saved-register choice: the ROM keeps &omCurrentObj in
    $s2 with the save block at 0x44, ours picks $s1 at 0x40.  Clone family of
    the sibling twenty lines up in this file (same unk8C/unk98 install from
    D_801C8880_ovl7 / D_801CBBC0), whose spelling this draft follows. */
@@ -1262,7 +1262,7 @@ void func_801E8A38_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 103/127 -- WRONG, corrected this session by direct verify.py: true
+/* FACTORY: 24/127 [was noted 103/127] -- WRONG, corrected this session by direct verify.py: true
    residue is 24/127. One register rotation. Control flow, schedule, frame and
    every stack slot are the ROM's; the residue is that the ROM holds the
    gEntitiesAngleZArray / D_800E98E0 bases in $v1 and the objId-derived index

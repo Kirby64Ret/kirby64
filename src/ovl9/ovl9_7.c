@@ -8,7 +8,7 @@
 #include "ovl1/ovl1_7.h"
 
 #ifdef MIPS_TO_C
-/* FACTORY: 24/315, frame 0x68 vs the ROM's 0x70 (8 bytes short, arg0 homed
+/* FACTORY: 291/315 [was noted 24/315], frame 0x68 vs the ROM's 0x70 (8 bytes short, arg0 homed
    at 0x68 instead of 0x70) plus the $v0/$v1 pair the objId lands in.  The
    save set, body order and schedule are the ROM's. */
 extern struct EnemyEventTable D_801CB4DC_ovl7;
@@ -528,7 +528,7 @@ void func_801F0ABC_ovl9(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 6/147, frame +8 from one extra saved register.  Instruction count
+/* FACTORY: 141/147 [was noted 6/147], frame +8 from one extra saved register.  Instruction count
    is exact (147) and the body order is the ROM's, but our IDO keeps `rec` in
    $s1 (frame 0x38, s0+s1 saved) where the ROM saves only $s0 = &omCurrentObj
    and re-materialises the D_800E1B50 base in a temp, so every sp offset and

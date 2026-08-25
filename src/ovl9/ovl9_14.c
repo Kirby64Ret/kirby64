@@ -210,7 +210,7 @@ void func_80210568_ovl9(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 6/178, $s0/$s1 transposition for &omCurrentObj, everything below
+/* FACTORY: 61/164 [was noted 6/178], $s0/$s1 transposition for &omCurrentObj, everything below
    it renamed to follow.  Frame, saved set and schedule are the ROM's. */
 extern s32 D_801CCA3C;
 void ohSleep(s32);
@@ -1127,7 +1127,7 @@ void func_8021306C_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 103/164, one register choice: the ROM materialises &omCurrentObj
+/* FACTORY: 172/178 [was noted 103/164], one register choice: the ROM materialises &omCurrentObj
    in $a2, ours in $v0.  Control flow, frame and stack slots match. */
 extern struct EnemyEventTable D_801CCAF0;
 /* Bounce-away death: enter anim state 5 with the KO annex, play the

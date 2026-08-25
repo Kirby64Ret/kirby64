@@ -3255,7 +3255,7 @@ s32 func_80106930(struct PositionState *arg0, struct CollisionResult *arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 243/273, frame/slot-position residue. Control flow, all three
+/* FACTORY: 238/269 [was noted 243/273], frame/slot-position residue. Control flow, all three
  * func_801039E8 calls, both func_80108858 calls (-1.0f in the INTEGER $a3) and
  * the rec[COL_CEILING] plumbing are all correct; the four Vectors and the scalar set match
  * the ROM byte count (76B). What differs is placement: ROM lays locals 0x3C-0x88
@@ -5153,7 +5153,7 @@ void func_80109318(struct PositionState *arg0, struct CollisionResult *arg1) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109318.s")
 #endif
-/* FACTORY: 44/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+/* FACTORY: 19/123 [was noted 44/123], ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
    rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
@@ -5265,7 +5265,7 @@ void func_801096F0(struct PositionState *arg0, struct CollisionResult *arg1) {
     }
 }
 
-/* FACTORY: 48/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+/* FACTORY: 19/123 [was noted 48/123], ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
    rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
@@ -5339,7 +5339,7 @@ void func_80109784(struct PositionState *arg0, struct CollisionResult *arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80109784.s")
 #endif
 
-/* FACTORY: 44/123, ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
+/* FACTORY: 19/123 [was noted 44/123], ported from donor func_80109318 (19/123). Substitution map vs 318 is exact:
    rec index for sp4C and for the 801057C4 call, BD00 offset pair, 0xFFF8/0xFFC7 mask,
    |1 vs |8, scale[1]/scale[2], -0.1f/+0.1f. Residue is the donor f16/f18 mul parity plus
    compare-block shape not yet tuned to the donor. */
@@ -6256,7 +6256,7 @@ s32 func_8010B238(struct PositionState *arg0) {
     return ret;
 }
 
-/* FACTORY: 103/126, frame+all stack offsets exact; residue is IDO folding arg0+0x10 into lw offsets
+/* FACTORY: 23/127 [was noted 103/126], frame+all stack offsets exact; residue is IDO folding arg0+0x10 into lw offsets
    where the ROM CSEs it into a register spilled at 0x30. Same residue in B480/B67C/B860/105284/1063F0. */
 #ifdef MIPS_TO_C
 /* FACTORY: 23/127, FP load scheduling + $f4/$f6/$f8/$f10 rotation. Frame (0x60) and
@@ -6461,7 +6461,7 @@ s32 func_8010B480(struct PositionState *arg0) {
 #endif
 
 
-/* FACTORY: 92/120, ROM CSEs $v0 = arg0+0x10 and spills it at 0x30; IDO folds it into lw offsets. Frame/offsets already exact. */
+/* FACTORY: 53/121 [was noted 92/120], ROM CSEs $v0 = arg0+0x10 and spills it at 0x30; IDO folds it into lw offsets. Frame/offsets already exact. */
 #ifdef MIPS_TO_C
 /* FACTORY: 53/121, register-name residue ($v0 vs $t0 on the scale base) plus the
  * load scheduling that follows it. Frame (0x60) and every stack slot -- including
@@ -7471,7 +7471,7 @@ s32 func_8010D138(struct PositionState *arg0, f32 arg1) {
     return 0;
 }
 
-/* FACTORY: 69/142, frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
+/* FACTORY: 85/142 [was noted 69/142], frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
    at 0x30 where the ROM recomputes `addiu $tN,$sp,0x3C` per block, which rotates $v1/$t0 and the top-block
    f4/f6/f18 loads. goto form (not if/else) is required: it took this from 89 to 69. */
 #ifdef MIPS_TO_C
@@ -7587,7 +7587,7 @@ s32 func_8010D42C(struct PositionState *arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D42C.s")
 #endif
 
-/* FACTORY: 69/142, frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
+/* FACTORY: 85/142 [was noted 69/142], frame+stack offsets exact; residue is IDO CSEing &sp3C into $v1 and spilling it
    at 0x30 where the ROM recomputes `addiu $tN,$sp,0x3C` per block, which rotates $v1/$t0 and the top-block
    f4/f6/f18 loads. goto form (not if/else) is required: it took this from 89 to 69. */
 #ifdef MIPS_TO_C
@@ -7706,7 +7706,7 @@ s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 37/97, $v0 rebase + FP register rotation. Frame (0x60) and every stack slot
+/* FACTORY: 76/96 [was noted 37/97], $v0 rebase + FP register rotation. Frame (0x60) and every stack slot
  * match. The lever that got it there is LEVERS 12, and it is worth recording precisely:
  * declaring the lone scalar sp34 BEFORE the three Vectors (not after) moved the whole
  * block from 0x38-0x60 down to the ROM's 0x34-0x5C -- 52/97 -> 37/97. Adding pads

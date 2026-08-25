@@ -1374,7 +1374,7 @@ void func_801D50E4_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 9/247, frame 0x40 vs the ROM's 0x38 -- 8 bytes of locals we
+/* FACTORY: 238/247 [was noted 9/247], frame 0x40 vs the ROM's 0x38 -- 8 bytes of locals we
    reserve and the ROM does not, so arg0 homes at 0x40 instead of 0x38 and the
    first branch displacement already differs.  Body order matches. */
 extern u32 D_8012BCA0;
@@ -1603,7 +1603,7 @@ s32 func_801D56D0_ovl9(void) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 7/346, saved-register choice: the ROM keeps &omCurrentObj in $s1
+/* FACTORY: 339/346 [was noted 7/346], saved-register choice: the ROM keeps &omCurrentObj in $s1
    with the save block starting at 0x1C, ours picks $fp and a deeper block.
    Everything below is that rename. */
 extern s32 random_soft_s32_range(s32);
@@ -1999,7 +1999,7 @@ f32 func_801D650C_ovl9(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 17/206, frame 0x40 vs the ROM's 0x28.  Sibling of
+/* FACTORY: 189/206 [was noted 17/206], frame 0x40 vs the ROM's 0x28.  Sibling of
    func_801D74EC_ovl9 below -- same 24-byte over-reservation, same two-local
    body -- so whatever sheds the frame there sheds it here too. */
 extern FUNCLIST D_8021BBF0_ovl9;
@@ -2734,7 +2734,7 @@ void func_801D8478_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 9/471, frame 0x58 vs the ROM's 0x50 and the entry pointer
+/* FACTORY: 462/471 [was noted 9/471], frame 0x58 vs the ROM's 0x50 and the entry pointer
    register ($a3 in the ROM, $t6 here).  The largest function in this file;
    structure and schedule agree throughout. */
 extern void func_800B2AD4(Vector *, s32, u32);

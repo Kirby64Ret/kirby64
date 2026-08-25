@@ -1328,7 +1328,7 @@ void func_8022D5F0_ovl19(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 109/221, register permutation. Derived from the ASM (not the
+/* FACTORY: 112/221 [was noted 109/221], register permutation. Derived from the ASM (not the
  * PORT arm) with two real fixes over the old sketch: func_800A9864 takes
  * 3 args (m2c's 4th was a leftover register) and the tail func_800B1900
  * call reads objId as a HALF-WORD at +2 (big-endian low 16 bits of the u32
@@ -1467,7 +1467,7 @@ void func_8022D96C_ovl19(GObj *g) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 77/491, whole-function register pressure. Derived from the ASM
+/* FACTORY: 414/491 [was noted 77/491], whole-function register pressure. Derived from the ASM
  * (not the PORT arm), which has a real bug: it names the second camera
  * slot as a fictional standalone extern `D_8022FAB4_ovl19` (an LP64-only
  * 8-byte cell that has no N64 symbol_addrs.txt entry). On the ROM it is

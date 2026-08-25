@@ -51,55 +51,53 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 # order locked by bc1fl polarity, 2 diffs out of 299, and a lane has proved no
 # source spelling reaches it.
 TARGETS = [
-    # REGENERATED 2026-08-25 from a fresh measure_seeds run over every file no
-    # lane held open. The previous list had gone stale in the worst possible
-    # direction: seven of its entries -- func_801F1454_ovl10,
-    # func_801555AC_ovl4, func_800F6E30, func_801649CC_ovl5,
-    # func_8016CB14_ovl5, func_8015E8E0_ovl3, func_801A8BAC_ovl7 -- had CLOSED
-    # since it was written, and the permuter would have spent 600 seconds each
-    # searching for an arrangement of a function that is already byte-exact.
-    # A stale queue is worse than a short one. Re-derive it after any
-    # measure_seeds run; never from the FACTORY notes (124 of them currently
-    # disagree with the measurement, in both directions).
-    # func_80165440_ovl5 REMOVED 2026-08-25: closed by the ovl5 rodata split.
+    # REGENERATED 2026-08-25 (second pass) from a fresh measure over every
+    # file no lane was holding open. Ordered by residue, then by SIZE within
+    # a residue -- a 615-word function two words from byte-exact is worth
+    # more than a 20-word one, and the first list did not say so.
+    #
+    # Re-derive after any measure_seeds run. Do NOT build it from the FACTORY
+    # notes: 90 of those were corrected today for disagreeing with verify.py
+    # and 57 more carry a register-floor DIAGNOSIS on functions that are
+    # 30-99% wrong. priority_queue also skips any entry whose function no
+    # longer has a guarded draft, so a stale line here costs a log message
+    # rather than a 420-second slot.
+    (  1, 'src/ovl3/kirby.c', 'func_8016DA14_ovl3'),
     (  1, 'src/ovl4/ovl4_3.c', 'func_80157028_ovl4'),
-    # func_8016DA14_ovl3 REMOVED 2026-08-25: the permuter reaches score 0 on
-    # it only by retyping func_801230E8's third parameter, which contradicts
-    # the matched definition in plylib.c and fails the ROM gate every time.
-    # Left in, it re-finds the same illegal answer on every pass. See the
-    # note over the draft in src/ovl3/kirby.c.
-    # func_800A8CE0 REMOVED 2026-08-25: closed by hand, see LEVER 60.
-    (  2, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
-    (  2, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),
-    (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
     (  2, 'src/ovl15/ovl15.c', 'func_801E05A8_ovl15'),
-    (  3, 'src/main/libn_audio.c', 'n_alSavePull'),
-    (  3, 'src/ovl3/kirby.c', 'func_801708A0_ovl3'),
-    (  3, 'src/ovl3/plyeff.c', 'func_80164130_ovl3'),
-    (  3, 'src/ovl7/ovl7_3.c', 'func_801A33B8'),
+    (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
+    (  2, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),
+    (  2, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
     (  3, 'src/ovl4/ovl4_4.c', 'func_80158E98_ovl4'),
-    (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),
-    (  4, 'src/ovl5/ovl5_5.c', 'func_8017462C_ovl5'),
-    (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),
-    (  4, 'src/ovl14/ovl14.c', 'func_801DF290_ovl14'),
+    (  3, 'src/ovl7/ovl7_3.c', 'func_801A33B8'),
+    (  3, 'src/ovl3/plyeff.c', 'func_80164130_ovl3'),
+    (  3, 'src/ovl3/kirby.c', 'func_801708A0_ovl3'),
+    (  3, 'src/ovl17/ovl17_3.c', 'func_801E14B0_ovl17'),
+    (  3, 'src/main/libn_audio.c', 'n_alSavePull'),
     (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),
-    (  5, 'src/ovl11/ovl11_2.c', 'func_801DF728_ovl11'),
-    (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),
+    (  4, 'src/ovl14/ovl14.c', 'func_801DF290_ovl14'),
+    (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),
+    (  4, 'src/ovl5/ovl5_5.c', 'func_8017462C_ovl5'),
+    (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),
     (  5, 'src/ovl8/ovl8_4.c', 'func_801D6534_ovl8'),
-    (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),
+    (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),
     (  6, 'src/ovl3/kirby.c', 'func_80171E00_ovl3'),
-    (  7, 'src/main/render.c', 'func_8001479C'),
-    (  7, 'src/ovl16/ovl16.c', 'func_801DC8E4_ovl16'),
+    (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),
+    (  6, 'src/ovl11/ovl11_2.c', 'func_801DF728_ovl11'),
+    (  6, 'src/ovl17/ovl17.c', 'func_801DC91C_ovl17'),
     (  7, 'src/ovl5/ovl5_3.c', 'func_8016626C_ovl5'),
-    (  8, 'src/ovl6/ovl6.c', 'func_80154A40_ovl6'),
-    (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),
-    (  8, 'src/ovl2/ovl2_10.c', 'func_801173F4'),
-    (  8, 'src/ovl5/ovl5_6.c', 'func_80178690_ovl5'),
-    (  8, 'src/ovl5/ovl5_3.c', 'func_80165634_ovl5'),
+    (  7, 'src/ovl9/ovl9_6.c', 'func_801ED9AC_ovl9'),
+    (  7, 'src/ovl9/ovl9_7_2.c', 'func_801F58A0_ovl9'),
+    (  7, 'src/ovl16/ovl16.c', 'func_801DC8E4_ovl16'),
+    (  7, 'src/main/render.c', 'func_8001479C'),
+    (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
     (  8, 'src/ovl3/ovl3_6.c', 'func_80184538_ovl3'),
-    (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
-    (  9, 'src/ovl3/ovl3_6.c', 'func_8017B8F4_ovl3'),
-    (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
+    (  8, 'src/ovl5/ovl5_3.c', 'func_80165634_ovl5'),
+    (  8, 'src/ovl5/ovl5_6.c', 'func_80178690_ovl5'),
+    (  8, 'src/ovl2/plylib.c', 'func_8011C4E8'),
+    (  8, 'src/ovl2/ovl2_10.c', 'func_801173F4'),
+    (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),
+    (  8, 'src/ovl6/ovl6.c', 'func_80154A40_ovl6'),
 ]
 
 

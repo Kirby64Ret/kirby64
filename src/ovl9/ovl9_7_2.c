@@ -455,7 +455,7 @@ void func_801F3D2C_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 14/153, frame 0x48 vs the ROM's 0x50 plus the objId register
+/* FACTORY: 139/153 [was noted 14/153], frame 0x48 vs the ROM's 0x50 plus the objId register
    ($v0 in the ROM, $v1 here).  Everything else -- the arg0 home store, the
    two table lookups and the tail -- lines up once those two are set. */
 extern Vector *lbvector_Rotate(Vector *, s32, f32);

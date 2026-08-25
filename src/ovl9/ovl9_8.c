@@ -659,7 +659,7 @@ void func_801FA80C_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 32/124, whole-function temp rotation.  Structure, schedule and the
+/* FACTORY: 92/124 [was noted 32/124], whole-function temp rotation.  Structure, schedule and the
    0x18 spill slot are the ROM's; every diff is the same one-slot shift of the
    argument/temp pairs ($a1/$a2 for objId, $a2/$a3 for the unk84 pointer,
    $t0/$t1 for the scaled index). */

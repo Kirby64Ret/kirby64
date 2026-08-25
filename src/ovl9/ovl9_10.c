@@ -915,7 +915,7 @@ void func_80204C98_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 59/136, tail scheduling (we run 2 instructions short, so every
+/* FACTORY: 77/136 [was noted 59/136], tail scheduling (we run 2 instructions short, so every
    branch displacement after the first early-exit differs by 2).  Everything
    through the two give-up exits and the bearing computation is the ROM's.
    Clone family: this is func_802031D4_ovl9's shape in this same file -- the
@@ -1668,7 +1668,7 @@ void func_8020705C_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 55/67, v0/v1/a0 rotation plus one delay-slot hoist. Re-measured
+/* FACTORY: 12/67 [was noted 55/67], v0/v1/a0 rotation plus one delay-slot hoist. Re-measured
    this session against the real listing: true residue is 12/67, not 55 (the
    old note's number was wrong -- see the file header warning). All three
    depth arms, the default's utilPrintf and the shared tail are the ROM's.
