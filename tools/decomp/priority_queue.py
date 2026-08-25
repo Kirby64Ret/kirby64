@@ -98,6 +98,8 @@ TARGETS = [
     (  8, 'src/ovl5/ovl5_3.c', 'func_80165634_ovl5'),
     (  8, 'src/ovl3/ovl3_6.c', 'func_80184538_ovl3'),
     (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
+    (  9, 'src/ovl3/ovl3_6.c', 'func_8017B8F4_ovl3'),
+    (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
 ]
 
 

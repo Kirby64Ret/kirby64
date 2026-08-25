@@ -3649,6 +3649,31 @@ extern f32 D_801976B8_ovl3;
 extern f32 D_801976BC_ovl3;
 extern f32 D_80196D98_ovl3[];
 
+/* FACTORY: 8/244, and it is THREE independent residues -- worth splitting,
+ * because they want different treatment and none is a semantics problem:
+ *
+ *   [62]/[65]  two `sll $tN, $v1, 2` with $t5 and $t9 swapped. A register
+ *              pair rename.
+ *   [76]/[77]  `mtc1 $zero, $f8` and `lui $at, %hi(D_80196D98_ovl3)` emitted
+ *              in the opposite order. A schedule swap of an independent pair.
+ *   [234-239]  the ROM forms &gKirbyState ONCE into $v0 (lui + addiu) and
+ *              uses `0x30($v0)` for both the load and the store of
+ *              `gKirbyState.unk30 = gKirbyState.unk30 + 1;`. IDO uses the
+ *              lui-plus-lo-offset shortcut twice instead, into $t9 and $at.
+ *
+ * MEASURED AND ALL FOUR INERT 2026-08-25, every one byte-identical at 8/244:
+ * `gKirbyState.unk30++`; a `struct Player *k` local assigned `&gKirbyState`
+ * immediately before the statement and used as `k->unk30 = k->unk30 + 1`
+ * (IDO folds the pointer straight back into the direct access -- it does not
+ * even cost a home slot, cf. lever 57's corollary); and the two spellings
+ * tried on this file's sibling func_80184538_ovl3.
+ *
+ * The useful generalisation: A POINTER-TO-GLOBAL LOCAL USED ONCE IS FOLDED
+ * BACK. The ROM's "materialise the base once" shape is reachable when the
+ * base is used repeatedly across a REGION -- func_80179370_ovl3 in this file
+ * holds &gKirbyState in $s0 for its whole body and needs the `k` pointer to
+ * say so -- and is not reachable for a single read-modify-write. Do not
+ * re-sweep this one looking for a pointer spelling. */
 void func_8017EA0C_ovl3(s32 arg0) {
     s32 idx;
     extern s32 D_8012E90C;
