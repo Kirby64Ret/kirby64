@@ -3261,15 +3261,33 @@ void func_80160D84_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 288/288, RE-MEASURED -- the prior "0/288" note was stale/wrong;
- * verify.py shows total mismatch from insn [0]. The ROM's prologue is
- * -0x38 with s0/s1/s2 saved (s2 = &omCurrentObj, held and re-dereferenced
- * via `lw $v1,0($s2)` at every field access -- never caches ->objId in a
- * register the way this draft's `s32 id = omCurrentObj->objId` local does),
- * where this draft produces -0x50 with a different callee-saved set and an
- * `id` local baked into every displacement instead. A rewrite needs the
- * struct-pointer-in-s2, id-recomputed-from-*s2-each-time shape; not
- * attempted here. Leaving guarded. */
+/* FACTORY: 133/288 positional, and the SHAPE IS EXACT -- aligndiff.py prints
+ * nothing but three objdump aliases (beql/beqzl, addiu/li).  All 288 words,
+ * the frame, every stack offset and every branch target agree; what is left
+ * is a whole-function $t permutation, uniformly ONE REGISTER EARLIER than the
+ * ROM from instruction 20 onward (ROM $t1/$t2/$t4/$t3 where this C has
+ * $t0/$t1/$t3/$t2).  That is permuter fuel, not a source knob.
+ *
+ * The 288/288 this replaces was a TOTAL mismatch from instruction 0 and its
+ * note sealed the function as needing "the struct-pointer-in-s2,
+ * id-recomputed-from-*s2-each-time shape; not attempted here".  Two edits got
+ * that shape, and the s2 base fell out of the first one:
+ *   288 -> 197  `s32 id = omCurrentObj->objId` spelled inline at all 41 uses
+ *               (LEVER 97).  This is what makes IDO hold &omCurrentObj in $s2
+ *               and re-read `lw $v1, 0x0($s2)` at every access -- the note
+ *               described the ROM's shape correctly and did not realise that
+ *               deleting the cache IS how you ask for it.  The frame went
+ *               -0x50 -> -0x40 against the ROM's -0x38.
+ *   197 -> 133  `f32 spd` deleted and its two statements DUPLICATED into both
+ *               arms of the `& 4` test.  The ROM writes them out twice
+ *               (0x80161388..0x801613C0 and 0x801613C8..0x801613F4) with the
+ *               else arm's `mtc1 $at, $f0` copied into a `beql` delay slot
+ *               and left stranded at 0x801613C4 -- IDO's branch-likely fill,
+ *               not a ternary.  A ternary cannot produce that, and `spd` was
+ *               also the 8 bytes of frame: with it gone the only declared
+ *               local is the 8-byte `sndpair`, which the ROM parks at
+ *               0x30/0x34 at the very top of a 0x38 frame.
+ */
 /* PORT: forward-shot init coroutine (anim 0x20040), from asm/nonmatchings/
  * ovl3/plyshot/func_80161058_ovl3.s -- same family as the decompiled
  * func_8015BBE4_ovl3 above. Seats the shot 20 units above the parent,
@@ -3279,51 +3297,53 @@ void func_80160D84_ovl3(s32 arg0) {
  * hands off to func_801614D8_ovl3 with a slow upward drift. */
 void func_80161058_ovl3(s32 arg0) {
     extern f32 **D_80192F48_ovl3;
-    s32 id = omCurrentObj->objId;
     u32 sndpair[2];
-    f32 spd;
 
-    D_800E0650[id] = (s32 *) 1;
+    D_800E0650[omCurrentObj->objId] = (s32 *) 1;
     func_80161CE0_ovl3(arg0);
     func_80161EC0_ovl3(0, 0.0f, 20.0f);
-    D_800DEF90[id] = func_800B4954;
-    D_800DF150[id] = func_801614D8_ovl3;
-    D_800E0490[id] = &D_80192F48_ovl3;
-    func_80154648_ovl3(D_800E0D50[id], D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
-    func_800AECC0(D_800E09D0[D_800E0D50[id]]);
-    func_800AED20(D_800E09D0[D_800E0D50[id]]);
-    D_800E8920[id] = D_800E8920[D_800E0D50[id]];
-    D_800E8AE0[id] = D_800E8AE0[D_800E0D50[id]];
-    gEntitiesScaleXArray[id] = 0.2f;
-    gEntitiesScaleYArray[id] = 0.2f;
-    gEntitiesScaleZArray[id] = 0.2f;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800DF150[omCurrentObj->objId] = func_801614D8_ovl3;
+    D_800E0490[omCurrentObj->objId] = &D_80192F48_ovl3;
+    func_80154648_ovl3(D_800E0D50[omCurrentObj->objId], D_80197F60_ovl3[omCurrentObj->objId - 4], D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    func_800AECC0(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    func_800AED20(D_800E09D0[D_800E0D50[omCurrentObj->objId]]);
+    D_800E8920[omCurrentObj->objId] = D_800E8920[D_800E0D50[omCurrentObj->objId]];
+    D_800E8AE0[omCurrentObj->objId] = D_800E8AE0[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
     func_800A9864(0x20040, 0x21, 0x10);
-    D_800EA360[id] = (s32) (uintptr_t) sndpair;
-    if (D_800E8920[id] != 0) {
+    D_800EA360[omCurrentObj->objId] = (s32) (uintptr_t) sndpair;
+    if (D_800E8920[omCurrentObj->objId] != 0) {
         func_800A77E8(0x34, (s32 *) &sndpair[0], (s32 *) &sndpair[1]);
-        D_800EA520[id] = func_800A8234(2, 1, 0x11);
-        D_800EB4E0[id] = func_800A8234(2, 1, 0x12);
+        D_800EA520[omCurrentObj->objId] = func_800A8234(2, 1, 0x11);
+        D_800EB4E0[omCurrentObj->objId] = func_800A8234(2, 1, 0x12);
     } else {
         sndpair[0] = 0;
-        D_800EB4E0[id] = 0;
-        D_800EA520[id] = D_800EB4E0[id];
+        D_800EB4E0[omCurrentObj->objId] = 0;
+        D_800EA520[omCurrentObj->objId] = D_800EB4E0[omCurrentObj->objId];
     }
     func_800AA018(0x20288);
-    D_800E98E0[id] = 0;
-    D_800E9560[id] = 0xA;
-    spd = (D_800E8AE0[id] & 4) ? 6.0f : 10.0f;
-    D_800E64D0[id] = D_800E6A10[id] * spd;
-    D_800E6850[id] = spd;
-    D_800E9720[id] = 0;
-    while (D_800E9720[id] < 0x1E) {
-        if (D_800E6310[id] != 0) {
-            D_800E64D0[id] = -D_800E64D0[id];
+    D_800E98E0[omCurrentObj->objId] = 0;
+    D_800E9560[omCurrentObj->objId] = 0xA;
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 6.0f;
+        D_800E6850[omCurrentObj->objId] = 6.0f;
+    } else {
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 10.0f;
+        D_800E6850[omCurrentObj->objId] = 10.0f;
+    }
+    D_800E9720[omCurrentObj->objId] = 0;
+    while (D_800E9720[omCurrentObj->objId] < 0x1E) {
+        if (D_800E6310[omCurrentObj->objId] != 0) {
+            D_800E64D0[omCurrentObj->objId] = -D_800E64D0[omCurrentObj->objId];
             break;
         }
         ohSleep(1);
-        D_800E9720[id]++;
+        D_800E9720[omCurrentObj->objId]++;
     }
-    D_800E6690[id] = D_800E6A10[id] * -0.5f;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * -0.5f;
     curObjSleepForever();
 }
 #elif defined(PORT)
