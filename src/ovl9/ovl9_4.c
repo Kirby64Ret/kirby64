@@ -951,9 +951,28 @@ void func_801E3578_ovl9(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 179/248 [was noted 69/248], $t2/$t3 transposition where the func_800B6B8C address is
-   materialised, with the neighbouring temps renamed to follow.  The first 16
-   instructions and the whole control flow are the ROM's. */
+/* FACTORY: 108/248.  The old note (179/248, "$t2/$t3 transposition") named the
+   symptom; two real defects were hiding under it, and both are fixed here:
+     1. the intro animation is an if/ELSE, not a default-then-overwrite.  The
+        ROM materialises 0x10048 into $a0 BEFORE the compare and still spends a
+        `b` at the end of the true arm -- that redundant branch is the else
+        arm's jump-over, and `anim = 0x10048; if (..) anim = 0x10047;` does not
+        produce it (one word).
+     2. the func_800F98EC call reads omCurrentObj->objId INLINE for both its
+        arguments.  The ROM lands that read in $a3 and spends `or $a0, $a3,
+        $zero`; with the value in an `id` local IDO loads it straight into $a0
+        and the move disappears (one word, and 58 more of rotation with it).
+   Also inline: the D_800E7880 & 1 test's objId (58 -> ... measured 121 -> 108).
+   The remaining 108 are ONE temp-register rotation: from the first
+   instruction after func_80198880_ovl7, every $tN is the ROM's + 1
+   ($t3 -> $t4, $t4 -> $t5, ...).  Instruction count is exact, the frame is
+   exact, and there is NOT ONE branch-displacement diff -- every block boundary
+   agrees -- so this is the one-slot temp rotation floor, not a shape bug.
+   Measured on the way, because the rotation is a whole-function numbering and
+   any edit moves it: inlining the D_800EB160/D_800EB320 objId as well is 111,
+   inlining the D_800EA6E0 pair is 139/252 (it costs 4 words), dropping the
+   PORT arm's `(void *)(uintptr_t)` cast on the func_801A2ADC_ovl7 argument is
+   inert at 108, and moving `rec`'s read after func_80198880_ovl7 is 245. */
 extern s32 D_801C36F4;
 extern f32 *D_801CAA34_ovl7;
 extern void func_80198880_ovl7(void *);
@@ -988,11 +1007,10 @@ void func_801E38F0_ovl9(struct GObj *arg0) {
     D_800E0490[omCurrentObj->objId] = &D_801CAA34_ovl7;
     func_801A2ADC_ovl7(&D_801CAA34_ovl7);
     D_800E8920[omCurrentObj->objId] = 1;
-    id = omCurrentObj->objId;
-    if (D_800E7880[id] & 1) {
-        D_800E6A10[id] = -1.0f;
+    if (D_800E7880[omCurrentObj->objId] & 1) {
+        D_800E6A10[omCurrentObj->objId] = -1.0f;
     } else {
-        D_800E6A10[id] = 1.0f;
+        D_800E6A10[omCurrentObj->objId] = 1.0f;
     }
     spawned = func_8019DD78_ovl7(0x44, 4);
     D_800EBDA0[omCurrentObj->objId] = spawned;
@@ -1008,8 +1026,7 @@ void func_801E38F0_ovl9(struct GObj *arg0) {
     gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[spawned];
     D_800E98E0[spawned] = 0;
     D_800E98E0[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    if (func_800F98EC(id, D_800E6A10[id] * 60.0f) != 0) {
+    if (func_800F98EC(omCurrentObj->objId, D_800E6A10[omCurrentObj->objId] * 60.0f) != 0) {
         func_8019D958_ovl7((u16) spawned);
         rec->unk40 = 1;
         func_801A3E80_ovl7(arg0);
@@ -1023,9 +1040,10 @@ void func_801E38F0_ovl9(struct GObj *arg0) {
     D_800EB160[id] = D_800EB320[id];
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    anim = 0x10048;
     if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
         anim = 0x10047;
+    } else {
+        anim = 0x10048;
     }
     func_800A9EA4(anim);
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
