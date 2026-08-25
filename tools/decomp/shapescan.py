@@ -24,6 +24,17 @@ Read the two numbers together:
     large positional, LARGE shape   a real re-derivation, and now you know
                                     before spending a day on levers
 
+SHAPE 0 IS NOT "PERMUTER ONLY" (LEVER 116, and this docstring said otherwise
+until a lane measured it). Reducing to mnemonics is exactly what makes an extra
+LOCAL invisible: it adds no instruction and changes no instruction's kind, it
+only rotates the register allocation. Shape 0 means "nothing was inserted,
+deleted or changed kind" -- not "no source edit can reach this".
+func_801E5080_ovl15 sat on this list at 12/167 with shape 0 and closed on a
+source edit, deleting two m2c `temp_v1 = omCurrentObj->objId` caches. So on a
+shape-0 draft: delete the m2c temporaries that re-express a subscript, pointer
+or induction variable first, re-check the frame (deleting declarations moves
+it), and only then read the shape as a verdict.
+
 Measured while writing this: func_800A09AC reads 1010/1022 positionally, which
 looks like "start over", and its shape distance is 126 runs -- so it really is
 a re-derivation and the note saying so is right. func_800BB98C reads 6/131 and

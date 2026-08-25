@@ -62,10 +62,19 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 # function no longer has a guarded draft, so a stale line costs a log message
 # rather than a slot.
 #
-# NOT A PROMISE OF A CLOSURE. LEVER 94: a permuter zero on a SCHEDULING residue
-# is a coin flip, and shape 0 includes both scheduling and allocation residues.
-# What it does promise is that the CPU is not being spent on drafts that need
-# a structural edit no mutation can invent.
+# NOT A PROMISE OF A CLOSURE, AND NOT A VERDICT THAT THE SOURCE IS FINISHED.
+# LEVER 94: a permuter zero on a SCHEDULING residue is a coin flip, and shape 0
+# includes both scheduling and allocation residues. LEVER 116, measured after
+# this list was first written: shape 0 does NOT mean "permuter only". aligndiff
+# reduces to MNEMONICS, so an extra LOCAL is invisible to it -- it adds no
+# instruction and changes no instruction's kind, it only rotates registers.
+# func_801E5080_ovl15 sat here at shape 0, 12/167 and closed on a source edit
+# (two m2c `temp_v1 = omCurrentObj->objId` caches deleted), and three ovl3
+# drafts sealed as register-allocation floors were LEVER 97 plus a frame.
+#
+# So a row reaching the head of this queue is a claim about CPU, not about the
+# source: clean the m2c temporaries and re-check the frame before concluding
+# that a shape-0 draft needs the permuter at all.
 # Shape 0 with a tiny positional count is not automatically work: three of the
 # closest rows in the tree are already known dead, and without this they take
 # the first slots every time the queue restarts.
