@@ -263,18 +263,27 @@ void func_800F62A4(UNUSED s32 arg0) {
  * `u8 **slot = (u8 **)&D_800D6B18[8];` local are BOTH 210/223, one word short
  * and everything after it shifted. So the cast is not a stylistic wart: it is
  * what buys the third word, and there is no third spelling between the two.
- * What the original source had is a NAMED GLOBAL at 0x800D6B20; with
- * `SYM(D_800D6B20, 0x800D6B20);` in unnamed_syms.txt and
- * `*(u8 **)(u32)D_800D6B20 = var_v0;` here, IDO emits %hi/%lo of that symbol
- * and the assembled words are identical to the ROM's (the listing only spells
- * it `D_800D6B18 + 0x8` because no symbol exists there yet). unnamed_syms.txt
- * feeds the LINKER SCRIPT (Makefile:251) and adding an absolute symbol emits
- * no bytes, but it is a shared file -- coordinator task, same class as LEVER
- * 80's `struct GObj;` header line. The remaining register ($v1 vs $t7) is not
- * separately measurable until that lands. */
+ * What the original source had is a NAMED GLOBAL at 0x800D6B20. LANDED
+ * 2026-08-25: `SYM(D_800D6B20, 0x800D6B20);` is in unnamed_syms.txt and this
+ * site names it. The prediction held -- IDO emits %hi/%lo of that symbol, the
+ * assembled words are the ROM's, and the ROM is byte-identical (an absolute
+ * symbol in the linker script emits no bytes).
+ *
+ * The residue is now separately measurable and it is THREE REGISTERS: the ROM
+ * builds the address in $v1 and this builds it in $t7, so the `lui`, the
+ * `addiu` and the `sw` all report. $v0 is taken by var_v0 (the camera pointer,
+ * which the ROM re-reads at `lw $a0, 0x3C($v0)`), so the ROM's next VALUE
+ * register is $v1 while IDO here spends a TEMP. Swept with the symbol in place
+ * -- and these are not the old measurements, which were taken before it
+ * existed (LEVER 117b): the array form `*(u8 **)(u32)D_800D6B20`, the `&`
+ * form on a scalar extern, and a named `u8 **slot` local are all 3/224, and
+ * dropping the `(u32)` cast in ANY of them is 210/223, one word short. So the
+ * cast buys the third word, the symbol buys the relocation, and what is left
+ * is a register the source cannot name. */
 void func_800F64B0(void) {
     extern u16 D_800D6B30;
     extern u8 D_800D6B18[];
+    extern u8 D_800D6B20[];
     extern s32 D_800BE500;
     extern s32 D_800BE504;
     extern s32 D_800BE508;
@@ -289,7 +298,7 @@ void func_800F64B0(void) {
 
     D_800D6B30 = 0;
     var_v0 = (u8 *) ohCreateCameraWrapper(0x19, 0x80000000, 0x63, 3, 0xFF);
-    *(u8 **) (u32) (D_800D6B18 + 8) = var_v0;
+    *(u8 **) (u32) D_800D6B20 = var_v0;
     func_80007C00((Vp *) (*(u8 **) (var_v0 + 0x3C) + 8), 10.0f, 10.0f, 310.0f, 182.0f);
     HS64_omMakeGObj(0, func_800F62A4, 0x1A, 0x80000000);
     func_800AE048(0x40);
