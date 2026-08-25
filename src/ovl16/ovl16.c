@@ -2758,16 +2758,38 @@ void func_801E3518_ovl16(s32 arg0) {
  * PC_OVL16_SLOT_SHIM macro and the pc slot table), so it cannot be reused as the
  * N64 draft the way the other arms in this file were. Needs a from-asm draft. */
 #ifdef MIPS_TO_C
-/* FACTORY: 452/455 and 79 instructions SHORT -- was previously NOT DRAFTED because its host arm
- * went through the PC_OVL16_SLOT_SHIM macro; this is now a real N64 draft with no
- * reference to it. The shim exists only because the host DObj puts pos.v.y at a
- * different byte offset: on N64 a D_801F0200_ovl16 cell holds the RAW DObj pointer
- * and the Ovl16AnimCmd view's unk20 IS pos.v.y (byte 0x20), so the shim collapses to
- * a plain cast, and the rest height is read back through the cell (as the ROM does at
- * `lw $a1,0($s6)` / `lwc1 $f4,0x20($a1)`) rather than through the slots[] array.
- * Close the COUNT before touching registers: 79 missing words is far more than the
- * repeated-load CSE seen elsewhere in this file, so the host arm is still
- * factoring out or omitting a block the ROM emits inline. */
+/* FACTORY: 141/455 (was 452/455 and 79 words short).  Instruction count and
+ * frame are now both exact.  Four defects, in the order they were worth:
+ *   1. LEVERS 70.  The two limb deltas are
+ *        dx = ABSF(ABSF(gEntitiesNextPosXArray[t]) - ABSF(srt.x));
+ *      not the hand-written sign tests the host arm carries.  ABSF names its
+ *      operand THREE times, so the outer one recomputes BOTH inner ABSFs and
+ *      the subtraction in each arm -- that is most of the 79 missing words.
+ *      The `(a - b) < 0.0f` of the outer macro is emitted as a direct
+ *      `c.lt.s $f14, $f2` (a < b): IDO folds a difference used only in a float
+ *      comparison and never forms the subtraction there (LEVERS' ovl7 entry
+ *      20), which is why the listing looks like a plain compare of two ABSFs.
+ *   2. there is no `slots[8]` array and no `dist` local.  The ROM re-reads
+ *      D_801F0200_ovl16[i] for the transform call and the unk20 pokes, and
+ *      re-reads D_801F0188_ovl16[i] INSIDE the last ABSF (`lwc1 $f10, 0($s1)`
+ *      in the bc1fl delay slot, `lwc1 $f4, 0($s1)` in the other arm).  Both
+ *      were locals in the host arm; deleting them is what lands the frame on
+ *      0xB8 -- and the frame is 4-byte granular against an align8 round, so
+ *      neither deletion moves it alone and both together move it by 8.
+ *   3. loop 3's counter is the SAME variable as loops 1 and 2's, not a `k` of
+ *      its own (one more declaration removed, same align8 pair as above).
+ *   4. the SECOND loop terminates on `i != 8`, not `i < 8`: the ROM's back
+ *      edge is `bne $s2, $t8` on the strength-reduced pointer where `<` gives
+ *      `sltu`/`bnez`.  Worth 58 words.  Measured NEGATIVE for the other two
+ *      loops -- `i != 8` on loop 1 costs 185 and `i != 16` on loop 3 is inert.
+ * The 141 that remain are one saved-register rotation and nothing else:
+ *   ROM $s1/$s2/$s3 = limb / D_801F01D8 / D_801F0160,  IDO $s0/$s1/$s2;
+ *   ROM $s0 = &srt,                                    IDO $s3;
+ *   ROM $f22 = 0.125f and $f20 = 0.0f,                 IDO the other way.
+ * The emission ORDER of every one of those is the ROM's -- only the register
+ * numbers are permuted, which is the priority-list family tabulated on
+ * func_801ED9AC_ovl9 in src/ovl9/ovl9_6.c.  barrier_sweep (LEVERS 71) finds
+ * only 140/455, a one-word coincidence, so do not add a barrier for it. */
 /* Phase-0xE opener of the pillar attack: advance the arena pattern state
  * (D_800D7098.unk24), spawn the eight per-limb watcher entities, snapshot each
  * limb DObj and its rest height, derive per-limb travel distance/step from the
@@ -2778,18 +2800,14 @@ void func_801E3518_ovl16(s32 arg0) {
  * host build's PC_OVL16_SLOT_SHIM pointer fixup collapses to a plain cast here,
  * and the rest height is read back through the cell the way the ROM does. */
 void func_801E35D4_ovl16(s32 arg0) {
-    struct DObj *slots[8];
     Vector srt;
     u8 *limb;
     s32 pat;
     s32 i;
-    s32 k;
     s32 n;
     s32 t;
     f32 dx;
     f32 dy;
-    f32 dist;
-    f32 step;
 
     D_800DDFD0[omCurrentObj->objId] = 0xE;
     switch (D_800D7098.unk24) {
@@ -2818,43 +2836,23 @@ void func_801E35D4_ovl16(s32 arg0) {
             (&D_801F0160_ovl16)[i] = t;
         }
         D_801F01B0_ovl16[i] = -9999.0f;
-        slots[i] = D_800DFBD0[omCurrentObj->objId][D_801EF93C_ovl16[limb[i]]];
-        D_801F0200_ovl16[i] = (struct Ovl16AnimCmd *) slots[i];
+        D_801F0200_ovl16[i] = (struct Ovl16AnimCmd *) D_800DFBD0[omCurrentObj->objId][D_801EF93C_ovl16[limb[i]]];
     }
     func_800AA154(0x104F2);
     func_800AA018(0x104F4);
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i != 8; i++) {
         D_801F01B0_ovl16[i] = D_801F0200_ovl16[i]->unk20;
-        utilGetTransformSRT(&srt, slots[i]);
+        utilGetTransformSRT(&srt, (struct DObj *) D_801F0200_ovl16[i]);
         t = (&D_801F0160_ovl16)[i];
-        dx = gEntitiesNextPosXArray[t];
-        if (dx < 0.0f) {
-            dx = -dx;
-        }
-        dx -= (srt.x < 0.0f) ? -srt.x : srt.x;
-        if (dx < 0.0f) {
-            dx = -dx;
-        }
-        dy = gEntitiesNextPosYArray[t];
-        if (dy < 0.0f) {
-            dy = -dy;
-        }
-        dy -= (srt.y < 0.0f) ? -srt.y : srt.y;
-        if (dy < 0.0f) {
-            dy = -dy;
-        }
-        dist = sqrtf((dx * dx) + (dy * dy)) * 1.25f;
-        ((f32 *) &D_801F0188_ovl16)[i] = dist;
-        step = dist * 0.125f;
-        if (step < 0.0f) {
-            step = -step;
-        }
-        D_801F01D8_ovl16[i] = step;
+        dx = ABSF(ABSF(gEntitiesNextPosXArray[t]) - ABSF(srt.x));
+        dy = ABSF(ABSF(gEntitiesNextPosYArray[t]) - ABSF(srt.y));
+        ((f32 *) &D_801F0188_ovl16)[i] = sqrtf((dx * dx) + (dy * dy)) * 1.25f;
+        D_801F01D8_ovl16[i] = ABSF(((f32 *) &D_801F0188_ovl16)[i] * 0.125f);
     }
     D_800E9C60[omCurrentObj->objId] = 0;
-    for (k = 0; k < 16; k++) {
-        s32 out = ((u8 *) &D_801EF98C_ovl16)[k];
-        s32 in = ((u8 *) &D_801EF9A0_ovl16)[k];
+    for (i = 0; i < 16; i++) {
+        s32 out = ((u8 *) &D_801EF98C_ovl16)[i];
+        s32 in = ((u8 *) &D_801EF9A0_ovl16)[i];
 
         if (out < 8) {
             play_sound(0x1AF);
@@ -2871,19 +2869,19 @@ void func_801E35D4_ovl16(s32 arg0) {
         ohSleep(1);
         for (n = 0; (f32) n < 8.0f; n++) {
             if (out < 8) {
-                slots[out]->pos.v.y -= D_801F01D8_ovl16[out];
+                D_801F0200_ovl16[out]->unk20 -= D_801F01D8_ovl16[out];
             }
             if (in < 8) {
-                slots[in]->pos.v.y += D_801F01D8_ovl16[in];
+                D_801F0200_ovl16[in]->unk20 += D_801F01D8_ovl16[in];
             }
             ohSleep(1);
         }
         if (out < 8) {
             D_800E9FE0[(&D_801F0160_ovl16)[out]].as_u32 = 1;
-            slots[out]->pos.v.y = (1.25f * D_801F01B0_ovl16[out]) - ((f32 *) &D_801F0188_ovl16)[out];
+            D_801F0200_ovl16[out]->unk20 = (1.25f * D_801F01B0_ovl16[out]) - ((f32 *) &D_801F0188_ovl16)[out];
         }
         if (in < 8) {
-            slots[in]->pos.v.y = D_801F01B0_ovl16[in];
+            D_801F0200_ovl16[in]->unk20 = D_801F01B0_ovl16[in];
         }
         ohSleep(0xA);
     }
