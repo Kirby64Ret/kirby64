@@ -16,12 +16,12 @@ extern void func_800B4B9C(s32);
  * ROM relies on whatever GObj* is already sitting in $a0. An ANSI
  * prototype breaks compilation with "too few arguments". */
 void func_801D1648_ovl8();
-void func_801D1A64_ovl8(void);
-extern void func_800B5A7C(void);
+void func_801D1A64_ovl8(struct GObj *);
+extern void func_800B5A7C(struct GObj *);
 extern void func_800F8E6C(struct GObj *);
 void func_801D0FB0_ovl8(struct GObj *);
 void func_801D12A4_ovl8(void);
-void func_801D1334_ovl8(void);
+void func_801D1334_ovl8(struct GObj *);
 
 void func_801D0C60_ovl8(struct GObj *arg0) {
     func_800B5C28();
@@ -122,12 +122,21 @@ void func_801D12A4_ovl8(void) {
  * at the D_800E3210 copy in the first arm: the ROM materialises &D_800E3210 into
  * a base register ($t4) and addresses BOTH sides off it, IDO emits two separate
  * `lui $at` + %lo pairs. Same instruction count either way; the base register
- * shifts every temp number from that point on (and back to insn 33). */
+ * shifts every temp number from that point on (and back to insn 33).
+ * LEVER 58 applies and is MEASURED INERT: 50/128 before and after. The head
+ * really is (GObj *) -- the very first instruction after the prologue is
+ * `jal func_800B5A7C` with a nop delay slot, func_800B5A7C is
+ * `void (GObj *)`, and there is no home store in the 126 words -- and the
+ * same is true of func_801D152C_ovl8, func_801D1A64_ovl8 and
+ * func_801D1BB0_ovl8 below, all three matched. Retyping all four plus the
+ * func_800B5A7C declaration is byte-identical in .text, so it is a free type
+ * correction and it changes nothing here: this residue starts at instruction
+ * 33 and $a0 was never the contended register. Do not re-cost it. */
 #ifdef NON_MATCHING
-void func_801D1334_ovl8(void) {
+void func_801D1334_ovl8(struct GObj *arg0) {
     extern struct UnkStruct800D7098 D_800D7098;
 
-    func_800B5A7C();
+    func_800B5A7C(arg0);
     D_800E64D0[omCurrentObj->objId] += D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
     func_800F8E6C(D_800DE350[omCurrentObj->objId]);
     D_800E64D0[omCurrentObj->objId] -= D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
@@ -147,8 +156,8 @@ void func_801D1334_ovl8(void) {
 #endif
 
 
-void func_801D152C_ovl8(void) {
-    func_801D1334_ovl8();
+void func_801D152C_ovl8(struct GObj *arg0) {
+    func_801D1334_ovl8(arg0);
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + (D_800E6A10[omCurrentObj->objId] * -(M_PIF / 2));
     while (M_TAU <= gEntitiesAngleYArray[omCurrentObj->objId]) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;
@@ -245,8 +254,8 @@ void func_801D19B8_ovl8(struct GObj *arg0) {
     func_800B3234(gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 
-void func_801D1A64_ovl8(void) {
-    func_800B5A7C();
+void func_801D1A64_ovl8(struct GObj *arg0) {
+    func_800B5A7C(arg0);
     D_800E64D0[omCurrentObj->objId] += D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
     func_800F8E6C(D_800DE350[omCurrentObj->objId]);
     D_800E64D0[omCurrentObj->objId] -= D_800E5510[omCurrentObj->objId] + D_800E56D0[omCurrentObj->objId];
@@ -256,8 +265,8 @@ void func_801D1A64_ovl8(void) {
     gEntitiesNextPosZArray[omCurrentObj->objId] += D_800E2410[omCurrentObj->objId];
 }
 
-void func_801D1BB0_ovl8(void) {
-    func_801D1A64_ovl8();
+void func_801D1BB0_ovl8(struct GObj *arg0) {
+    func_801D1A64_ovl8(arg0);
     gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId] + (D_800E6A10[omCurrentObj->objId] * -(M_PIF / 2));
     while (M_TAU <= gEntitiesAngleYArray[omCurrentObj->objId]) {
         gEntitiesAngleYArray[omCurrentObj->objId] -= M_TAU;

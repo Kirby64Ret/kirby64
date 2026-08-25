@@ -109,7 +109,7 @@ extern void func_800AED20(f32);
 
 extern f32 func_800FA1D4(struct Unk80129114_4_4 *, Vector *, s16);
 
-extern void func_801D152C_ovl8(s32);
+extern void func_801D152C_ovl8(struct GObj *);
 extern void func_801D184C_ovl8(s32);
 extern void func_801D17F4_ovl8(s32);
 extern void func_801D1BB0_ovl8(s32);
