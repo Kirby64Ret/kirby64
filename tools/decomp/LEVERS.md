@@ -1283,6 +1283,22 @@ the pool allocator's real stride is 0x78.
     Rank on SITE COUNT, not on residue: the two that paid had six sites each.
     The one-site entries are worth a word or two at best.
 
+    **AND SCREEN THE DRAFT BEFORE CONVERTING, because a scaled scalar index
+    sometimes produces the multu on its own.** Measured on func_80100EE4
+    (ovl2_6.c, 74/278, four sites at stride 0x18): its draft writes
+    `rect = &D_8012BB98[idx * 6]` on an `f32 []`, and that ALREADY compiles to
+    the ROM's `multu $a3, $t1` against a hoisted 0x18 -- none of the four
+    sites appears in the diff at all. Rewriting it as a 24-byte struct index
+    is exactly inert, 74/278 either way.
+    So IDO's choice between `multu` and strength reduction is not simply
+    "struct array vs scaled index"; the same TU reduces `vi * 3` on an f32
+    array (byte offset 0xC) and does not reduce `idx * 6` on one (0x18). What
+    LEVER 77 actually gives you is a reading for a specific residue: **the ROM
+    has `multu` against a held size and YOUR DRAFT has `li N` plus shifts at
+    that spot.** If the multu is already matching, there is nothing here.
+    Grep your own diff for `multu` first; it costs nothing and it is the
+    difference between a 136-word win and a wasted compile.
+
 78. **SCOPE CORRECTION TO LEVER 13: a pad reserves its words only when it is
     unreferenced AND sits BETWEEN two locals that own stack slots.** LEVER 13
     says pad locals go at the END of the declaration list, and several notes
