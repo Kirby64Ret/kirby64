@@ -160,7 +160,18 @@ def main():
     files = args or sorted(glob.glob('src/**/*.c', recursive=True))
     all_r = []
     for f in files:
-        if f.startswith('src/pc/') or 'FACTORY:' not in open(f, errors='replace').read():
+        # Select by whether the file actually CONTAINS A DRAFT, not by whether
+        # its notes happen to say "FACTORY:". The text search skipped any draft
+        # whose note opens differently -- ovl4_3.c's began "/* 1/138: ..." and
+        # ovl4_4.c's "/* 6/163: ..." -- and those two held a one-word and a
+        # three-word residue, the closest seeds in that whole bloc. Tree-wide
+        # the blind spot covered 78 guarded drafts in 39 files.
+        if f.startswith('src/pc/'):
+            continue
+        try:
+            if not guard_blocks(open(f, errors='replace').read().split('\n')):
+                continue
+        except OSError:
             continue
         all_r += measure_file(f)
 
