@@ -1087,21 +1087,46 @@ void func_801DD7C8_ovl15(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD7C8_ovl15.s")
 #endif
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-void func_801DD950_ovl15(s32 arg0) {
-    GObj *temp_v1;
+/* Pick the next attack of the pair, remembering the last one in
+   D_800D7098.unk1C/unk20, play its cue and wind the animation rate down to
+   0.7 for 45 ticks.
 
-    temp_v1 = omCurrentObj;
-    D_800DDFD0[temp_v1->objId] = 1;
-    gEntityFuncListIDArray[temp_v1->objId] = 1;
-    D_800EAC20[temp_v1->objId] = 0.0f;
-    switch (D_800D7098.unk20) {                     /* irregular */
+   Byte-exact.  It carried "m2c draft, for the PORT only. Not byte-exact and
+   not claimed to be" (LEVER 88/108's shape) at 138/154, and it took four
+   edits, three of which are LEVER 45 in three different disguises:
+     - delete m2c's `temp_v1 = omCurrentObj` cache.  138 -> 125, and the frame
+       comes right with it (0x18 -> the ROM's 0x20).
+     - **the switch value's TYPE.**  `D_800D7098.unk20` is `u32`, so `case 1:`
+       is a u32 constant and IDO refuses to share it with the `1` the two
+       entry stores (`D_800DDFD0[objId] = 1;`,
+       `gEntityFuncListIDArray[objId] = 1;`, both s32 arrays) already have in a
+       register -- the draft pays a whole extra `li`.  `switch ((s32)
+       D_800D7098.unk20)` shares it: 125 -> 70.  LEVER 34's "the switch value's
+       width matters" is the same observation about a narrowing; this is the
+       SIGNEDNESS of an already-32-bit value.
+     - **statement order inside the arms.**  The ROM emits the
+       `D_800D7098.unk1C = D_800E9C60[objId];` load ahead of the
+       `D_800D7098.unk20 += 1;` store in all three arms.  Swapping the two
+       statements is 70 -> 53.
+     - the last 53 were the `1` in case 2's `D_800D7098.unk20 = 1;`.  The ROM
+       stores `$a0` there -- the SAME register the switch's `beq $v0, $a0`
+       case-1 test used -- and a `u32` destination will not take it.
+       `*(s32 *) &D_800D7098.unk20 = 1;` does, and the function matches.
+       That is the third time today this exact cast has been the last edit on a
+       function (see func_801DD4EC_ovl15 above); LEVER 45's knob is the
+       DESTINATION type and the cast is how you reach it without touching a
+       shared header.
+   Measured worse: keeping case 2's `unk20 = 1;` ahead of its `unk1C = ...`
+   (54 against 53), and reordering `default:`/`case 2:` (125, inert). */
+void func_801DD950_ovl15(s32 arg0) {
+    D_800DDFD0[omCurrentObj->objId] = 1;
+    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
+    D_800EAC20[omCurrentObj->objId] = 0.0f;
+    switch ((s32) D_800D7098.unk20) {                     /* irregular */
     case 0:
         D_800E9C60[omCurrentObj->objId] = random_soft_s32_range(2);
-        D_800D7098.unk20 += 1;
         D_800D7098.unk1C = (u32) D_800E9C60[omCurrentObj->objId];
+        D_800D7098.unk20 += 1;
         break;
     case 1:
         if (random_soft_s32_range(4) == 0) {
@@ -1109,17 +1134,17 @@ void func_801DD950_ovl15(s32 arg0) {
         } else {
             D_800E9C60[omCurrentObj->objId] = ~D_800D7098.unk1C & 1;
         }
-        D_800D7098.unk20 += 1;
         D_800D7098.unk1C = (u32) D_800E9C60[omCurrentObj->objId];
+        D_800D7098.unk20 += 1;
         break;
     default:
     case 2:
-        D_800E9C60[temp_v1->objId] = ~D_800D7098.unk1C & 1;
-        D_800D7098.unk20 = 1;
-        D_800D7098.unk1C = (u32) D_800E9C60[temp_v1->objId];
+        D_800E9C60[omCurrentObj->objId] = ~D_800D7098.unk1C & 1;
+        D_800D7098.unk1C = (u32) D_800E9C60[omCurrentObj->objId];
+        *(s32 *) &D_800D7098.unk20 = 1;
         break;
     }
-    func_8019E0A4_ovl7(4, D_801E654C_ovl15[D_800E9C60[temp_v1->objId]]);
+    func_8019E0A4_ovl7(4, D_801E654C_ovl15[D_800E9C60[omCurrentObj->objId]]);
     func_800AECC0(gameTicksPerDraw * 0.7f);
     func_800AA018(D_801E6544_ovl15[D_800E9C60[omCurrentObj->objId]]);
     ohSleep(0x2D);
@@ -1128,10 +1153,6 @@ void func_801DD950_ovl15(s32 arg0) {
     func_800AF27C();
     func_800AECC0(gameTicksPerDraw);
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD950_ovl15.s")
-#endif
 
 void func_801DDBA8_ovl15(struct GObj *arg0) {
     s32 c;
