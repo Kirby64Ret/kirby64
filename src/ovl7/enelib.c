@@ -126,6 +126,7 @@ s32 func_800B30BC(f32, f32, s32);
 void func_8019D8A0(s32);
 s32 func_8019A7E8_ovl7(f32);
 void func_8019B164_ovl7(void);
+f32 func_8019AAD0_ovl7(f32, f32, f32);
 f32 func_8019B608_ovl7(s32 track);
 void func_8019BC94_ovl7(void);
 void func_8019C79C_ovl7(void);
@@ -1054,50 +1055,62 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AAD0_ovl7.s")
 #endif
-// m2c draft, measured 79/90 diffs
-#ifdef NON_MATCHING
-s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, s32 arg2, struct TrackPosition *arg3) {
-    f32 *temp_v0;
-    f32 *var_v0;
-    f32 temp_f0;
-    f32 var_f0;
-    f32 var_f14;
+/* MATCHED 2026-08-25, from a raw m2c draft at 86/93, in three steps.
+ *
+ * 86 -> 82: the m2c draft's five locals (two `f32 *` cursors, three f32s) are
+ *   the loops written out as `do { p = &arr[id]; v = *p; } while (...)`.
+ *   Written as plain `while (D_800EB320[id] > K) D_800EB320[id] -= K;` and one
+ *   `d`/`step` pair, the body is the ROM's.
+ *
+ * 82 -> 56: LEVER 55, and this is the one the positional score hides. The
+ *   draft was emitting `cvt.d.s` on both arguments, `sw $t0, 0x10($sp)` for a
+ *   third argument on the stack, and `mtc1 $v0,$f8` / `cvt.s.w` on the RESULT
+ *   -- i.e. `func_8019AAD0_ovl7` was an implicit `int f()`. Its definition is
+ *   the guarded draft 40 lines above, so it is NOT compiled, and no header
+ *   declares it; src/ovl9/ovl9_4.c carries the only prototype in the tree.
+ *   Added `f32 func_8019AAD0_ovl7(f32, f32, f32);` at file scope here, and
+ *   with a real prototype the third parameter of THIS function reads off the
+ *   listing as f32 too -- the ROM homes `$a2` and reloads it into `$a2` with
+ *   no conversion, which only happens when caller and callee agree. `s32 arg2`
+ *   was m2c guessing.
+ *   The general form, worth the grep every time: a draft with `cvt.d.s` on a
+ *   float argument or `cvt.s.w` on a call's RESULT is not a register problem,
+ *   it is a missing prototype, and it can be hiding behind a frame difference
+ *   because the promoted arguments change the frame too.
+ *
+ * 56 -> 0: LEVER 90 / LEVER 82's "the pair can be two compares". The ROM
+ *   materialises TWO zeros for `d` -- `mtc1 $zero,$f12` for `d == 0.0f` and a
+ *   separate `mtc1 $zero,$f4` for `d > 0.0f`, the second duplicated by the
+ *   branch-likely -- and the draft shared one. Spelling the SECOND test with
+ *   the integer literal, `if (d > 0)`, forks them and closes the function.
+ *   Measured for the record: forking the FIRST instead (`d == 0`) is 5/85, and
+ *   forking the second plus the `< 0.0f` loop guard is also 5/85. It is
+ *   specifically the `> 0` compare that must be the integer. */
+s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, f32 arg2, struct TrackPosition *arg3) {
+    f32 d;
+    f32 step;
 
     if (func_8019A900_ovl7(arg3) == 0) {
         return 0;
     }
-    temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], arg1, arg2);
-    if (temp_f0 == 0.0f) {
+    d = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], arg1, arg2);
+    if (d == 0.0f) {
         return 0;
     }
-    if (temp_f0 > 0.0f) {
-        var_f14 = arg0;
+    if (d > 0) {
+        step = arg0;
     } else {
-        var_f14 = -arg0;
+        step = -arg0;
     }
-    temp_v0 = &D_800EB320[omCurrentObj->objId];
-    *temp_v0 += var_f14;
-    var_v0 = &D_800EB320[omCurrentObj->objId];
-    var_f0 = *var_v0;
-    if (var_f0 > 6.2831855f) {
-        do {
-            *var_v0 = var_f0 - 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f0 = *var_v0;
-        } while (var_f0 > 6.2831855f);
+    D_800EB320[omCurrentObj->objId] += step;
+    while (D_800EB320[omCurrentObj->objId] > 6.283185482f) {
+        D_800EB320[omCurrentObj->objId] -= 6.283185482f;
     }
-    if (var_f0 < 0.0f) {
-        do {
-            *var_v0 = var_f0 + 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f0 = *var_v0;
-        } while (var_f0 < 0.0f);
+    while (D_800EB320[omCurrentObj->objId] < 0.0f) {
+        D_800EB320[omCurrentObj->objId] += 6.283185482f;
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AC60_ovl7.s")
-#endif
 // m2c draft, measured 74/85 diffs
 #ifdef NON_MATCHING
 s32 func_8019ADB4_ovl7(f32 arg0, struct TrackPosition *arg1) {
