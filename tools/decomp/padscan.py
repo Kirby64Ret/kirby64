@@ -31,16 +31,36 @@ TWO CORRECTNESS FIXES, both from a lane's report on 2026-08-25:
     ones it did not pick.
   - subsegments already followed by a `pad` line are skipped, as above.
 
+THIRD CORRECTNESS FIX, 2026-08-25, and it is what made the ovl12/code_1EB520
+row bogus: the `.s` files under `asm/nonmatchings/<TU>/` are NOT all in that
+TU's subsegment, and the "highest-addressed" sort above was comparing a VRAM
+address it had just parsed against the ROM offsets the yaml is written in.
+func_801DB1E0_ovl12 is the stray one-word `nop` at ROM 0x1EB520, which the
+separate `- [0x1EB520, pad]` line covers; the code_1EB520 subsegment starts at
+0x1EB540. splat files its listing in the TU's directory anyway, so it was read,
+classified as a trap, sorted to the top on VRAM, and its seven trailing nops
+fed into the formula for a subsegment it is not in.
+Two filters now, both applied before the sort:
+  - the listing's own ROM OFFSET must lie inside [start, end);
+  - the .c must actually carry a `#pragma GLOBAL_ASM` for it. A listing whose
+    function has been decompiled contributes no bytes to the object, so its
+    tail says nothing about the object's size.
+MEASURED, so nobody re-runs it: `- [0x1F18C0, pad]` was applied with every
+ovl12 draft still GUARDED and `build/src/ovl12/code_1EB520.o` removed. sha1
+2149be3822a6a1b8958f1101ed1ff6de762395e4, RED. Reverted, 6cea2d46 restored.
+The reasoning the row was suspect on was right: that TU's `.text` is already
+exactly 0x6390 = the whole subsegment, and its real last function
+(func_801E1528_ovl12) is live C with no fill after it.
+
 A row here is a COSTING, not a green light: the draft still has to be
 byte-exact, and the pad should be gated with the draft still guarded first.
-STILL UNRESOLVED, so treat it as suspect: a lane reports the ovl12/code_1EB520
-row as bogus, on the grounds that the existing `- [0x1EB520, pad]` (which sits
-BEFORE that subsegment, so the skip above does not catch it) already covers a
-stray `nop`, and that the object's .text is already exactly the subsegment
-size. I could not confirm that from the numbers alone -- `.text` equals the
-subsegment size for ovl3/ovl3_4 too, and that row is believed genuine, because
-the size is measured with the draft still GUARDED and the pragma includes the
-fill. Gate that one especially carefully.
+
+AND GATE IT WITH **TWO** mk.sh RUNS. `build/kirby.ld` is a preprocessed copy of
+the root `kirby.ld` that splat writes, and on the first mk.sh after a yaml edit
+the link used the STALE copy: sha1 came back 6cea2d46 -- unchanged, i.e. a
+false GREEN reading "the pad is inert" -- and the second run, with the same
+sources, linked the new script and went red. Compare `build/kirby.ld` against
+the yaml edit before believing any pad measurement.
 
 Usage: padscan.py     (from the repo root)
 """
@@ -104,9 +124,18 @@ for name, start, end in rows:
     # -- ovl12/code_1EB520, naming a stray `nop` at the subsegment's START
     # that an existing pad already covers -- would have shifted a TU whose
     # .text is already exactly right.
+    try:
+        csrc = open(cfile, errors='replace').read()
+    except OSError:
+        continue
     traps = []
     for s in glob.glob(ldir + '/*.s'):
         fn = os.path.basename(s)[:-2]
+        # A listing with no `#pragma GLOBAL_ASM` is not assembled into this
+        # object at all -- the function has been decompiled -- so its trailing
+        # fill says nothing about the object's size.
+        if ('#pragma GLOBAL_ASM("%s")' % s) not in csrc:
+            continue
         try:
             kind, n = padtrap.classify(s, fn)
         except Exception:
@@ -115,16 +144,21 @@ for name, start, end in rows:
             continue
         # The listing's own address, read from its first instruction comment
         # (`/* ROMOFF VRAM WORD */  insn`), so "highest" means highest in the
-        # ROM rather than highest in the alphabet.
-        addr = -1
+        # ROM rather than highest in the alphabet. Read the ROM offset too:
+        # the yaml's start/end are ROM offsets, and a listing filed under this
+        # TU's directory is not necessarily inside this TU's subsegment.
+        addr = rom = -1
         try:
             for line in open(s, errors='replace'):
-                m = re.search(r'/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s', line)
+                m = re.search(r'/\*\s*([0-9A-Fa-f]+)\s+([0-9A-Fa-f]{8})\s', line)
                 if m:
-                    addr = int(m.group(1), 16)
+                    rom = int(m.group(1), 16)
+                    addr = int(m.group(2), 16)
                     break
         except OSError:
             pass
+        if not (start <= rom < end):
+            continue
         traps.append((addr, fn, n, s))
     if not traps:
         continue

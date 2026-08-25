@@ -195,7 +195,7 @@ byte-exact before un-guarding, and the pad gated guarded first):
     ovl8/ovl8          - [0x175B10, pad]  16   func_801D1E98_ovl8      DONE, closed
     ovl9/ovl9_4        - [0x193760, pad]  16   func_801E5660_ovl9      DONE, closed
     ovl9/ovl9_13       - [0x1BDFC0, pad]  16   func_8020FD34_ovl9      DONE, closed
-    ovl12/code_1EB520  - [0x1F18C0, pad]  16   func_801DB1E0_ovl12     BOGUS - see LEVER 87
+    ovl12/code_1EB520  - [0x1F18C0, pad]  16   func_801DB1E0_ovl12     BOGUS - built RED, LEVER 105
     ovl18/code_236CC0  - [0x236F10, pad]  16   func_802244FC_ovl18     DONE, closed
 
     All three of the 2026-08-25 ovl8/ovl9 pads were gated with their drafts
@@ -2116,3 +2116,65 @@ the pool allocator's real stride is 0x78.
     time they are 350/366, 277/313 and 181/226. Same shape of error as the
     padding-trap notes in LEVER 88: a number nobody could reproduce with the
     standard tool is not a measurement.
+
+105. **THE ovl12/code_1EB520 PAD ROW IS BOGUS, MEASURED, AND padscan.py WAS
+    COMPARING A VRAM ADDRESS AGAINST ROM OFFSETS.** LEVER 87 called that row
+    suspect and could not settle it from the numbers; padscan's own docstring
+    said the same reasoning did not discriminate, because `.text == subsegment
+    size` is true of the believed-genuine ovl3/ovl3_4 row as well. It is
+    settled now, both ways.
+
+    THE MEASUREMENT. `- [0x1F18C0, pad]` applied with every ovl12 draft still
+    GUARDED and `build/src/ovl12/code_1EB520.o` removed: sha1
+    2149be3822a6a1b8958f1101ed1ff6de762395e4, RED. Reverted, 6cea2d46 restored,
+    check_tu_size 0 wrong, check_rodata_bytes 0 problems, verify_rom 5617
+    byte-exact / 0 real defects.
+
+    THE CAUSE, which is a tooling bug and not a judgement call. The `.s` files
+    under `asm/nonmatchings/<TU>/` are not all in that TU's subsegment.
+    `asm/nonmatchings/ovl12/code_1EB520/func_801DB1E0_ovl12.s` is the stray
+    one-word `nop` at ROM 0x1EB520 -- covered by the SEPARATE `- [0x1EB520,
+    pad]` line, and 0x20 bytes BELOW the code_1EB520 subsegment, which starts
+    at 0x1EB540. splat files it in the TU's directory anyway. padscan read it,
+    classified it as a trap, and sorted it to the top of the "highest-addressed
+    trapped listing" list -- because LEVER 87's fix parsed the listing's VRAM
+    (0x801DB1E0) and compared it against the yaml's ROM offsets, two different
+    number lines. Its seven trailing nops then went into the formula for a
+    subsegment it is not in.
+
+    Fixed with two filters, both before the sort: the listing's ROM OFFSET must
+    lie inside [subseg_start, subseg_end), and the .c must actually carry a
+    `#pragma GLOBAL_ASM` for it. The second matters independently -- a listing
+    whose function is already decompiled contributes no bytes to the object, so
+    its tail says nothing about the object's size, and code_1EB520's real last
+    function (func_801E1528_ovl12) is live C with no fill after it at all.
+    padscan now reports ONE row, ovl3/ovl3_4, and the class-(a) population in
+    ovl8/ovl9/ovl12/ovl15/ovl16 is EMPTY.
+
+    The general form, and it is the third time this file has recorded a version
+    of it: a screen that mixes two coordinate systems will always find work,
+    and the work will always be somewhere real code is not.
+
+106. **A YAML EDIT NEEDS **TWO** mk.sh RUNS BEFORE THE sha1 MEANS ANYTHING,
+    AND THE FIRST ONE LIES IN THE REASSURING DIRECTION.** Found while gating
+    LEVER 105's pad. mk.sh re-runs splat when kirby64.yaml is newer than
+    build/kirby.ld, and splat writes `./kirby.ld` at the repo root;
+    `build/kirby.ld` is a cpp'd copy of it (Makefile:251) and is what the link
+    actually reads. On the FIRST mk.sh after the yaml edit the link used the
+    stale copy:
+
+        run 1   build/kirby.ld 21:33 (stale)   sha1 6cea2d46   "GREEN"
+        run 2   build/kirby.ld 22:22 (fresh)   sha1 2149be38    RED
+
+    Same sources, same yaml, opposite verdicts. The failure mode is the
+    dangerous one: an edit that breaks the ROM reads as byte-inert, which is
+    exactly the reading a pad gate is looking for.
+
+    LEVERS' "TWO BUILD-SYSTEM TRAPS" section already names this file pair, but
+    it describes it as something that bites when you run splat BY HAND. It
+    bites when mk.sh runs splat for you, which is the normal path.
+
+    The check that costs nothing: after the build, grep build/kirby.ld for the
+    address you added. If the `. += 0x10;` you expect is not in it, the sha1
+    you just read is about the previous layout. Do that before either
+    believing a pad or reverting one.
