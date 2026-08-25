@@ -1399,8 +1399,8 @@ void func_801E40F4_ovl17(struct GObj *arg0) {
     }
 }
 
-void func_801E4178_ovl17(void) {
-    func_801E4668_ovl17();
+void func_801E4178_ovl17(struct GObj *arg0) {
+    func_801E4668_ovl17(arg0);
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 4, D_801E54D4_ovl17);
 }
 
@@ -1518,11 +1518,23 @@ s32 func_801E4488_ovl17(void) {
      assignment over primColor and envColor (offsets 0x58 and 0x60), alpha
      included, not three byte stores.
    - frame is 0x40 with the three records at 0x28/0x2C/0x30 and s0/s1 saved.
-   Blocked from finishing here by two things outside a single TU: the tree
-   root comes in as $a0 (`lw $s1,0x3C($a0)`) but ovl17.h declares this
-   `void func_801E4668_ovl17(void)`, and the colour bytes need a 4-byte
-   struct view that the shared SPObj/MObj header does not currently provide.
-   Both are header changes and want the sha1 gate. */
+   The FIRST of the two blockers this note used to list is now GONE, done
+   2026-08-25 under LEVER 58: the tree root really does come in as $a0
+   (`lw $s1,0x3C($a0)` is `arg0->data.dobj`, GObj+0x3C), so ovl17.h now
+   declares this `void func_801E4668_ovl17(struct GObj *)` and the draft takes
+   it. Its only caller, func_801E4178_ovl17, was the same bug one level up --
+   frame 0x18, no home store, and its single jal has a nop delay slot with
+   nothing writing $a0 -- so it takes the parameter and passes it on, which
+   also makes its own `D_800DF150[objId] = func_801E4178_ovl17` assignment
+   type-correct for the first time. The change is byte-inert: .text identical
+   in all four objects that include ovl17.h (ovl17_3, ovl17, ovl17b, ovl17_2),
+   objdump A/B against the known-good build.
+   It bought exactly ONE word (209/212 -> 208/212), because the body below is
+   still the PORT arm's three-plain-channel-stores shape and not the listing's
+   blend-and-4-byte-copy shape. The remaining blocker is the real one: the
+   colour bytes need a 4-byte struct view that the shared SPObj/MObj header
+   does not currently provide, and that is a header change wanting the sha1
+   gate. Do not read 208 as "nearly there". */
 /* PORT: HP-tint of the turret model, from asm/nonmatchings/ovl17/ovl17_3/
  * func_801E4668_ovl17.s. Picks the RGBA word D_801E54E4[(s32)hp] (a
  * gen_data u32[] of N64 word values, so the channels come off the
@@ -1532,7 +1544,7 @@ s32 func_801E4488_ovl17(void) {
  * are 4-byte swl/swr pairs whose 4th (alpha) byte is uninitialized stack
  * -- the PC arm writes only the three meaningful channels. The tree root
  * comes from the caller's leftover $a0, always omCurrentObj here. */
-void func_801E4668_ovl17(void) {
+void func_801E4668_ovl17(struct GObj *arg0) {
     DObj *animModelTreeNextNode(DObj *);
     extern u32 D_801E54E4_ovl17[];
     struct DObj *dobj;
@@ -1542,7 +1554,7 @@ void func_801E4668_ovl17(void) {
     u8 g;
     u8 b;
 
-    dobj = omCurrentObj->data.dobj;
+    dobj = arg0->data.dobj;
     word = D_801E54E4_ovl17[(s32) D_800E7B20[omCurrentObj->objId]];
     r = word >> 24;
     g = word >> 16;
@@ -1569,7 +1581,7 @@ void func_801E4668_ovl17(void) {
  * are 4-byte swl/swr pairs whose 4th (alpha) byte is uninitialized stack
  * -- the PC arm writes only the three meaningful channels. The tree root
  * comes from the caller's leftover $a0, always omCurrentObj here. */
-void func_801E4668_ovl17(void) {
+void func_801E4668_ovl17(struct GObj *arg0) {
     DObj *animModelTreeNextNode(DObj *);
     extern u32 D_801E54E4_ovl17[];
     struct DObj *dobj;
@@ -1579,7 +1591,7 @@ void func_801E4668_ovl17(void) {
     u8 g;
     u8 b;
 
-    dobj = omCurrentObj->data.dobj;
+    dobj = arg0->data.dobj;
     word = D_801E54E4_ovl17[(s32) D_800E7B20[omCurrentObj->objId]];
     r = word >> 24;
     g = word >> 16;
