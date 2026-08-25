@@ -951,6 +951,13 @@ the pool allocator's real stride is 0x78.
     Swept and negative, do not re-run: func_800B9FE0 4/169, func_800BB24C
     8/70, func_800BA90C 13/62, func_800A238C 17/45, func_800A52F0 40/69.
 
+    ovl2/ovl7, swept 2026-08-25, ALL NEGATIVE (8 sweeps, 0 wins) --
+    func_801173F4 8/95, func_8011C4E8 8/142, func_801B6F18_ovl7 11/165,
+    func_800F8078 16/75, func_80109504 19/123, func_800FC03C 20/74,
+    func_8010B284 23/127, func_801105E8 27/326. These were the whole
+    under-30%-residue population of ovl2+ovl7+ovl13 as measure_seeds.py
+    measures it, so the barrier lever is now exhausted for that scope.
+
     ovl9/ovl15/ovl16, swept 2026-08-25, ALL NEGATIVE (18 sweeps, 0 wins) --
     every draft in that scope whose residue was under ~30% of its instruction
     count, which is the population LEVER 71 says to sweep:
@@ -1228,6 +1235,24 @@ the pool allocator's real stride is 0x78.
     stride was unreachable. And the s16 model-vertex index two lines down
     genuinely IS `&modelVtx[vi * 3]`, which is why the ROM reduces that one:
     do not "fix" both.
+
+    **ENUMERATING IT.** The whole population is small and mechanical to find:
+    a listing that contains a `mult`/`multu` whose SECOND operand is a
+    register loaded only by `addiu $rX, $zero, <imm>` with imm not a power of
+    two. Across every guarded draft in ovl2+ovl7+ovl13 that is eight
+    functions, all in ovl2:
+
+        func_80114A14   32/174   stride 0x14, 1 site   src/ovl2/ovl2_10.c
+        func_80100EE4   74/278   stride 0x18, 4 sites  src/ovl2/ovl2_6.c
+        func_8010DDA4   98/126   stride 0x18, 1 site   src/ovl2/ovl2_7.c
+        func_80100790  203/206   stride 0x60, 4 sites  src/ovl2/ovl2_6.c
+        func_800F78E4  457/484   stride 0x30, 1 site   src/ovl2/ovl2_2.c
+        func_80113F08           stride 0xC,  6 sites  (closed to 493)
+        func_80102570  650/706   stride 0x14, 3 sites  src/ovl2/ovl2_7.c
+        func_801133C8           stride 0xC,  6 sites  (closed to 685)
+
+    Rank on SITE COUNT, not on residue: the two that paid had six sites each.
+    The one-site entries are worth a word or two at best.
 
 78. **SCOPE CORRECTION TO LEVER 13: a pad reserves its words only when it is
     unreferenced AND sits BETWEEN two locals that own stack slots.** LEVER 13
