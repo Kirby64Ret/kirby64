@@ -25,13 +25,12 @@ void func_801EF9B0_ovl10(GObj *);
 void func_800AA018(s32);
 void ohSleep(s32);
 
-#ifdef NON_MATCHING
-// 98/140 diffs: structure is right, but $v0/$v1 are swapped between the
-// omCurrentObj pointer and the objId value throughout. Swept with ZERO effect:
-// s32 return type on func_800AA018, ohSleep and func_800B7790 (each applied
-// file-wide, --all stayed at 0 diff), `void ohSleep(u8)`, hoisting
-// omCurrentObj into a local, and writing `ent` as an assignment instead of a
-// declaration initializer (102).
+/* The three-store tail is ONE chained assignment, not three statements: the ROM
+   loads D_800E3750[objId] once and stores that same $f0 into E3590, E3210 and
+   E3050 (LEVER 26's cousin -- three separate statements make IDO reload the
+   source for each).  The 98/140 the old note called a $v0/$v1 permutation was
+   this, plus a denominator inflated by four spurious words (LEVER 48): the ROM
+   is 136, not 140.  Found by the permuter. */
 void func_801EF790_ovl10(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -43,22 +42,18 @@ void func_801EF790_ovl10(GObj *arg0) {
     func_800AA018(0x105F9);
     func_800AA018(0x105FA);
     D_800E98E0[omCurrentObj->objId] = 0;
-    D_800E3210[omCurrentObj->objId] = D_801F4C40_ovl10;
-    D_800E3750[omCurrentObj->objId] = D_801F4C44_ovl10;
+    D_800E3210[omCurrentObj->objId] = 10.8f;
+    D_800E3750[omCurrentObj->objId] = -0.3f;
     D_800E3050[omCurrentObj->objId] = -(gEntitiesNextPosXArray[omCurrentObj->objId] / 60.0f);
     ohSleep(0x3C);
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801F4C48_ovl10;
+    D_800E3050[omCurrentObj->objId] =
+        (D_800E3210[omCurrentObj->objId] = (D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId]));
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EF790_ovl10.s")
-#endif
 void func_801EF9B0_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
         func_801A0880_ovl7();
@@ -99,9 +94,8 @@ void func_801EFA38_ovl10(s32 arg0) {
     ohSleep(0x3C);
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3050[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3050[omCurrentObj->objId] =
+        (D_800E3210[omCurrentObj->objId] = (D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId]));
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     curObjSleepForever();
@@ -148,48 +142,34 @@ void func_801EFC58_ovl10(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Clone of func_801EF790_ovl10 above (LEVER 1): same `ent` hoist sharing the
+   first objId<<2 with the D_800DEF90 store, same chained three-store tail.
+   Was 72/140 as an m2c draft full of temp_v1_N; porting the matched sibling's
+   spelling verbatim took it to MATCH on the first compile.  Its own arc is
+   11.8 up / -0.5 gravity and its X drift reads the parent facing. */
 void func_801EFCE0_ovl10(s32 arg0) {
-    f32 temp_f0;
-    u32 temp_v1;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-    u32 temp_v1_4;
-    u32 temp_v1_5;
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
-    temp_v1 = omCurrentObj->objId;
-    D_800DEF90[temp_v1] = func_800B7790;
+    D_800DEF90[omCurrentObj->objId] = func_800B7790;
     D_800E8E60[omCurrentObj->objId] = 1;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E6A10[temp_v1_2] = D_800E6A10[D_800E0D50[temp_v1_2]];
-    D_800E1B50[temp_v1]->unk8C = D_801CA04C_ovl7;
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[D_800E0D50[omCurrentObj->objId]];
+    ent->unk8C = D_801CA04C_ovl7;
     D_800DF150[omCurrentObj->objId] = func_801EF9B0_ovl10;
     func_800AA018(0x105F9);
     func_800AA018(0x105FA);
     D_800E98E0[omCurrentObj->objId] = 0;
     D_800E3210[omCurrentObj->objId] = 11.8f;
     D_800E3750[omCurrentObj->objId] = -0.5f;
-    temp_v1_3 = omCurrentObj->objId;
-    D_800E3050[temp_v1_3] = (D_800E6A10[temp_v1_3] * 100.0f) / 30.0f;
+    D_800E3050[omCurrentObj->objId] = (D_800E6A10[omCurrentObj->objId] * 100.0f) / 30.0f;
     ohSleep(0x1E);
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v1_4 = omCurrentObj->objId;
-    temp_f0 = D_800E3750[temp_v1_4];
-    D_800E3590[temp_v1_4] = temp_f0;
-    D_800E3210[omCurrentObj->objId] = temp_f0;
-    D_800E3050[omCurrentObj->objId] = temp_f0;
+    D_800E3050[omCurrentObj->objId] =
+        (D_800E3210[omCurrentObj->objId] = (D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId]));
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    temp_v1_5 = omCurrentObj->objId;
-    D_800E3AD0[temp_v1_5] = D_800E3C90[temp_v1_5];
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId];
     curObjSleepForever();
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_5/func_801EFCE0_ovl10.s")
-#endif
 
 void func_801EFF10_ovl10(GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] != 0) {
