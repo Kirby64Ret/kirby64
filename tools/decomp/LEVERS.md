@@ -464,6 +464,39 @@ the pool allocator's real stride is 0x78.
     $a0-rotation smell but its ROM prologue HOMES $a0 and both its calls set
     $a0 themselves, and it stays at 99/125.
 
+    **ENUMERATING THE POPULATION, 2026-08-25.** Looking for the lever by which
+    function-pointer table a proc is stored in found 3 candidates tree-wide.
+    Looking for it by the PROLOGUE found 43, ~9,900 instruction words. The
+    prologue test is the discriminator and the table is not:
+
+        python3 - <<'EOF'
+        import glob, os, re, sys
+        sys.path.insert(0, 'tools/decomp')
+        from measure_seeds import guard_blocks
+        for c in sorted(glob.glob('src/**/*.c', recursive=True)):
+            if c.startswith('src/pc/'): continue
+            lines = open(c, errors='replace').read().split('\n')
+            for st, en, pi, listing in guard_blocks(lines):
+                func = os.path.basename(listing)[:-2]
+                if not re.search(r'^[A-Za-z_][\w \t\*]*\b' + re.escape(func)
+                                 + r'\s*\(\s*void\s*\)\s*\{',
+                                 '\n'.join(lines[st:en]), re.M):
+                    continue
+                txt = open(listing, errors='replace').read()
+                txt = txt.split('glabel ' + func, 1)[-1].split('endlabel', 1)[0]
+                if re.search(r'\b(addiu|or|lw|move|lui|addu)\s+\$a0,',
+                             '\n'.join(txt.split('\n')[:14])): continue
+                if re.search(r'sw\s+\$a0,', txt): continue   # homed: negative
+                if 'jal ' not in txt: continue
+                fm = re.search(r'addiu\s+\$sp, \$sp, -(0x[0-9A-Fa-f]+)', txt)
+                print((fm.group(1) if fm else '?'), func, c)
+        EOF
+
+    Sort by frame and start at 0x18: all three closures on 2026-08-25 had frame
+    0x18, and the documented negative (func_8020C378_ovl9, 22/55 -> 54/55) has
+    frame 0x20 and a stack local. `sw $a0` ANYWHERE in the listing, not just in
+    the prologue, is the disqualifier.
+
 59. **An early test that shares a load with a later argument makes IDO
     duplicate the whole argument setup into every exit.** func_800BB198 tests
     `head->item->unk10` at the top and passes `head->item` to the call after the
@@ -549,3 +582,48 @@ the pool allocator's real stride is 0x78.
     barrier was the part that did not look like it could matter. Worth
     remembering when a permuter win is being cleaned up: check what every
     piece of it is doing before dropping any of it.
+
+
+62. **A byte offset the ROM steps by 4 alongside a counter is IDO's OWN
+    strength-reduced induction variable, not a source local.** Written out as
+    a second variable, its `or $sN, $zero, $zero` init is an ordinary source
+    statement and schedules AHEAD of the loop-invariant address hoists;
+    indexing with the counter instead (`((s32 *)seg[6])[i]`) lets the strength
+    reducer emit that init where the ROM has it, AFTER the hoists.
+    func_800F6E30 went 2/207 -> MATCH on the first compile, against a note
+    that had sealed the residue as "a scheduler tie-break, not a source
+    shape".
+
+63. **A nested call `g(f(...))` makes IDO reserve a 4-byte stack temp for the
+    intermediate**, lifting the locals base one word and rounding the frame up
+    by 8. A named local for the intermediate costs the same 4 bytes; assigning
+    it into the ALREADY-HOMED PARAMETER costs nothing. func_8021992C_ovl9,
+    4/21 -> MATCH. Worth sweeping every remaining "+8 frame anomaly, decidable
+    but unreachable" note against this -- src/ovl14/ovl14.c had found it once
+    on func_801DEC34_ovl14 and never generalised it.
+
+64. **Check where a draft's named externs are DEFINED before trusting its
+    score.** func_8017E284_ovl3 read 3/178 with `D_801976A0_ovl3` and
+    `D_801976A4_ovl3` as externs -- both defined only by that function's own
+    listing `.late_rodata`, so un-guarding leaves them undefined at link and
+    the seed could never be sealed at any residue. measure_seeds had been
+    advertising it as one of the tree's closest. Written as the literals the
+    migrated `.rodata` subsegment expects, the 3-word schedule rotation
+    disappears on its own.
+
+65. **Read a matched sibling's OBJECT rather than re-spelling the
+    expression.** func_80105284's residue was IDO's temp counter burning slots
+    for nodes it never materialises, and three spellings of the same store
+    burn 2 / 0 / 1 slots. `objdump` on the already-matched func_80109FAC and
+    func_80105530 showed which spelling the ROM used, with no compile at all.
+    Measured on the way: `or` with two REGISTER operands is NOT slot-invariant
+    -- the commutative floor elsewhere in this file is about arithmetic with a
+    MEMORY operand, and the two are different.
+
+66. **A branch offset that is wrong is a semantics report, not a register
+    residue.** func_80219E0C_ovl9's 30 diffs began at a `bc1f` with the wrong
+    displacement; that can only mean the blocks are laid out differently,
+    which means the source says something different. Its two `if` arms were
+    swapped -- a real bug, not a matching problem -- and fixing it closed the
+    function. When the first diff is a branch offset, stop looking at
+    registers.
