@@ -102,13 +102,33 @@ def unguard(text, func):
             break
     if not any(s.strip() for s in body):
         return text, False
-    # Refuse if what is left still contains another guard or pragma: that
-    # means the nesting is not a shape this function understands.
+    # A BALANCED nested guard inside the draft is fine; an unbalanced one is
+    # not. This used to refuse on any `#ifdef`/`#else`/`#endif` at all, which
+    # threw away every draft carrying an inner `#ifdef PORT ... #else ... #endif`
+    # -- a shape this tree uses constantly for LP64 pointer widths. initTrack is
+    # the worked example: 412 words, 23 diffs, the best words-per-residue row in
+    # the queue, and it had never once reached the permuter because of that one
+    # inner block. Setup fell through to "already plain C in file", cpp dropped
+    # the guarded body, and permuter.py exited in a second.
+    #
+    # Refuse only what is genuinely ambiguous: a `#else` or `#endif` at depth 0
+    # (the group is not the shape this understands), or a second GLOBAL_ASM
+    # (another function's pragma has been swept in).
+    depth = 0
     for s in body:
         t = s.strip()
-        if t.startswith(('#ifdef ', '#ifndef ', '#else', '#endif')) \
-           or 'GLOBAL_ASM' in t:
+        if 'GLOBAL_ASM' in t:
             return text, False
+        if t.startswith(('#ifdef ', '#ifndef ', '#if ')):
+            depth += 1
+        elif t.startswith('#endif'):
+            depth -= 1
+            if depth < 0:
+                return text, False
+        elif t.startswith(('#else', '#elif')) and depth == 0:
+            return text, False
+    if depth != 0:
+        return text, False
     return '\n'.join(lines[:o] + body + lines[n + 1:]), True
 
 def main():
@@ -169,7 +189,10 @@ def main():
     # "does not contain any function!" a second into a 420-second slot, and the
     # queue logs it as an exception rather than as a setup failure. Say so here
     # instead, where the reason is still visible.
-    if not re.search(rf'\b{re.escape(func)}\s*\(', pp):
+    # Look for a DEFINITION, not any occurrence: initTrack is CALLED from the
+    # function above it, so a bare name match passed this check on a base.c
+    # that held only the call. Require a `(` ... `)` followed by `{`.
+    if not re.search(rf'\b{re.escape(func)}\s*\([^;]*?\)\s*\{{', pp, re.S):
         raise SystemExit(
             f'{func}: not present after preprocessing. The draft is behind a '
             f'guard unguard() did not recognise, so there is nothing to '

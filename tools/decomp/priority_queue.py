@@ -91,6 +91,8 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 #       alter codegen (harvest_zero_scores.py flags the class). The tree
 #       scores 2/72 with or without them.
 EXCLUDE = {
+    'n_alSavePull': 'proved a floor -- order and register assignment move '
+                    'together, and CC_O3_UJOIN=1 scores the same 2/17',
     'func_801720D8_ovl5': 'frame-only residue; LEVER 57 table, not reachable',
     'func_801721CC_ovl5': 'frame-only residue; LEVER 57 table, not reachable',
     'func_800BDE0C': 'published zeros were whitespace-only; tree is 2/72 either way',
