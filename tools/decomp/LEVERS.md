@@ -2438,3 +2438,43 @@ the pool allocator's real stride is 0x78.
     and declarations BELOW it are DIFFERENT KNOBS -- deleting one word above
     fixed the spill temps and broke the vectors (21 of 24), deleting one word
     below fixed both (23 of 24).
+
+115. **A BLOCK-ORDER MISMATCH THAT AN `else if` CHAIN ONLY HALF-FIXES IS A
+    SWITCH.** func_800B1378 read 29/47 and shapescan called the shape distance
+    4 -- four runs that are one whole block moving. The draft was
+
+        if (arg1 != -2) { if (arg1 == -1) { A } else { C } } else { B }
+
+    which lays the arms out A, C, B where the ROM lays them A, B, C.
+
+    Rewriting it as an `else if` chain in the ROM's arm order gets 16/47 and
+    stops there: the BLOCKS land right and the TESTS do not. That half-fix is
+    the tell, and it is worth recognising because 16/47 looks like progress on
+    a lever that is nearly right, when the lever is wrong.
+
+    The `switch` gets both, and closes it byte-exact. IDO compiles a switch
+    over two nearby constants with no jump table by testing the LAST case
+    first and FALLING THROUGH to the first case's body:
+
+        beq  $a1, -2, <case -2>      # last case tested first
+        bne  $a1, -1, <default>
+        <case -1 body>               # fallthrough
+        b    <join>
+      <case -2 body> ... b <join>
+      <default> ...
+
+    An `if`/`else if` chain cannot produce that, because its first test is
+    always its first arm. So when the aligned diff shows whole blocks in the
+    wrong order and the source is a chain over integer constants, try the
+    switch before spending anything on register levers.
+
+    `tools/decomp/switch_sweep.py` does this over a whole directory. It scores
+    both spellings on a scratch copy (never the tree -- the first version
+    wrote candidates into src/ and that races the other lanes), and it refuses
+    a chain whose arms contain `break` or `continue`, because inside a loop
+    those belong to the LOOP and moving them into a switch retargets them
+    silently.
+
+    Corroboration that this is the file's own idiom and not a trick: the
+    function immediately above func_800B1378 in ovl1_7.c is already a switch
+    over the same three cases, and it matches.
