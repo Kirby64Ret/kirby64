@@ -415,57 +415,55 @@ void func_801B9D40_ovl7(GObj *arg0) {
 void func_801B9E78_ovl7(GObj *arg0) {
 }
 
-/* FACTORY: 24/219 [was noted 195/219], $f12/$f14 transposition only.  Structure, schedule,
-   branch shape and every store are the ROM's.  The lever that got it here
-   (97/219 -> 24/219) is the abs: the ROM does NOT test the difference
-   against zero, it compares the two ARRAY ELEMENTS (c.lt.s cur,target) and
-   computes `cur - target` in BOTH arms, negating in the true arm -- so the
-   plain `mag = (diff < 0.0f) ? -diff : diff` spelling is wrong here.
-   Writing the subtraction once before the if is much worse (193/219): it
-   has to stay duplicated inside both arms.
-   Residue: the ROM holds `diff` in $f14 and `mag` in $f12; our IDO uses the
-   opposite pair, and swapping the declaration order does not move it.
-   N64 spelling: each graded step writes D_800EA6E0[objId] directly (the ROM
-   re-stores through $a1 in every arm), not a `cur` local written back once. */
-#ifdef MIPS_TO_C
+/* MATCHED 2026-08-25 (was 24/219) -- LEVER 70, and the tell was that `diff`
+   is not a variable at all.
+   The whole function is one `ABSF(cur - target)`: IDO folds the macro's
+   `(x) < 0.0f` test on a SUBTRACTION into a compare of the two operands
+   (`c.lt.s cur, target`, no materialised zero anywhere in the listing), and
+   expands the operand three times, which is the three `sub.s $f14` -- one in
+   the bc1fl delay slot, one in the then-arm, and one UNREACHABLE at
+   .L801B9ECC. That dead sub is the macro's signature; nothing else emits it.
+   The 24 residual diffs were a clean $f12/$f14 transposition, and the cause
+   was that the draft named the difference: any `diff = cur - target;`
+   statement gives the subtraction its own register first and pushes the abs
+   result into the higher one. In the ROM $f14 is the MACRO'S OWN temp, CSE'd
+   into all twelve graded-step comparisons, and $f12 is the macro's result.
+   Spelling `cur - target` out at every one of those twelve sites and letting
+   IDO CSE them onto the macro's temp is what closed it.
+   Measured on the way, so nobody retries them:
+     m2c if/else with the subtraction duplicated in both arms   24/219
+     `diff` hoisted, `mag = ABSF(diff)`                        193/219
+     `diff` hoisted, then `mag = ABSF(cur - target)`           193/219
+   i.e. hoisting the difference costs 169 words, in either order. */
 void func_801B9E80_ovl7(GObj *arg0) {
     extern f32 D_800EA6E0[], D_800EB320[];
-    f32 diff;
-    f32 mag;
 
-    if (D_800EA6E0[omCurrentObj->objId] < D_800EB320[omCurrentObj->objId]) {
-        diff = D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId];
-        mag = -diff;
-    } else {
-        diff = D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId];
-        mag = diff;
-    }
-    if (mag < 3.1415927f) {
-        if (diff > 0.13962634f) {
+    if (ABSF((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId])) < 3.1415927f) {
+        if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) > 0.13962634f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.13962634f;
-        } else if (diff > 0.06981317f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) > 0.06981317f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.06981317f;
-        } else if (diff >= 0.017453292f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) >= 0.017453292f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.017453292f;
-        } else if (diff < -0.13962634f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) < -0.13962634f) {
             D_800EA6E0[omCurrentObj->objId] += 0.13962634f;
-        } else if (diff < -0.06981317f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) < -0.06981317f) {
             D_800EA6E0[omCurrentObj->objId] += 0.06981317f;
-        } else if (diff <= -0.017453292f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) <= -0.017453292f) {
             D_800EA6E0[omCurrentObj->objId] += 0.017453292f;
         }
     } else {
-        if (diff > 0.13962634f) {
+        if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) > 0.13962634f) {
             D_800EA6E0[omCurrentObj->objId] += 0.13962634f;
-        } else if (diff > 0.06981317f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) > 0.06981317f) {
             D_800EA6E0[omCurrentObj->objId] += 0.06981317f;
-        } else if (diff >= 0.017453292f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) >= 0.017453292f) {
             D_800EA6E0[omCurrentObj->objId] += 0.017453292f;
-        } else if (diff < -0.13962634f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) < -0.13962634f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.13962634f;
-        } else if (diff < -0.06981317f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) < -0.06981317f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.06981317f;
-        } else if (diff <= -0.017453292f) {
+        } else if ((D_800EA6E0[omCurrentObj->objId] - D_800EB320[omCurrentObj->objId]) <= -0.017453292f) {
             D_800EA6E0[omCurrentObj->objId] -= 0.017453292f;
         }
     }
@@ -477,59 +475,6 @@ void func_801B9E80_ovl7(GObj *arg0) {
     }
     arg0->data.dobj->firstChild->angle.v.x = D_800EA6E0[omCurrentObj->objId] - 1.5707964f;
 }
-#elif defined(PORT)
-/* Aim-angle chaser (ported from m2c): step D_800EA6E0 toward the target
- * angle D_800EB320 with graded steps (8, 4, 1 degrees), going the short
- * way around when |cur - target| < pi and the long way otherwise, wrap
- * into [0, 2pi), and pose the model's root DObj X rotation to the angle
- * minus pi/2. */
-void func_801B9E80_ovl7(GObj *arg0) {
-    u32 id = omCurrentObj->objId;
-    f32 cur = D_800EA6E0[id];
-    f32 diff = cur - D_800EB320[id];
-    f32 mag = (diff < 0.0f) ? -diff : diff;
-
-    if (mag < 3.1415927f) {
-        if (diff > 0.13962634f) {
-            cur -= 0.13962634f;
-        } else if (diff > 0.06981317f) {
-            cur -= 0.06981317f;
-        } else if (diff >= 0.017453292f) {
-            cur -= 0.017453292f;
-        } else if (diff < -0.13962634f) {
-            cur += 0.13962634f;
-        } else if (diff < -0.06981317f) {
-            cur += 0.06981317f;
-        } else if (diff <= -0.017453292f) {
-            cur += 0.017453292f;
-        }
-    } else {
-        if (diff > 0.13962634f) {
-            cur += 0.13962634f;
-        } else if (diff > 0.06981317f) {
-            cur += 0.06981317f;
-        } else if (diff >= 0.017453292f) {
-            cur += 0.017453292f;
-        } else if (diff < -0.13962634f) {
-            cur -= 0.13962634f;
-        } else if (diff < -0.06981317f) {
-            cur -= 0.06981317f;
-        } else if (diff <= -0.017453292f) {
-            cur -= 0.017453292f;
-        }
-    }
-    while (cur > 6.2831855f) {
-        cur -= 6.2831855f;
-    }
-    while (cur < 0.0f) {
-        cur += 6.2831855f;
-    }
-    D_800EA6E0[omCurrentObj->objId] = cur;
-    arg0->data.dobj->firstChild->angle.v.x = cur - 1.5707964f;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_13/func_801B9E80_ovl7.s")
-#endif
 
 void func_801BA1EC_ovl7(GObj *arg0) {
     if (D_800E0D50[omCurrentObj->objId] == 0) {
