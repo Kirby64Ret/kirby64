@@ -4372,6 +4372,23 @@ s32 func_8012209C(void) {
     if (diff != 0.0f) {
         if (func_80104AB4(&cur, &next, 1, 8, &tri) != 0) {
             func_8010DC00(tri, &nrm);
+            /* PROBE (KIRBY_PC_PROBE): the segment cast said Kirby's body
+             * crossed a collision face this frame. This is the only place the
+             * blocked flag is raised, so a player who walks into an invisible
+             * stop is either hitting real level geometry here or hitting a
+             * face this build reads wrongly; the normal and the two endpoints
+             * say which, and nothing else in the engine will. */
+            {
+                extern void pc_probe_every(const char *, double, const char *, ...);
+
+                pc_probe_every("8012209C.hit", 5.0,
+                               "diff=%.6f nrm=(%.3f,%.3f,%.3f) "
+                               "cur=(%.2f,%.2f,%.2f) next=(%.2f,%.2f,%.2f)",
+                               (double)diff, (double)nrm.x, (double)nrm.y,
+                               (double)nrm.z, (double)cur.x, (double)cur.y,
+                               (double)cur.z, (double)next.x, (double)next.y,
+                               (double)next.z);
+            }
             if (nrm.y == 0.0f) {
                 if (diff > 0.0f) {
                     if ((gKirbyState.abilityInUse != 6) && (gKirbyState.abilityInUse != 0x1B) &&

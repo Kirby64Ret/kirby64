@@ -667,6 +667,12 @@ void func_800F8E6C(GObj *arg0) {
  * near the top of this file records. */
 void func_8001E344(Vector *, void *, f32);
 
+/* PROBE state for func_800F8E6C below: the track parameter this function left
+ * behind for entity 0 last frame, so the next frame can say whether anything
+ * else moved it. PORT-only, and read only by the probe. */
+static f32 sPcTrackLeft;
+static s32 sPcTrackLeftValid;
+
 void func_800F8E6C(GObj *arg0) {
     s32 objId = arg0->objId;
     s32 node = D_800E5F90[objId];
@@ -685,6 +691,30 @@ void func_800F8E6C(GObj *arg0) {
     old = D_800E6BD0[objId];
     D_800E6BD0[objId] = old + ((D_800E64D0[objId] * 0.1f) / footer->length);
     cur = D_800E6BD0[objId];
+    /* PROBE (KIRBY_PC_PROBE): this is the ONLY place the player's track
+     * parameter is advanced, so a player who is being driven at full forward
+     * velocity and yet does not move has either stopped arriving here or is
+     * having the advance undone between frames. `left` is what this function
+     * wrote last frame; if `old` does not match it, something else owns the
+     * parameter and the search moves there. Printed on a wall clock rather
+     * than a hit budget because the interesting behaviour starts a minute
+     * into the run. */
+#ifdef PORT
+    if (objId == 0) {
+        extern void pc_probe_every(const char *, double, const char *, ...);
+        extern f32 gEntitiesNextPosXArray[];
+
+        pc_probe_every("8E6C.obj0", 5.0,
+                       "node=%d left=%.6f%s old=%.6f -> %.6f  vel=%.4f "
+                       "len=%.3f x=%.2f",
+                       (int)node, (double)sPcTrackLeft,
+                       (sPcTrackLeftValid && sPcTrackLeft != old)
+                           ? " *UNDONE*" : "",
+                       (double)old, (double)cur,
+                       (double)D_800E64D0[objId], (double)footer->length,
+                       (double)gEntitiesNextPosXArray[objId]);
+    }
+#endif
     if (old != cur) {
         D_800E6D90[objId] = old;
         func_800F8B1C(objId);
@@ -707,6 +737,10 @@ void func_800F8E6C(GObj *arg0) {
     D_800E17D0[objId] = ang;
     if (ang < 0.0f) {
         D_800E17D0[objId] += 6.2831855f;
+    }
+    if (objId == 0) {
+        sPcTrackLeft = D_800E6BD0[objId];
+        sPcTrackLeftValid = 1;
     }
 }
 #else
