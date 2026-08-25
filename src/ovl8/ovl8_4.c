@@ -936,7 +936,34 @@ void func_801D6C8C_ovl8(struct GObj *arg0) {
  *            the 0x3F group (floor/ceiling) just halves and reverses his X
  *            velocity and kills the Y term. */
 #ifdef MIPS_TO_C
-/* FACTORY: 131/201 words DIFFER -- 70 already match, instruction count exact
+/* FACTORY: 41/201 words DIFFER, 2026-08-25 (was 91, and 131 before that), and
+ * the INSTRUCTION COUNT IS EXACT with no missing or extra word.
+ * The 90-word improvement was TWO CHARACTERS, both LEVER 90/99 zero forks, and
+ * they only pay TOGETHER -- the pair is the unit, exactly as LEVER 99 says:
+ *     `D_800E3210[objId] = 0.0f;` -> `= 0`        91  (alone)
+ *     `gKirbyHp <= 0.0f`          -> `<= 0`       70  (alone)
+ *     both                                        41
+ *     both, plus `dx != 0 || dz != 0`             68  (worse -- leave those)
+ * All 15 subsets of the three sites were measured; 41 is the floor of that
+ * space, and two different subsets reach it (store+hp, or dxz+nothing-else).
+ * zerofork_sweep.py finds the store flip on its own but reports 68, because it
+ * tries singles and then ALL sites and never the pairs -- run the pairs by hand
+ * on any draft it improves.
+ * What is left is ONE scheduling decision and the register cascade hanging off
+ * it, in the three D_8012BCA0 hit-bit blocks: the ROM fills the first block's
+ * `beqz $t6` delay slot with that block's own `lui $v0, %hi(D_8012BCA0)`, this
+ * draft fills it with the SECOND block's `andi $t0, 0x2`, which then lives in
+ * $t5 across the whole first block and rotates every temp in all three blocks
+ * ($t7/$t3/$t8/$t9/$t2/$t4/$t5 against $t9/$t7/$t1/$t2/$t3/$t8/$t4).  aligndiff
+ * reduces the whole residue to one insert at 132 and one delete at 143.
+ * Measured and inert, do not re-spend: an empty `do { } while (0);` barrier
+ * before each of the four `if (hits ...)` statements (all four placements,
+ * 41 every time); the `or` operands swapped in all three blocks
+ * (`(x & 7) | (y << 3)`); `if (hits)` for `if (hits != 0)`; `(hits & N) != 0`
+ * for `hits & N`; `hits` retyped u32.  Declaration ORDER is the one knob that
+ * moves and every rotation is worse (43, 45, 47).
+ *
+ * (older) 131/201 words DIFFER -- 70 already match, instruction count exact
  * but for ONE extra `move $a0,$t0`. The ROM loads omCurrentObj->objId
  * straight into $a0 (the outgoing first argument of func_800F8728) and
  * indexes off it; IDO CSEs the same expression into $t0 and moves it into
@@ -973,7 +1000,7 @@ void func_801D6F1C_ovl8(struct GObj *arg0) {
     }
     switch (D_800E98E0[omCurrentObj->objId]) {
     case 0:
-        if (gKirbyHp <= 0.0f) {
+        if (gKirbyHp <= 0) {
             gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesPosYArray[omCurrentObj->objId];
             D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId];
             D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId];
@@ -1008,7 +1035,7 @@ void func_801D6F1C_ovl8(struct GObj *arg0) {
             func_8016BD24_ovl3(0);
         } else if ((flags & 0x3F) != 0) {
             D_800E64D0[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId] * -0.5f;
-            D_800E3210[omCurrentObj->objId] = 0.0f;
+            D_800E3210[omCurrentObj->objId] = 0;
         }
         break;
     }

@@ -1757,10 +1757,16 @@ void func_801E0D64_ovl12(GObj *arg0) {
 
 // the pattern
 #ifdef NON_MATCHING
+/* FACTORY: 29/116, 2026-08-25 (was 43/116).  ONE LEVER 90/99 zero fork: the
+ * FIRST `D_800E6690[objId] = 0.0f` must be the integer `0`, so that it does not
+ * share a `mtc1 $zero` with the `= 0.0f` store to D_800E64D0 eight lines below.
+ * All eight subsets of the three zero sites were measured: this one alone is
+ * 29, the D_800E9E20 integer store is inert, and flipping the LATER
+ * `D_800E64D0[objId] = 0.0f` is 47 -- worse, alone or in any combination. */
 void func_801E0DF8_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 7;
     D_800E9E20[omCurrentObj->objId] = 0;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0;
     D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
     D_800E6850[omCurrentObj->objId] = 65535.0f;
     while (D_800E9AA0[omCurrentObj->objId] != NULL) {

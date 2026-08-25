@@ -119,7 +119,7 @@ struct Ovl16AnimObj *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl16AnimObj *);
 struct Ovl16AnimObj *func_801A0464_ovl7(void);
 void func_801A04B8_ovl7(void);
-void func_801DC314_ovl16(s32, s32, s32);
+s32 func_801DC314_ovl16(s32, s32, s32);
 void func_801E7EE0_ovl16(s32, s32 *, s32 *);
 
 struct Ovl16Pair {
@@ -697,7 +697,41 @@ block_59:
 #endif
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. 204/243, and unlike the rest of its class this
+/* FACTORY: 204/243, and the note below was reading a WRONG SIGNATURE.
+ * 2026-08-25, second pass: this function is not `void`.  Every one of its six
+ * exits is `b .L801DC6D0_ovl16` after `lw $v1, %lo(D_800E83E0)($v1)`, and the
+ * shared epilogue is `or $v0, $v1, $zero; jr $ra` -- it RETURNS
+ * `D_800E83E0[omCurrentObj->objId]`, exactly like its clone
+ * func_801DBBCC_ovl16 forty lines above, whose m2c draft ends `return *var_t3;`.
+ * Item (b) of the old note ("eight words this draft does not have at all") was
+ * the return value, misread as a structural gap.  Both declarations
+ * (src/ovl16/ovl16.c:122 and src/ovl16/ovl16_2.c:144) and all eleven call sites
+ * discard the result, which is why the wrong type survived; it is also a PORT
+ * bug, since the port compiles this arm.
+ *   s32 head + a `return D_800E83E0[omCurrentObj->objId];` in each of the six
+ *   arms                                        204 -> 214, frame 0x58 -> 0x60
+ *   ...plus deleting `temp_v1` (the switch value, written inline)
+ *                                               214 -> 204, FRAME EXACT 0x58
+ * So the score is flat and the draft is now the right shape underneath it:
+ * correct return type, correct frame, 239 words against the ROM's 243.
+ * Measured and rejected on the way, so nobody re-spends them:
+ *   - a `struct UnkStruct800D7098 *ctx = &D_800D7098;` local, used for every
+ *     field: EXACTLY INERT (204 either way, frame unchanged).  IDO folds a
+ *     constant-initialised pointer straight back into %lo, whether it is
+ *     initialised at the declaration or assigned in the body.
+ *   - LEVER 35's cast, `(struct UnkStruct800D7098 *)(u32)&D_800D7098`, DOES
+ *     force the register form -- and applied at every site it is worse:
+ *     206/249, shape 40 runs against 34, frame 0x60.  The ROM materialises the
+ *     address EIGHT times for TEN source references (once after each `jal`,
+ *     since $a2 is caller-saved), so a per-use cast overshoots by two
+ *     materialisations and four words.  The remaining job is to find the source
+ *     shape that shares those two, not to force more of them.
+ *   - deleting temp_v1_2/temp_v1_3 as well takes the frame back UP to 0x60
+ *     (LEVER 57: inlining `(s8) sp2C->unk3A` twice buys two compiler temps that
+ *     cancel the two declarations), so temp_v1 is the only one to remove.
+ * What the old note got right, kept verbatim below.
+ *
+ * m2c draft, for the PORT only. 204/243, and unlike the rest of its class this
    one does NOT come apart on LEVER 108's cleanup -- measured 2026-08-25, so
    nobody re-spends it.
      - Deleting the seven temp_ declarations and writing every subscript
@@ -717,12 +751,11 @@ block_59:
         its own ending `b .L801DC6D0_ovl16`, eight words this draft does not
         have at all.
    That is a re-derivation of the dispatch, not a lever. */
-void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
     struct Ovl16AnimInfo sp38;
     EnemyRecord *sp2C;
     s32 temp_v0_2;
     s32 temp_v0_3;
-    s32 temp_v1;
     s8 temp_v1_2;
     s8 temp_v1_3;
     struct Ovl16AnimObj *temp_v0;
@@ -756,13 +789,14 @@ void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
             sp2C->unk3A = -1U;
         }
         D_800D7098.unk28 = 0;
-    } else if (func_80110B00(&sp38) != 0) {
+        return D_800E83E0[omCurrentObj->objId];
+    }
+    if (func_80110B00(&sp38) != 0) {
         func_801DBA54_ovl16(sp2C, &sp38);
-        temp_v1 = D_800E83E0[omCurrentObj->objId];
-        switch (temp_v1) {                          /* irregular */
+        switch (D_800E83E0[omCurrentObj->objId]) {                          /* irregular */
         default:
             D_800D7098.unk28 = 0;
-            break;
+            return D_800E83E0[omCurrentObj->objId];
         case 8:
         case 18:
             assign_new_process_entry(gEntityGObjProcessArray[(s8) sp2C->unk3A], func_801AC11C_ovl7, &D_800D7098);
@@ -781,9 +815,10 @@ void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
                     }
                 }
             }
-            break;
+            return D_800E83E0[omCurrentObj->objId];
         }
-    } else if (func_80110FD4(&sp38) != 0) {
+    }
+    if (func_80110FD4(&sp38) != 0) {
         func_801DBA54_ovl16(sp2C, &sp38);
         if (D_800E83E0[omCurrentObj->objId] == 6) {
             if (D_800D7098.unk28 == 0) {
@@ -799,15 +834,16 @@ void func_801DC314_ovl16(s32 arg0, s32 arg1, s32 arg2) {
                     }
                 }
             }
-        } else {
-            D_800D7098.unk28 = 0;
+            return D_800E83E0[omCurrentObj->objId];
         }
-    } else {
-        D_800E83E0[omCurrentObj->objId] = 0;
-        sp2C->unk43 = 0;
-        sp2C->unk3A = -1U;
         D_800D7098.unk28 = 0;
+        return D_800E83E0[omCurrentObj->objId];
     }
+    D_800E83E0[omCurrentObj->objId] = 0;
+    sp2C->unk43 = 0;
+    sp2C->unk3A = -1U;
+    D_800D7098.unk28 = 0;
+    return D_800E83E0[omCurrentObj->objId];
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else

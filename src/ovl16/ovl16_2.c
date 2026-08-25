@@ -141,7 +141,7 @@ struct Ovl16AnimObj *func_80111C88(s32 *, u32);
 void func_80111ECC(struct Ovl16AnimObj *);
 struct Ovl16AnimObj *func_801A0464_ovl7(void);
 void func_801A04B8_ovl7(void);
-void func_801DC314_ovl16(s32, s32, s32);
+s32 func_801DC314_ovl16(s32, s32, s32);
 void func_801E7EE0_ovl16(s32, s32 *, s32 *);
 
 struct Ovl16Pair {
