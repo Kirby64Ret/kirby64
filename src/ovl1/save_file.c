@@ -281,7 +281,27 @@ void saveSetFileChecksum(u32 file) {
     gSaveBuffer1.files[file].checksum = saveCalcFileChecksum(file);
 }
 
-/* FACTORY: 1/24, residue = the unroller's zero-trip guard `beq end,start`.
+/* FACTORY: 20/24 positionally -- MEASURED 2026-08-25.  The note below said
+   1/24, and that 1 is an ALIGNED diff count: the draft is MISSING the ROM's
+   `beq $a2, $a1` zero-trip guard, one absent instruction, and every word after
+   it therefore sits one slot early.  Both numbers are about the same defect;
+   20/24 is what measure_seeds and priority_queue.py read, so it leads.
+   Two claims in the note are NOT confirmed by the measurement and should be
+   treated as open.  (a) "Everything else in this draft is byte-exact" is not
+   true even after allowing for the shift: the unrolled body stores
+   -0xC/-0x8/-0x4 then -0x10 in the delay slot where the ROM stores
+   -0x10/-0xC/-0x8 then -0x4, which is LEVERS 56's signature.  (b) That
+   rotation being "a consequence of the missing guard" is therefore an
+   assertion, not a measurement.
+   NEGATIVE CONTROL for LEVERS 56, measured today: dropping the braces --
+   `for (; p != end; p++) *p = 0;` -- is byte-identical here, 20/24 either way.
+   That is the same edit that took func_800B8E00 in THIS FILE from 4/77 to
+   MATCH, so the lever is real and simply does not reach this one.  Whatever
+   fixes the rotation here is something else.
+   The original note follows.
+
+   FACTORY (as written): 1/24, residue = the unroller's zero-trip guard
+   `beq end,start`.
    FAMILY FLOOR shared with func_800B91B8, func_800B922C and
    saveCalcHeaderChecksum: in IDO the guard and the residual are ENTANGLED.
    Same-symbol `end` (or `end = p + N`, which folds to it) yields the ROM's
@@ -310,8 +330,10 @@ void func_800B9008(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B9008.s")
 #endif
 
-/* FACTORY: 1/30, residue = the same zero-trip-guard family floor as
-   func_800B9008 above; see that comment for the entangled-lever measurement. */
+/* FACTORY: 25/30 positionally -- MEASURED 2026-08-25; the note said 1/30, an
+   ALIGNED count.  Same missing zero-trip guard as func_800B9008 above, and the
+   same one-slot shift behind it; see that comment, including which of its
+   claims the measurement does NOT confirm. */
 #ifdef NON_MATCHING
 u32 saveCalcHeaderChecksum(void) {
     u32 *p;
