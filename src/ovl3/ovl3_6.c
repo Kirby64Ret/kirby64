@@ -3856,43 +3856,42 @@ void func_8017EA0C_ovl3(s32 arg0) {
  * dropped; gEntityGObjProcessArray/assign_new_process_entry/
  * func_8016C510_ovl3 are declared locally because the file's own externs
  * for them only appear further down. */
-/* FACTORY: 208/248, and the useful facts are about WHERE it goes wrong, not
- * about registers. The note that used to sit here called it a callee-saved
- * permutation; LEVER 65b's opcode test says otherwise -- 38 of the 208 diffs
- * are register renames at aligned positions and 127 have a DIFFERENT OPCODE.
+/* FACTORY: 218/248 -- and the number went UP while the function got much
+ * closer, which is worth understanding before touching it.
  *
- * MEASURED 2026-08-25, by compiling the scratch and counting:
+ * THE STRUCTURE WAS MISSING AN ABSF, found 2026-08-25 by counting rather than
+ * by reading:
  *
- *     ours   205 instructions,  6 branch-likely
- *     ROM    248 instructions,  9 branch-likely
+ *              instructions   branch-likely
+ *     before        205             6
+ *     after         247             8
+ *     ROM           248             9
  *
- * so the draft is 43 words SHORT and three branch-likely short. verify.py's
- * `current=<none>` for indices 205-247 is the alignment tail of being short,
- * not a missing tail: the source's last block matches the ROM's epilogue
- * statement for statement.
+ * The draft stored D_800E6850 from a plain if/else ladder. The ROM does not:
+ * at .L8017EFF4 it emits `c.lt.s $f0, $f16` against a $f16 that
+ * `mtc1 $zero, $f16` set to 0.0f, then either `neg.s $f18, $f0` and a store,
+ * or the store alone. That is ABSF(x) = ((x) < 0.0f ? -(x) : (x)) from
+ * include/macros.h, and because the macro names x THREE times it expands the
+ * 2.5f/5.0f selection three times -- which is where 42 of the 43 missing
+ * words were. Both D_800E6850 stores are now
+ * `ABSF((D_800E8AE0[id] & 6) ? 2.5f : 5.0f)`.
  *
- * The streams agree at 14-17, 37-42 and 61-67 and diverge from about 68,
- * which is the start of the `gKirbyController.buttonHeld & 0x300` block.
+ * Note the ABSF is applied to something the compiler cannot prove positive
+ * even though every value it can take is: that is why the negation arm
+ * survives at all, and it is the tell for this whole class. A `c.lt.s`
+ * against a materialised 0.0f on a value that is obviously positive means an
+ * ABS/ABSF macro in the source, not a real sign test.
  *
- * TWO HYPOTHESES TESTED AND BOTH WRONG, recorded so they are not retried:
+ * WHAT IS LEFT is one word and a whole-function register cascade starting at
+ * index 8, where the ROM puts &gKirbyState in $v1 and IDO uses $a0. So the
+ * original note's "callee-saved permutation" was half right -- it just could
+ * not be reached until the structure was there. LEVER 65b's opcode test is
+ * the way to tell when it has become true.
  *
- *   1. "Our source shape does not produce branch-likely." It does. Compiled
- *      in isolation through this project's cc at -O2, the ladder shape this
- *      draft uses -- `if (!(flags[i] & 6)) { arr[i] = A; } else { arr[i] = B; }`
- *      -- emits `bnezl` with the store duplicated into the delay slot, which
- *      is exactly the ROM's idiom. We emit six of them here.
- *   2. "The draft is missing ladders." It is not. The ROM has five
- *      `andi $tN, $tM, 0x6` ladders and so does the draft. (An earlier note
- *      here said ten; that count came from a regex whose bounds spilled into
- *      the neighbouring functions and it was wrong.)
- *
- * Also measured and inert: flipping the ladders to the positive test with the
- * arms swapped. Byte-identical -- IDO canonicalises the polarity.
- *
- * So 43 words and 3 branch-likely are missing from somewhere in the
- * buttonHeld region, with the ladder count already correct. The next step is
- * to walk the ROM's basic blocks from 0x8017EF20 against the draft's control
- * flow and find which arm the source does not have. */
+ * MEASURED AND INERT, do not retry: converting the two D_800E6690 ladders to
+ * ternaries (byte-identical); flipping every `if (!(x & 6))` ladder to the
+ * positive test with the arms swapped (byte-identical -- IDO canonicalises
+ * the polarity). */
 void func_8017EDDC_ovl3(s32 arg0) {
     extern struct GObjProcess *gEntityGObjProcessArray[];
     s32 id;
@@ -3935,11 +3934,7 @@ void func_8017EDDC_ovl3(s32 arg0) {
                 D_800E6690[id] = 0.3125f;
             }
             id = omCurrentObj->objId;
-            if (!(D_800E8AE0[id] & 6)) {
-                D_800E6850[id] = 5.0f;
-            } else {
-                D_800E6850[id] = 2.5f;
-            }
+            D_800E6850[id] = ABSF((D_800E8AE0[id] & 6) ? 2.5f : 5.0f);
         } else {
             D_800EA6E0[id] = -1.0f;
             id = omCurrentObj->objId;
@@ -3949,11 +3944,7 @@ void func_8017EDDC_ovl3(s32 arg0) {
                 D_800E6690[id] = -0.3125f;
             }
             id = omCurrentObj->objId;
-            if (!(D_800E8AE0[id] & 6)) {
-                D_800E6850[id] = 5.0f;
-            } else {
-                D_800E6850[id] = 2.5f;
-            }
+            D_800E6850[id] = ABSF((D_800E8AE0[id] & 6) ? 2.5f : 5.0f);
         }
     } else {
         if (!(D_800E8AE0[id] & 6)) {
