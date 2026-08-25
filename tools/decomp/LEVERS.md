@@ -835,3 +835,39 @@ the pool allocator's real stride is 0x78.
     shape first. Keep the truthful head either way -- but say in the note that
     the score went the wrong way, so the next lane does not read the number as
     a refutation of the lever.
+
+70. **A `c.lt.s` against a materialised zero, on a value that cannot be
+    negative, is an `ABSF` macro -- and the macro names its operand THREE
+    times.** `include/macros.h` defines `ABSF(x) ((x) < 0.0f ? -(x) : (x))`.
+    IDO expands it in place, so the listing shows `mtc1 $zero, $fN` followed
+    by `c.lt.s $fSRC, $fN`, a `neg.s`, and -- because the else arm names the
+    operand a third time -- a SECOND load of the operand from wherever it
+    lives. A draft that writes the same thing as
+    `abs = v; if (v < 0.0f) { abs = -v; }` reads the operand ONCE and is short
+    the reload, the branch and the negation. Two measurements:
+
+    - func_8017EDDC_ovl3: 205 instructions and 6 branch-likely against the
+      ROM's 248 and 9. `D_800E6850[id] = ABSF((D_800E8AE0[id] & 6) ? 2.5f :
+      5.0f);` -- the macro triples the whole ternary -- took it to 247/8.
+      42 of the 43 missing words were that one macro.
+    - func_800A52F0 (util.c): 63 diffs of 69 down to 40, by writing
+      `atan2f(ABSF(x), ABSF(arg1))` instead of two hand-written sign tests.
+      The tell in the listing is the pair of reloads from arg1's home slot
+      `0x24($sp)` into $f4 and then $f14 around a single `c.lt.s`.
+
+    **Enumerate it, do not hunt it.** `tools/decomp/absf_sweep.py` walks every
+    guarded draft, collects the registers a listing loads with
+    `mtc1 $zero`, counts the `c.lt.s`/`c.le.s` naming one of them, and drops
+    any draft that already says `ABS`/`ABSF`. It reports 207 drafts. The count
+    is a strength ranking, not a verdict: a genuine sign test (`if (vel.y <
+    0.0f)` on a velocity) produces the same compare, so read the operand
+    first. The macro is the reading when every branch of the value is
+    obviously non-negative, or when the operand is reloaded twice around one
+    compare.
+
+    Caveat, from func_800A52F0's residual 40: fixing the macro does not fix
+    register allocation. That ROM promotes arg0 to the callee-saved `$f20`
+    (`sdc1 $f20, 0x10($sp)`, frame 0x20) while every draft shape tried --
+    param direct, copied to a local, copied to a local plus separate `absX`
+    locals -- homes both floats and gets frame 0x18. Score the macro change on
+    its own and record the leftover; do not spend the session on the residue.

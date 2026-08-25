@@ -253,14 +253,29 @@ void func_800ACBDC(GObj *);
  * lane (via func_8016FFE8_ovl5) once the bias saturates, clamping against
  * the last tile (row entry 0x51) so the far end never scrolls past 1350.
  *
- * FACTORY: 236/246 [was noted 10/246], UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
- * found; compiles as-is once split out of the shared PORT-prototype
- * block above. Word count matches (246/246), residue extreme
- * (236/246) -- broad register/frame relabeling from word 0. Worth a
- * fresh m2c pass before feeding to the permuter. */
-#ifdef MIPS_TO_C
+ * MATCHED 2026-08-25, re-derived from the listing (was 236/246 under a
+ * "no source bugs found, broad register/frame relabeling" note). Three
+ * defects, and the note's own "word count matches" was wrong -- the ROM is
+ * 243 words, not 246:
+ *   - the `z` local. Caching gEntitiesNextPosZArray[objId] gives it a live
+ *     range that spans the loop in the z > 0 branch, so IDO parks it in a
+ *     THIRD callee-saved FP register ($f24, frame 0x40) where the ROM has
+ *     only $f20/$f22 and a 0x38 frame. Spelling the array access inline
+ *     (`-=`, `+=`) keeps it in caller-saved $f2 exactly as the ROM does.
+ *     Note this needs `over = arg1 - <load>` written BEFORE the `+=` store,
+ *     which is also where the ROM schedules it.
+ *   - the two `end` sums are spelled in OPPOSITE operand order from the
+ *     source: IDO evaluates a float `+` between two memory loads
+ *     right-to-left and puts the first-evaluated in slot 1 (LEVER 2).
+ *   - `lim`. With the bound written as the literal `1350.0f`, IDO emits
+ *     `c.eq.s end, 1350` where the ROM has `c.eq.s 1350, end`; the
+ *     neighbouring `(end - arg1) == 1350.0f` already reversed, because its
+ *     left side is a single-use temp rather than a live variable. Reading
+ *     the bound out of a local restores the ROM's slot order for both
+ *     (LEVER 14: two plain locals honour SOURCE order). The `<=` test is
+ *     left as the literal -- IDO shares the one constant either way. */
 void func_80170098_ovl5(s32 arg0, f32 arg1) {
-    f32 z;
+    f32 lim = 1350.0f;
     f32 end;
     f32 over;
     s32 last;
@@ -269,9 +284,9 @@ void func_80170098_ovl5(s32 arg0, f32 arg1) {
     if (arg1 < 0.0f) {
         last = D_8018E478_ovl5[arg0][0x51];
         if (last != 0) {
-            end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+            end = gEntitiesNextPosZArray[last] + D_8018EB48_ovl5[arg0];
             if ((end + arg1) <= 1350.0f) {
-                if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
+                if ((lim == end) || ((end - arg1) == lim)) {
                     gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
                     return;
                 }
@@ -292,30 +307,30 @@ void func_80170098_ovl5(s32 arg0, f32 arg1) {
         }
         return;
     }
-    z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if (z > 0.0f) {
-        if (arg1 <= z) {
-            gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+    if (gEntitiesNextPosZArray[omCurrentObj->objId] > 0.0f) {
+        if (arg1 <= gEntitiesNextPosZArray[omCurrentObj->objId]) {
+            gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
             return;
         }
-        gEntitiesNextPosZArray[omCurrentObj->objId] = z + z;
+        over = arg1 - gEntitiesNextPosZArray[omCurrentObj->objId];
+        gEntitiesNextPosZArray[omCurrentObj->objId] += gEntitiesNextPosZArray[omCurrentObj->objId];
         for (i = 0; i < 0x52; i++) {
             if (D_8018E478_ovl5[arg0][i] != 0) {
-                func_8016FFE8_ovl5(arg0, i, arg1 - z);
+                func_8016FFE8_ovl5(arg0, i, over);
             }
         }
         return;
     }
     last = D_8018E478_ovl5[arg0][0x51];
     if (last != 0) {
-        end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
+        end = gEntitiesNextPosZArray[last] + D_8018EB48_ovl5[arg0];
         if ((end + arg1) <= 1350.0f) {
-            if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
-                gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
+            if ((lim == end) || ((end - arg1) == lim)) {
+                gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
                 return;
             }
             over = (end + arg1) - 1350.0f;
-            gEntitiesNextPosZArray[omCurrentObj->objId] = z - over;
+            gEntitiesNextPosZArray[omCurrentObj->objId] -= over;
             for (i = 0; i < 0x52; i++) {
                 if (D_8018E478_ovl5[arg0][i] != 0) {
                     func_8016FFE8_ovl5(arg0, i, arg1 - over);
@@ -330,81 +345,6 @@ void func_80170098_ovl5(s32 arg0, f32 arg1) {
         }
     }
 }
-#elif defined(PORT)
-void func_80170098_ovl5(s32 arg0, f32 arg1) {
-    f32 z;
-    f32 end;
-    f32 over;
-    s32 last;
-    s32 i;
-
-    if (arg1 < 0.0f) {
-        last = D_8018E478_ovl5[arg0][0x51];
-        if (last != 0) {
-            end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
-            if ((end + arg1) <= 1350.0f) {
-                if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
-                    gEntitiesNextPosZArray[omCurrentObj->objId] -= arg1;
-                    return;
-                }
-                over = (end + arg1) - 1350.0f;
-                gEntitiesNextPosZArray[omCurrentObj->objId] -= over;
-                for (i = 0; i < 0x52; i++) {
-                    if (D_8018E478_ovl5[arg0][i] != 0) {
-                        func_8016FFE8_ovl5(arg0, i, arg1 - over);
-                    }
-                }
-                return;
-            }
-        }
-        for (i = 0; i < 0x52; i++) {
-            if (D_8018E478_ovl5[arg0][i] != 0) {
-                func_8016FFE8_ovl5(arg0, i, arg1);
-            }
-        }
-        return;
-    }
-    z = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if (z > 0.0f) {
-        if (arg1 <= z) {
-            gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
-            return;
-        }
-        gEntitiesNextPosZArray[omCurrentObj->objId] = z + z;
-        for (i = 0; i < 0x52; i++) {
-            if (D_8018E478_ovl5[arg0][i] != 0) {
-                func_8016FFE8_ovl5(arg0, i, arg1 - z);
-            }
-        }
-        return;
-    }
-    last = D_8018E478_ovl5[arg0][0x51];
-    if (last != 0) {
-        end = D_8018EB48_ovl5[arg0] + gEntitiesNextPosZArray[last];
-        if ((end + arg1) <= 1350.0f) {
-            if ((end == 1350.0f) || ((end - arg1) == 1350.0f)) {
-                gEntitiesNextPosZArray[omCurrentObj->objId] = z - arg1;
-                return;
-            }
-            over = (end + arg1) - 1350.0f;
-            gEntitiesNextPosZArray[omCurrentObj->objId] = z - over;
-            for (i = 0; i < 0x52; i++) {
-                if (D_8018E478_ovl5[arg0][i] != 0) {
-                    func_8016FFE8_ovl5(arg0, i, arg1 - over);
-                }
-            }
-            return;
-        }
-    }
-    for (i = 0; i < 0x52; i++) {
-        if (D_8018E478_ovl5[arg0][i] != 0) {
-            func_8016FFE8_ovl5(arg0, i, arg1);
-        }
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80170098_ovl5.s")
-#endif
 
 s32 func_80170464_ovl5(s32 arg0, s32 arg1) {
     s32 id = D_8018E478_ovl5[arg0][arg1];
