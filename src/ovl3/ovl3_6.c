@@ -168,7 +168,8 @@ void func_80179370_ovl3(s32 arg0) {
     s32 id;
     s32 pre;
 
-    gKirbyState.unk30 = 0;
+    k = &gKirbyState;
+  k->unk30 = 0;
     gKirbyState.unk4C = 0;
     gKirbyState.unk7 = 0;
     func_8011CF58();
@@ -3232,24 +3233,37 @@ extern f32 D_801976A0_ovl3;
 extern f32 D_801976A4_ovl3;
 
 #ifdef NON_MATCHING
-/* FACTORY: 2/180 -- two redundant `lui $at, %hi(gKirbyState)`, for the two
-   swc1 stores to unk40 that the ROM addresses off the $s0 it already holds.
-   MEASURED, and it is a consequence of the 0xF7FB0 rodata migration, not a
-   defect in the body: with D_801976A0/A4 spelled as the EXTERNS above (the
-   pre-migration shape, where the symbols came from the kirby_2 asm blob)
-   this function matched EXACTLY. Writing them as the literals those pool
-   entries are costs those two `lui`s; defining them as same-object
-   `const f32` puts them in .data and still scores 3/178 (the ROM's
-   scheduler sinks the `lim` load past the two loop-invariant base addiu's
-   for gEntitiesAngleXArray/gKirbyController). A migrated TU can only emit
-   .rodata as function literals, so this one keeps its pragma and lets splat
-   own D_801976A0/A4 -- that is also what defines them for the arm below.
-   Swept: declaration order and position, initialisers at declaration, const,
-   `+=` for the unk40 update, the assignments before the func_800AA018 call,
-   inlining `step`. */
+/* FACTORY: 2 SPURIOUS WORDS, 180 emitted against the ROM's 178. Everything
+   through the loop preheader is word-exact; the only defect is two extra
+   `lui $at, %hi(gKirbyState)`, one for each of the two swc1 stores to unk40
+   inside the loop, which the ROM addresses off the $s0 it already holds --
+   and holds here too, since every LOAD of gKirbyState in the same block is
+   `0x40($s0)` in both. verify.py reports 86/180 because those two insertions
+   shift the whole tail; read the count, not the score (LEVERS 48).
+
+   THE 3/178 EXTERN SPELLING IS A MIRAGE AND HAS BEEN WITHDRAWN, 2026-08-25.
+   This draft used to read `step = D_801976A0_ovl3; lim = D_801976A4_ovl3;`
+   and scored 3/178, which is what measure_seeds has been reporting. It can
+   never be un-guarded: both symbols are defined ONLY by this function's own
+   listing, in its `.section .late_rodata` head, so deleting the pragma
+   leaves them undefined at link. 0xF7FB0 is a dotted `.rodata, ovl3/ovl3_6`
+   subsegment, i.e. this TU owns its pool and emits it from C, so the
+   literals below are the only sealable spelling (LEVERS 20).
+
+   What the literals bought: the extern spelling's 3 diffs were a schedule
+   rotation, the ROM sinking the `lim` load past the two loop-invariant base
+   addiu's for gEntitiesAngleXArray/gKirbyController. As literals that
+   rotation disappears -- an operand-KIND effect, same family as LEVERS 20.
+
+   Swept without moving the two `lui`s: declaration order and position,
+   initialisers at declaration, `const f32` in the same object (lands in
+   .data), `+=` vs `x = x + step` for the unk40 update, hoisting the pre-
+   branch unk40 load into `cur` (LEVERS 16, kept -- it reads better and is
+   score-neutral), and routing gKirbyState through a held `struct Player *`
+   (worse, 182 words: the pointer local displaces $s1/$s3). */
 void func_8017E284_ovl3(s32 arg0)
 {
-  int new_var;
+  f32 cur;
   f32 step;
   f32 lim;
   s32 idx;
@@ -3271,17 +3285,18 @@ void func_8017E284_ovl3(s32 arg0)
   gKirbyState.unk4C = func_800A8100(1, 1, 0x2A, D_800DFBD0[omCurrentObj->objId][4]);
   D_800E9720[omCurrentObj->objId] = 0;
   func_800AA018(0x201B2);
-  step = D_801976A0_ovl3;
-  lim = D_801976A4_ovl3;
+  step = 0.02617994f;
+  lim = 0.78539819f;
   while (1) {
     if (gKirbyState.unk17 != 0)
     {
       break;
     }
-    if (lim != gKirbyState.unk40)
+    cur = gKirbyState.unk40;
+    if (lim != cur)
     {
-      gEntitiesAngleXArray[omCurrentObj->objId] = -gKirbyState.unk40;
-      gKirbyState.unk40 = gKirbyState.unk40 + step;
+      gEntitiesAngleXArray[omCurrentObj->objId] = -cur;
+      gKirbyState.unk40 = cur + step;
       if (lim <= gKirbyState.unk40)
       {
         gKirbyState.unk40 = lim;
@@ -3295,8 +3310,7 @@ void func_8017E284_ovl3(s32 arg0)
     else
     {
       idx = func_801632B8_ovl3(4);
-      new_var = 0x70;
-      D_800E1B50[idx + new_var] = (struct EnemyRecord *) D_800DFBD0[omCurrentObj->objId][4];
+      D_800E1B50[idx + 0x70] = (struct EnemyRecord *) D_800DFBD0[omCurrentObj->objId][4];
       D_800EC660[idx] = gKirbyState.unk40;
       play_sound(0xB5);
       play_sound(0xB6);
