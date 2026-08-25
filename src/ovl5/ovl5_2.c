@@ -122,9 +122,9 @@ extern Unk16Bytes D_80185FB0_ovl5;
  *   - ovl5_pers_ reads byte i of the AI-personality table that splat split
  *     2/3/19 (D_80186918/D_8018691A/D_8018691D). */
 void func_8015CE74_ovl5(void);
-void func_8015DFC8_ovl5(u32 arg1);
-void func_80161B4C_ovl5(s32 arg1);
-void func_80163CC0_ovl5(u32 arg1);
+void func_8015DFC8_ovl5(GObj *gobj, u32 arg1);
+void func_80161B4C_ovl5(GObj *gobj, s32 arg1);
+void func_80163CC0_ovl5(GObj *gobj, u32 arg1);
 void func_80164A34_ovl5(void);
 void func_8015DA24_ovl5(GObj *arg0, u32 arg1);
 s32 func_8015EAB4_ovl5(s32 arg0);
@@ -189,45 +189,25 @@ static u8 ovl5_pers_(s32 i) {
     return D_8018691D_ovl5[i - 5];
 }
 #endif
-/* The listing swallows the next, unnamed function of the TU inside its own
-   `.size` (`jr $ra; nop` at 0x8015CE6C -- padtrap.py class 'swallowed'). Not a
-   padding trap: a conversion writes it out as `void func_8015CE6C_ovl5(void)
-   {}` after this one, as done for func_80160A70_ovl5 below. It is not what
-   blocks this site -- the draft does not even compile alone (its file-scope
-   declarations of func_80160AF8_ovl5 / func_801611A8_ovl5 collide with the
-   earlier ones at the top of the file), so it is unscored.
-
-   MEASURED 2026-08-24: that diagnosis was wrong. Nothing collided with the
-   declarations at the top of the file -- six functions the draft CALLS are
-   defined much later with no declaration in between, so each call compiled as
-   an implicit `int f()` and then collided with its own definition. Lever 55.
-   With the six prototypes added above the draft it scores 17/91, and the
-   residue is a real one: the ROM builds each array address in $a1 (the call's
-   SECOND argument) where IDO uses $a0. */
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-/* These six are CALLED by the draft below and defined much later in this
- * file, with no declaration in between -- so each call compiled as an
- * implicit `int f()` and collided with its own definition, which is why
- * this site read "does not compile alone" and went unmeasured. With them
- * it scores 16/91. func_80164490_ovl5 keeps the unspecified-args form:
- * the draft calls it with no arguments and relies on the value already in
- * $a0, which an ANSI prototype refuses. */
+/* Dispatcher for the mini-game object procs. The proc's GObj stays in $a0
+ * across every call, so each of these entry points takes it as its first
+ * argument and the payload word as the second. */
+void func_8015CE74_ovl5(void);
+void func_8015DFC8_ovl5(GObj *, u32);
 void func_80160AF8_ovl5(GObj *, s32);
+void func_80160E6C_ovl5(GObj *, s32);
 void func_801611A8_ovl5(GObj *, s32);
+void func_8016179C_ovl5(GObj *);
+void func_80161B4C_ovl5(GObj *, s32);
 void func_80162B1C_ovl5(GObj *arg0, f32 arg1, f32 arg2, f32 arg3);
 void func_80162C68_ovl5(GObj *arg0);
 void func_80162CCC_ovl5(GObj *arg0);
-void func_80164490_ovl5();
+void func_80163CC0_ovl5(GObj *, u32);
+void func_80164490_ovl5(GObj *);
+void func_80164A34_ovl5(void);
 
 void func_8015CD00_ovl5(GObj *arg0) {
-    s32 temp_t7;
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    temp_t7 = D_800E98E0[temp_v0];
-    switch (temp_t7) {
+    switch (D_800E98E0[omCurrentObj->objId]) {
     case 1:
         func_8015CE74_ovl5();
         return;
@@ -235,34 +215,34 @@ void func_8015CD00_ovl5(GObj *arg0) {
         func_80162C68_ovl5(arg0);
         return;
     case 3:
-        func_80160AF8_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        func_80160AF8_ovl5(arg0, (s32) D_800E9AA0[omCurrentObj->objId].as_u32);
         return;
     case 4:
-        func_80160E6C_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        func_80160E6C_ovl5(arg0, (s32) D_800E9AA0[omCurrentObj->objId].as_u32);
         return;
     case 5:
-        func_801611A8_ovl5(arg0, (s32) D_800E9AA0[temp_v0].as_u32);
+        func_801611A8_ovl5(arg0, (s32) D_800E9AA0[omCurrentObj->objId].as_u32);
         return;
     case 2:
-        func_8015DFC8_ovl5(D_800E9AA0[temp_v0].as_u32);
+        func_8015DFC8_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_u32);
         return;
     case 7:
-        func_80163CC0_ovl5(D_800E9AA0[temp_v0].as_u32);
+        func_80163CC0_ovl5(arg0, D_800E9AA0[omCurrentObj->objId].as_u32);
         return;
     case 6:
         func_80162CCC_ovl5(arg0);
         return;
     case 8:
-        func_80164490_ovl5();
+        func_80164490_ovl5(arg0);
         return;
     case 9:
         func_8016179C_ovl5(arg0);
         return;
     case 10:
-        func_80161B4C_ovl5(D_800E9E20[temp_v0]);
+        func_80161B4C_ovl5(arg0, D_800E9E20[omCurrentObj->objId]);
         return;
     case 12:
-        func_80162B1C_ovl5(arg0, D_800EA6E0[temp_v0], D_800EA8A0[temp_v0], D_800EAA60[temp_v0]);
+        func_80162B1C_ovl5(arg0, D_800EA6E0[omCurrentObj->objId], D_800EA8A0[omCurrentObj->objId], D_800EAA60[omCurrentObj->objId]);
         return;
     case 0:
         func_80164A34_ovl5();
@@ -271,10 +251,11 @@ void func_8015CD00_ovl5(GObj *arg0) {
         return;
     }
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015CD00_ovl5.s")
-#endif
+
+/* splat folded this into func_8015CD00_ovl5's `.size`; it is a real,
+ * separate empty function at 0x8015CE6C. */
+void func_8015CE6C_ovl5(void) {
+}
 
 /* FACTORY: 270/277, STRUCTURAL -- measured 2026-08-23, correcting a
  * stale note (previously read "7/277"; the note's own body already said
@@ -757,7 +738,7 @@ done:
  * this draft reaches for more). Worth a fresh m2c pass before feeding
  * to the permuter. */
 #ifdef MIPS_TO_C
-void func_8015DFC8_ovl5(u32 arg1) {
+void func_8015DFC8_ovl5(GObj *gobj, u32 arg1) {
     extern u8 D_8018E224_ovl5[];
     extern u32 D_8018663C_ovl5[];
     extern u32 D_80186650_ovl5[];
@@ -955,7 +936,7 @@ void func_8015DFC8_ovl5(u32 arg1) {
  * 1 walk poses, 2 run-in poses, 3 lean toward the walk direction, 4 round
  * intro jingle, 5/6 win poses, 7 lose poses, 8 eat action (func_8015DA24),
  * 11 knockback (func_8015D864), 12 stun pose, 13 endless stun. */
-void func_8015DFC8_ovl5(u32 arg1) {
+void func_8015DFC8_ovl5(GObj *gobj, u32 arg1) {
     extern u32 D_8018663C_ovl5[];
     extern u32 D_80186650_ovl5[];
     extern u32 D_8018670C_ovl5[];
@@ -2621,7 +2602,6 @@ f32 func_80161298_ovl5(s32 arg0, s32 arg1) {
 
 extern f32 D_800EA6E0[];
 
-#ifdef NON_MATCHING
 /* FACTORY: 4/60 differ (measured this pass, was 8/60). The stack half of
    the old residue is SOLVED: the struct block sat 4 bytes high because all
    three f32 scalars were declared AFTER the structs. LEVERS lever 32 --
@@ -2639,26 +2619,23 @@ extern f32 D_800EA6E0[];
    naming both indices in locals read arg1-first (fixes the first pair but
    costs 8 bytes of frame, 5/60); naming only arg1's index (7/60, frame
    0x40). Adjacent-instruction transposition -- permuter food. */
-s32 func_801612D0_ovl5(s32 arg0, s32 arg1) {
-    f32 r;
-    RacerSetup sp2C;
-    RacerSetup sp24;
-    f32 a;
-    f32 b;
-
-    sp2C = D_8018E1E8_ovl5[arg0];
-    sp24 = D_8018E1E8_ovl5[arg1];
-    r = func_80161298_ovl5(sp2C.kind, sp24.kind);
-    a = D_800EA6E0[D_8018E030_ovl5[arg0]];
-    b = D_800EA6E0[D_8018E030_ovl5[arg1]];
-    if ((a < b ? -(a - b) : (a - b)) <= r) {
-        return 1;
-    }
-    return 0;
+s32 func_801612D0_ovl5(s32 arg0, s32 arg1)
+{
+  f32 r;
+  RacerSetup sp2C;
+  RacerSetup sp24;
+  f32 a;
+  f32 b;
+  sp2C = D_8018E1E8_ovl5[arg0];
+  sp24 = D_8018E1E8_ovl5[arg1];
+  r = func_80161298_ovl5(sp2C.kind, sp24.kind);
+ do { a = D_800EA6E0[D_8018E030_ovl5[arg0]]; b = D_800EA6E0[D_8018E030_ovl5[arg1]]; } while (0);
+  if (((a < b) ? (-(a - b)) : ((a * 1.0f) - b)) <= r)
+  {
+    return 1;
+  }
+  return 0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_801612D0_ovl5.s")
-#endif
 /* Same shape as func_80160A20_ovl5 above: the trailing `jr $ra; nop` at
    0x80161424 inside this symbol's .size is the unnamed empty function that
    follows it (the next real function starts at 0x8016142C), so it is written
@@ -2856,7 +2833,7 @@ s32 func_80161A54_ovl5(s32 arg0) {
  * needs the shared-tail/goto shape restored, not just a register sweep.
  * Compiles, word count matches (643/643), residue high (481/643). */
 #ifdef MIPS_TO_C
-void func_80161B4C_ovl5(s32 arg1) {
+void func_80161B4C_ovl5(GObj *gobj, s32 arg1) {
     void func_80162A44_ovl5(GObj *);
     extern s32 D_8018E21C_ovl5;
     extern u32 D_80186820_ovl5[];
@@ -3039,7 +3016,7 @@ void func_80161B4C_ovl5(s32 arg1) {
  * shark (func_8000BBE0 attach + chomp roll), then drops; while falling it
  * can be eaten by up to three racers (func_80161A54/func_8016097C), and on
  * the ground it either splashes (shark path) or shrinks away. */
-void func_80161B4C_ovl5(s32 arg1) {
+void func_80161B4C_ovl5(GObj *gobj, s32 arg1) {
     extern u32 D_80186820_ovl5[];
     extern u32 D_80186870_ovl5[];
     extern u32 D_8018687C_ovl5[];
@@ -3925,7 +3902,7 @@ void func_80162E30_ovl5(GObj *arg0) {
  * pointer-walk rewrite of the two setup loops using $fp as a stack base,
  * not a register sweep -- out of scope for a LEVERS substitution pass. */
 #ifdef MIPS_TO_C
-void func_80163CC0_ovl5(u32 arg1) {
+void func_80163CC0_ovl5(GObj *gobj, u32 arg1) {
     extern void *D_80185FC0_ovl5[];
     extern void *D_80185FD0_ovl5[];
     void func_80164174_ovl5(GObj *);
@@ -4025,7 +4002,7 @@ void func_80163CC0_ovl5(u32 arg1) {
  * byte D_8018E1E0_ovl5[arg1] (and command state 0xB): on change it deletes
  * the digit sprites, redraws them, and flashes the badge palette between
  * the 0x30010/0x30011 TLUTs before settling on 0x3000F. */
-void func_80163CC0_ovl5(u32 arg1) {
+void func_80163CC0_ovl5(GObj *gobj, u32 arg1) {
     extern void *D_80185FC0_ovl5[];
     extern void *D_80185FD0_ovl5[];
     GObj *arg0 = omCurrentObj;
