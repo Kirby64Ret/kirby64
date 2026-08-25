@@ -916,7 +916,6 @@ void func_801DE280_ovl9(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE280_ovl9.s")
 #endif
 
-#ifdef NON_MATCHING
 /* FACTORY: 126/130, %hi-materialisation-order floor. The ROM materialises
    %hi(D_800E8AE0) before %hi(D_800EAC20) at the shared preamble ahead of
    the if/else that uses each in a different arm; IDO emits them the other
@@ -939,46 +938,15 @@ void func_801DF454_ovl9(GObj *);
 void func_801DCA78_ovl9(struct GObj *);
 extern struct GObjProcess *gEntityGObjProcessArray[];
 
-void func_801DE60C_ovl9(struct GObj *arg0) {
-    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
-    f32 t;
-    f32 v;
-
-    func_801A0D74_ovl7();
-    if (D_800E8920[omCurrentObj->objId] == 1) {
-        t = func_800F8824((Vector *) tmp->unk78, D_800E17D0[omCurrentObj->objId]);
-        if (t != 0.0f) {
-            if (0.0f < t) {
-                D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
-            }
-            if (D_800E8920[omCurrentObj->objId] == 0) {
-                D_800EAC20[omCurrentObj->objId] = 0.0f;
-            } else {
-                if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
-                    v = 0.5f;
-                } else {
-                    v = 1.0f;
-                }
-                D_800EAC20[omCurrentObj->objId] = v;
-            }
-            gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] + 10.0f;
-            if (D_800E8920[omCurrentObj->objId] == 1) {
-                play_sound(0xA4);
-            }
-            if (D_800E8920[omCurrentObj->objId] == 0) {
-                gEntityFuncListIDArray[omCurrentObj->objId] = 4;
-            } else {
-                gEntityFuncListIDArray[omCurrentObj->objId] = 3;
-            }
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
-        }
-    }
-    func_8019F3F0_ovl7();
-    func_801DF454_ovl9(arg0);
+void func_801DE60C_ovl9(struct GObj *arg0)
+{
+  struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
+  f32 t;
+  f32 v;
+  func_801A0D74_ovl7();
+ do { if (D_800E8920[omCurrentObj->objId] == 1) { t = func_800F8824((Vector *) tmp->unk78, D_800E17D0[omCurrentObj->objId]); if (t != 0.0f) { if (0.0f < t) { D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId]; } if (D_800E8920[omCurrentObj->objId] == 0) { D_800EAC20[omCurrentObj->objId] = 0.0f; } else { if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) { v = 0.5f; } else { v = 1.0f; } D_800EAC20[omCurrentObj->objId] = v; } gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] + 10.0f; if (D_800E8920[omCurrentObj->objId] == 1) { play_sound(0xA4); } if (D_800E8920[omCurrentObj->objId] == 0) { gEntityFuncListIDArray[omCurrentObj->objId] = 4; } else { gEntityFuncListIDArray[omCurrentObj->objId] = 3; } assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9); } } func_8019F3F0_ovl7(); } while (0);
+  func_801DF454_ovl9(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_3/func_801DE60C_ovl9.s")
-#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
