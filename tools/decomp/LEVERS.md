@@ -140,7 +140,26 @@ nobody went back to say so, so the notes went on warning lanes off code that
 was already finished.
 
 Pad bytes are zeros and `nop` encodes as zero, which is why this works at all
-for trailing nops. Class (c) is the same shape seen from the other side --
+for trailing nops.
+
+**IT DOES NOT TRANSFER TO EVERY SITE, measured 2026-08-25 on
+func_801E0B38_ovl17.** That function is byte-exact (108/108, verified with the
+padtrap check neutralised for the measurement) and is the last function of
+ovl17_2.o with exactly six words of fill past its `.size`, at
+0x22BED8..0x22BEEC, ending precisely where ovl17_3 begins. Structurally it is
+the ovl5 case: `- [0x22BED8, pad]` between `- [0x228B10, c, ovl17/ovl17_2]`
+and `- [0x22BEF0, c, ovl17/ovl17_3]`, same indentation, same shape.
+
+It breaks the ROM, and it breaks it WITH THE DRAFT STILL GUARDED -- so the pad
+itself is the problem, not the un-guarding. build/src/ovl17/ovl17_2.o's .text
+is 13512 bytes with the pad and 13512 without it: splat did not shorten the
+preceding listing the way the subsegment extents say it should, so the six
+words are supplied twice and everything after 0x22BED8 shifts. Three builds,
+sha1 78f0632e (pad + un-guarded), ecb9c0a1 (pad only), 6cea2d46 (reverted).
+
+So: try the pad, and let the linked sha1 decide in one build. Do not assume it
+from the ovl5 precedent. What distinguishes the six working sites from this
+one is not yet known, and finding out is worth a note here when someone does. Class (c) is the same shape seen from the other side --
 write the unnamed function out rather than padding over it (func_801555AC_ovl4
 and func_80160A70_ovl5 both closed that way).
 

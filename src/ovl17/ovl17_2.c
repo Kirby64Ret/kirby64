@@ -1391,6 +1391,25 @@ void func_801E0A74_ovl17(void) {
    carries 6 words of linker fill past its own .size, so un-guarding shortens
    the TU by 0x18 under kirby.ld's SUBALIGN(16). Un-guarding needs a `pad`
    subsegment in kirby64.yaml in the SAME commit -- a coordinator task. */
+/* BYTE-EXACT (108/108) AND STILL GUARDED, because the padding-trap remedy
+ * does not work at this site.
+ *
+ * This is the last function of ovl17_2.o and its listing carries six words of
+ * fill past its own .size, 0x22BED8..0x22BEEC, ending exactly where ovl17_3
+ * begins -- so decompiling it shortens the object by 0x18 and shifts
+ * everything after. The documented remedy is a `pad` subsegment in
+ * kirby64.yaml, which is already doing this job six times in ovl5.
+ *
+ * MEASURED 2026-08-25 and it fails here. `- [0x22BED8, pad]` between the
+ * ovl17_2 and ovl17_3 entries breaks the ROM, and it breaks it WITH THIS
+ * DRAFT STILL GUARDED -- so the pad is the problem, not the un-guarding.
+ * ovl17_2.o's .text is 13512 bytes with the pad and 13512 without: splat did
+ * not shorten the preceding listing the way the subsegment extents say it
+ * should, so the six words end up supplied twice. Three builds: 78f0632e with
+ * pad and un-guarded, ecb9c0a1 with the pad alone, 6cea2d46 reverted.
+ *
+ * Do not un-guard this without solving that first. The two edits that made it
+ * byte-exact are worth keeping either way, and are recorded above. */
 s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
     /* Spelled u16, like ovl11.c and ovl11_2.c do. Nothing this TU includes
        declares it at all, so the call was an implicit `int f()` and the mask
