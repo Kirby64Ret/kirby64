@@ -1222,7 +1222,35 @@ the pool allocator's real stride is 0x78.
     and not sufficient -- LEVER 73's real tell is the operand computed more
     times than the source needs it, with one copy unreachable.
 
-75. **A file-local helper that is not spelled `static` costs its callers the
+75. **CORRECTED: this is an -O3 LEVER, and there are only thirteen -O3 objects
+    in the tree.** The interprocedural convention comes from `ujoin`, which
+    runs only at -O3, and Makefile:285 gives -O3 to exactly the
+    `N_AUDIO_O_FILES` list -- all thirteen of them src/main/libn_audio*. A lane
+    sealed three helpers in ovl5 and measured all three byte-inert, which is
+    the expected result: my worked example below is libn_audio.c, i.e. one of
+    the thirteen. Outside those files a row from static_sweep.py is a
+    TYPE-CORRECTNESS observation, not a matching lever. `static_sweep.py --o3`
+    restricts the listing; `--near` marks the qualifying rows `[O3]`.
+
+    **AND SEALING CAN DELETE THE FUNCTION.** If the only remaining caller is a
+    `#pragma GLOBAL_ASM`, the C compiler never sees that reference --
+    asm-processor injects it afterwards -- so IDO sees an unreferenced static
+    and replaces the body with `jr $ra; nop`. A lane did that to two helpers in
+    ovl5_5.c and the object came out 512 bytes short. An earlier version of
+    this entry said a pragma caller does NOT block the seal, on the strength of
+    readelf showing the local symbol binding correctly; binding is not the
+    question, dead-stripping is. Seal only when a COMPILED C caller remains in
+    the same TU.
+
+    Two further tool corrections from the same lane: `--near` used to read the
+    FACTORY note nearest ABOVE the guard, which in files whose notes live
+    INSIDE the guard is the PREVIOUS function's number -- it reported
+    "func_8017232C_ovl5 2/88" for a function that is really 328/508. It now
+    prefers a note inside the draft.
+
+    The original entry, whose mechanism is right for the thirteen:
+
+    **A file-local helper that is not spelled `static` costs its callers the
     o32 entry sequence.** IDO assigns an interprocedural convention -- values
     held in $t registers across the call instead of homed -- only to a function
     it knows nothing outside the translation unit can reach, and in C that

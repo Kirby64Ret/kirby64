@@ -1,6 +1,30 @@
 #!/usr/bin/env python3
 """Find functions that should be `static` and are not.
 
+READ THIS FIRST -- THE LEVER IS NARROWER THAN THIS TOOL WAS WRITTEN FOR.
+
+The interprocedural convention that makes sealing pay comes from `ujoin`, which
+runs only at -O3, and Makefile:285 gives -O3 to exactly THIRTEEN objects: the
+`N_AUDIO_O_FILES` list, all of them src/main/libn_audio*. Everything else in
+the tree is -O2 and gets nothing from the keyword. A lane measured three seals
+in ovl5 and all three were byte-inert, which is the expected result and not a
+surprise -- my worked example below is libn_audio.c, i.e. one of the thirteen.
+
+So: outside src/main/libn_audio*, treat every row here as a TYPE-CORRECTNESS
+observation (this function has no business being visible outside its TU) and
+not as a matching lever. `--o3` restricts the listing to the thirteen.
+
+AND ONE HAZARD THAT CAN BREAK THE ROM. Sealing a helper whose only caller is
+still a `#pragma GLOBAL_ASM` can DELETE IT: the C compiler never sees the
+pragma's reference -- asm-processor injects that afterwards -- so IDO sees an
+unreferenced static and replaces its body with `jr $ra; nop`. A lane did this
+to two helpers in ovl5_5.c and the object came out 512 bytes short. An earlier
+version of this docstring said the opposite, on the strength of readelf showing
+the local symbol binding correctly in libn_audio.o; binding is not the
+question, dead-stripping is. **Seal a function only when a COMPILED C caller
+remains in the same TU.**
+
+
 IDO's interprocedural passes assign a custom calling convention to a function
 it can see the whole of -- arguments and live values stay in $t registers
 across the call instead of being homed by the o32 sequence. It only does that
@@ -21,11 +45,11 @@ reach it:
     linkage, and LEVER 49 forbids contradicting a declaration),
   - no `#pragma GLOBAL_ASM` listing assembled into a DIFFERENT object names it.
 
-That last clause is the one that needs care, and it is narrower than it looks.
-A listing assembled into the SAME object binds to a local FUNC symbol without
-complaint -- proven by readelf on libn_audio.o after the seal above -- so a
-caller still behind a pragma in the same file does NOT block the change. A
-listing in another overlay's directory does block it.
+That last clause is the one that needs care. A listing assembled into the SAME
+object binds to a local FUNC symbol without complaint -- proven by readelf on
+libn_audio.o -- but binding is not the whole question: see the dead-stripping
+hazard at the top. A listing in another overlay's directory blocks the change
+outright.
 
 Two things this cannot check, so check them by hand before committing:
 
@@ -56,6 +80,7 @@ count without caller proximity is noise.
 Usage:
     static_sweep.py              every candidate called from a guarded draft
     static_sweep.py --near       only those whose caller is a near miss
+    static_sweep.py --o3         only the thirteen -O3 objects, where it pays
     static_sweep.py <file.c>     restrict to one file
 """
 import glob
@@ -88,6 +113,10 @@ def tu_of_listing(listing):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     only = args[0] if args else None
+    # The thirteen -O3 objects (Makefile:285) are the only TUs where sealing
+    # can move a byte. --o3 restricts the listing to them.
+    o3_only = '--o3' in sys.argv
+    O3 = ('libn_audio',)
 
     cfiles = [c for c in sorted(glob.glob('src/**/*.c', recursive=True))
               if not c.startswith('src/pc/')]
@@ -159,6 +188,9 @@ def main():
     for c in cfiles:
         if only and c != only:
             continue
+        if o3_only and not (c.startswith('src/main/libn_audio')
+                            and c.endswith('.c')):
+            continue
         t = text[c]
         for m in DEF.finditer(t):
             name = m.group(2)
@@ -203,8 +235,15 @@ def main():
             except Exception:
                 continue
             for st, en, pi, listing in blocks:
-                head = '\n'.join(lines[max(0, st - 45):st])
-                ms = FAC.findall(head)
+                # The note may sit ABOVE the guard or INSIDE it. Looking only
+                # above picks up the PREVIOUS function's number in files whose
+                # notes live inside the guard -- a lane caught this reporting
+                # "func_8017232C_ovl5 2/88" for a function that is really
+                # 328/508. Prefer a note inside the draft; fall back to the
+                # nearest one above, and only within 45 lines.
+                ms = FAC.findall('\n'.join(lines[st:en]))
+                if not ms:
+                    ms = FAC.findall('\n'.join(lines[max(0, st - 45):st]))
                 if not ms:
                     continue
                 d, tot = int(ms[-1][0]), int(ms[-1][1])
@@ -224,9 +263,12 @@ def main():
         near.sort()
         print(f'{len(near)} (helper, near-miss caller) pair(s): the helper is '
               f'sealable and the caller has room to show it')
+        print('A row NOT marked [O3] is a type-correctness observation only -- '
+              'sealing cannot move a byte at -O2. See the docstring.')
         print('caller residue  calls  helper -> caller (file)')
         for _, d, tot, n, name, caller, c in near:
-            print(f'{d:6d}/{tot:<7d} {n:5d}  {name:24s} -> {caller:26s} {c}')
+            tag = '[O3] ' if c.startswith('src/main/libn_audio') else '     '
+            print(f'{tag}{d:6d}/{tot:<7d} {n:5d}  {name:24s} -> {caller:26s} {c}')
         return 0
 
     rows.sort(key=lambda r: (-r[0], -r[1], r[2]))
