@@ -927,6 +927,15 @@ void init_save_file_maybe(s32);
 // PADDING TRAP: this is the last function in the TU and its listing carries 6
 // words of linker fill past its own .size, so converting it shortens the TU.
 // Draft is behaviourally complete but must stay guarded.
+//
+// FACTORY: 91/112 -- MEASURED 2026-08-25, and the first measurement this draft
+// has ever had. It carried no number before, and could not have: verify.py
+// refuses to score a padding-trapped listing at all, so measure_seeds has
+// always reported it UNSCORABLE. Scoring it needed padtrap.classify
+// neutralised for the measurement only; the trap is real and the guard stays.
+// 91 of 112 words differ, so "behaviourally complete" is as far as this goes --
+// it is nowhere near matching and should not be fed to the permuter as if it
+// were. The instruction count is right, which is the only encouraging part.
 #ifdef NON_MATCHING
 void saveForceCompleteFile(s32 fileNum) {
     s32 i;

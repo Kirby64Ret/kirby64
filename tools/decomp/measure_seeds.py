@@ -67,24 +67,97 @@ DIFFLINE = re.compile(r'(\w+):\s*DIFF\s+(\d+)/(\d+)\s+insns')
 MATCHLINE = re.compile(r'(\w+):\s*MATCH')
 
 
+def arm_end(body):
+    """Index into `body` of the group's own first top-level #elif/#else.
+
+    `body` is the group's contents WITHOUT its opening #if and closing #endif.
+    Depth matters: a draft may hold a nested conditional, and cutting at the
+    first #elif/#else anywhere truncates the body mid-block."""
+    depth = 0
+    for k, b in enumerate(body):
+        t = b.lstrip()
+        if t.startswith('#if'):
+            depth += 1
+        elif t.startswith('#endif'):
+            depth -= 1
+        elif depth == 0 and t.startswith(('#elif', '#else')):
+            return k
+    return len(body)
+
+
+def _defines(arm, func):
+    """Does this arm contain a DEFINITION of `func` (not just a call)?"""
+    pat = re.compile(r'^[A-Za-z_].*[\s*]' + re.escape(func) + r'\s*\(')
+    for l in arm:
+        if pat.match(l) and not l.rstrip().endswith(';'):
+            return True
+    return False
+
+
 def guard_blocks(lines):
-    """[(open_idx, else_idx, endif_idx, pragma_idx, listing)] for every
-    conditional group that holds both a draft arm and a GLOBAL_ASM pragma."""
-    out, stack = [], []
+    """[(open_idx, endif_idx, pragma_idx, listing)] for every draft arm.
+
+    A draft is normally in the same conditional group as the GLOBAL_ASM pragma
+    it stands in for, and that is what this used to require. It is NOT always
+    so: when the draft needs a type the file does not declare until later, the
+    pragma has to stay at the function's address-ordered position while the C
+    arms sit further down (src/ovl2/ovl2_8.c's func_8010EA68 and func_8010F140,
+    src/ovl11/ovl11.c's func_801DD270_ovl11 -- each with an explanatory comment
+    at the pragma saying exactly that). Those drafts reported UNSCORABLE for
+    years, and not because they were broken: this function was cutting the
+    EMPTY arm at the pragma site, so verify.py compiled a TU with no such
+    function in it and said "not found in compiled object". Their real residues
+    are 236/242, 515/521 and 32/136.
+
+    So: pair a draft arm with its pragma wherever that pragma lives in the
+    file, and prefer the arm that actually DEFINES the function."""
+    stack, groups = [], []
+    pragmas = {}
     for i, l in enumerate(lines):
         s = l.lstrip()
+        m = PRAGMA.match(l)
+        if m:
+            pragmas[os.path.basename(m.group(1))[:-2]] = i
         if s.startswith('#if'):
             stack.append(i)
         elif s.startswith('#endif') and stack:
             st = stack.pop()
-            body = lines[st:i + 1]
-            prag = None
-            for k, bl in enumerate(body):
-                m = PRAGMA.match(bl)
-                if m:
-                    prag = (st + k, m.group(1))
-            if prag and ('MIPS_TO_C' in body[0] or 'NON_MATCHING' in body[0]):
-                out.append((st, i, prag[0], prag[1]))
+            if 'MIPS_TO_C' in lines[st] or 'NON_MATCHING' in lines[st]:
+                groups.append((st, i))
+
+    best = {}
+    for st, en in groups:
+        body = lines[st + 1:en]
+        arm = body[:arm_end(body)]
+        own = [(st + 1 + k, PRAGMA.match(b).group(1))
+               for k, b in enumerate(body) if PRAGMA.match(b)]
+        cands = []
+        if own:
+            cands.append((own[-1][0], own[-1][1]))
+        else:
+            for func, pi in pragmas.items():
+                if _defines(arm, func):
+                    cands.append((pi, func + '.s'))
+        for prag_i, listing in cands:
+            func = os.path.basename(listing)[:-2]
+            rank = (1 if _defines(arm, func) else 0)
+            if func not in best or rank > best[func][0]:
+                best[func] = (rank, st, en, prag_i, listing)
+    return sorted((v[1], v[2], v[3], v[4]) for v in best.values())
+
+
+def cut_draft(lines, st, en, prag_i):
+    """The scratch TU with this ONE draft un-guarded in place of its pragma.
+
+    The pragma is not always inside the group (see guard_blocks), so it is
+    removed by INDEX rather than by filtering the group's own body."""
+    body = lines[st + 1:en]
+    keep = [b for b in body[:arm_end(body)] if not PRAGMA.match(b)]
+    out = lines[:st] + keep + lines[en + 1:]
+    if not (st <= prag_i <= en):
+        idx = prag_i + (len(keep) - (en - st + 1)) if prag_i > en else prag_i
+        if PRAGMA.match(out[idx]):
+            del out[idx]
     return out
 
 
@@ -135,29 +208,12 @@ def measure_file(path):
                 note = (tot - a if note_isform else a, tot)
                 note_line = max(0, st - 12) + k
                 break
-        # scratch copy: this one draft un-guarded, its pragma removed
-        body = lines[st + 1:en]
-        # Drop the PORT arm: everything after the group's own first #elif or
-        # #else. Depth matters -- a draft may itself contain a nested
-        # conditional, and cutting at the FIRST #elif/#else anywhere truncated
-        # the body mid-block. That is why 24 drafts reported "did not compile
-        # alone" rather than a number: they were not unmeasurable, they were
-        # being corrupted before the compiler saw them.
-        cut = len(body)
-        depth = 0
-        for k, b in enumerate(body):
-            t = b.lstrip()
-            if t.startswith('#if'):
-                depth += 1
-                continue
-            if t.startswith('#endif'):
-                depth -= 1
-                continue
-            if depth == 0 and t.startswith(('#elif', '#else')):
-                cut = k
-                break
-        keep = [b for b in body[:cut] if not PRAGMA.match(b)]
-        scratch_lines = lines[:st] + keep + lines[en + 1:]
+        # scratch copy: this one draft un-guarded, its pragma removed.
+        # The PORT arm is dropped at the group's own first top-level #elif /
+        # #else -- see arm_end(). Cutting at the FIRST #elif/#else anywhere
+        # truncated the body mid-block, which is why 24 drafts once reported
+        # "did not compile alone" rather than a number.
+        scratch_lines = cut_draft(lines, st, en, prag_i)
         d = tempfile.mkdtemp(prefix='seedmeas_')
         try:
             sp = os.path.join(d, os.path.basename(path))

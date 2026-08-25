@@ -1727,7 +1727,14 @@ void func_801E0928_ovl13(GObj *arg0) {
     func_801E3958_ovl13(arg0);
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
+/* PORT-arm-only now. It used to be `#if defined(MIPS_TO_C) || defined(PORT)`,
+   and that is exactly why the MIPS_TO_C draft below had never been measured:
+   cutting the draft's own guard (which is what un-guarding it means, and what
+   measure_seeds/verify.py do) leaves THIS block guarded, so the draft loses
+   D_801D93F0, func_800B7790 and D_800D7118 and the TU does not compile. The
+   draft now carries its own copies in-body, which is the form that survives
+   un-guarding -- see REFOUND's ovl10_5b resolution. */
+#ifdef PORT
 extern s32 D_801D93F0;
 extern void func_800B7790(s32);
 extern void func_800BB468(s32, s32);
@@ -1742,7 +1749,13 @@ extern struct Ovl13Unk800D7118 D_800D7118;
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 276/468 words DIFFER (measured, draft spliced alone into a scratch
+/* FACTORY: 276/468 words DIFFER. CONFIRMED 2026-08-25 by measure_seeds, which
+   had reported this draft UNSCORABLE up to today -- the number was right, but
+   only a hand splice that also copied in the sibling declaration block could
+   produce it, and nothing automatic could. The declarations are now in-body
+   (see the function) and the number is reproducible with
+   `measure_seeds.py src/ovl13/code_1F3160.c`. Original note follows.
+   (Measured, draft spliced alone into a scratch
    copy of the TU, in-tree so verify.py sees this TU's migrated .rodata).
    468 words against the ROM's 464 and a frame of 0x68 against 0x58, so the
    Vector the SRT read lands in sits at sp+0x5C where the ROM has it at 0x44:
@@ -1757,6 +1770,23 @@ extern struct Ovl13Unk800D7118 D_800D7118;
    so m2c's sp44/sp48/sp4C are that Vector's x/y/z; `->unk4`/`->unk8` are
    D_800DFBD0[id][1] and [2], and 0x1C/0x20/0x24 are pos.v.x/y/z. */
 void func_801E0A90_ovl13(GObj *arg0) {
+    /* In-body, not in a sibling guard: these must still be in scope when this
+       draft's own guard is CUT, which is what un-guarding means and what
+       measure_seeds/verify.py do. They used to live in a
+       `#if defined(MIPS_TO_C) || defined(PORT)` block above, so cutting this
+       guard alone lost them and the TU did not compile -- which is why this
+       draft was UNSCORABLE. Spellings copied verbatim from that block. */
+    extern s32 D_801D93F0;
+    extern void func_800B7790(s32);
+    extern void func_800BB468(s32, s32);
+    extern void func_800FB914(s32);
+    extern void func_800FD754(s32, f32, f32, f32);
+    extern void utilGetTransformSRT(Vector *, struct DObj *);
+    struct Ovl13Unk800D7118 {
+        u8 pad0[0x3C];
+        s32 unk3C;
+    };
+    extern struct Ovl13Unk800D7118 D_800D7118;
     Vector sp44;
     struct EnemyRecord *temp_s4;
     GObj *temp_s0;
@@ -2125,13 +2155,19 @@ void func_801E1F1C_ovl13(GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801E5BF0_ovl13[(s32) D_800E9AA0[omCurrentObj->objId]];
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
+/* PORT-arm-only now; the MIPS_TO_C draft below carries its own copies in-body.
+   See the note over func_801E0A90_ovl13 for why: a declaration in a SIBLING
+   guard vanishes when the draft's own guard is cut, and that is what had made
+   this draft unscorable. */
+#ifdef PORT
 extern s32 D_801D93A8;
 extern f32 *D_801DAB04;
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 104/384 words DIFFER (measured, draft spliced alone into a scratch
+/* FACTORY: 104/384 words DIFFER. CONFIRMED 2026-08-25 by measure_seeds, which
+   had reported this draft UNSCORABLE until its two declarations moved in-body.
+   (Measured, draft spliced alone into a scratch
    copy of the TU, in-tree so verify.py sees this TU's migrated .rodata).
    Word count 383 against the ROM's 384. Residue is one register: the ROM keeps
    the `omCurrentObj` POINTER in $v1 across each straight run and this draft
@@ -2145,6 +2181,9 @@ extern f32 *D_801DAB04;
    layout -- [1]/[2] are the DObj slots, 0x24 is pos.v.z, 0x30 angle.v.x,
    0x34 angle.v.y. */
 void func_801E2034_ovl13(GObj *arg0) {
+    /* In-body so that cutting THIS guard leaves a TU that compiles. */
+    extern s32 D_801D93A8;
+    extern f32 *D_801DAB04;
     f32 *temp_v0_9;
     f32 var_f0;
 
@@ -2445,7 +2484,14 @@ void func_801E2F0C_ovl13(s32 arg0, s32 arg1, f32 arg2) {
     }
 }
 
-#if defined(MIPS_TO_C) || defined(PORT)
+/* PORT-arm-only now; the MIPS_TO_C draft below carries its own copies in-body.
+   The old comment here said struct Ovl13Unk800D7118 "comes from
+   func_801E0A90_ovl13's block above -- IDO and gcc both reject a second
+   definition in the same TU". That is true at FILE scope and false at BLOCK
+   scope: a struct defined inside a function body is a distinct declaration and
+   both drafts can carry their own. Which matters, because the shared block was
+   what made both of them unscorable. */
+#ifdef PORT
 extern s32 D_801D93F0;
 extern f32 *D_801DAB04;
 extern s32 D_800D6B54;
@@ -2453,12 +2499,12 @@ extern void func_8019F1EC_ovl7(void);
 extern s32 func_801BC794_ovl7(s32, f32 *);
 extern u32 func_800FD570(s32, u32, f32, f32, f32);
 extern void func_800BB468(s32, s32);
-/* struct Ovl13Unk800D7118 / D_800D7118 come from func_801E0A90_ovl13's block
-   above -- IDO and gcc both reject a second definition in the same TU. */
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 214/371 words DIFFER (measured, draft spliced alone into a scratch
+/* FACTORY: 214/371 words DIFFER. CONFIRMED 2026-08-25 by measure_seeds, which
+   had reported this draft UNSCORABLE until its declarations moved in-body.
+   (Measured, draft spliced alone into a scratch
    copy of the TU). Word count is 368 against the ROM's 371 and the block
    structure is right; two things are left. (1) A three-word gap in the last
    if-body: the ROM recomputes `D_800E6BD0[D_800E0D50[objId]]` from scratch for
@@ -2479,6 +2525,19 @@ extern void func_800BB468(s32, s32);
    `move $a2, $zero` and shifted a hundred words behind it. A wrong prototype
    is worth a hundred words here -- check the definition, not m2c. */
 void func_801E3028_ovl13(GObj *arg0) {
+    /* In-body so that cutting THIS guard leaves a TU that compiles. */
+    extern s32 D_801D93F0;
+    extern f32 *D_801DAB04;
+    extern s32 D_800D6B54;
+    extern void func_8019F1EC_ovl7(void);
+    extern s32 func_801BC794_ovl7(s32, f32 *);
+    extern u32 func_800FD570(s32, u32, f32, f32, f32);
+    extern void func_800BB468(s32, s32);
+    struct Ovl13Unk800D7118 {
+        u8 pad0[0x3C];
+        s32 unk3C;
+    };
+    extern struct Ovl13Unk800D7118 D_800D7118;
     struct EnemyRecord *temp_s1;
     f32 temp_f0;
     f32 temp_f0_2;

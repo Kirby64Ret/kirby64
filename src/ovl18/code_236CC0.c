@@ -39,13 +39,28 @@ void func_80224320_ovl18(UNUSED s32 arg0) {
 }
 
 #ifdef NON_MATCHING
-void func_802244FC_ovl18(void) {
-    s32 count = D_800E98E0[omCurrentObj->objId];
+/* FACTORY: 7/26 -- MEASURED 2026-08-25, and the first measurement this draft
+   has ever had. It carried no note at all, and it could not have carried one:
+   verify.py REFUSES to score a padding-trapped listing, so measure_seeds has
+   always reported this draft UNSCORABLE and no number existed. Scoring it
+   needed padtrap.classify neutralised for the measurement only.
 
-    if (count == 0) {
+   The residue is one register choice and its knock-on schedule. The ROM reads
+   the counter into $a1 (`lw $a1, 0($v1)`), so $a1 is busy at the branch and
+   the `&func_801ACF84_ovl7` constant can only be materialised inside the
+   taken arm, after gEntityGObjProcessArray's address. This draft's counter
+   lands in $a0, $a1 is free, and IDO hoists the constant above the `bnez`.
+   Tried and rejected: dropping the `&` (identical, 7/26 -- so the address-of
+   is not what hoists it), and reading the counter into a named `s32 count`
+   (11/26 -- it moves objId's own load from $v0 to $v1 and costs four more).
+
+   Padding-trapped either way: last function in code_236CC0.o, 7 words of
+   linker fill past its own .size, so un-guarding shortens the TU. */
+void func_802244FC_ovl18(void) {
+    if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801ACF84_ovl7);
     } else {
-        D_800E98E0[omCurrentObj->objId] = count - 1;
+        D_800E98E0[omCurrentObj->objId] -= 1;
         func_801ACF5C_ovl7();
     }
 }

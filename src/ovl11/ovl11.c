@@ -866,11 +866,19 @@ struct Ovl11Tbl {
 extern struct Ovl11Tbl D_801E0C60_ovl11;
 void func_801DD270_ovl11(struct Ovl11Tbl *);
 
-#if defined(MIPS_TO_C) || defined(PORT)
 /* func_801DD270_ovl11 -- the pragma for it is above func_801DD490_ovl11.
    It deals the eight (kind, slot, height) triples of D_801E0C60_ovl11:
    eight rising heights with a random gap between each, then eight draws
-   without replacement from the index bag D_801E0B94_ovl11 = {0..7}. */
+   without replacement from the index bag D_801E0B94_ovl11 = {0..7}.
+
+   PORT-arm-only now. This block used to be
+   `#if defined(MIPS_TO_C) || defined(PORT)`, and that is why the draft below
+   had never been scored by any tool: cutting the DRAFT's guard -- which is
+   what un-guarding means, and what measure_seeds and verify.py do -- leaves
+   this block guarded, so struct Ovl11Idx8 and the three symbols go out of
+   scope and the TU does not compile. The draft now carries its own copies
+   in-body, which is the form that survives un-guarding. */
+#ifdef PORT
 struct Ovl11Idx8 {
     u8 b[8];
 };
@@ -905,6 +913,17 @@ f32 random_soft_f32(void);
    (LEVERS 32) put the whole local block on the ROM's offsets, 35 -> 32; and
    LEVERS 14 on `sp88.b[r] != sp88.b[k]` fixed the beql operand order. */
 void func_801DD270_ovl11(struct Ovl11Tbl *arg0) {
+    /* In-body, not in a sibling guard: these must still be in scope when this
+       draft's own guard is cut, or the TU does not compile and no tool can
+       score it. Declaration ORDER below is load-bearing (see the note above);
+       these carry no storage, so they do not disturb it. */
+    struct Ovl11Idx8 {
+        u8 b[8];
+    };
+    extern struct Ovl11Idx8 D_801E0B94_ovl11; /* the {0,1,...,7} bag, in .data */
+    extern f32 D_801E0C28_ovl11;              /* height step   */
+    extern f32 D_801E0C2C_ovl11;              /* random spread */
+    f32 random_soft_f32(void);
     f32 acc;
     f32 spread;
     f32 step;
