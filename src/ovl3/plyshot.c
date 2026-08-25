@@ -797,26 +797,74 @@ void func_8015BBE4_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_8015BBE4_ovl3.s")
 #endif
 
+/* Moved up from its old home just below func_8015ED2C_ovl3: func_8015C00C_ovl3
+ * and func_801614D8_ovl3 both need it, and IDO cross-checks block-scope extern
+ * declarations against each other, so a second spelling of D_80198830_ovl3
+ * (`extern s32 D_80198830_ovl3[]`) is a hard "redeclaration" error rather than
+ * a shadowed local view.  A typedef emits nothing. */
+typedef struct Unk80198830 {
+    s32 unk0;
+    s32 unk4;
+    s32 unk8;
+    s32 unkC;
+} Unk80198830;
+
 #ifdef MIPS_TO_C
-/* FACTORY: 500/505 [was noted 5/505], whole-function callee-saved permutation (same floor class documented across this cluster). Replaces the PORT arm's pc_sndpair_release/pc_sndpair_start calls with real N64 calls through two local static helpers (plyshotSndpairRelease/plyshotSndpairStart, wrapping func_800A7870/func_800A77E8), and gives the carry-effect blocks a local BoomerangFx view instead of the guarded struct PcPlyshotFx. Adds an ANSI prototype for func_800A7F74 (declared unguarded elsewhere in this TU) to avoid an implicit-int conflict. Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 500 of 505 words differ (99%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 29/506, register permutation. Was 500/505 -- the old note called
+   that "a whole-function callee-saved permutation", which cannot describe a
+   99% score; the draft simply was not this function yet. Re-derived from the
+   listing 2026-08-25, and the word count is now exact (506 including the
+   trailing nop). Six defects, in the order they paid:
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+   1. `s32 id = omCurrentObj->objId;` used 61 times. The ROM materialises
+      &omCurrentObj ONCE into $s0 and re-reads BOTH the pointer and the field
+      at every use -- `lw $t0, 0($s0); lw $v1, 0($t0)` -- because the stores in
+      between may alias the global. Note the tell is NOT a repeated
+      %hi(omCurrentObj): this listing has ONE, and so do both of the closures
+      that found this lever (func_80169C10_ovl3, func_8015D3C8_ovl3). The
+      screen is the count of POINTER READS off the held base;
+      tools/decomp/objid_screen.py is it written down.
+   2. The frame: 0x60 against the ROM's 0x68, so diff 0 was the stack
+      adjustment and no body edit could be scored through it (LEVERS 69/74).
+      Two trailing 4-byte declarations fixed it exactly (LEVERS 13/54); they
+      have since become the two real pointer locals in (5), so the count is
+      unchanged and there is no pad left in this function.
+   3. The sndpair release was a PORT shim behind two file-local static
+      helpers. The ROM inlines it at all three sites: ONE `lw` of the pair,
+      `if (p[0] != NULL) func_800A7870(p, p + 1)` -- no null check on the
+      pair, no copy-out, no zeroing (func_800A7870 clears both words itself,
+      src/ovl1/ovl1_2_2.c:175). Same defect and fix as func_8015B75C_ovl3.
+   4. `D_80198830_ovl3.unk4`, not a separate `D_80198834_ovl3` symbol: the ROM
+      holds the struct base (`addiu $a1, $a1, %lo(D_80198830_ovl3)`) and reads
+      `0x4($a1)`, which a second symbol cannot produce. Its typedef had to move
+      up the file -- IDO cross-checks BLOCK-SCOPE extern declarations against
+      each other, so a local `extern s32 D_80198830_ovl3[]` view is a hard
+      "redeclaration of D_80198830_ovl3" error, not a shadow.
+   5. Two GObj* locals for the carry effects. The ROM holds
+      D_800EA520[objId] in $a0 across its three `lw 0x4C(..)` reads and
+      D_800EB4E0[objId] in $v0 across its three, and re-reads ->unk4C at each
+      store (LEVERS 10/33). There is NO `if (D_800EB4E0[objId] != 0)` guard on
+      the second group. 423 -> 209 with those plus (6).
+   6. INTEGER ZEROS IN PAIRS, and this is the biggest single edit after the
+      objId one: 209 -> 54. The two velocity-sign tests in the else arm,
+      `D_800E64D0[objId] < 0` and `> 0`, must BOTH be written with the integer
+      literal. Either one alone is worth nothing (`> 0` alone 210, `< 0` alone
+      206); together they fork the two `mtc1 $zero` the ROM has at 8015C504
+      and 8015C538 off the shared one. Exactly the pairing func_801712F8_ovl3
+      records for its two zero STORES; here it is two COMPARES, so the rule is
+      about the pair and not about which side of the operator the zero is on.
+      (The `D_800E3750`/`D_800E6690` zero stores are integer 0 for the same
+      reason and were part of the 423 -> 209 step.)
 
+   WHAT IS LEFT: one register permutation over the whole tail from 0x8015C5F0.
+   Every value the ROM keeps in $a0 there -- the CSE of D_800EA520[objId] at
+   the three-way join -- this C keeps in $a1, and the cascade runs
+   $a1->$a2, $a2->$a3, $v0->$a0, plus one `move $a0, $a1` in a delay slot the
+   ROM fills with `nop`. Naming that value a local and passing it to the calls
+   fixed the same permutation in the first two exits (45 -> 29) and does NOT
+   fix it in the third, where sndpair is live in $a0/$a1 across the water
+   branch. Swept and negative at 45: fa/fx declared before sndpair (60),
+   fa/fx typed s32 (45), fx declared before fa (45). */
 /* PORT: the boomerang-shot service routine installed by func_8015BBE4_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015C00C_ovl3.s. Bursts
  * when the ability ends (fgm 0x159, particle 2/1/0x10) and pops silently on
@@ -829,69 +877,55 @@ void func_8015BBE4_ovl3(s32 arg0) {
  * from this shot's timer. */
 struct BoomerangFx { u32 kind; f32 unk4, unk8, unkC, unk10, unk14, unk18; };
 
-static void plyshotSndpairRelease(u32 *pair) {
-    void *handle;
-    u16 sid;
-
-    if (pair == NULL) {
-        return;
-    }
-    handle = (void *) pair[0];
-    sid = *(u16 *) (pair + 1);
-    func_800A7870(&handle, &sid);
-    pair[0] = 0;
-    *(u16 *) (pair + 1) = 0;
-}
-
-static void plyshotSndpairStart(s32 fgm, u32 *pair) {
-
-    func_800A77E8(fgm, (s32 *) &pair[0], (s32 *) &pair[1]);
-}
-
 void func_8015C00C_ovl3(s32 arg0) {
-    extern u8 D_80198834_ovl3[];
+    extern Unk80198830 D_80198830_ovl3;
     extern char D_80190BB0_ovl3[];
     extern s32 D_8019356C_ovl3[];
-    s32 id = omCurrentObj->objId;
-    u32 *sndpair = (u32 *) (uintptr_t) (u32) D_800EA360[id];
+    void **sndpair = (void **) D_800EA360[omCurrentObj->objId];
     f32 probe[3];
     s32 inWater;
     f32 spd;
+    GObj *fa;
+    GObj *fx;
 
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
     if (gKirbyState.abilityInUse == 0) {
         play_sound(0x159);
-        func_800A7F74(2U, 1U, 0x10U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
-                      gEntitiesNextPosZArray[id]);
-        if (sndpair != NULL && sndpair[0] != 0) {
-            plyshotSndpairRelease(sndpair);
+        func_800A7F74(2U, 1U, 0x10U, gEntitiesNextPosXArray[omCurrentObj->objId],
+                      gEntitiesNextPosYArray[omCurrentObj->objId],
+                      gEntitiesNextPosZArray[omCurrentObj->objId]);
+        if (sndpair[0] != NULL) {
+            func_800A7870(sndpair, (u16 *) (sndpair + 1));
         }
-        if (D_800EA520[id] != 0) {
-            func_800A22D4(D_800EA520[id]);
-            func_800A22D4(D_800EB4E0[id]);
+        fa = (GObj *) D_800EA520[omCurrentObj->objId];
+        if (fa != NULL) {
+            func_800A22D4((s32) fa);
+            func_800A22D4(D_800EB4E0[omCurrentObj->objId]);
         }
-        func_800B1900((u16) id);
+        func_800B1900((u16) omCurrentObj->objId);
         return;
     }
     if (gKirbyState.unk44 == 1) {
-        if (sndpair != NULL && sndpair[0] != 0) {
-            plyshotSndpairRelease(sndpair);
+        if (sndpair[0] != NULL) {
+            func_800A7870(sndpair, (u16 *) (sndpair + 1));
         }
-        if (D_800EA520[id] != 0) {
-            func_800A1F30(D_800EA520[id]);
-            func_800A1F30(D_800EB4E0[id]);
+        fa = (GObj *) D_800EA520[omCurrentObj->objId];
+        if (fa != NULL) {
+            func_800A1F30((s32) fa);
+            func_800A1F30(D_800EB4E0[omCurrentObj->objId]);
         }
-        func_800B1900((u16) id);
+        func_800B1900((u16) omCurrentObj->objId);
         return;
     }
-    func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_8019356C_ovl3, 0, id);
-    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
-    D_800E8920[id] = 0;
-    probe[0] = gEntitiesNextPosXArray[id];
-    probe[1] = gEntitiesNextPosYArray[id];
-    probe[2] = gEntitiesNextPosZArray[id];
+    func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4], (s32) (uintptr_t) D_8019356C_ovl3, 0,
+                       omCurrentObj->objId);
+    func_80155664_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4]);
+    D_800E8920[omCurrentObj->objId] = 0;
+    probe[0] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    probe[1] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    probe[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
     inWater = func_80155838_ovl3(probe, 20.0f, 6);
-    if (D_800E8AE0[id] & 4) {
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
         func_800AECC0(1.0f);
         func_800AED20(1.0f);
         spd = 6.0f;
@@ -900,65 +934,60 @@ void func_8015C00C_ovl3(s32 arg0) {
         func_800AED20(2.0f);
         spd = 10.0f;
     }
-    if (D_800E98E0[id] != 0) {
-        f32 ang = atan2f((gEntitiesNextPosYArray[D_800E0D50[id]] - gEntitiesNextPosYArray[id]) + 20.0f,
-                         func_800F9828(id, D_800E0D50[id]));
+    if (D_800E98E0[omCurrentObj->objId] != 0) {
+        f32 ang = atan2f((gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]]
+                          - gEntitiesNextPosYArray[omCurrentObj->objId]) + 20.0f,
+                         func_800F9828(omCurrentObj->objId, D_800E0D50[omCurrentObj->objId]));
 
-        D_800E3210[id] = sinf(ang) * spd;
-        D_800E3750[id] = 0.0f;
-        D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
-        D_800E64D0[id] = cosf(ang) * spd;
-        D_800E6690[id] = 0.0f;
-        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
+        D_800E3210[omCurrentObj->objId] = sinf(ang) * spd;
+        D_800E3750[omCurrentObj->objId] = 0;
+        D_800E3C90[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
+        D_800E64D0[omCurrentObj->objId] = cosf(ang) * spd;
+        D_800E6690[omCurrentObj->objId] = 0;
+        D_800E6850[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
     } else {
-        D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
-        if (((D_800E6A10[id] == 1.0f) && (D_800E64D0[id] < 0.0f))
-            || ((D_800E6A10[id] == -1.0f) && (D_800E64D0[id] > 0.0f))) {
-            D_800E98E0[id] = 1;
+        D_800E6850[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
+        if (((D_800E6A10[omCurrentObj->objId] == 1.0f) && (D_800E64D0[omCurrentObj->objId] < 0))
+            || ((D_800E6A10[omCurrentObj->objId] == -1.0f) && (D_800E64D0[omCurrentObj->objId] > 0))) {
+            D_800E98E0[omCurrentObj->objId] = 1;
         }
     }
-    /* N64 D_80198830+4; the PC data emission splits that block, and this
-     * build's convention (kirby.c, plylib.c PORT arms) is the splinter
-     * name for each cell. */
-    if (*(s32 *) D_80198834_ovl3 == 0) {
-        D_800E9560[id] -= 1;
-        if (D_800E9560[id] == 0) {
-            *(s32 *) D_80198834_ovl3 = 1;
+    if (D_80198830_ovl3.unk4 == 0) {
+        D_800E9560[omCurrentObj->objId] -= 1;
+        if (D_800E9560[omCurrentObj->objId] == 0) {
+            D_80198830_ovl3.unk4 = 1;
         }
     }
-    func_80111C4C(func_801117BC(D_80190BB0_ovl3, id));
+    func_80111C4C(func_801117BC(D_80190BB0_ovl3, omCurrentObj->objId));
     if (inWater == 0) {
-        if (sndpair != NULL && sndpair[0] != 0) {
-            plyshotSndpairRelease(sndpair);
+        if (sndpair[0] != NULL) {
+            func_800A7870(sndpair, (u16 *) (sndpair + 1));
         }
-        if (D_800EA520[id] != 0) {
-            func_800A1F30(D_800EA520[id]);
-            func_800A1F30(D_800EB4E0[id]);
-            D_800EB4E0[id] = 0;
-            D_800EA520[id] = 0;
+        fa = (GObj *) D_800EA520[omCurrentObj->objId];
+        if (fa != NULL) {
+            func_800A1F30((s32) fa);
+            func_800A1F30(D_800EB4E0[omCurrentObj->objId]);
+            D_800EB4E0[omCurrentObj->objId] = 0;
+            D_800EA520[omCurrentObj->objId] = D_800EB4E0[omCurrentObj->objId];
         }
     } else {
-        if (sndpair != NULL && sndpair[0] == 0) {
-            plyshotSndpairStart(0x22D, sndpair);
+        if (sndpair[0] == NULL) {
+            func_800A77E8(0x22D, (s32 *) sndpair, (s32 *) (sndpair + 1));
         }
-        if (D_800EA520[id] == 0) {
-            D_800EA520[id] = func_800A8234(2, 1, 0x50);
-            D_800EB4E0[id] = func_800A8234(1, 1, 0x51);
+        if (D_800EA520[omCurrentObj->objId] == 0) {
+            D_800EA520[omCurrentObj->objId] = func_800A8234(2, 1, 0x50);
+            D_800EB4E0[omCurrentObj->objId] = func_800A8234(1, 1, 0x51);
         }
     }
-    if (D_800EA520[id] != 0) {
-        struct BoomerangFx *fa = (struct BoomerangFx *) ((GObj *) D_800EA520[id])->unk4C;
-
-        fa->unk4 = gEntitiesNextPosXArray[id];
-        fa->unk8 = gEntitiesNextPosYArray[id];
-        fa->unkC = gEntitiesNextPosZArray[id];
-        if (D_800EB4E0[id] != 0) {
-            struct BoomerangFx *fb = (struct BoomerangFx *) ((GObj *) D_800EB4E0[id])->unk4C;
-
-            fb->unk4 = gEntitiesNextPosXArray[id];
-            fb->unk8 = gEntitiesNextPosYArray[id];
-            fb->unkC = gEntitiesNextPosZArray[id];
-        }
+    if (D_800EA520[omCurrentObj->objId] != 0) {
+        fa = (GObj *) D_800EA520[omCurrentObj->objId];
+        ((struct BoomerangFx *) fa->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
+        ((struct BoomerangFx *) fa->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
+        ((struct BoomerangFx *) fa->unk4C)->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
+        fx = (GObj *) D_800EB4E0[omCurrentObj->objId];
+        ((struct BoomerangFx *) fx->unk4C)->unk4 = gEntitiesNextPosXArray[omCurrentObj->objId];
+        ((struct BoomerangFx *) fx->unk4C)->unk8 = gEntitiesNextPosYArray[omCurrentObj->objId];
+        ((struct BoomerangFx *) fx->unk4C)->unkC = gEntitiesNextPosZArray[omCurrentObj->objId];
     }
 }
 #elif defined(PORT)
@@ -2530,13 +2559,6 @@ typedef struct Unk80198538 {
     s32 unk0;
     s32 unk4;
 } Unk80198538;
-
-typedef struct Unk80198830 {
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-} Unk80198830;
 
 /* D_801970B4_ovl3 now emitted by this TU */
 
