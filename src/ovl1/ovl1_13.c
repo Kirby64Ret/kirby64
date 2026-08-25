@@ -869,12 +869,33 @@ void func_800BDD98(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: DIFF 13/72. Residue: a single caller-saved register swap (ROM
- * holds the fill halfword in $a0 and the inner counter in $v1; we get the
- * same code with $v1/$a0 exchanged) plus the two addiu scheduling lines that
- * follow from it. Loop structure (goto-formed inner loop -- this is what
- * stops the -O2 unroller here), spills, calls, and branch shape all match.
- * One-slot register rotation -- permuter fuel. */
+/* FACTORY: DIFF 2/72 -- MEASURED 2026-08-25, was 13/72.
+ * The 11 words were the caller-saved register swap the old note described
+ * (ROM holds the fill halfword in $a0 and the inner counter in $v1; the draft
+ * got the same code with $v1/$a0 exchanged), and LEVER 61 pays for all of it:
+ * the empty `do { } while (0)` wrapped round the row loop is an IDO
+ * SCHEDULING BARRIER. Without it IDO hoists the row-pointer setup up past the
+ * `lhu` of the fill value and the register assignment falls out one slot
+ * rotated; with it the setup stays below and $a0/$v1 land where the ROM puts
+ * them. Nothing else in the block changed.
+ *
+ * This one came out of tools/decomp/harvest_zero_scores.py -- decomp-permuter
+ * had scored a barrier-wrapped variant at zero and the queue never published
+ * it, because permute_queue.py used to copy the wrong output directory.
+ *
+ * The 2 that remain are the two `addiu` that complete the %hi/%lo pairs for
+ * D_800F4324 and D_800EDA10, emitted in the opposite order. The ROM's three
+ * `lui` come out in source order (EDA10, EDA24, F4324) and its three `addiu`
+ * come out in the REVERSE of that (F4324, EDA24, EDA10); the draft emits both
+ * groups in source order. That reversal is not reachable from source
+ * position. Measured and rejected 2026-08-25:
+ *   - hoisting the loop bound into a `u8 *end` local assigned before rb, so
+ *     D_800F4324 is named first: 5/72, worse -- it reorders the `lui` group
+ *     as well and loses the two that already matched.
+ *   - writing the condition constant-first, `(u8 *) D_800F4324 != ra`
+ *     (lever 20): byte-identical at 2/72.
+ *   - assigning ra before rb: 5/72, worse, same reason as the first.
+ * Permuter fuel, and a narrow target: two words, both %lo addends. */
 void func_800BDE0C(s32 arg0) {
     extern s32 D_800F4D14;
     extern s32 D_800F6198;
@@ -897,26 +918,28 @@ void func_800BDE0C(s32 arg0) {
         if (D_800F6198 != 0) {
             func_800A8934(0x50002, 0x10, 0, D_800ED510);
             fill = D_800EDA60[0];
-            rb = (u8 *) D_800EDA10;
-            ra = (u8 *) D_800EDA24;
             do {
-                *(u16 *) ra = fill;
-                *(u16 *) (ra + 2) = fill;
-                n = 0xC;
-                q = rb + 0x18;
-            loop4:
-                n += 4;
-                *(u16 *) (q + 2) = fill;
-                *(u16 *) (q + 4) = fill;
-                *(u16 *) (q + 6) = fill;
-                q += 8;
-                *(u16 *) (q - 8) = fill;
-                if (n != 0xD8) {
-                    goto loop4;
-                }
-                ra += 0x280;
-                rb += 0x280;
-            } while (ra != (u8 *) D_800F4324);
+                rb = (u8 *) D_800EDA10;
+                ra = (u8 *) D_800EDA24;
+                do {
+                    *(u16 *) ra = fill;
+                    *(u16 *) (ra + 2) = fill;
+                    n = 0xC;
+                    q = rb + 0x18;
+                loop4:
+                    n += 4;
+                    *(u16 *) (q + 2) = fill;
+                    *(u16 *) (q + 4) = fill;
+                    *(u16 *) (q + 6) = fill;
+                    q += 8;
+                    *(u16 *) (q - 8) = fill;
+                    if (n != 0xD8) {
+                        goto loop4;
+                    }
+                    ra += 0x280;
+                    rb += 0x280;
+                } while (ra != (u8 *) D_800F4324);
+            } while (0);
         } else {
             D_800D6F50 = 0;
             func_800A8934(D_800D52FC[saveHUDTheme], 0x10, 0, D_800ED510);
