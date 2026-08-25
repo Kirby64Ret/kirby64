@@ -120,8 +120,14 @@ void func_801E326C_ovl10(GObj *arg0) {
 
 f32 func_8019DA50_ovl7(void);
 
-#ifdef NON_MATCHING
 extern f32 atan2f(f32, f32);
+
+/* The two arms of the `1.0f ==` test are ABSF(a) and -ABSF(a); the macro's
+ * else arm is the `t = a` IDO hoists ahead of the c.eq.s.  The four clamp
+ * constants are DOUBLE literals in a ternary, so the ternary's type is double
+ * and the assignment to an f32 is the ROM's ldc1 + cvt.s.d -- written as four
+ * separate `r = 2.199...;` statements IDO folds each to a float constant and
+ * emits lwc1 instead. */
 f32 func_801E3450_ovl10(GObj *arg0) {
     f32 a;
     f32 t;
@@ -134,30 +140,16 @@ f32 func_801E3450_ovl10(GObj *arg0) {
             t = -t;
         }
     } else {
-        if (t < 0.0f) {
-            t = -t;
-        }
-        t = -t;
+        t = -ABSF(a);
     }
     r = atan2f(t, (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]);
-    if (2.19911491870880127 < ((r < 0.0f) ? -r : r)) {
-        if (1.0f == D_800E6A10[omCurrentObj->objId]) {
-            r = 2.19911491870880127;
-        } else {
-            r = -2.19911491870880127;
-        }
-    } else if (((r < 0.0f) ? -r : r) < 0.942477822303771973) {
-        if (1.0f == D_800E6A10[omCurrentObj->objId]) {
-            r = 0.942477822303771973;
-        } else {
-            r = -0.942477822303771973;
-        }
+    if (2.19911491870880127 < ABSF(r)) {
+        r = (1.0f == D_800E6A10[omCurrentObj->objId]) ? 2.19911491870880127 : -2.19911491870880127;
+    } else if (ABSF(r) < 0.942477822303771973) {
+        r = (1.0f == D_800E6A10[omCurrentObj->objId]) ? 0.942477822303771973 : -0.942477822303771973;
     }
     return r;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_2/func_801E3450_ovl10.s")
-#endif
 
 extern f32 atan2f(f32, f32);
 extern f32 sqrtf(f32);
