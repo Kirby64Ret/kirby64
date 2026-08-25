@@ -1018,3 +1018,38 @@ the pool allocator's real stride is 0x78.
     through a wrong prologue. The screen also reports `unscorable` for drafts
     that do not compile alone; those need the compile fixed before anything
     else, and there are eight of them.
+
+75. **A file-local helper that is not spelled `static` costs its callers the
+    o32 entry sequence.** IDO assigns an interprocedural convention -- values
+    held in $t registers across the call instead of homed -- only to a function
+    it knows nothing outside the translation unit can reach, and in C that
+    means `static`. Sealing __getTrackByte and __readVarLen in libn_audio.c
+    took alCSeqNextEvent, which calls them ten times, from 209 words differing
+    to 98, and closed both helpers outright. Not a register floor, not a
+    scheduling artifact: a missing keyword.
+
+    `tools/decomp/static_sweep.py` enumerates the class -- functions no other
+    .c names, no header declares, and no `#pragma GLOBAL_ASM` listing in a
+    DIFFERENT object references. **Read the rankings, not the count.** 4873
+    definitions in this tree qualify on linkage alone, which is a fact about a
+    per-overlay decomp and not a work list. The default output narrows to the
+    870 called from a still-guarded draft in their own file. `--near` narrows
+    again to the 36 whose caller is within 30% of byte-exact.
+
+    The negative that establishes why the narrowing matters: func_8009C154 in
+    ovl1.c has 30 calls from func_8009C4E0, the highest count in the tree.
+    Sealing it moved that caller 2221/2261 to 2223/2261 -- 98% wrong before and
+    after, no room for the change to show. **Call count without caller
+    proximity is noise**, which is the same lesson as LEVERS 69 and 74 from a
+    third direction: a lever needs a score that can move.
+
+    Two things the sweep cannot check, so check them by hand before sealing:
+    a function stored into a table that another TU dispatches through (the
+    entry is a data reference in a `.s` under data/, which this does not read
+    -- grep for the name), and verify.py's report, which resolves relocs
+    through the global symbol map, finds no global for a local FUNC symbol, and
+    prints `RELOC TARGET <tubase> != <addr>`. That line is a tooling artifact
+    on the TU base, not a defect; read the object with readelf and gate on the
+    ROM. A caller still behind a pragma in the SAME file does not block the
+    seal -- asm-processor assembles it into the same object and it binds to the
+    local symbol, proven by readelf on libn_audio.o.
