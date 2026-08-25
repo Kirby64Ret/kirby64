@@ -1002,6 +1002,16 @@ void func_8016B9D4_ovl3(s32);
 extern s32 func_80111574(u8 *, s32);
 extern void func_80111C4C(s32);
 
+/* FACTORY: 11/207. The first diff is a branch displacement -- `beqz $v0,
+ * +0x0A` against our `+0x09` -- which LEVERS 66 says is never a register
+ * residue. It is not a semantics bug either, and this function is the
+ * caveat recorded there: the ROM's skipped block is one instruction longer
+ * because the SCHEDULER hoisted `lui $a2, %hi(D_8012BCA0)` into it, and
+ * D_8012BCA0 is used after the join. Our version emits that same
+ * materialisation ten instructions later, at index 95. The blocks agree about
+ * what they do; they disagree about what got hoisted into one of them.
+ * Everything after index 95 lines back up, which is why the residue is 11 and
+ * not 100. */
 void func_8016B410_ovl3(s32 arg0) {
     if ((D_800BE500 == 4) && (D_800BE504 == 1) && (D_800BE508 == 0)) {
         D_801292B0[0] = gEntitiesNextPosXArray[0];

@@ -620,10 +620,28 @@ the pool allocator's real stride is 0x78.
     -- the commutative floor elsewhere in this file is about arithmetic with a
     MEMORY operand, and the two are different.
 
-66. **A branch offset that is wrong is a semantics report, not a register
-    residue.** func_80219E0C_ovl9's 30 diffs began at a `bc1f` with the wrong
-    displacement; that can only mean the blocks are laid out differently,
-    which means the source says something different. Its two `if` arms were
-    swapped -- a real bug, not a matching problem -- and fixing it closed the
-    function. When the first diff is a branch offset, stop looking at
-    registers.
+66. **A branch offset that is wrong is never a register residue -- but read
+    WHICH instruction the block gained before calling it a semantics bug.**
+    func_80219E0C_ovl9's 30 diffs began at a `bc1f` with the wrong
+    displacement, its two `if` arms were swapped, and fixing that real bug
+    closed the function. So: when the first diff is a branch offset, stop
+    looking at registers.
+
+    THE CAVEAT, measured on func_8016B410_ovl3 (11/207) the same day this
+    lever was written, because the lever as first stated would have sent a
+    lane hunting a bug that is not there. Its first diff is
+    `beqz $v0, +0x0A` against our `+0x09` -- the ROM's skipped block is one
+    instruction longer -- and the extra instruction is
+    `lui $a2, %hi(D_8012BCA0)`, an ADDRESS MATERIALISATION for a symbol used
+    after the join. That is the scheduler hoisting a loop-invariant address
+    into the block, not the source saying anything different.
+
+    The discriminator is what the extra instruction IS:
+
+      * a `lui %hi(...)` / `addiu %lo(...)` pair, or a load of something used
+        after the join -> scheduler motion. The source's blocks agree.
+      * an arithmetic or a call belonging to the block's own work -> the
+        blocks really do differ and the source is wrong.
+
+    Diff the two blocks instruction by instruction before deciding; the offset
+    alone does not tell you which case you have.
