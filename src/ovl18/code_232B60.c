@@ -328,8 +328,20 @@ extern f32 D_8022BBFC_ovl18;
        far worse -- the call is what forces the load to be re-materialised.
      - assigning temp_f20 at the top of the function as well: byte-identical
        at 13; IDO folds the duplicate.
+     - moving the assignment INSIDE the loop, so IDO has to hoist it into the
+       preheader itself and would append it after the constants: 55/138.
+       Hoisting is not the same operation as scheduling a straight-line load
+       and it does not put it where the ROM has it.
+     - dropping the local entirely and writing D_8022BBFC_ovl18 into both
+       multiplies, leaving IDO to CSE it: 109/138. It does not CSE across the
+       two calls at all.
+   So the placement in the draft is the best the source reaches from either
+   direction -- earlier is 80/138, inside the loop is 55/138, spelled out is
+   109/138, and here is 13/138.
    What is left wants the load sunk below the array bases, and source position
-   does not reach it. Permuter fuel. */
+   does not reach it. Permuter fuel.
+   shapescan.py 2026-08-25: shape distance 3, and all three runs are this one
+   load moving -- there is no second residue hiding behind the 13. */
 void func_80221498_ovl18(s32 arg0) {
     f32 temp_f20;
     u32 phi_a0;
