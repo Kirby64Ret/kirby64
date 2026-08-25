@@ -2475,6 +2475,15 @@ the pool allocator's real stride is 0x78.
     those belong to the LOOP and moving them into a switch retargets them
     silently.
 
+    SWEPT TREE-WIDE 2026-08-25: 20 chains tried across ovl1, ovl2, ovl3, ovl5,
+    ovl7, ovl9, ovl15, ovl17, ovl18, ovl19 and main; 4 improved and none
+    closed, the best being func_801DBEAC_ovl15 at 137/149 -> 133/147 (the
+    switch form is two words SHORTER there, which is the interesting half) and
+    func_800285F8 674 -> 667. Two chains would not compile as a switch and one
+    was refused for a `break` in an arm. So the lever is real and narrow:
+    func_800B1378 was its payer, and the rest of the population is not blocked
+    on arm order. Do not re-run the sweep without new drafts.
+
     Corroboration that this is the file's own idiom and not a trick: the
     function immediately above func_800B1378 in ovl1_7.c is already a switch
     over the same three cases, and it matches.
