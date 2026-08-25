@@ -950,20 +950,14 @@ u8 func_80157004_ovl4(s32 arg0) {
     return D_800ECA08[arg0].unk10;
 }
 
-/* FACTORY: 1 of 138 words DIFFERS, MEASURED 2026-08-25 -- until this pass the
- * site could not be scored at all: the draft's own `void func_800AFBB4(s32,
- * GObj *);` collided with the implicit `int func_800AFBB4()` that eight
- * earlier call sites in this TU had already created, so un-guarding it did
- * not compile. The prototype (and func_800ACBDC's) now sits at file scope at
- * the top of the file, spelled as ovl1/ovl1_7.h spells it; the ROM sha1 is
- * unchanged by that hoist (LEVERS lever 55).
- * The one word left is the operand ORDER of `beq $v0, $fp` (ROM) against
- * `beq $fp, $v0` here -- the register ASSIGNMENT is already identical
- * ($fp = v, $v0 = the fresh func_80157004_ovl4 result). Swept and inert:
- * `t != v`, `v != t`, both `== `/empty-then polarities, the assignment
- * embedded in the condition, and `u8 t`. Adjacent-operand transposition;
- * permuter food. */
-#ifdef NON_MATCHING
+/* MATCHED 2026-08-25. The last word was the operand ORDER of `beq $v0, $fp`
+ * (ROM) against `beq $fp, $v0`, and the knob is the SIGNEDNESS of the two
+ * compared locals: `u32 t; u32 v;` emits the ROM's order, `s32 t; s32 v;`
+ * emits the reverse. Either one alone is inert (both measured 1/138) -- the
+ * pair has to agree, because IDO canonicalises the operands of an integer
+ * `!=` and the canonical order differs between the signed and unsigned
+ * compare. The previous note sealed this as "the source cannot express this
+ * choice" after sweeping only expression spellings. */
 typedef struct {
     f32 unk0;
     f32 unk4;
@@ -979,30 +973,13 @@ extern Unk2Floats D_8015ADC4_ovl4[];
 extern Unk3Halfs D_8015ADDC_ovl4[];
 extern s32 D_8015C6F8_ovl4[];
 
-/* FACTORY: 1/138. One word, and it is a register-ORDER choice inside a
- * commutative branch:
- *     ROM  beq $v0, $fp    (rs = the call result, rt = the held value)
- *     IDO  beq $fp, $v0
- * at `if (t != v)`, where `t` is the func_80157004_ovl4 result in $v0 and `v`
- * is the loop-carried copy in $fp. $fp IS $s8 -- the two disassemblies name
- * the same register differently, so the only real difference is which operand
- * is rs.
- *
- * MEASURED AND INERT 2026-08-25: writing it `if (v != t)`. Byte-identical.
- * IDO canonicalises the operand order of `!=` before register allocation, so
- * the source cannot express this choice and lever 20 does not reach it.
- *
- * Permuter food, and it is in priority_queue.py's TARGETS. Note it has not
- * had a real run yet: its first scheduled slot was cut to 17 seconds by a
- * stray kill while the queue was being restarted for the --stack-diffs fix. */
-/* barrier_sweep.py (LEVER 71) 2026-08-25: all 24 statement placements tried, none beats the base 1/138. */
 void func_80157028_ovl4(GObj *arg0, s32 arg1) {
     Unk2Floats *p;
     SPObj *sp;
     Unk3Halfs *c;
     s32 idx;
-    s32 t;
-    s32 v;
+    u32 t;
+    u32 v;
 
     D_8015C6F8_ovl4[arg1] = omCurrentObj->objId;
     v = func_80157004_ovl4(arg1);
@@ -1042,9 +1019,6 @@ void func_80157028_ovl4(GObj *arg0, s32 arg1) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl4/ovl4_3/func_80157028_ovl4.s")
-#endif
 
 s32 func_80157250_ovl4(void) {
     return 4;
