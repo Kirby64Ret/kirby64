@@ -902,6 +902,30 @@ void procMainMove(GObj *gobj) {
     }
 }
 
+/* FACTORY: 18/116 -- MEASURED 2026-08-25, and the first measurement this draft
+   has had. Structure, count and every displacement are exact; the whole residue
+   is ONE register. The ROM holds `&omCurrentObj` in $a1 and the draft holds it
+   in $a2, and the eighteen words are that base and the values that fall one
+   slot behind it -- `lw $t6, 0x0($a1)` against `lw $t6, 0x0($a2)` six times
+   over, then the $t5/$t6, $t6/$t7, $t0/$t1 pairs that follow from it.
+
+   The direction matters for whoever tries next: the ROM's base is LOWER, so it
+   is the DRAFT that reserves one more register at the bottom, not the ROM. The
+   usual "temps up a slot" cures push the other way and are wrong here.
+
+   Measured 2026-08-25 and byte-identical at 18/116, so do not retry:
+     - splitting `UnkStruct800B158C *gobj_4C = gobj->unk4C;` into a bare
+       declaration plus an assignment, which by LEVER 54's corollary should
+       have given it a home slot it does not currently get;
+     - declaring var_a0 before gobj_4C.
+   Measured and much WORSE: `s32 var_a0` instead of `u16`, 35/115 -- so the u16
+   is confirmed by measurement rather than assumed, and the count drops by one
+   because the widened type deletes an `andi`.
+   barrier_sweep.py is not applicable here: the residue is a register name, not
+   a schedule, and there is nothing for a barrier to pin.
+
+   This is a one-slot rotation over an exact instruction stream, which is what
+   decomp-permuter is good at, and it is now in priority_queue.py's TARGETS. */
 #ifdef NON_MATCHING
 #ifdef PORT
 /* PORT rewrite of the draft below. UnkStruct800B158C spells the N64 SPObj

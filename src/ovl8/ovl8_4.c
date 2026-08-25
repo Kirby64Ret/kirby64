@@ -270,7 +270,7 @@ void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];
     extern f32 D_801DB058_ovl8[];
-    void func_800B2340(Vector *, struct DObj *, u32);
+    void func_800B2340(Vector *, struct DObj *, s32);
     void func_801D560C_ovl8(struct GObj *);
     s32 dir;
     s32 i;
@@ -350,7 +350,7 @@ void func_801D5024_ovl8(struct GObj *arg0) {
     extern f32 D_800EAC20[];
     extern s32 D_801DB050_ovl8[];
     extern f32 D_801DB058_ovl8[];
-    void func_800B2340(Vector *, struct DObj *, u32);
+    void func_800B2340(Vector *, struct DObj *, s32);
     void func_801D560C_ovl8(struct GObj *);
     s32 dir;
     s32 i;
@@ -688,8 +688,9 @@ void func_801D5F88_ovl8(struct GObj *arg0) {
 }
 
 
-/* 5/235, AND THE CAUSE IS NOW KNOWN AND PROVEN -- it is not a register floor,
- * it is func_800B2340's PROTOTYPE, and the fix is outside this file.
+/* FLOOR 5/235, and the cause is known, proven, and NOT WORTH PAYING -- it is
+ * not a register floor, it is func_800B2340's PROTOTYPE, and the fix costs 29
+ * other functions.  Read the measurement below before spending anything here.
  *
  * The residue is one CSE register: the ROM parks D_800E0D50[objId] in $a2
  * (also func_800B2340's 3rd argument register) and coalesces; IDO parks it in
@@ -703,11 +704,30 @@ void func_801D5F88_ovl8(struct GObj *arg0) {
  * The permuter found the same thing independently (`int track` in its
  * standalone copy, perm/func_801D6534_ovl8/output-0-1).
  *
- * NOT DONE HERE because it is a cross-file prototype change: the header
- * declaration, the definition at src/ovl1/ovl1_7.c:1420, and roughly twenty
- * per-file redeclarations spread over ovl3/ovl5/ovl6/ovl9/ovl15/ovl16/ovl17/
- * ovl19 all have to move together (several already say `s32` and disagree
- * with the header today).  Coordinator task.
+ * THE TREE-WIDE RETYPE WAS DONE 2026-08-25 AND THE ANSWER IS NO.  All fifteen
+ * translation units that declare func_800B2340 were moved to `s32 track` --
+ * the definition in ovl1_7.c, ovl1_7.h, and the per-file redeclarations in
+ * ovl1_2_2, ovl3/kirby, ovl3_6, plyeff, ovl4_4, ovl5_7, ovl6, ovl9_1, ovl9_2,
+ * ovl15.h, ovl17.h and ovl19_2.  It CLOSES THIS FUNCTION (MATCH at 235) and
+ * BREAKS 29 FUNCTIONS IN OVL5.  Full rebuild, verify_rom.py both ways:
+ *     with the retype     5577 byte-exact, 29 REAL DEFECTS, every one in ovl5,
+ *                         func_8016C410_ovl5 through func_8016F3C4_ovl5
+ *     without it          5589 byte-exact, 0 real defects, sha1
+ *                         6cea2d46b929a3bb347b060a77fccc83526fb855
+ * The mechanism is src/ovl5/ovl5_4.c: it includes ovl1/ovl1_7.h and makes five
+ * calls to func_800B2340, and its codegen depends on the `u32`.  ovl5_4.c
+ * wants u32 and this file wants s32; LEVER 49 forbids a local prototype that
+ * contradicts the definition, so no spelling gives both.  One function against
+ * twenty-nine is not a trade.
+ *
+ * A warning about how this nearly went in.  An object-level gate -- rebuild,
+ * compare the `.text` of every TU the change touches -- reported the retype
+ * INERT across fifteen objects.  That gate was WRONG, because ovl5_4.o was not
+ * in its list: ovl5_4.c does not DECLARE func_800B2340, it only calls it
+ * through the header, so it never appeared in the grep that built the list.
+ * A prototype change reaches every INCLUDER, not just every declarer.  Gate a
+ * header change on the linked ROM, never on an object list derived from the
+ * edit.
  *
  * Swept and negative, all with the u32 prototype in place: named index local
  * (before and after `d`), named funclist local, explicit `default:`,
