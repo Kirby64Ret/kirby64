@@ -48,7 +48,7 @@ struct Sub800E1B50_Unk34 *func_800A8234(s32, s32, s32);
 void func_801B857C_ovl7(struct Sub800E1B50_Unk34 *);
 void func_801A3938(void *);
 s32 func_801ACC34_ovl7(s32, s32);
-void func_801ABBA0_ovl7(void);
+void func_801ABBA0_ovl7();
 extern s32 D_800E0D50[];
 void func_801A3E80_ovl7(GObj *);
 void func_801A374C_ovl7(void *);
@@ -65,7 +65,7 @@ void func_800AECC0(f32);
 void func_800AED20(f32);
 void func_800AA018();
 void ohSleep(s32);
-void func_801ABBA0_ovl7(void);
+void func_801ABBA0_ovl7();
 void func_801B8238_ovl7(void);
 /* D_801CE370_ovl7 = 65535.0f : now emitted by this TU */
 void func_800AFBB4(s32, struct GObj *);
@@ -132,15 +132,20 @@ void func_801B79B0_ovl7(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-// 65/147 diffs and one instruction short: everything up to the if matches;
-// the ROM hoists the D_800E3750 base before the if and gets a beql whose
-// delay slot preloads 14.0f.
+/* 65/147 and one instruction short: everything up to the if matches; the ROM
+   hoists the D_800E3750 base before the if and gets a beql whose delay slot
+   preloads 14.0f.
+   NEGATIVE, 2026-08-25: `func_801ABBA0_ovl7(arg0)` (LEVERS 58/67, worth 39 and
+   48 diffs on func_801B0C20_ovl7 and func_801B1300_ovl7 in ovl7_8.c) is EXACTLY
+   INERT here, 65/147 either way -- this function's ROM listing has no $a0 home
+   store to misplace. The truthful argument is kept anyway; the residue is the
+   beql, not the parameter. */
 void func_801B7C30_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
-    func_801ABBA0_ovl7();
+    func_801ABBA0_ovl7(arg0);
     D_800DF150[omCurrentObj->objId] = func_801B7E80_ovl7;
     ent->unk48 = &func_8010C274;
     ent->unk98 = &D_801CB56C_ovl7;

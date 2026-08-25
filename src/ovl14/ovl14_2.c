@@ -750,8 +750,16 @@ void func_801E2410_ovl14(GObj *arg0) {
 
 #ifdef NON_MATCHING
 /* 9/137: exact except $f12/$f14 are swapped between the shared 0.0f and 6.0f
- * constants; IDO allocates them in first-assignment order and the ROM does not. */
-extern void func_801ABBA0_ovl7(void);
+ * constants (and $f10/$f16 between the add result and the D_800E6A10 load);
+ * IDO allocates them in first-assignment order and the ROM does not.
+ * NEGATIVE 2026-08-25: `func_801ABBA0_ovl7(arg0)` (LEVERS 58/67, worth 39 and
+ * 48 diffs on two drafts in ovl7_8.c) is exactly inert here, 9/137 either way.
+ * The truthful argument is kept; the residue is FP register naming.
+ * NEGATIVE 2026-08-25: the three `= 0` stores are NOT `= 0.0f`. Spelling them
+ * 0.0f CSEs the store zero with the ABSF macro's compare zero, one word and
+ * one branch-delay nop disappear, and the score goes 9/137 -> 54/136. LEVER 7
+ * from the other side: integer 0 forks an FP constant, 0.0f shares it. */
+extern void func_801ABBA0_ovl7();
 extern void func_80199F58_ovl7(void *);
 extern f32 D_801E312C_ovl14;
 extern struct EnemyEventTable D_801CB470_ovl7;
@@ -766,7 +774,7 @@ void func_801E2610_ovl14(GObj *arg0) {
     sp18 = D_800E1B50[omCurrentObj->objId];
     D_800EC660[omCurrentObj->objId] = 40.0f;
     D_800EC820[omCurrentObj->objId] = 0.0f;
-    func_801ABBA0_ovl7();
+    func_801ABBA0_ovl7(arg0);
     D_800DF150[omCurrentObj->objId] = func_801E2834_ovl14;
     sp18->unk98 = &D_801CB470_ovl7;
     D_800E8920[omCurrentObj->objId] = 0;

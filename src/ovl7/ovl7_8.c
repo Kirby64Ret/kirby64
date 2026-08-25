@@ -43,7 +43,7 @@ extern f32 gameTicksPerDraw;
 void ohSleep(s32);
 /* D_801CE2B8_ovl7 = 4.2000003f : now emitted by this TU */
 void func_801AC840_ovl7(GObj *);
-void func_801ABBA0_ovl7(void);
+void func_801ABBA0_ovl7();
 void func_800AA018(s32);
 
 void func_801B10EC_ovl7(GObj *);
@@ -174,7 +174,14 @@ void func_801B0A20_ovl7(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-// 60/128 diffs: all stores are right; temps are rotated one register slot.
+/* 60/128 -> 21/128, 2026-08-25: `func_801ABBA0_ovl7(arg0)`. LEVERS 58/67 --
+   the ROM sinks the `sw $a0` home store to the call that consumes $a0 and the
+   draft, unable to use arg0, homed it in the prologue; that ONE misplaced word
+   is what the "temps are rotated one register slot" reading was seeing.
+   func_801ABBA0_ovl7 really takes a parameter (definition `(GObj *arg0)` in
+   ovl7_5.c, `sw $a0, 0x28($sp)` in its own listing, and a call with an
+   argument at ovl7_5.c:2006); the declaration at the top of this file is now
+   K&R `()`, which is byte-inert for the nine matched bare call sites here. */
 void func_801B0C20_ovl7(GObj *arg0) {
     struct EnemyRecord *ent;
     struct DObj *d;
@@ -183,7 +190,7 @@ void func_801B0C20_ovl7(GObj *arg0) {
     d = arg0->data.dobj->firstChild;
     ent = D_800E1B50[omCurrentObj->objId];
     D_800EC820[omCurrentObj->objId] = 0.0f;
-    func_801ABBA0_ovl7();
+    func_801ABBA0_ovl7(arg0);
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
     D_800DF150[omCurrentObj->objId] = func_801AC840_ovl7;
     ent->unk48 = &func_8010C274;
@@ -311,7 +318,7 @@ void func_801B1300_ovl7(GObj *arg0) {
     D_800EC820[omCurrentObj->objId] = 0.0f;
     D_800EC2E0[omCurrentObj->objId].as_s32 = 0;
     i = 0x3C;
-    func_801ABBA0_ovl7();
+    func_801ABBA0_ovl7(arg0);
     func_801A2558_ovl7(&D_801CAF50_ovl7);
     D_800DEF90[omCurrentObj->objId] = func_800B6FD8;
     D_800DF150[omCurrentObj->objId] = &func_801B152C_ovl7;
