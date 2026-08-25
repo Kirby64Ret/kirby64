@@ -11,6 +11,9 @@
 #include "enelib.h"
 
 // ovl7_3
+/* LEVER 55: defined in src/ovl2/ovl2_3.c, prototyped in src/ovl11 and src/ovl3
+   but in no header this TU includes, so the call was an implicit `int f()`. */
+s32 func_800F98EC(s32, f32);
 extern void func_801A3864_ovl7(GObj *);
 
 // --- declarations used only by the guarded m2c drafts below ---
@@ -2229,7 +2232,7 @@ block_17:
     func_80161CE0_ovl3(arg0);
     temp_a2 = omCurrentObj->objId;
     temp_f0 = D_800EC660[temp_a2];
-    if ((temp_f0 != 0.0f) && (func_800F98EC(temp_a2, D_800E6A10[temp_a2] * temp_f0, temp_a2) != 0)) {
+    if ((temp_f0 != 0.0f) && (func_800F98EC(temp_a2, D_800E6A10[temp_a2] * temp_f0) != 0)) {
         func_801AC11C_ovl7(arg0);
     }
     temp_v1 = omCurrentObj;
