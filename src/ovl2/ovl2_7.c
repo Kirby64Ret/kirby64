@@ -264,6 +264,13 @@ s32 func_80108E08(struct PositionState *arg0, struct CollisionResult *arg1);
 void func_80109B5C(struct PositionState *arg0, struct CollisionResult *arg1);
 void func_801096F0(struct PositionState *arg0, struct CollisionResult *arg1);
 s32 func_8010A2C4(struct PositionState *arg0, struct CollisionResult *arg1);
+/* LEVER 55: this was prototyped ONLY inside this file's `#elif defined(PORT)`
+   arms, so every guarded draft that calls it compiled the call as an implicit
+   `int f()` -- the f32 argument promoted to double (`cvt.d.s` + `sdc1`) and the
+   result converted back. Four drafts in this TU were paying for it. */
+s32 func_80108078(Vector *, Vector *, struct Normal *, f32, Vector *, f32 *,
+                  struct Normal **, struct CollisionTriangle **, s32 *);
+s32 func_80108858(Vector *, Vector *, struct Normal *, f32);
 s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1);
 s32 func_8010AEE0(struct PositionState *, struct CollisionResult *);
 
