@@ -1783,7 +1783,33 @@ void func_801E0380_ovl15(struct GObj *arg0) {
    base". So the mechanical form of LEVER 61 does not reach this either, and
    the note above stands: the two instructions are independent and the choice
    is made by the ready list, not by anything a barrier can pin. Do not
-   re-run the sweep here. */
+   re-run the sweep here.
+
+   RE-READ 2026-08-25 WITH aligndiff.py (LEVER 104), AND THE NOTE ABOVE IS
+   DESCRIBING THE WRONG PAIR.  Shape distance is 2 and the two words are:
+
+       ROM   450  addiu $a0, $zero, 0xA        <- ohSleep(0xA)'s ARGUMENT
+       ROM   451  lui   $at, (0x3F800000 >> 16)
+       OURS  450  lui   $at, (0x3F800000 >> 16)
+       OURS  451  addiu $a0, $zero, 0xA
+
+   Both are hoisted into the block that ends `c.lt.s $f20, $f0` / `bc1fl`, and
+   they are the 1.0f of the else arm of
+   `if (0.0f < d) D_800E3590[objId] = -1.0f; else = 1.0f;` and the argument of
+   the `ohSleep(0xA)` AFTER that if/else.  So it is not "which arm holds which
+   constant" -- it is a ready-list tie between a constant belonging to the
+   if/else and an argument belonging to the statement after it, and the ROM
+   schedules the LATER statement's argument first.
+
+   Four more negatives on that reading, all exactly 2/615:
+     - barrier_sweep RE-RUN after it gained the WRAP placement, 21 placements,
+       still "no placement beats the base".  So neither BEFORE nor WRAP.
+     - the if/else written as a ternary
+       `D_800E3590[objId] = (0.0f < d) ? -1.0f : 1.0f;` (LEVER 39 says ternary
+       changes the order two constants are materialised in -- not here).
+     - an explicit empty `do { } while (0);` between the if/else and the
+       ohSleep (LEVER 61 by hand rather than by sweep).
+   Permuter, and now with a precise statement of what it has to swap. */
 #if defined(MIPS_TO_C) || defined(PORT)
 /* One arm: nothing here is N64-only. */
 void func_801E05A8_ovl15(struct GObj *arg0) {
@@ -1963,80 +1989,85 @@ void func_801E0F44_ovl15(struct GObj *arg0) {
 }
 
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below.
-   The seven M2C_ERROR("read from unset register $v0") holes in the tail block
-   were func_801BC794_ovl7's return value: the listing reads
-   `jal func_801BC794_ovl7 / addiu $at, $zero, -1 / beq $v0, $at, .L801E1578 /
-   sll $a0, $v0, 2`, and $a0 is what indexes all six arrays written there. It
-   is the id of the entity that call produced, captured in `temp_v0_2` here.
-   Same defect and same fix as the note in src/ovl5/ovl5_7.c. */
+/* Boss death: stop the camera, ramp the -2.0 slide out over 50 ticks, wait
+   90, ramp the child's spin down the same way, then spawn the 4-type reward
+   entity above the boss and sleep for ever.
+
+   Byte-exact.  It carried "m2c draft, for the PORT only. Not byte-exact and
+   not claimed to be" (LEVER 88's shape) at 192/224, and the whole of it was
+   three m2c artefacts and one statement order:
+     - the `temp_v1 = omCurrentObj` pointer cache, the `temp_v0` objId cache,
+       the `temp_a1 = D_800D7098.unk34` cache and the two `temp_f*` products,
+       all deleted;
+     - **the loop guards.**  m2c wrote both ramps as
+       `if (0.0f < 1.0f) do { ... } while (scale > 0.0f);` because it
+       constant-propagated `scale`'s initial value INTO the rotated pre-test.
+       Two float literals compare at COMPILE time, so IDO folded the guard away
+       and the draft was eight words short; the ROM emits a real
+       `lui 0x3F80 / mtc1 / c.lt.s $f22, $f4 / bc1fl`, which is IDO doing the
+       propagation itself and still emitting the compare.  Spelling the guard
+       `if (0.0f < scale)` -- the variable, as the original source had it --
+       is 158 -> 2.  Whenever an m2c draft has a comparison between two
+       LITERALS, that is m2c's propagation and not the source.
+     - the last 2 were `scale = 1.0f;` sitting BEFORE
+       `D_800EA6E0[D_800E0D50[objId]] = -2.0f;`.  The ROM emits the store's
+       address (`addu $t8, $s2, $t7`) ahead of the `mtc1 $at, $f20` that loads
+       the 1.0f, i.e. the initialisation comes second in source.  Swapping the
+       two statements is MATCH.
+   Its old note about the seven M2C_ERROR("read from unset register $v0") holes
+   -- func_801BC794_ovl7's return value, captured here as `id` -- was right and
+   is already applied below. */
 void func_801E1230_ovl15(s32 arg0) {
-    GObj *temp_v1;
-    f32 temp_f10;
-    f32 temp_f6;
-    f32 var_f20;
-    u32 temp_a1;
-    u32 temp_v0;
-    s32 temp_v0_2;
+    f32 scale;
+    s32 id;
 
     D_800D7098.unk14 = 0;
     D_800DDFD0[omCurrentObj->objId] = 0xB;
     func_800B33F4();
-    temp_v1 = omCurrentObj;
-    D_800E9AA0[temp_v1->objId] = NULL;
+    D_800E9AA0[omCurrentObj->objId] = NULL;
     D_800D7118.unk3C = 0;
     D_800D7098.unk3C = 6;
     if (D_800D6B54 == 0) {
         func_8019F1EC_ovl7();
     }
-    D_800E3210[temp_v1->objId] = 0.0f;
-    D_800E3750[temp_v1->objId] = -0.25f;
-    D_800E3050[temp_v1->objId] = -2.0f;
-    D_800E3590[temp_v1->objId] = 0.0f;
-    var_f20 = 1.0f;
-    D_800EA6E0[D_800E0D50[temp_v1->objId]] = -2.0f;
-    if (0.0f < 1.0f) {
+    D_800E3210[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = -0.25f;
+    D_800E3050[omCurrentObj->objId] = -2.0f;
+    D_800E3590[omCurrentObj->objId] = 0.0f;
+    D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = -2.0f;
+    scale = 1.0f;
+    if (0.0f < scale) {
         do {
-            func_800AECC0(gameTicksPerDraw * var_f20);
+            func_800AECC0(gameTicksPerDraw * scale);
             ohSleep(1);
-            temp_f10 = -2.0f * var_f20;
-            var_f20 -= 0.02f;
-            D_800E3050[omCurrentObj->objId] = temp_f10;
-        } while (var_f20 > 0.0f);
-        var_f20 = 1.0f;
+            D_800E3050[omCurrentObj->objId] = -2.0f * scale;
+            scale -= 0.02f;
+        } while (scale > 0.0f);
+        scale = 1.0f;
     }
     func_800AECC0(0.0f);
     D_800E3590[omCurrentObj->objId] = 0.0f;
-    temp_v0 = omCurrentObj->objId;
-    D_800E3050[temp_v0] = D_800E3590[temp_v0];
+    D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
     D_800E3AD0[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x5A);
-    if (0.0f < 1.0f) {
+    if (0.0f < scale) {
         do {
-            temp_f6 = -2.0f * var_f20;
-            var_f20 -= 0.02f;
-            D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = temp_f6;
-        } while (var_f20 > 0.0f);
+            D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = -2.0f * scale;
+            scale -= 0.02f;
+        } while (scale > 0.0f);
     }
     D_800EA6E0[D_800E0D50[omCurrentObj->objId]] = 0.0f;
-    temp_v0_2 = func_801BC794_ovl7(4);
-    if (temp_v0_2 != -1) {
-        temp_a1 = D_800D7098.unk34;
-        D_800E5F90[temp_v0_2] = D_800E5F90[temp_a1];
-        D_800E6BD0[temp_v0_2] = D_800E6BD0[temp_a1];
-        gEntitiesNextPosXArray[temp_v0_2] = gEntitiesNextPosXArray[omCurrentObj->objId];
-        gEntitiesNextPosYArray[temp_v0_2] = gEntitiesNextPosYArray[omCurrentObj->objId] + 200.0f;
-        gEntitiesNextPosZArray[temp_v0_2] = gEntitiesNextPosZArray[omCurrentObj->objId];
-        D_800E8E60[temp_v0_2] = 1;
+    id = func_801BC794_ovl7(4);
+    if (id != -1) {
+        D_800E5F90[id] = D_800E5F90[D_800D7098.unk34];
+        D_800E6BD0[id] = D_800E6BD0[D_800D7098.unk34];
+        gEntitiesNextPosXArray[id] = gEntitiesNextPosXArray[omCurrentObj->objId];
+        gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[omCurrentObj->objId] + 200.0f;
+        gEntitiesNextPosZArray[id] = gEntitiesNextPosZArray[omCurrentObj->objId];
+        D_800E8E60[id] = 1;
     }
     curObjSleepForever();
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801E1230_ovl15.s")
-#endif
 
 void func_801E15B0_ovl15(s32 arg0) {
     if (gEntitiesNextPosYArray[omCurrentObj->objId] < -80.0f) {
