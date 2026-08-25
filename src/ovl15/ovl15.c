@@ -974,13 +974,29 @@ void func_801DD318_ovl15(struct GObj *arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 0;
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-void func_801DD4EC_ovl15(s32 arg0) {
-    f32 *temp_v1;
-    u32 temp_v1_2;
+/* Intro drop: fall 1116 units at 60/-1.5, bounce (0.5 then -0.5), settle, and
+   hand the entity to func list 1 with the D_800D7098 fight flag raised.
 
+   Byte-exact.  It had carried "m2c draft, for the PORT only. Not byte-exact
+   and not claimed to be" (LEVER 88's shape) and measured 106/154; three edits,
+   none of them about registers:
+     - `temp_v1 = &gEntitiesNextPosYArray[objId]; *temp_v1 -= 1116.0f;`.  The
+       named pointer costs an extra read of the omCurrentObj global; the ROM
+       re-reads objId through the pointer it holds, once per statement.
+     - `temp_v1_2 = objId;` shared between the D_800E3210/D_800E3750 pair, for
+       the same reason -- the ROM reads objId separately for each subscript.
+       Those two are 106 -> 13.
+     - the last 13 were LEVER 45.  The ROM materialises the constant `1` ONCE
+       and stores it to both `D_800D7098.unk3C` and
+       `gEntityFuncListIDArray[objId]`; the header types unk3C `u32` and
+       gEntityFuncListIDArray `s32`, and IDO will not CSE a constant across
+       two integer TYPES.  `*(s32 *) &D_800D7098.unk3C = 1;` shares it and the
+       function matches.  The same header already carries the comment "unk8
+       MUST be a different 32bit type than gEntityFuncListIDArray" -- this is
+       that observation with the sign reversed, and retyping the field in the
+       shared header would be the honest fix (coordinator task, LEVER 81:
+       gate it on the linked ROM, not on an object list). */
+void func_801DD4EC_ovl15(s32 arg0) {
     func_800AED20(0.0f);
     func_800AECC0(gameTicksPerDraw);
     D_800DDFD0[omCurrentObj->objId] = 0;
@@ -989,8 +1005,7 @@ void func_801DD4EC_ovl15(s32 arg0) {
     func_800AA018(0x103DD);
     D_800EBDA0[omCurrentObj->objId] = -1;
     play_sound(0x19F);
-    temp_v1 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-    *temp_v1 -= 1116.0f;
+    gEntitiesNextPosYArray[omCurrentObj->objId] -= 1116.0f;
     D_800E3210[omCurrentObj->objId] = 60.0f;
     D_800E3750[omCurrentObj->objId] = -1.5f;
     if (D_800E3210[omCurrentObj->objId] > 0.0f) {
@@ -1004,19 +1019,14 @@ void func_801DD4EC_ovl15(s32 arg0) {
     D_800E3750[omCurrentObj->objId] = -0.5f;
     ohSleep(0xA);
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    temp_v1_2 = omCurrentObj->objId;
-    D_800E3210[temp_v1_2] = D_800E3750[temp_v1_2];
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x1E);
     func_800BC1FC((s32) D_800E7B20[omCurrentObj->objId]);
     func_800AEFFC(2);
-    D_800D7098.unk3C = 1;
+    *(s32 *) &D_800D7098.unk3C = 1;
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DD4EC_ovl15.s")
-#endif
 
 void func_801DD74C_ovl15(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 0;
