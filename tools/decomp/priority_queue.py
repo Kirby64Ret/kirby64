@@ -8,10 +8,13 @@ by instruction count put the fleet's best-measured targets at position ~400 of
 495, i.e. ~66 hours away at 600s each, while the permuter spent its first hour
 on unmeasured 8-instruction functions.
 
-This runs an explicit list instead, written from the lanes' own measurements.
-Each entry is (diffs, cfile, func) and the list is worked in ascending diffs:
-the permuter's odds are roughly monotonic in how few instructions are wrong,
-so this is the order that converts CPU into closures fastest.
+This runs an explicit list instead. Each entry is
+(shape, positional, words, cfile, func) and the list is worked in ascending
+SHAPE distance -- the number of aligndiff runs that are not assembler aliases,
+i.e. the disagreements a source mutation can actually move. Ordering by the
+positional diff, which this list used to do, cannot tell "one register apart"
+from "needs re-deriving": 101 of the tree's 661 guarded drafts have shape
+distance 0, and many of them read as hopeless positionally.
 
 Everything it produces lands in tools/decomp/perm/_wins/ exactly as
 permute_queue.py's does, and factory.py is still the only thing allowed to put
@@ -28,86 +31,127 @@ import permute_queue as pq
 
 TOOLS = os.path.dirname(os.path.abspath(__file__))
 
-# (diffs, cfile, func) -- REGENERATED from measure_seeds.py's own output, not
-# from the FACTORY notes. The notes cannot be used for this: 197 of them
-# currently disagree with the measurement, in both directions. Some claimed
-# near-misses were already byte-exact (func_801644EC_ovl3 read 69/111 and
-# needed nothing), and some claimed floors were reachable. A queue built from
-# them spends CPU on the wrong functions.
+# (shape, positional, words, cfile, func) -- REBUILT 2026-08-25 from
+# tools/decomp/shapescan.py over the whole of src/, and ordered by SHAPE
+# DISTANCE, not by the positional diff.
 #
-# Rebuild after any measure_seeds run:
-#   python3 tools/decomp/measure_seeds.py --json /tmp/seeds.json
-# then re-derive this list from the rows with an integer `diff`.
+# The positional number this list used to carry is word-i-against-word-i, so
+# one inserted instruction reports every later word as wrong (LEVER 104). As a
+# permuter ordering that is close to noise: it cannot separate "one register
+# apart" from "needs re-deriving", and both ends of that range sat next to each
+# other in the old list. shapescan runs aligndiff over every guarded draft and
+# counts the insert/delete/replace runs that are NOT assembler aliases, which
+# is the thing the permuter can actually move.
 #
-# Ascending: closest first.
-# ORDER RESIDUES FIRST. Measured 2026-08-13: the permuter spent 600s each on
-# func_801E8F74_ovl9 and func_801E3FE4_ovl9 -- both labelled "1 diff" by a lane
-# -- and plateaued at 40 and 170 without closing. Those two are REGISTER
-# ALLOCATION residues, and random source mutation has no purchase on them.
+# The measurement that justifies the rewrite: of the 661 guarded drafts in the
+# tree, 101 have a shape distance of ZERO -- no structural disagreement at all,
+# only register names. Those are exactly the population random source mutation
+# reaches, and most of them never appeared in the old list because their
+# positional scores read as hopeless (func_801EDE50_ovl16 is 187/450 and shape
+# 0; func_8015B75C_ovl3 is 100/290 and shape 0).
 #
-# What it should be fed instead is a residue of instruction ORDER, which is
-# precisely what mutation reaches. The ovl16 pair below is the clearest case in
-# the tree: two identical `addu $t,$s7,$s0` emitted in the opposite order, arm
-# order locked by bc1fl polarity, 2 diffs out of 299, and a lane has proved no
-# source spelling reaches it.
+# Ordered shape ascending, then POSITIONAL ascending, then size descending.
+# Once the shape distance is 0 the positional count means something again: it
+# is how many words carry a wrong register name, so 1/138 is one register and
+# 187/450 is a whole-body rotation. Shape says whether mutation can reach the
+# residue at all; the positional count says how far it has to move.
+#
+# Rebuild with:
+#   python3 tools/decomp/shapescan.py 'src/*/*.c' > /tmp/shape.txt
+# then re-derive these rows from it. priority_queue skips any entry whose
+# function no longer has a guarded draft, so a stale line costs a log message
+# rather than a slot.
+#
+# NOT A PROMISE OF A CLOSURE. LEVER 94: a permuter zero on a SCHEDULING residue
+# is a coin flip, and shape 0 includes both scheduling and allocation residues.
+# What it does promise is that the CPU is not being spent on drafts that need
+# a structural edit no mutation can invent.
+# Shape 0 with a tiny positional count is not automatically work: three of the
+# closest rows in the tree are already known dead, and without this they take
+# the first slots every time the queue restarts.
+#
+#   func_801720D8_ovl5, func_801721CC_ovl5  their 2 diffs are the prologue and
+#       epilogue `addiu $sp` -- the FRAME, which no source spelling in ten
+#       declaration permutations reached (LEVER 57's table). With
+#       --stack-diffs the permuter scores them honestly and plateaus; without
+#       it they log an instant '*** MATCH' on source byte-identical to the
+#       draft already in the tree, and factory rejects them on the ROM gate
+#       for ever.
+#   func_800BDE0C  its two published permuter zeros were WHITESPACE ONLY --
+#       reflowed lines inside an already barrier-wrapped loop, which cannot
+#       alter codegen (harvest_zero_scores.py flags the class). The tree
+#       scores 2/72 with or without them.
+EXCLUDE = {
+    'func_801720D8_ovl5': 'frame-only residue; LEVER 57 table, not reachable',
+    'func_801721CC_ovl5': 'frame-only residue; LEVER 57 table, not reachable',
+    'func_800BDE0C': 'published zeros were whitespace-only; tree is 2/72 either way',
+}
+
 TARGETS = [
-    # REBUILT 2026-08-25 from the tree's own FACTORY/FLOOR notes, after the
-    # ABSF sweep, the barrier sweep and the zero-score harvest closed or moved
-    # most of the previous list. Ordered by residue, then by SIZE within a
-    # residue -- a 754-word function nineteen words from byte-exact is worth
-    # more of a slot than a 24-word one.
-    #
-    # Re-derive after any measure_seeds run with the snippet in the module
-    # docstring. priority_queue skips any entry whose function no longer has a
-    # guarded draft, so a stale line costs a log message rather than a slot.
-    (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),   # of 88
-    # func_8017232C_ovl5 WAS HERE at "2 diffs of 88", which is func_801721CC's
-    # row copied onto the line below it. Re-measured 2026-08-25: 328/508. It
-    # also could not be set up at all until setup_permuter learned to find a
-    # guard opened with `#if defined(...)`, so it burned a slot twice over --
-    # once on a wrong number and once on a one-second crash. Do not re-add it
-    # without a fresh measurement.
-    (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),   # of 10, one-slot temp rotation, no frame
-    (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),   # of 169
-    (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),   # of 146
-    (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),   # of 138
-    (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),   # of 131, two register residues
-    (  7, 'src/main/render.c', 'func_8001479C'),   # of 13
-    (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),   # of 70
-    ( 12, 'src/ovl5/ovl5_4.c', 'func_8016F40C_ovl5'),   # of 201
-    ( 12, 'src/ovl5/ovl5_5.c', 'func_80171950_ovl5'),   # of 327
-    ( 13, 'src/ovl1/ovl1_10.c', 'func_800BA90C'),   # of 62
-    ( 13, 'src/ovl18/code_232B60.c', 'func_80221498_ovl18'),   # of 138
-    ( 13, 'src/ovl1/ovl1_3.c', 'func_800AA96C'),   # of 116, saved-register assignment swap
-    ( 13, 'src/ovl4/ovl4_1.c', 'func_80151CEC_ovl4'),   # of 59
-    ( 13, 'src/ovl7/ovl7_3.c', 'func_801A1B6C_ovl7'),   # of 318
-    ( 14, 'src/ovl7/ovl7_17.c', 'func_801C02D0_ovl7'),   # of 174
-    ( 17, 'src/ovl1/ovl1.c', 'func_800A238C'),   # of 45
-    ( 18, 'src/ovl1/ovl1.c', 'func_8009BA74'),   # of 117, one missing `or $v0,$zero,$zero` plus a temp rotation
-    ( 18, 'src/ovl1/ovl1_7.c', 'func_800B158C'),   # of 116, one-slot base register rotation
-    ( 18, 'src/ovl1/ovl1.c', 'func_8009BA74'),   # of 117
-    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109504'),   # of 123
-    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109784'),   # of 123
-    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109970'),   # of 123
-    ( 19, 'src/ovl7/yakulib.c', 'func_801BC978_ovl7'),   # of 754
-    ( 20, 'src/ovl1/save_file.c', 'func_800B9008'),   # of 24
-    ( 20, 'src/ovl2/ovl2_3.c', 'func_800FC03C'),   # of 74
-    ( 20, 'src/ovl6/ovl6.c', 'func_80154628_ovl6'),   # of 27
-    ( 21, 'src/ovl15/ovl15.c', 'func_801DCDA8_ovl15'),   # of 165
-    ( 21, 'src/ovl19/helper.c', 'func_8021F174_ovl19'),   # of 144
-    ( 23, 'src/ovl2/ovl2_7.c', 'func_8010B284'),   # of 127
-    ( 24, 'src/main/libn_audio.c', 'func_80023A28'),   # of 47
-    ( 24, 'src/ovl6/ovl6.c', 'func_80154C64_ovl6'),   # of 63
-    ( 24, 'src/ovl7/enelib.c', 'func_8019D4D0_ovl7'),   # of 244
-    ( 24, 'src/ovl7/ovl7_4.c', 'func_801A6434_ovl7'),   # of 119
-    ( 25, 'src/ovl1/save_file.c', 'func_800B91B8'),   # of 30
-    ( 25, 'src/ovl1/save_file.c', 'saveCalcHeaderChecksum'),   # of 30
-    ( 25, 'src/ovl7/ovl7_16.c', 'func_801BE79C_ovl7'),   # of 429
-    ( 26, 'src/ovl1/ovl1.c', 'func_8009E834'),   # of 48
-    ( 27, 'src/ovl7/ovl7_3.c', 'func_801A2C78_ovl7'),   # of 123
-    ( 27, 'src/ovl9/ovl9_3.c', 'func_801DE280_ovl9'),   # of 227
-    ( 69, 'src/ovl1/ovl1_3.c', 'func_800A9648'),   # of 70, arg0 wants $s0 not $a3
-    ( 59, 'src/ovl1/ovl1.c', 'func_800A0558'),   # of 277, $s4/$s5 rotation
+    (  0,     1,   138, 'src/ovl4/ovl4_3.c', 'func_80157028_ovl4'),
+    (  0,     2,    88, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
+    (  0,     2,    85, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),
+    (  0,     2,    72, 'src/ovl1/ovl1_13.c', 'func_800BDE0C'),
+    (  0,     2,    61, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
+    (  0,     3,   224, 'src/ovl2/ovl2.c', 'func_800F64B0'),
+    (  0,     3,   124, 'src/ovl3/plyeff.c', 'func_80164130_ovl3'),
+    (  0,     3,    97, 'src/ovl3/kirby.c', 'func_801708A0_ovl3'),
+    (  0,     3,    18, 'src/main/libn_audio.c', 'n_alSavePull'),
+    (  0,     4,   169, 'src/ovl1/save_file.c', 'func_800B9FE0'),
+    (  0,     4,   161, 'src/ovl14/ovl14.c', 'func_801DF290_ovl14'),
+    (  0,     4,    10, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),
+    (  0,     5,   138, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),
+    (  0,     6,   131, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),
+    (  0,     6,    28, 'src/ovl11/ovl11_2.c', 'func_801DF728_ovl11'),
+    (  0,     7,   396, 'src/ovl5/ovl5_3.c', 'func_8016626C_ovl5'),
+    (  0,     7,   144, 'src/ovl9/ovl9_6.c', 'func_801ED9AC_ovl9'),
+    (  0,     7,    43, 'src/ovl16/ovl16.c', 'func_801DC8E4_ovl16'),
+    (  0,     8,   260, 'src/ovl9/ovl9_3.c', 'func_801DCE6C_ovl9'),
+    (  0,     8,   164, 'src/ovl5/ovl5_3.c', 'func_80165634_ovl5'),
+    (  0,     8,   159, 'src/ovl5/ovl5_6.c', 'func_80178690_ovl5'),
+    (  0,     8,   142, 'src/ovl2/plylib.c', 'func_8011C4E8'),
+    (  0,     8,    95, 'src/ovl2/ovl2_10.c', 'func_801173F4'),
+    (  0,     9,   137, 'src/ovl14/ovl14_2.c', 'func_801E2610_ovl14'),
+    (  0,     9,   134, 'src/ovl5/ovl5_2.c', 'func_80164EA8_ovl5'),
+    (  0,     9,    76, 'src/ovl5/ovl5_2.c', 'func_80161078_ovl5'),
+    (  0,    10,   118, 'src/ovl2/plylib.c', 'func_80121D3C'),
+    (  0,    10,    87, 'src/ovl19/helper.c', 'func_802209E4_ovl19'),
+    (  0,    11,   165, 'src/ovl7/ovl7_11.c', 'func_801B6F18_ovl7'),
+    (  0,    11,    48, 'src/ovl12/code_1EB520.c', 'func_801DE7E8_ovl12'),
+    (  0,    11,    38, 'src/ovl19/helper.c', 'func_80221108_ovl19'),
+    (  0,    11,    30, 'src/ovl9/ovl9_10.c', 'func_802052E8_ovl9'),
+    (  0,    12,   201, 'src/ovl5/ovl5_4.c', 'func_8016F40C_ovl5'),
+    (  0,    12,   167, 'src/ovl15/ovl15b.c', 'func_801E5080_ovl15'),
+    (  0,    12,    47, 'src/ovl7/enelib.c', 'func_8019F130_ovl7'),
+    (  0,    13,    62, 'src/ovl1/ovl1_10.c', 'func_800BA90C'),
+    (  0,    13,    60, 'src/ovl9/ovl9_10.c', 'func_802050E4_ovl9'),
+    (  0,    13,    59, 'src/ovl4/ovl4_1.c', 'func_80151CEC_ovl4'),
+    (  0,    13,    54, 'src/ovl18/code_239080.c', 'func_80227308_ovl18'),
+    (  0,    14,   113, 'src/ovl5/ovl5_1.c', 'func_8015C9B4_ovl5'),
+    (  0,    15,   236, 'src/ovl14/ovl14.c', 'func_801DDE60_ovl14'),
+    (  0,    16,    21, 'src/ovl2/plylib.c', 'func_8011C87C'),
+    (  0,    17,    46, 'src/ovl9/ovl9_2.c', 'func_801DBC38_ovl9'),
+    (  0,    17,    45, 'src/ovl1/ovl1.c', 'func_800A238C'),
+    (  0,    18,   116, 'src/ovl1/ovl1_7.c', 'func_800B158C'),
+    (  0,    19,   165, 'src/ovl15/ovl15.c', 'func_801DCDA8_ovl15'),
+    (  0,    19,   123, 'src/ovl2/ovl2_7.c', 'func_80109504'),
+    (  0,    19,    60, 'src/ovl19/helper.c', 'func_8022045C_ovl19'),
+    (  0,    20,   144, 'src/ovl19/helper.c', 'func_8021F174_ovl19'),
+    (  0,    20,    86, 'src/ovl9/ovl9_10.c', 'func_80205360_ovl9'),
+    (  0,    20,    74, 'src/ovl2/ovl2_3.c', 'func_800FC03C'),
+    (  0,    22,   119, 'src/ovl19/helper.c', 'func_80220280_ovl19'),
+    (  0,    22,    55, 'src/ovl9/ovl9_13.c', 'func_8020C378_ovl9'),
+    (  0,    24,   244, 'src/ovl7/enelib.c', 'func_8019D4D0_ovl7'),
+    (  0,    24,   123, 'src/ovl7/ovl7_3.c', 'func_801A2C78_ovl7'),
+    (  0,    24,    74, 'src/ovl1/ovl1_3.c', 'func_800AA49C'),
+    (  0,    24,    52, 'src/ovl1/ovl1_3.c', 'func_800A8578'),
+    (  0,    25,    76, 'src/ovl2/ovl2_8.c', 'func_8010E8F0'),
+    (  0,    27,    91, 'src/ovl1/ovl1_10.c', 'func_800BA7A0'),
+    (  0,    27,    48, 'src/ovl10/ovl10_1.c', 'func_801DDAC8_ovl10'),
+    (  0,    29,   211, 'src/ovl3/kirby.c', 'func_8016F80C_ovl3'),
+    (  0,    29,    68, 'src/ovl15/ovl15.c', 'func_801DD208_ovl15'),
+    (  0,    30,    59, 'src/ovl1/ovl1_3.c', 'func_800A9C78'),
+    (  0,    31,   178, 'src/ovl3/ovl3_6.c', 'func_8017BF34_ovl3'),
 ]
 
 
@@ -144,18 +188,21 @@ def main():
     seconds = int(sys.argv[1]) if len(sys.argv) > 1 else 900
     os.makedirs(pq.PERM, exist_ok=True)
     live = still_guarded()
-    queue = [t for t in TARGETS if t[2] in live]
-    closed = [t[2] for t in TARGETS if t[2] not in live]
+    queue = [t for t in TARGETS if t[4] in live and t[4] not in EXCLUDE]
+    closed = [t[4] for t in TARGETS if t[4] not in live]
     if closed:
         pq.log(f'skipping {len(closed)} target(s) closed since the list was '
                f'written: {", ".join(closed)}')
+    for fn, why in EXCLUDE.items():
+        if fn in live:
+            pq.log(f'excluding {fn}: {why}')
     pq.log(f'=== priority queue: {len(queue)} measured drafts, {seconds}s each ===')
     TARGETS[:] = queue
-    for i, (diffs, cf, fn) in enumerate(TARGETS, 1):
+    for i, (shape, diffs, words, cf, fn) in enumerate(TARGETS, 1):
         if not os.path.exists(cf):
             pq.log(f'[{i}/{len(TARGETS)}] SKIP {fn}: {cf} gone')
             continue
-        pq.log(f'[{i}/{len(TARGETS)}] {fn} ({diffs} diffs, {cf})')
+        pq.log(f'[{i}/{len(TARGETS)}] {fn} (shape {shape}, {diffs}/{words}, {cf})')
         try:
             pq.run_one(cf, fn, seconds, 3)
         except Exception as e:
