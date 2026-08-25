@@ -527,8 +527,15 @@ void func_800F8C70(s32 *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800F8C70.s")
 #endif
 #ifdef MIPS_TO_C
-/* FACTORY: 73/109, regalloc (temp rotation v0<->a3, FP load-copy ownership +
- * add.s operand orientation, spill-slot/locals base offsets) */
+/* FACTORY: 36/109 -- MEASURED 2026-08-25, and the first measurement this draft
+ * has ever had. The note this replaces claimed 73/109; there was no compile
+ * behind that number, because un-guarding this draft did not build the TU at
+ * all (see the func_8001E344 declaration below). The true residue is half what
+ * was claimed, so this one was under-sold rather than over-sold -- both
+ * directions happen, and neither is worth anything without the compile.
+ * Residue kind as originally described: regalloc (temp rotation v0<->a3, FP
+ * load-copy ownership + add.s operand orientation, spill-slot/locals base
+ * offsets). */
 void func_800F8E6C(GObj *arg0) {
     s32 objId;
     s32 nodeOfs;
@@ -542,7 +549,14 @@ void func_800F8E6C(GObj *arg0) {
     Vector pos;
     Vector tang;
     Vector ref;
-    void func_8001E344(Vector *, struct TrackFooter *, f32);
+    /* Spelled `struct Unk80129114_4_4 *` because that is what the N64 arm of
+       func_800F8E6C down at the bottom of this file declares in ITS body, and
+       IDO scopes a block-scope extern file-wide: with `struct TrackFooter *`
+       here the two disagreed and un-guarding this draft failed the whole TU on
+       "redeclaration of 'func_8001E344'". That is why this draft had never
+       been scored. The two tags describe the same object -- see the
+       TrackFooter comment near the top of the file. */
+    void func_8001E344(Vector *, struct Unk80129114_4_4 *, f32);
 
     objId = arg0->objId;
     nodeP = &D_800E5F90[objId];
@@ -570,7 +584,7 @@ void func_800F8E6C(GObj *arg0) {
         ref.x = 0.0f;
         ref.y = 0.0f;
         ref.z = D_800E6A10[objId];
-        func_8001E344(&tang, footer, *progressP);
+        func_8001E344(&tang, (struct Unk80129114_4_4 *) footer, *progressP);
         tang.y = 0.0f;
         ang = vec3_abs_angle_diff(&ref, &tang);
         angleP = &D_800E17D0[objId];
@@ -2739,7 +2753,33 @@ void func_800FC53C(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 25/117. Structure/offsets solved: DObj was the wrong payload type -- 0x3C..0x53 are Camera.viewMtx.lookAt.eye/.at (0x48=at, drifted by D_80129408; 0x3C=eye, drifted by D_8012940C) and 0x74 is timeRemaining, and the (s32)&D_800D7B38+0x18 cast is what puts the save block base in a register with %lo(sym+0x18) and 0x0.. offsets. Residue: IDO CSEs the D_800D7B38 copy base into 'addiu v1,a2,24' where the ROM re-materialises lui/addiu %lo(D_800D7B38+0x18) in each arm, which then rotates the copy's temp registers. No source spelling reached it in 5 tries (whole-struct copy, two-Vector copy, per-branch save, u8*/s32/struct-ptr casts); a separate D_800D7B50 symbol would do it but is not in symbol_addrs.txt */
+/* FACTORY: 92/117 -- MEASURED 2026-08-25, the first measurement this draft has
+ * ever had, and the note it replaces claimed 25/117.
+ *
+ * The note that carried that number CLOSED ITSELF. It listed the casts it had
+ * tried in the form `u8` star slash `s32`, run together with no spaces -- and
+ * a star followed by a slash ENDS a comment. Everything after it was parsed as
+ * code, so un-guarding this draft failed on a Syntax Error pointing at the
+ * comment text, and no compile could ever have produced 25/117. (Watch the
+ * apostrophes too: once the comment has closed early, the next one opens a
+ * character constant and the errors move somewhere unrelated.)
+ *
+ * 92 of 117 words differ. The instruction count is exact and the structure
+ * work below is real and worth keeping, but this is not a near-miss and must
+ * not be queued to the permuter as one.
+ *
+ * Structure/offsets solved: DObj was the wrong payload type -- 0x3C..0x53 are
+ * Camera.viewMtx.lookAt.eye/.at (0x48 = at, drifted by D_80129408; 0x3C = eye,
+ * drifted by D_8012940C) and 0x74 is timeRemaining; the (s32) &D_800D7B38 +
+ * 0x18 cast is what puts the save block base in a register with %lo(sym+0x18)
+ * and 0x0.. offsets.
+ *
+ * Residue: IDO CSEs the D_800D7B38 copy base into `addiu v1,a2,24` where the
+ * ROM re-materialises lui/addiu %lo(D_800D7B38+0x18) in each arm, which then
+ * rotates the copy's temp registers. No source spelling reached it in 5 tries
+ * (whole-struct copy, two-Vector copy, per-branch save, and casts through
+ * `u8 *`, `s32` and a struct pointer); a separate D_800D7B50 symbol would do
+ * it but is not in symbol_addrs.txt. */
 void func_800FC62C(GObj *arg0) {
     Camera *cam;
     struct Ovl2CamPos *save;

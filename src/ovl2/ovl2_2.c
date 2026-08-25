@@ -1051,6 +1051,20 @@ void func_800F7844(void) {
     }
 }
 
+/* A bare tag, at TRUE file scope, and it is load-bearing for the draft below.
+   Everything above line 302 is `#ifdef PORT`, including the only other
+   mention of this tag, so in the N64 build the first sight of
+   `struct UnkStruct80129418` used to be inside func_800F78E4's body -- and a
+   struct tag first mentioned inside a block is a BLOCK-SCOPE tag. The
+   file-scope `extern struct UnkStruct80129418 *D_8012911C;` at line ~1840 then
+   names a DIFFERENT type, IDO calls it a redeclaration, and the TU does not
+   compile. Measured directly under this project's cc: the same two lines with
+   a file-scope `struct S;` ahead of them compile clean, without it they do
+   not. A tag declaration allocates nothing and emits nothing (.text A/B
+   identical), which is why this is safe where hoisting a function prototype
+   would not be. */
+struct UnkStruct80129418;
+
 #ifdef MIPS_TO_C
 /* FACTORY: 27/484 instructions match (457 diffs). The score is a register
  * rotation doing damage across the whole body plus an 8-byte frame delta
@@ -1085,13 +1099,20 @@ void func_800F78E4(void) {
         /* 0x1C */ u32 dustImage;
         /* 0x20 */ u32 areaName;
     };
-    /* Header of the loaded area blob's track section. */
+    /* Header of the loaded area blob's track section -- the object D_80129114
+       points at, 0x10 bytes of it, and this function is the one that fills in
+       the two words past the count/array pair. It is a CAST rather than
+       D_80129114's own type because the other three bodies in this file that
+       touch that symbol declare it `void *` in-body, and IDO scopes a
+       block-scope extern file-wide: a wider type here is a redeclaration and
+       the TU is rejected. That is what had made this draft unscorable. */
     struct TrackSection {
         /* 0x00 */ u32 count;
         /* 0x04 */ u32 tracks;
         /* 0x08 */ u32 routing;
         /* 0x0C */ u32 lengths;
     };
+#define SEC ((struct TrackSection *) D_80129114)
     /* One entry of that section's track array. */
     struct TrackRecord {
         /* 0x00 */ u32 kirbyNode;
@@ -1131,7 +1152,12 @@ void func_800F78E4(void) {
     extern struct UnkStruct80129418 *D_8012911C;
     extern struct StageArea *D_800D1F98[];
     extern u8 *D_800D4668[];
-    extern struct TrackSection *D_80129114;
+    /* `void *`, which is how the other three bodies in this file that touch
+       D_80129114 spell it (func_800F8570, func_800F8728 and the loader
+       below). IDO scopes a block-scope extern file-wide, so a wider typed
+       declaration here contradicts theirs and the TU is rejected -- see the
+       struct TrackSection comment above. */
+    extern void *D_80129114;
     extern s32 D_80129118;
     extern struct LevelEntity *D_80129120;
     extern struct LevelEntity *D_801290E0;
@@ -1146,10 +1172,6 @@ void func_800F78E4(void) {
     extern u8 D_800D6AB8[];
     extern u8 D_800D7B80[];
     extern struct LightBlock D_800BE548;
-    /* in-body: this draft still calls func_800FA1D4 with m2c's leftover
-     * fourth register; the definition in ovl2_3.c takes three arguments and
-     * is what the file-scope prototype above spells. */
-    f32 func_800FA1D4(u32 footer, Vector *pos, s16 pointCount, s32 *entityIndex);
     Vector pos;
     struct StageArea *area;
     struct TrackRecord *track;
@@ -1181,15 +1203,15 @@ void func_800F78E4(void) {
     ((u32 *) base)[0] += base;
     D_8012911C = (struct UnkStruct80129418 *) ((u32 *) base)[0];
     ((u32 *) base)[1] += base;
-    D_80129114 = (struct TrackSection *) ((u32 *) base)[1];
+    D_80129114 = (void *) ((u32 *) base)[1];
     ((u32 *) base)[2] += base;
     D_80129120 = (struct LevelEntity *) ((u32 *) base)[2];
     D_801290E0 = D_80129120;
 
-    trackCount = D_80129114->count;
+    trackCount = SEC->count;
     D_80129118 = trackCount;
-    D_80129114->tracks += base;
-    track = (struct TrackRecord *) D_80129114->tracks;
+    SEC->tracks += base;
+    track = (struct TrackRecord *) SEC->tracks;
     for (i = 0; i < trackCount; i++) {
         track->kirbyNode += base;
         track->footer += base;
@@ -1213,9 +1235,15 @@ void func_800F78E4(void) {
                 pos = entity->pos;
                 kind = entity->kind;
                 if ((kind == 0) || (kind == 2)) {
-                    track = &((struct TrackRecord *) D_80129114->tracks)[entity->track];
-                    D_80129120->trackParam =
-                        func_800FA1D4(track->footer, &pos, track->pointCount, &D_80129124);
+                    track = &((struct TrackRecord *) SEC->tracks)[entity->track];
+                    /* THREE arguments. m2c invented a fourth (&D_80129124)
+                       from $a3, but the ROM never writes $a3 before this jal
+                       -- it materialises %hi(D_80129124) into $a3 four
+                       instructions AFTER it, for the next loop iteration.
+                       Spelled with four, the in-body prototype contradicted
+                       the file-scope one and the TU would not compile. */
+                    D_80129120->trackParam = func_800FA1D4(
+                        (struct Unk80129114_4_4 *) track->footer, &pos, track->pointCount);
                     entity = D_80129120;
                 }
                 D_80129120 = entity + 1;
@@ -1236,10 +1264,10 @@ void func_800F78E4(void) {
     } while (flag != &D_800D6C94[0x3C]);
     func_800F7404(D_800BE508);
 
-    D_80129114->routing += blobBase;
-    D_80129114->lengths += blobBase;
-    D_8012912C = D_80129114->routing;
-    D_80129130 = D_80129114->lengths;
+    SEC->routing += blobBase;
+    SEC->lengths += blobBase;
+    D_8012912C = SEC->routing;
+    D_80129130 = SEC->lengths;
 
     D_8012B9B0 = 0;
     skyboxId = ((struct StageArea *) D_801290D8)->skyboxId;
@@ -1313,6 +1341,7 @@ void func_800F78E4(void) {
             break;
     }
 }
+#undef SEC
 
 #elif defined(PORT)
 /* PORT: the level-config loader, from asm/nonmatchings/ovl2/ovl2_2/
