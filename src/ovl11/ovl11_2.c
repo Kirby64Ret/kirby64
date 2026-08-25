@@ -541,31 +541,40 @@ void func_801E098C_ovl11(struct GObj *arg0) {
     func_801A03B4_ovl7();
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
 extern f32 D_801E0C50_ovl11;
 extern f32 D_801E0C54_ovl11;
 
+/* MATCHED 2026-08-25, from the 45/75 m2c draft that had been kept "for the
+   PORT only". Two edits, both levers already in this file:
+
+   1. LEVER 4, inline-the-field. m2c's `temp_v0 = omCurrentObj->objId` keeps the
+      RAW index live in $v0, so the shared byte offset every one of the seven
+      subscripts uses is pushed into $a1; the ROM shifts $v0 IN PLACE because
+      nothing needs the unscaled value. Inlining the field at all seven sites is
+      45 -> 39. It is safe to inline here even though the ROM re-reads objId
+      three times: each re-read follows a store to a global (D_800E8920, then
+      D_800E3750), which IDO cannot prove does not alias, so it re-reads at
+      exactly the ROM's three points on its own.
+   2. LEVER 7, in the direction the entry does not spell out: the store's zero
+      must be an INTEGER `0`, not `0.0f`. Written `0.0f` it is CSE'd with the
+      four `== 0.0f` compare zeros already sitting in $f0 and the draft is TWO
+      WORDS SHORT -- no `mtc1 $zero, $f16` and no branch-delay `nop`. Written
+      `0` it forks, and the function matches. Cross-checked in the opposite
+      direction on func_801E2610_ovl14, where the ROM wants the fork and
+      changing its `= 0` stores to `= 0.0f` CSEs them into the ABSF's compare
+      zero and costs 45 diffs. Integer 0 forks; 0.0f shares. */
 void func_801E09C4_ovl11(s32 arg0) {
     f32 *temp_v1;
-    u32 temp_v0;
-    u32 temp_v0_2;
 
     D_800E8920[omCurrentObj->objId] = 0;
-    temp_v0 = omCurrentObj->objId;
-    if ((D_800E3050[temp_v0] == 0.0f) && (D_800E33D0[temp_v0] == 0.0f) && (D_800E3590[temp_v0] == 0.0f) && (D_800E3910[temp_v0] == 0.0f)) {
-        D_800E3750[temp_v0] = 0.0f;
-        temp_v0_2 = omCurrentObj->objId;
-        D_800E3210[temp_v0_2] = D_800E3750[temp_v0_2];
+    if ((D_800E3050[omCurrentObj->objId] == 0.0f) && (D_800E33D0[omCurrentObj->objId] == 0.0f) &&
+        (D_800E3590[omCurrentObj->objId] == 0.0f) && (D_800E3910[omCurrentObj->objId] == 0.0f)) {
+        D_800E3750[omCurrentObj->objId] = 0;
+        D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
         D_800E3C90[omCurrentObj->objId] = D_801E0C50_ovl11;
         return;
     }
-    temp_v1 = &D_800E3210[temp_v0];
+    temp_v1 = &D_800E3210[omCurrentObj->objId];
     *temp_v1 = -*temp_v1 * D_801E0C54_ovl11;
     play_sound(0x1D9);
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl11/ovl11_2/func_801E09C4_ovl11.s")
-#endif
