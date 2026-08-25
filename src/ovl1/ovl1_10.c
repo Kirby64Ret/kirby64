@@ -445,7 +445,19 @@ void func_800BAD0C(void *arg) {
  * word short. Swept 2026-08-25 with no effect: an `s32 t = item->unk08;` temp
  * (declared first, declared last, assigned inside the condition), `arg2 > t`
  * instead of `t < arg2`. IDO puts the temp in $a0 and keeps item in $v1, i.e.
- * exactly the ROM's two registers with the roles exchanged. */
+ * exactly the ROM's two registers with the roles exchanged.
+ *
+ * aligndiff says the SHAPE distance is exactly that one word: every other run
+ * it prints is a mnemonic alias the assembler picks (beql/beqzl, addiu/li,
+ * or/move, bnel/bnezl), and the "extra trailing nop" it also prints is an
+ * artifact of reconstructing a 39-word stream against a 40-word target, not a
+ * real instruction. Swept again 2026-08-25 with the temp DECLARED AND USED
+ * together (the earlier sweep's harness reset the file between the two edits,
+ * so half of it never compiled): temp first, middle and last in the
+ * declaration list, and a second `RumbleItem *` used only for the stores --
+ * 34/39 for all four. IDO coalesces a source-level copy, so the surviving
+ * `or` is the allocator's own and not something the source spells. That makes
+ * this a permuter target rather than a reading one. */
 #ifdef NON_MATCHING
 s32 func_800BAEB0(RumbleCont *arg0, s32 arg1, s32 arg2) {
     RumbleNode *node;
