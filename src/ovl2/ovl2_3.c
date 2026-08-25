@@ -305,6 +305,26 @@ f32 vec3_abs_angle_diff(Vector *v1, Vector *v2) {
 }
 
 void func_800F8A24(s32 arg0) {
+#ifdef PORT
+    /* PROBE (KIRBY_PC_PROBE): this is the LAST clamp on the track parameter.
+     * func_800F8B1C above has already had its chance to hop to the next node;
+     * whatever reaches here out of [0,1] and is not on a looping node gets
+     * pinned to the node's own end, and the entity then stands at that end's
+     * world position for ever. A player that stops at a round world X with no
+     * collision correction is exactly that shape, so this site prints the
+     * node, the parameter it is about to pin, and the resulting X. */
+    if (arg0 == 0 && (D_800E6BD0[arg0] > 1.0f || D_800E6BD0[arg0] < 0.0f)) {
+        extern void pc_probe_say(const char *, int, const char *, ...);
+        extern f32 gEntitiesNextPosXArray[];
+
+        pc_probe_say("8A24.clamp", 4,
+                     "obj0 node=%d loop=%d t=%.6f x=%.2f",
+                     (int)D_800E5F90[arg0],
+                     (int)D_80129114->unk4[D_800E5F90[arg0]].loop,
+                     (double)D_800E6BD0[arg0],
+                     (double)gEntitiesNextPosXArray[arg0]);
+    }
+#endif
     D_800E6310[arg0] = 0;
     if (D_80129114->unk4[D_800E5F90[arg0]].loop != 0) {
         if (D_800E6BD0[arg0] > 1.0f) {
@@ -349,11 +369,24 @@ s32 func_800F8B1C(s32 arg0) {
     f32 nextLen;
     f32 newProgress;
 
+    if (arg0 == 0) {
+        extern void pc_probe_hit(const char *);
+
+        pc_probe_hit("8B1C.obj0.call");
+    }
     nodePtr = &D_800E5F90[arg0];
     cur = *nodePtr;
     node = &D_80129114->unk4[cur];
     n = (s16)((node->linkCountHi << 8) | node->linkCountLo);
     if (n == 0) {
+        /* PROBE: a node with no connectors at all. Nothing can hop off it and
+         * func_800F8A24 will pin the parameter at the end it ran past. */
+        if (arg0 == 0) {
+            extern void pc_probe_say(const char *, int, const char *, ...);
+
+            pc_probe_say("8B1C.nolinks", 4, "obj0 node=%d t=%.6f",
+                         (int)cur, (double)D_800E6BD0[arg0]);
+        }
         return 0;
     }
     dir = 0;
@@ -378,6 +411,22 @@ s32 func_800F8B1C(s32 arg0) {
         idx = 0;
     }
     if (idx == -1) {
+        /* PROBE: the connector at the end the entity ran off does not point at
+         * the end point (dir>0 wants conn[n-1].unk0 != 0, dir<0 wants
+         * conn[0].unk0 == 0). Printing the operands says whether the records
+         * are being read correctly at all -- a byte-order or stride mistake in
+         * the native node array shows up here as nonsense. */
+        if (arg0 == 0) {
+            extern void pc_probe_say(const char *, int, const char *, ...);
+
+            pc_probe_say("8B1C.noexit", 4,
+                         "obj0 node=%d n=%d dir=%d t=%.6f conn=%p "
+                         "conn[0].unk0=%d conn[0].unk2=%d "
+                         "conn[n-1].unk0=%d conn[n-1].unk2=%d",
+                         (int)cur, (int)n, (int)dir, (double)progress,
+                         (void *)conn, (int)conn[0].unk0, (int)conn[0].unk2,
+                         (int)conn[n - 1].unk0, (int)conn[n - 1].unk2);
+        }
         return 0;
     }
     len = ((struct TrackFooter *)node->footer)->length;
@@ -398,6 +447,12 @@ s32 func_800F8B1C(s32 arg0) {
     *nodePtr = n;
     D_800E6D90[arg0] = newProgress;
     *progressPtr = newProgress;
+    if (arg0 == 0) {
+        extern void pc_probe_say(const char *, int, const char *, ...);
+
+        pc_probe_say("8B1C.hop", 6, "obj0 node %d -> %d  t %.6f -> %.6f",
+                     (int)cur, (int)n, (double)progress, (double)newProgress);
+    }
     return 1;
 }
 #else

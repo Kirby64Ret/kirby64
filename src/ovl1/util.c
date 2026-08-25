@@ -394,6 +394,22 @@ s32 func_800A509C(void *arg0, Vector *vec, f32 arg2, f32 arg3, f32 arg4) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/util/func_800A509C.s")
 #endif
 void utilSetPlayerContPad(void) {
+#ifdef PORT
+    /* PROBE (KIRBY_PC_PROBE): the only publisher of gKirbyController, and the
+     * only place a stick value crosses from the pad into the player's own
+     * controller copy. Counted so "the stick does nothing" can be split into
+     * "it never arrives" and "it arrives and nobody reads it". */
+    {
+        extern void pc_probe_hit(const char *);
+        extern void pc_probe_say(const char *, int, const char *, ...);
+
+        pc_probe_hit("utilSetPlayerContPad");
+        if (gPlayerControllers[0].stickX != 0) {
+            pc_probe_say("stickX.arrives", 3, "gPlayerControllers[0].stickX=%d",
+                         (int)gPlayerControllers[0].stickX);
+        }
+    }
+#endif
     if (!kirby_in_inactionable_state()) {
         gKirbyController.buttonHeld = gPlayerControllers[0].buttonHeld;
         gKirbyController.buttonPressed = gPlayerControllers[0].buttonPressed;
@@ -521,6 +537,14 @@ void func_800A54FC(u8 *arg0, u8 *arg1) {
 s32 utilCorrectStickX(u32 channel) {
     s32 x;
 
+#ifdef PORT
+    /* PROBE (KIRBY_PC_PROBE): with utilCorrectStickY and utilGetStickDirection
+     * below, this is the WHOLE set of functions in the game that reads a raw
+     * stick axis. If none of the three is ever hit while gGameState is 15,
+     * the stick has no reader in gameplay at all and no amount of fixing the
+     * pad plumbing will move the player. */
+    { extern void pc_probe_hit(const char *); pc_probe_hit("utilCorrectStickX"); }
+#endif
     if (channel >= 4) channel = 3;
 
     x = gPlayerControllers[channel].stickX;
@@ -541,6 +565,9 @@ s32 utilCorrectStickX(u32 channel) {
 s32 utilCorrectStickY(u32 cont) {
     s32 y;
 
+#ifdef PORT
+    { extern void pc_probe_hit(const char *); pc_probe_hit("utilCorrectStickY"); }
+#endif
     if (cont >= 4) cont = 3;
 
     y = gPlayerControllers[cont].stickY;
@@ -560,6 +587,9 @@ s32 utilCorrectStickY(u32 cont) {
 s32 utilGetStickDirection(s32 value, s32 axis, u32 framemaybe) {
     s32 stick;
 
+#ifdef PORT
+    { extern void pc_probe_hit(const char *); pc_probe_hit("utilGetStickDirection"); }
+#endif
     if ((D_800BE4EC % framemaybe) != 0) {
         return 0;
     }
