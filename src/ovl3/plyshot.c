@@ -3096,22 +3096,19 @@ void func_80160378_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_80160378_ovl3.s")
 #endif
 
-#ifdef MIPS_TO_C
-/* FACTORY: 233/235, RE-MEASURED -- the prior "2/235" note was stale/wrong;
- * verify.py shows total mismatch from insn [0]. Same id-caching floor
- * confirmed across this whole cluster (func_80152348_ovl3/
- * func_801530BC_ovl3/func_80153B98_ovl3 in ovl3_1.c, func_80161058_ovl3/
- * func_80162150_ovl3 above in this file): the ROM holds `&omCurrentObj`
- * itself (not the pointer, not objId) in a saved reg ($s0) across long
- * call-free stretches and re-derives `lw v0,0(s0); lw t,0(v0); sll 2` at
- * every field access, then REPURPOSES s0 mid-function to a different base
- * (&D_800EA6E0) once the objId-indexed section ends, falling back to a
- * fresh `lui/lw omCurrentObj` for the tail. This draft's `s32 id =
- * omCurrentObj->objId` hoist bakes id into one register for the whole
- * function instead. Frame -0x48 (ROM, s0 saved) vs -0x38 (draft, no saved
- * regs). Not attempted here -- reproducing IDO's specific choice of what
- * to hold in s0 and when to drop it is a floor per LEVERS.md, not a
- * source-level nudge. Leaving guarded. */
+/* MATCHED 2026-08-25 from the MIPS_TO_C draft.  It had been sealed as a
+ * register-allocation floor ("reproducing IDO's specific choice of what to
+ * hold in s0 and when to drop it is a floor per LEVERS.md") at 233/235.  It
+ * was not a floor: it was LEVER 97 plus a frame plus one chained assignment.
+ *   - `s32 id = omCurrentObj->objId` spelled inline at all 43 uses: 233 -> 85
+ *     and the frame went -0x38 -> -0x40 against the ROM's -0x48.
+ *   - the two-word sound-handle pair sits at 0x3C/0x40 with SIX bytes of
+ *     locals above it, which is `s32 padA; u16 padB;` ahead of `u16 sid;
+ *     void *h;` and one `s32 padC` after: 85 -> 79 and the frame exact.
+ *   - `X[id] = Z[id] = D_800EA8A0[id] * 0.2f;` instead of a separate
+ *     `X[id] = Z[id];`, which re-read the array IDO had just stored: the ROM
+ *     reuses $f0 for both stores.  79 -> MATCH.
+ */
 /* PORT: service routine for func_80160378_ovl3's dropped bomb above (anim
  * 0x2003E), from asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s. On
  * ability end it releases the looping sound (handle parked in D_800E98E0
@@ -3122,114 +3119,53 @@ void func_80160378_ovl3(s32 arg0) {
  * plays anim script D_80190E3C_ovl3 on DObj [1]. */
 void func_801606A0_ovl3(struct GObj *arg0) {
     extern char D_80190E3C_ovl3[];
-    s32 id = omCurrentObj->objId;
-    void *h;
+    s32 padA;
+    u16 padB;
     u16 sid;
-
-    if (func_800B3158() == 0) {
-        h = (void *) (uintptr_t) (u32) D_800E98E0[id];
-        sid = (u16) D_800E9AA0[id].as_u32;
-        func_800A7870(&h, &sid);
-        func_800A1F30(D_800EA520[id]);
-        func_800A1F30(D_800EB4E0[id]);
-        func_800B1900((u16) id);
-        return;
-    }
-    if ((D_800E6310[id] != 0) || (D_800E9720[id] == 0)) {
-        if (D_800EA520[id] != 0) {
-            h = (void *) (uintptr_t) (u32) D_800E98E0[id];
-            sid = (u16) D_800E9AA0[id].as_u32;
-            func_800A7870(&h, &sid);
-            func_800A1F30(D_800EA520[id]);
-            func_800A1F30(D_800EB4E0[id]);
-            D_800EB4E0[id] = 0;
-            D_800EA520[id] = D_800EB4E0[id];
-            D_800E6690[id] = 0.0f;
-            D_800E64D0[id] = D_800E6690[id];
-            D_800E6850[id] = 65535.0f;
-        }
-        D_800EA6E0[id] -= 0.125f;
-        if (D_800EA6E0[id] == 0.0f) {
-            func_800B1900((u16) id);
-        }
-        D_800EA8A0[id] -= 0.07f;
-        gEntitiesScaleYArray[id] = D_800EA6E0[id] * 0.2f;
-        gEntitiesScaleZArray[id] = D_800EA8A0[id] * 0.2f;
-        gEntitiesScaleXArray[id] = gEntitiesScaleZArray[id];
-        return;
-    }
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
-    if (D_800E9720[id] != 0) {
-        D_800E9720[id] -= 1;
-    }
-    func_801555B0_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
-    if (D_800E8920[id] != 0) {
-        D_800E9720[id] = 0;
-        return;
-    }
-    func_80162000_ovl3(D_80190E3C_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
-}
-#elif defined(PORT)
-/* PORT: service routine for func_80160378_ovl3's dropped bomb above (anim
- * 0x2003E), from asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s. On
- * ability end it releases the looping sound (handle parked in D_800E98E0
- * with its id in D_800E9AA0) and both attached effects and dies; on wall
- * hit or timeout it does the same release then shrinks away on the
- * D_800EA6E0/D_800EA8A0 scale decay; while live it counts the fuse down,
- * runs the contact sweep, freezes the fuse on a floor hit, and otherwise
- * plays anim script D_80190E3C_ovl3 on DObj [1]. */
-void func_801606A0_ovl3(struct GObj *arg0) {
-    extern char D_80190E3C_ovl3[];
-    s32 id = omCurrentObj->objId;
     void *h;
-    u16 sid;
-
+    s32 padC;
     if (func_800B3158() == 0) {
-        h = (void *) (uintptr_t) (u32) D_800E98E0[id];
-        sid = (u16) D_800E9AA0[id].as_u32;
+        h = (void *) (uintptr_t) (u32) D_800E98E0[omCurrentObj->objId];
+        sid = (u16) D_800E9AA0[omCurrentObj->objId].as_u32;
         func_800A7870(&h, &sid);
-        func_800A1F30(D_800EA520[id]);
-        func_800A1F30(D_800EB4E0[id]);
-        func_800B1900((u16) id);
+        func_800A1F30(D_800EA520[omCurrentObj->objId]);
+        func_800A1F30(D_800EB4E0[omCurrentObj->objId]);
+        func_800B1900((u16) omCurrentObj->objId);
         return;
     }
-    if ((D_800E6310[id] != 0) || (D_800E9720[id] == 0)) {
-        if (D_800EA520[id] != 0) {
-            h = (void *) (uintptr_t) (u32) D_800E98E0[id];
-            sid = (u16) D_800E9AA0[id].as_u32;
+    if ((D_800E6310[omCurrentObj->objId] != 0) || (D_800E9720[omCurrentObj->objId] == 0)) {
+        if (D_800EA520[omCurrentObj->objId] != 0) {
+            h = (void *) (uintptr_t) (u32) D_800E98E0[omCurrentObj->objId];
+            sid = (u16) D_800E9AA0[omCurrentObj->objId].as_u32;
             func_800A7870(&h, &sid);
-            func_800A1F30(D_800EA520[id]);
-            func_800A1F30(D_800EB4E0[id]);
-            D_800EB4E0[id] = 0;
-            D_800EA520[id] = D_800EB4E0[id];
-            D_800E6690[id] = 0.0f;
-            D_800E64D0[id] = D_800E6690[id];
-            D_800E6850[id] = 65535.0f;
+            func_800A1F30(D_800EA520[omCurrentObj->objId]);
+            func_800A1F30(D_800EB4E0[omCurrentObj->objId]);
+            D_800EB4E0[omCurrentObj->objId] = 0;
+            D_800EA520[omCurrentObj->objId] = D_800EB4E0[omCurrentObj->objId];
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
         }
-        D_800EA6E0[id] -= 0.125f;
-        if (D_800EA6E0[id] == 0.0f) {
-            func_800B1900((u16) id);
+        D_800EA6E0[omCurrentObj->objId] -= 0.125f;
+        if (D_800EA6E0[omCurrentObj->objId] == 0.0f) {
+            func_800B1900((u16) omCurrentObj->objId);
         }
-        D_800EA8A0[id] -= 0.07f;
-        gEntitiesScaleYArray[id] = D_800EA6E0[id] * 0.2f;
-        gEntitiesScaleZArray[id] = D_800EA8A0[id] * 0.2f;
-        gEntitiesScaleXArray[id] = gEntitiesScaleZArray[id];
+        D_800EA8A0[omCurrentObj->objId] -= 0.07f;
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] * 0.2f;
+        gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleZArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * 0.2f;
         return;
     }
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
-    if (D_800E9720[id] != 0) {
-        D_800E9720[id] -= 1;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    if (D_800E9720[omCurrentObj->objId] != 0) {
+        D_800E9720[omCurrentObj->objId] -= 1;
     }
-    func_801555B0_ovl3(D_80197F60_ovl3[id - 4], D_801982F8_ovl3[id - 4]);
-    if (D_800E8920[id] != 0) {
-        D_800E9720[id] = 0;
+    func_801555B0_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4], D_801982F8_ovl3[omCurrentObj->objId - 4]);
+    if (D_800E8920[omCurrentObj->objId] != 0) {
+        D_800E9720[omCurrentObj->objId] = 0;
         return;
     }
-    func_80162000_ovl3(D_80190E3C_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
+    func_80162000_ovl3(D_80190E3C_ovl3, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1], 1.0f);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyshot/func_801606A0_ovl3.s")
-#endif
 
 void func_80160A50_ovl3(s32 arg0) {
     extern f32 **D_80192F2C_ovl3;
