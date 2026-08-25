@@ -364,18 +364,60 @@ void func_801DE9A8_ovl17(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 806/835 positionally, 29 under an aligning differ (see the
-   reconciliation note over func_801DF768_ovl17).  Frame 0x140 vs the ROM's
-   0x138 -- that 8-byte difference is itself why the positional score is near
-   total: every stack reference below it moves.
-   One real lever landed here and is worth carrying to the other matrix
-   functions in this overlay: writing the two zero arguments of the first
-   HS64_MkRotationMtxF call as DOUBLE literals (0.0, not 0.0f) stops IDO
-   CSEing them with the later zero stores into a callee-saved $f20 -- that
-   removes an sdc1/ldc1 pair and 23 diffs (829 -> 806, LEVERS 7).  The ROM
-   re-materialises `mtc1 $zero` at each use, which is now what we do too.
-   Remaining: 8 bytes of locals we reserve and the ROM does not, which slides
-   the three matrices (ROM: sp+0xE0 and below) and renames the body. */
+/* FACTORY: 757/835, down from 806, and the SHAPE is now the ROM's -- word
+   count exact at 835, frame exact at 0x138, and every `addiu $aN, $sp`
+   immediate exact (matrices at 0xE0/0xA0/0x60, `ang` at 0x120, the four
+   Vectors at 0x54/0x48/0x3C/0x30).  What remains is a one-word phase slide
+   from index 51 onward plus FP register naming; the positional score badly
+   understates it (LEVER 65b on the first 400 diffs: 100 aligned renames to
+   300 genuinely different, and the "different" half is all schedule).
+   This is a permuter seed now, not a source problem.
+
+   FOUR structural facts read off the listing, all now written:
+     - THE ROM HAS NO HELPER.  Its only jals are guMtxIdentF x2,
+       HS64_MkRotationMtxF x3, guMtxCatF x3, lbvector_Angle x6,
+       vec3_normalized_cross_product x6, func_800191F8 x3, asinf, atan2f x4
+       and utilWrapRotation -- the clamp block is written out INLINE three
+       times, once per axis.
+     - objId is NOT cached.  The ROM holds only the omCurrentObj POINTER (one
+       `lw $a0, %lo(omCurrentObj)` per region) and re-reads `0($a0)` at every
+       table access -- 19 of them (LEVER 26).
+     - THERE IS NO `vel` LOCAL.  The frame arithmetic says so exactly
+       (LEVER 57): the declared block runs 0x30..0x137, which is 66 words,
+       and 3 scalars + ang(3) + 3 Mat4(48) + 4 Vector(12) is 66 on the nose.
+       Only THREE scalars fit, and two of them are `angle` (sp+0x134) and
+       `step` (sp+0x130) -- both visible in the listing.  So the third is
+       `lim`, and every `vel` in the old draft is really the array element
+       read inline: the ROM reloads `D_800EAC20[objId]` at each use and
+       spells the accumulate as `+=`.
+     - THE FOUR VECTORS ARE DECLARED a, axis, b, cr.  Read off
+       `addiu $a0, $sp, 0x54` / `addiu $a1, $sp, 0x3C` at the first
+       lbvector_Angle and the `swc1 $f16` triple at 0x30/0x34/0x38: a@0x54,
+       axis@0x48, b@0x3C, cr@0x30, and later declarations take lower
+       addresses (LEVER 13).  a,b,axis,cr costs one word of score.
+   The lever previously recorded here still holds: the two zero arguments of
+   the first HS64_MkRotationMtxF call are DOUBLE literals (0.0, not 0.0f),
+   which stops IDO CSEing them with the later zero stores into a callee-saved
+   $f20 and removes an sdc1/ldc1 pair (LEVER 7).
+
+   MEASURED AND NEGATIVE, 2026-08-25:
+     - LEVER 70 (ABSF) is why this function was dispatched (20 compares / 15
+       negs, the top of absf_sweep's list) and it is NOT the lever.  The
+       draft already spelled every one of those sites as the ternary, which
+       is textually what the macro expands to.  The three that matter are the
+       clamp's `angle - ABSF(vel)` and the two `ABSF(vel) < D_801E5704`
+       tests, and they are written with the macro now purely so the sweep
+       stops ranking this function first.
+     - `cr.x = cr.y = cr.z = 0.0;` as a DOUBLE literal, to fork the store
+       zero from the `cr.x != 0.0f` compare zero the ROM keeps in a separate
+       register ($f18 against $f16 at 801DEBB0/801DEBB8): 758, one word
+       worse.  Reverted.
+     - barrier_sweep.py (LEVER 71), all 19 statement placements: none beats
+       757.
+   Still open, and the first diff in the function: the ROM materialises the
+   HS64_MkRotationMtxF zero through $f16 (`mtc1 $zero, $f16` / `mfc1 $a1` /
+   `mfc1 $a3`) where IDO uses $f0.  Only the transit register differs; the
+   3.1415927f beside it is built in an integer register with lui/ori in both. */
 /* PORT: per-frame boss orientation steering, from asm/nonmatchings/ovl17/
  * ovl17_2/func_801DEA5C_ovl17.s. Builds the target basis (Kirby's rotation,
  * entity slot 0, flipped pi about Y) and the boss's current basis, then runs
@@ -383,53 +425,25 @@ void func_801DE9A8_ovl17(struct GObj *arg0) {
  * row1, rate D_800EAC20), pitch (row2 toward the target's about the rebuilt
  * right row0, rate D_800EADE0), roll (row1 toward the target's about row2,
  * rate D_800EAFA0, 5x step) -- each with the same accelerate /
- * counter-steer-1.8x / clamp shape (the clamp helper below). The basis is
- * then re-orthonormalized and decomposed back into the D_800EA6E0/8A0/AA60
- * Euler angles and the entity angle arrays. */
+ * counter-steer-1.8x / clamp shape. The basis is then re-orthonormalized and
+ * decomposed back into the D_800EA6E0/8A0/AA60 Euler angles and the entity
+ * angle arrays. */
 f32 asinf(f32);
 f32 atan2f(f32, f32);
 Vector *vec3_normalized_cross_product(Vector *, Vector *, Vector *);
 
-/* remaining-angle brake, C-button speed base, symmetric clamp; returns the
- * clamped rate (the asm repeats this block verbatim for all three axes) */
-static f32 pc_boss_steer_clamp(f32 *velp, f32 angle) {
-    f32 vel = *velp;
-    f32 mag = (vel < 0.0f) ? -vel : vel;
-    f32 lim;
-
-    if (D_801E5704_ovl17 < (angle - mag)) {
-        lim = D_801E5704_ovl17;
-    } else {
-        if ((gKirbyController.buttonHeld & 0xC00) && (gKirbyController.buttonHeld & 0x300)) {
-            lim = D_800D7170 / 1.4142135f;
-        } else {
-            lim = D_800D7170;
-        }
-        if (D_801E5704_ovl17 < lim) {
-            lim = D_801E5704_ovl17;
-        }
-    }
-    if (vel > lim) {
-        *velp = vel = lim;
-    } else if (vel < -lim) {
-        *velp = vel = -lim;
-    }
-    return vel;
-}
-
 void func_801DEA5C_ovl17(void) {
+    f32 angle;
+    f32 step;
+    f32 lim;
+    Vector ang;
     Mat4 cur;
     Mat4 tmp;
     Mat4 tgt;
     Vector a;
-    Vector b;
     Vector axis;
+    Vector b;
     Vector cr;
-    Vector ang;
-    f32 angle;
-    f32 step;
-    f32 vel;
-    s32 objId;
 
     guMtxIdentF(cur);
     HS64_MkRotationMtxF(tmp, 0.0, 3.1415927f, 0.0);
@@ -437,8 +451,8 @@ void func_801DEA5C_ovl17(void) {
     HS64_MkRotationMtxF(tmp, D_800EA6E0[0], D_800EA8A0[0], D_800EAA60[0]);
     guMtxCatF(cur, tmp, tgt);
     guMtxIdentF(cur);
-    objId = omCurrentObj->objId;
-    HS64_MkRotationMtxF(tmp, D_800EA6E0[objId], D_800EA8A0[objId], D_800EAA60[objId]);
+    HS64_MkRotationMtxF(tmp, D_800EA6E0[omCurrentObj->objId], D_800EA8A0[omCurrentObj->objId],
+                        D_800EAA60[omCurrentObj->objId]);
     guMtxCatF(cur, tmp, cur);
 
     /* yaw: forward (row2) toward target forward, about up (row1) */
@@ -454,21 +468,39 @@ void func_801DEA5C_ovl17(void) {
             step = (lbvector_Angle(&axis, &cr) < 1.5707964f) ? D_801E5700_ovl17
                                                              : -D_801E5700_ovl17;
         }
-        vel = D_800EAC20[objId];
     } else {
-        vel = D_800EAC20[objId];
-        if (((vel < 0.0f) ? -vel : vel) < D_801E5704_ovl17) {
-            D_800EAC20[objId] = 0.0f;
-            vel = 0.0f;
+        if (ABSF(D_800EAC20[omCurrentObj->objId]) < D_801E5704_ovl17) {
+            D_800EAC20[omCurrentObj->objId] = 0.0f;
         }
     }
-    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+    if (((D_800EAC20[omCurrentObj->objId] > 0.0f) && (step < 0.0f)) ||
+        ((D_800EAC20[omCurrentObj->objId] < 0.0f) && (step > 0.0f))) {
         step *= 1.8f;
     }
-    D_800EAC20[objId] = vel + step;
-    vel = pc_boss_steer_clamp(&D_800EAC20[objId], angle);
-    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
-        func_800191F8(&a, &axis, vel);
+    D_800EAC20[omCurrentObj->objId] += step;
+
+    /* --- the clamp, written out: the ROM has no helper here (see the note) --- */
+    if (D_801E5704_ovl17 < (angle - ABSF(D_800EAC20[omCurrentObj->objId]))) {
+        lim = D_801E5704_ovl17;
+    } else {
+        if ((gKirbyController.buttonHeld & 0xC00) && (gKirbyController.buttonHeld & 0x300)) {
+            lim = D_800D7170 / 1.4142135f;
+        } else {
+            lim = D_800D7170;
+        }
+        if (D_801E5704_ovl17 < lim) {
+            lim = D_801E5704_ovl17;
+        }
+    }
+    if (lim < D_800EAC20[omCurrentObj->objId]) {
+        D_800EAC20[omCurrentObj->objId] = lim;
+    } else if (D_800EAC20[omCurrentObj->objId] < -lim) {
+        D_800EAC20[omCurrentObj->objId] = -lim;
+    }
+
+    if ((D_800EAC20[omCurrentObj->objId] > 0.0000017453292f) ||
+        (D_800EAC20[omCurrentObj->objId] < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, D_800EAC20[omCurrentObj->objId]);
         cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
     } else {
         step = 0.0f;
@@ -490,19 +522,38 @@ void func_801DEA5C_ovl17(void) {
             step = (lbvector_Angle(&axis, &cr) < 1.5707964f) ? D_801E5700_ovl17
                                                              : -D_801E5700_ovl17;
         }
-        /* cross == 0 keeps the previous step, as on N64 */
     } else {
         step = 0.0f;
-        D_800EADE0[objId] = 0.0f;
+        D_800EADE0[omCurrentObj->objId] = 0.0f;
     }
-    vel = D_800EADE0[objId];
-    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+    if (((D_800EADE0[omCurrentObj->objId] > 0.0f) && (step < 0.0f)) ||
+        ((D_800EADE0[omCurrentObj->objId] < 0.0f) && (step > 0.0f))) {
         step *= 1.8f;
     }
-    D_800EADE0[objId] = vel + step;
-    vel = pc_boss_steer_clamp(&D_800EADE0[objId], angle);
-    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
-        func_800191F8(&a, &axis, vel);
+    D_800EADE0[omCurrentObj->objId] += step;
+
+    /* --- the clamp, written out: the ROM has no helper here (see the note) --- */
+    if (D_801E5704_ovl17 < (angle - ABSF(D_800EADE0[omCurrentObj->objId]))) {
+        lim = D_801E5704_ovl17;
+    } else {
+        if ((gKirbyController.buttonHeld & 0xC00) && (gKirbyController.buttonHeld & 0x300)) {
+            lim = D_800D7170 / 1.4142135f;
+        } else {
+            lim = D_800D7170;
+        }
+        if (D_801E5704_ovl17 < lim) {
+            lim = D_801E5704_ovl17;
+        }
+    }
+    if (lim < D_800EADE0[omCurrentObj->objId]) {
+        D_800EADE0[omCurrentObj->objId] = lim;
+    } else if (D_800EADE0[omCurrentObj->objId] < -lim) {
+        D_800EADE0[omCurrentObj->objId] = -lim;
+    }
+
+    if ((D_800EADE0[omCurrentObj->objId] > 0.0000017453292f) ||
+        (D_800EADE0[omCurrentObj->objId] < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, D_800EADE0[omCurrentObj->objId]);
         cur[2][0] = a.x; cur[2][1] = a.y; cur[2][2] = a.z;
     } else {
         step = 0.0f;
@@ -522,16 +573,36 @@ void func_801DEA5C_ovl17(void) {
         }
     } else {
         step = 0.0f;
-        D_800EAFA0[objId] = 0.0f;
+        D_800EAFA0[omCurrentObj->objId] = 0.0f;
     }
-    vel = D_800EAFA0[objId];
-    if (((vel > 0.0f) && (step < 0.0f)) || ((vel < 0.0f) && (step > 0.0f))) {
+    if (((D_800EAFA0[omCurrentObj->objId] > 0.0f) && (step < 0.0f)) ||
+        ((D_800EAFA0[omCurrentObj->objId] < 0.0f) && (step > 0.0f))) {
         step *= 1.8f;
     }
-    D_800EAFA0[objId] = vel + step;
-    vel = pc_boss_steer_clamp(&D_800EAFA0[objId], angle);
-    if ((vel > 0.0000017453292f) || (vel < -0.0000017453292f)) {
-        func_800191F8(&a, &axis, vel);
+    D_800EAFA0[omCurrentObj->objId] += step;
+
+    /* --- the clamp, written out: the ROM has no helper here (see the note) --- */
+    if (D_801E5704_ovl17 < (angle - ABSF(D_800EAFA0[omCurrentObj->objId]))) {
+        lim = D_801E5704_ovl17;
+    } else {
+        if ((gKirbyController.buttonHeld & 0xC00) && (gKirbyController.buttonHeld & 0x300)) {
+            lim = D_800D7170 / 1.4142135f;
+        } else {
+            lim = D_800D7170;
+        }
+        if (D_801E5704_ovl17 < lim) {
+            lim = D_801E5704_ovl17;
+        }
+    }
+    if (lim < D_800EAFA0[omCurrentObj->objId]) {
+        D_800EAFA0[omCurrentObj->objId] = lim;
+    } else if (D_800EAFA0[omCurrentObj->objId] < -lim) {
+        D_800EAFA0[omCurrentObj->objId] = -lim;
+    }
+
+    if ((D_800EAFA0[omCurrentObj->objId] > 0.0000017453292f) ||
+        (D_800EAFA0[omCurrentObj->objId] < -0.0000017453292f)) {
+        func_800191F8(&a, &axis, D_800EAFA0[omCurrentObj->objId]);
         cur[1][0] = a.x; cur[1][1] = a.y; cur[1][2] = a.z;
     }
 
@@ -559,12 +630,12 @@ void func_801DEA5C_ovl17(void) {
         ang.z = atan2f(cur[0][1], cur[0][0]);
     }
     utilWrapRotation(&ang);
-    D_800EA6E0[objId] = ang.x;
-    D_800EA8A0[objId] = ang.y;
-    D_800EAA60[objId] = ang.z;
-    gEntitiesAngleXArray[objId] = D_800EA6E0[objId];
-    gEntitiesAngleYArray[objId] = D_800EA8A0[objId];
-    gEntitiesAngleZArray[objId] = D_800EAA60[objId];
+    D_800EA6E0[omCurrentObj->objId] = ang.x;
+    D_800EA8A0[omCurrentObj->objId] = ang.y;
+    D_800EAA60[omCurrentObj->objId] = ang.z;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    gEntitiesAngleZArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
 }
 #elif defined(PORT)
 /* PORT: per-frame boss orientation steering, from asm/nonmatchings/ovl17/
