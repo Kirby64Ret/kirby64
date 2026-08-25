@@ -991,3 +991,22 @@ the pool allocator's real stride is 0x78.
         ovl13's six mechanically-recognisable sites scored 1147/1239,
         unchanged. Screen candidates on where diff 0 is BEFORE converting
         anything; LEVER 69's rule generalises past LEVER 58.
+
+74. **The ABSF list reads the WORKING TREE, so it lies while other lanes are
+    mid-experiment.** I ran absf_sweep.py, told two lanes that
+    func_8019CE28_ovl7 had dropped out, and it had not: another lane had an
+    ABSF experiment sitting in that draft at the moment I swept, the sweep
+    excludes any draft that already says ABS/ABSF, and it came back at 10/4 as
+    soon as that lane reverted. The lane I had told to skip it worked it
+    anyway, which is the right instinct. Re-run the sweep yourself; a list
+    someone pasted at you is a snapshot of their working tree, not of yours.
+
+    `absf_sweep.py --screen` now scores every candidate and prints where its
+    FIRST diff is, flagging the ones whose diff 0 is the frame. That is not a
+    refinement, it is a precondition: four of the strongest-looking entries --
+    func_801DF5D0_ovl13 (32 compares), func_801A7524_ovl7 (23),
+    func_801DEA5C_ovl17 (20), func_801567B8_ovl3 (14) -- are wrong at
+    instruction 0, and a macro edit anywhere in the body cannot move the score
+    until the shape is fixed. LEVER 69 makes the identical point about LEVER
+    58, and it generalises: **before spending a compile on any body-level
+    lever, look at where diff 0 is.**
