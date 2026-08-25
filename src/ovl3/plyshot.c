@@ -2121,24 +2121,55 @@ void func_8015E8E0_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 770/776 [was noted 6/776], whole-function callee-saved permutation (same floor class documented across this cluster). Inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, and adds an ANSI prototype for func_800A7F74. Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 770 of 776 words differ (99%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 789/804 positional, and READ THE NEXT PARAGRAPH BEFORE COMPARING
+   THAT TO THE 770/776 IT REPLACES.
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+   THE FRAME IS NOW EXACT (0xA8) AND IT WAS NOT BEFORE. Diff 0 used to be the
+   stack adjustment, which by LEVERS 69/74 means no body edit could be scored
+   at all; the first diff is now a register NAME at word 1. The positional
+   number went UP because the draft is 27 words LONGER than the ROM and every
+   word after the first insertion counts as wrong (LEVER 48). The 27 are one
+   identified cause -- see WHAT IS LEFT -- not 27 separate defects.
+
+   Fixed, re-derived from the listing 2026-08-25:
+   1. `s32 id = omCurrentObj->objId;` (81 uses) and `s32 parent =
+      D_800E0D50[id];` (6 uses), both spelled inline. The ROM reads
+      D_800E0D50 exactly three times off objId, which is what CSE gives the
+      six inline uses -- caching it is not the ROM's shape.
+   2. The sound-pair release in the detonate tail has NO null check and no
+      copy-out: `func_800A7870(p, p + 1)` on one load of D_800EA360[objId].
+      That shim was 8 words and 2 address-taken locals, and taking their
+      addresses is also what stopped IDO materialising `&omCurrentObj` into
+      a register the way the ROM does at 0x8015ED30.
+   3. Both `hAbs` locals are `ABSF()`. The listing shows the macro plainly
+      (LEVER 73's tell): `c.lt.s $f0, $f6` against a materialised zero, a
+      `bc1fl`, and THREE copies of the operand expression, one of them
+      unreachable. `dyAbs` is `ABSF(Y[objId] - Y[parent])` -- the same shape
+      with the subtraction folded into the compare, so the difference must
+      NOT be named (LEVER 73 again); the two-step
+      `d = a - b; if (d < 0) d = -d;` is 4 words short.
+   4. Four declarations the ROM does not have, found by reading its slots:
+      `t` (write `D_800E9560[objId]-- != 0`), `k` and its
+      `for (k = 0; k < 4; k++)` (the ROM writes the four multiplies out), and
+      `lim` -- the ROM holds `&D_801967C4_ovl3[close]` in $s4 and RE-READS the
+      element at each of the four uses (LEVERS 10/11). Those four are exactly
+      the 0xB8 -> 0xA8 the frame needed.
+   Slot map read off the listing, for whoever finishes this: 0xA4 hits,
+   0xA0 hdist, 0x9C dyAbs, 0x98 dz, 0x94 hy, 0x90 dx, 0x80 sn, 0x78 close,
+   0x64-0x6F vb, 0x58-0x63 va, 0x4C-0x57 vc (so the declaration order of the
+   three Vectors is vb, va, vc), and 0x38/0x3C are compiler temps for the two
+   squares spilled across sqrtf.
+
+   WHAT IS LEFT, and it is ONE cause worth about 27 words: every `goto
+   detonate` gets the detonate block's head DUPLICATED into it -- ten words of
+   `lui/lw omCurrentObj`, the D_800E9C60 base, the gKirbyState base and the
+   index, then a `b` into the middle of the block -- where the ROM branches
+   straight to .L8015F840 with a `nop` and re-materialises `&omCurrentObj`
+   there. Three goto sites, three copies. An empty `do { } while (0);` at the
+   label is NOT the fix (measured, no change). This is LEVER 46/59's family
+   (IDO duplicating a shared head or tail into every predecessor) and the
+   source shape that stops it is not yet known. Everything else in the aligned
+   diff is a register name or a one-slot rotation. */
 
 /* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
  * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
@@ -2171,83 +2202,71 @@ void func_8015ED2C_ovl3(s32 arg0) {
     extern f32 D_801967C4_ovl3[];
     extern f32 D_80198438_ovl3[];
     extern Controller_800D6FE8 gPlayerControllers[];
-    s32 id = omCurrentObj->objId;
-    s32 parent = D_800E0D50[id];
     s32 hits;
     f32 dyAbs;
     f32 hdist;
     f32 hy;
 
-    if (D_800E9C60[id] != 0) {
-        s32 t = D_800E9560[id];
-
-        D_800E9560[id] = t - 1;
-        if (t != 0) {
-            func_80111C4C(func_801117BC(D_80191A84_ovl3, id));
-            func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_80195270_ovl3, 0, id);
+    if (D_800E9C60[omCurrentObj->objId] != 0) {
+        if (D_800E9560[omCurrentObj->objId]-- != 0) {
+            func_80111C4C(func_801117BC(D_80191A84_ovl3, omCurrentObj->objId));
+            func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4], (s32) (uintptr_t) D_80195270_ovl3, 0, omCurrentObj->objId);
             return;
         }
-        func_800B1900((u16) id);
+        func_800B1900((u16) omCurrentObj->objId);
         return;
     }
-    if (D_800EA6E0[id] != 1.0f) {
-        D_800EA6E0[id] += 0.15f;
-        if (D_800EA6E0[id] >= 1.0f) {
-            D_800EA6E0[id] = 1.0f;
+    if (D_800EA6E0[omCurrentObj->objId] != 1.0f) {
+        D_800EA6E0[omCurrentObj->objId] += 0.15f;
+        if (D_800EA6E0[omCurrentObj->objId] >= 1.0f) {
+            D_800EA6E0[omCurrentObj->objId] = 1.0f;
         }
-        D_800DFBD0[id][2]->scale.v.x = D_800EA6E0[id];
-        D_800DFBD0[id][2]->scale.v.y = D_800EA6E0[id];
-        D_800DFBD0[id][2]->scale.v.z = D_800EA6E0[id];
+        D_800DFBD0[omCurrentObj->objId][2]->scale.v.x = D_800EA6E0[omCurrentObj->objId];
+        D_800DFBD0[omCurrentObj->objId][2]->scale.v.y = D_800EA6E0[omCurrentObj->objId];
+        D_800DFBD0[omCurrentObj->objId][2]->scale.v.z = D_800EA6E0[omCurrentObj->objId];
     }
     if (gKirbyState.unk17 != 0) {
         gKirbyState.abilityInUse = 0;
     } else if (gKirbyState.unk16 == 0) {
         if (gPlayerControllers[0].buttonPressed & 0x4000) {
             gKirbyState.abilityInUse = 0;
-        } else if (D_800E8060[id] != 0) {
+        } else if (D_800E8060[omCurrentObj->objId] != 0) {
             gKirbyState.abilityInUse = 0;
         }
     } else if (gPlayerControllers[0].buttonPressed & 0x4000) {
-        D_800E8060[id] = 1;
+        D_800E8060[omCurrentObj->objId] = 1;
     }
-    if ((gKirbyState.abilityInUse != 0) && (D_800E8760[id] == 0)) {
-        gEntitiesAngleYArray[id] = D_800E17D0[id];
-        hits = func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801936F0_ovl3, 0, id);
-        gEntitiesAngleYArray[id] = 0.0f;
-        D_800E8920[id] = 0;
-        func_80155498_ovl3(D_80197F60_ovl3[id - 4]);
-        if ((((u32) hits | ((*(u32 *) D_8012BCA0 >> 0x13) & 0x3F)) != 0) || (D_800E6310[id] != 0)) {
-            D_800E9AA0[id].as_u32 = 1;
-            D_800E64D0[id] = -D_800E64D0[id];
+    if ((gKirbyState.abilityInUse != 0) && (D_800E8760[omCurrentObj->objId] == 0)) {
+        gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+        hits = func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4], (s32) (uintptr_t) D_801936F0_ovl3, 0, omCurrentObj->objId);
+        gEntitiesAngleYArray[omCurrentObj->objId] = 0.0f;
+        D_800E8920[omCurrentObj->objId] = 0;
+        func_80155498_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4]);
+        if ((((u32) hits | ((*(u32 *) D_8012BCA0 >> 0x13) & 0x3F)) != 0) || (D_800E6310[omCurrentObj->objId] != 0)) {
+            D_800E9AA0[omCurrentObj->objId].as_u32 = 1;
+            D_800E64D0[omCurrentObj->objId] = -D_800E64D0[omCurrentObj->objId];
             play_sound(0x11F);
         }
-        func_80111C4C(func_801117BC(D_80190DD4_ovl3, id));
-        dyAbs = gEntitiesNextPosYArray[id] - gEntitiesNextPosYArray[parent];
-        if (dyAbs < 0.0f) {
-            dyAbs = -dyAbs;
-        }
-        hdist = func_800F9828(id, parent);
+        func_80111C4C(func_801117BC(D_80190DD4_ovl3, omCurrentObj->objId));
+        dyAbs = ABSF(gEntitiesNextPosYArray[omCurrentObj->objId]
+                     - gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]]);
+        hdist = func_800F9828(omCurrentObj->objId, D_800E0D50[omCurrentObj->objId]);
         if (hdist == 9999.0f) {
             goto detonate;
         }
-        {
-            f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
-
-            if (!((hAbs < 600.0f) && (dyAbs < 480.0f))) {
-                goto detonate;
-            }
+        if (!((ABSF(hdist) < 600.0f) && (dyAbs < 480.0f))) {
+            goto detonate;
         }
         {
-            struct DObj *dobj = D_800DFBD0[id][1];
-            f32 dx = gEntitiesNextPosXArray[parent] - gEntitiesNextPosXArray[id];
-            f32 dz = gEntitiesNextPosZArray[parent] - gEntitiesNextPosZArray[id];
+            struct DObj *dobj = D_800DFBD0[omCurrentObj->objId][1];
+            f32 dx = gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]] - gEntitiesNextPosXArray[omCurrentObj->objId];
+            f32 dz = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]] - gEntitiesNextPosZArray[omCurrentObj->objId];
             f32 sn;
             f32 cs;
             f32 v2;
             f32 v3;
-            s32 k;
 
-            hy = (gEntitiesNextPosYArray[parent] + 20.0f) - gEntitiesNextPosYArray[id];
+            hy = (gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
             dobj->angle.v.y = atan2f(dx, dz) + 3.1415927f;
             dobj->angle.v.x = atan2f(hy, sqrtf((dx * dx) + (dz * dz)));
             dobj->angle.v.z = 0.0f;
@@ -2255,119 +2274,107 @@ void func_8015ED2C_ovl3(s32 arg0) {
             func_8016854C_ovl3((s32) (uintptr_t) D_80191AC8_ovl3, (s32) (uintptr_t) dobj, 1.0f);
             sn = sinf(dobj->angle.v.x);
             cs = cosf(dobj->angle.v.x);
-            for (k = 0; k < 4; k++) {
-                D_80198438_ovl3[k] = D_801936FC_ovl3[k] * dobj->scale.v.z;
-            }
+            D_80198438_ovl3[0] = D_801936FC_ovl3[0] * dobj->scale.v.z;
+            D_80198438_ovl3[1] = D_801936FC_ovl3[1] * dobj->scale.v.z;
+            D_80198438_ovl3[2] = D_801936FC_ovl3[2] * dobj->scale.v.z;
+            D_80198438_ovl3[3] = D_801936FC_ovl3[3] * dobj->scale.v.z;
             v2 = D_80198438_ovl3[2];
             v3 = D_80198438_ovl3[3];
             D_80198438_ovl3[2] = (v2 * cs) - (v3 * sn);
             D_80198438_ovl3[3] = (v3 * cs) + (v2 * sn);
             func_80154578_ovl3(D_8019370C_ovl3, 0, dobj->angle.v.y);
         }
-        if (D_800E98E0[id] != 0) {
+        if (D_800E98E0[omCurrentObj->objId] != 0) {
             Vector va;
             Vector vb;
             Vector vc;
             f32 ang;
             f32 dir;
-            f32 lim;
             f32 spd;
             s32 close;
 
-            if (func_8011D858(D_80192358_ovl3, parent, 1.0f) != 0) {
+            if (func_8011D858(D_80192358_ovl3, D_800E0D50[omCurrentObj->objId], 1.0f) != 0) {
                 func_800BB468(9, 0x1E);
                 goto detonate;
             }
-            {
-                f32 hAbs = (hdist < 0.0f) ? -hdist : hdist;
-
-                close = (hAbs < 160.0f) ? 1 : 0;
-            }
-            va.x = D_800E64D0[id];
-            va.y = D_800E3210[id];
+            close = (ABSF(hdist) < 160.0f) ? 1 : 0;
+            va.x = D_800E64D0[omCurrentObj->objId];
+            va.y = D_800E3210[omCurrentObj->objId];
             va.z = 0.0f;
             vb.x = hdist;
             vb.y = hy;
             vb.z = 0.0f;
             ang = lbvector_Angle(&va, &vb);
-            lim = D_801967C4_ovl3[close];
             if (ang == 3.1415927f) {
-                if (D_800E64D0[id] > 0.0f) {
-                    dir = (lim * 3.1415927f) / 180.0f;
+                if (D_800E64D0[omCurrentObj->objId] > 0.0f) {
+                    dir = (D_801967C4_ovl3[close] * 3.1415927f) / 180.0f;
                 } else {
-                    dir = 3.1415927f - ((lim * 3.1415927f) / 180.0f);
+                    dir = 3.1415927f - ((D_801967C4_ovl3[close] * 3.1415927f) / 180.0f);
                 }
             } else {
-                if (ang < ((lim * 3.1415927f) / 180.0f)) {
+                if (ang < ((D_801967C4_ovl3[close] * 3.1415927f) / 180.0f)) {
                     va = vb;
                 } else {
                     vec3_normalized_cross_product(&va, &vb, &vc);
-                    func_800191F8(&va, &vc, (lim * 3.1415927f) / 180.0f);
+                    func_800191F8(&va, &vc, (D_801967C4_ovl3[close] * 3.1415927f) / 180.0f);
                 }
                 dir = atan2f(va.y, va.x);
             }
-            spd = (D_800E8AE0[id] & 4) ? 8.0f : 16.0f;
-            D_800E64D0[id] = cosf(dir) * spd;
-            D_800E6690[id] = 0.0f;
-            D_800E6850[id] = (spd < 0.0f) ? -spd : spd;
-            D_800E3210[id] = sinf(dir) * spd;
-            D_800E3750[id] = 0.0f;
-            D_800E3C90[id] = (spd < 0.0f) ? -spd : spd;
-            if (D_800E8920[id] != 0) {
-                if (D_800E9E20[id] == 0) {
-                    D_800E9E20[id] = D_800E8920[id];
-                    if (D_800E3210[id] != 0.0f) {
-                        if (D_800E3210[id] < 0.0f) {
-                            D_800E3210[id] = -D_800E3210[id];
+            spd = (D_800E8AE0[omCurrentObj->objId] & 4) ? 8.0f : 16.0f;
+            D_800E64D0[omCurrentObj->objId] = cosf(dir) * spd;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
+            D_800E3210[omCurrentObj->objId] = sinf(dir) * spd;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = (spd < 0.0f) ? -spd : spd;
+            if (D_800E8920[omCurrentObj->objId] != 0) {
+                if (D_800E9E20[omCurrentObj->objId] == 0) {
+                    D_800E9E20[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
+                    if (D_800E3210[omCurrentObj->objId] != 0.0f) {
+                        if (D_800E3210[omCurrentObj->objId] < 0.0f) {
+                            D_800E3210[omCurrentObj->objId] = -D_800E3210[omCurrentObj->objId];
                         } else {
-                            D_800E3210[id] = 0.0f;
+                            D_800E3210[omCurrentObj->objId] = 0.0f;
                         }
                         play_sound(0x11F);
-                        D_800E8920[id] = 0;
+                        D_800E8920[omCurrentObj->objId] = 0;
                     }
                 }
             } else {
                 if ((*(u32 *) D_8012BCA0 >> 0x13) & 0x1C0) {
-                    if (D_800E9FE0[id].as_u32 == 0) {
-                        D_800E9FE0[id].as_u32 = 1;
-                        if (D_800E3210[id] > 0.0f) {
-                            D_800E3210[id] = -D_800E3210[id];
+                    if (D_800E9FE0[omCurrentObj->objId].as_u32 == 0) {
+                        D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
+                        if (D_800E3210[omCurrentObj->objId] > 0.0f) {
+                            D_800E3210[omCurrentObj->objId] = -D_800E3210[omCurrentObj->objId];
                         } else {
-                            D_800E3210[id] = 0.0f;
+                            D_800E3210[omCurrentObj->objId] = 0.0f;
                         }
                         play_sound(0x11F);
-                        D_800E9E20[id] = D_800E8920[id];
+                        D_800E9E20[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
                     }
                 } else {
-                    D_800E9FE0[id].as_u32 = 0;
-                    D_800E9E20[id] = D_800E8920[id];
+                    D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
+                    D_800E9E20[omCurrentObj->objId] = D_800E8920[omCurrentObj->objId];
                 }
             }
         }
         return;
     }
 detonate:
-    D_800E9C60[id] = 1;
-    D_800E9560[id] = 8;
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
+    D_800E9C60[omCurrentObj->objId] = 1;
+    D_800E9560[omCurrentObj->objId] = 8;
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
     gKirbyState.abilityInUse = 0;
     {
-        u32 *pair = (u32 *) D_800EA360[id];
+        void **pair = (void **) D_800EA360[omCurrentObj->objId];
 
-        if (pair != NULL) {
-            void *handle = (void *) pair[0];
-            u16 sid = *(u16 *) (pair + 1);
-
-            func_800A7870(&handle, &sid);
-            pair[0] = 0;
-            *(u16 *) (pair + 1) = 0;
-        }
+        func_800A7870(pair, (u16 *) (pair + 1));
     }
-    D_800DEF90[id] = NULL;
+    D_800DEF90[omCurrentObj->objId] = NULL;
     func_800AFBB4(0, omCurrentObj);
     play_sound(0x59);
-    func_800A7F74(2U, 1U, 0x30U, gEntitiesNextPosXArray[id], gEntitiesNextPosYArray[id],
-                  gEntitiesNextPosZArray[id]);
+    func_800A7F74(2U, 1U, 0x30U, gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId],
+                  gEntitiesNextPosZArray[omCurrentObj->objId]);
 }
 #elif defined(PORT)
 /* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
