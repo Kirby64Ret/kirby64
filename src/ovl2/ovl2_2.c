@@ -617,6 +617,14 @@ void func_800B491C(GObj *);
 void func_800A2550(void *, void *);
 void func_800AA018(s32, void *);
 
+/* MEASURED 2026-08-24, an experiment worth not repeating: the two words are
+   `lw $v1,0($t4)` / `sll $v1,$v1,2` where IDO emits `lw $v0` / `sll $v1,$v0`.
+   The ROM shifts IN PLACE, which means the loaded objId has no second use --
+   so inlining `omCurrentObj->objId` at both the array index and the
+   D_800DFA10 index, and dropping the `idx` local, DOES produce the in-place
+   shift. It also moves the whole chain to $v0 and scores 4/85, because two
+   further instructions then use $v0 where the ROM uses $v1. The in-place
+   shift is reachable; the register is not. Kept the 2/85 spelling. */
 void func_800F72B0(UNUSED s32 arg0) {
     u32 *seg;
     s32 temp;
