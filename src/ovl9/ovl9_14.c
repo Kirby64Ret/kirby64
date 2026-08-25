@@ -663,7 +663,7 @@ void func_80211984_ovl9(struct GObj *arg0) {
 
 extern s32 func_8010B480(struct EnemyProbe *);
 extern void func_8010D42C(struct EnemyProbe *, f32);
-void func_80211B1C_ovl9(void);
+void func_80211B1C_ovl9(struct GObj *);
 void func_80211984_ovl9(struct GObj *);
 
 void func_802119F8_ovl9(struct GObj *arg0) {
@@ -688,28 +688,28 @@ void func_802119F8_ovl9(struct GObj *arg0) {
 extern FUNCLIST D_8021CB88_ovl9;
 s32 func_8021217C_ovl9(void);
 
-#ifdef NON_MATCHING
-// 13/53 diffs: structurally exact; every pointer local sits one register slot
-// earlier than the ROM's (same $a0/$a1/$a2 CSE-neighbour family as
-// ovl9_10.c's func_802050E4_ovl9). Re-measured this session, still 13.
-void func_80211B1C_ovl9(void) {
+/* Two type facts, both read off the ROM. (1) This is a D_800DF150 proc, i.e.
+   `void (struct GObj *)`, and it hands its own GObj on to func_801A0D74_ovl7 --
+   that is why the ROM never writes $a0 before the jal, and holding it there is
+   what puts every pointer local one register up (LEVERS 58, 13/53 -> 2/53).
+   (2) `tmp` is declared FIRST: D_800E1B50's address has to be materialised
+   ahead of D_800DFBD0's `addu`, which is the last two words (2/53 -> MATCH). */
+void func_80211B1C_ovl9(struct GObj *arg0) {
+    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][3];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];
-    struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
     struct EnemyProbe *u = tmp->unk84;
 
     if (gEntityFuncListIDArray[omCurrentObj->objId] != 3) {
         *(f32 *) &u->headOffsetY = a->pos.v.y * 0.5f;
         *(f32 *) &u->footOffsetY = b->pos.v.y;
     }
-    if (func_801A0D74_ovl7() == 0.0f) {
+    if (func_801A0D74_ovl7(arg0) == 0.0f) {
         utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 6, &D_8021CB88_ovl9);
     }
     func_8021217C_ovl9();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_14/func_80211B1C_ovl9.s")
-#endif
+
 void func_80211BF0_ovl9(struct GObj *arg0) {
     extern s32 D_801CCA60;
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];

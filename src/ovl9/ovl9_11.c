@@ -41,19 +41,11 @@ void func_80207304_ovl9(struct GObj *this) {
 IN_FILE void func_802074B0_ovl9(void);
 extern void func_800B7B64(void);
 
-/* 7 diffs: one-slot rotation -- the ROM holds D_800E1B50[objId] in $a2 and
-   &D_800E6A10[objId] in $a1, IDO uses $a1/$a0. An explicit `f32 *p` local
-   makes it far worse (79 diffs). */
-#ifdef NON_MATCHING
-extern FUNCLIST D_8021C8D8_ovl9;
-
-/* 7/79: a one-slot rotation of the argument registers -- ROM keeps `tmp` in
-   $a2 and &D_800E6A10[objId] in $a1, IDO uses $a1 and $a0. Every other
-   instruction, including the scheduling, is exact. Measured: an explicit
-   `f32 *p = &D_800E6A10[objId]; *p = -*p;` is 79/81 and dropping the `tmp`
-   local entirely is 77/80, so both of the obvious temp-count changes are far
-   worse -- the extra source temporary the rotation wants is somewhere else. */
-void func_80207374_ovl9(void) {
+/* The om proc really does take its GObj: it hands the parameter straight on to
+   func_801A6C10_ovl7, which is why the ROM never writes $a0 before that jal.
+   Holding the parameter in $a0 for that whole range is what puts `tmp` in $a2
+   and &D_800E6A10[objId] in $a1 (LEVERS 58). */
+void func_80207374_ovl9(struct GObj *arg0) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 
     D_800DEF90[omCurrentObj->objId] = func_800B7B64;
@@ -61,7 +53,7 @@ void func_80207374_ovl9(void) {
     D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
     D_800DF150[omCurrentObj->objId] = func_802074B0_ovl9;
     if ((D_800E8AE0[omCurrentObj->objId] & 1) != 0) {
-        func_801A6C10_ovl7();
+        func_801A6C10_ovl7(arg0);
     }
     if (D_800E8920[omCurrentObj->objId] == 1) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 0;
@@ -71,9 +63,6 @@ void func_80207374_ovl9(void) {
     func_801A0D50_ovl7(func_80207304_ovl9);
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C8D8_ovl9);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_11/func_80207374_ovl9.s")
-#endif
 extern FUNCLIST D_8021C8E8_ovl9;
 IN_FILE void func_802079F4_ovl9(f32, u8);
 
