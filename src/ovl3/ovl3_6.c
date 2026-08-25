@@ -3346,34 +3346,50 @@ extern f32 D_801976A0_ovl3;
 extern f32 D_801976A4_ovl3;
 
 #ifdef NON_MATCHING
-/* FACTORY: 2 SPURIOUS WORDS, 180 emitted against the ROM's 178. Everything
-   through the loop preheader is word-exact; the only defect is two extra
-   `lui $at, %hi(gKirbyState)`, one for each of the two swc1 stores to unk40
-   inside the loop, which the ROM addresses off the $s0 it already holds --
-   and holds here too, since every LOAD of gKirbyState in the same block is
-   `0x40($s0)` in both. verify.py reports 86/180 because those two insertions
-   shift the whole tail; read the count, not the score (LEVERS 48).
+/* FACTORY: 8/178, word count exact. Was 86/180 (two spurious words), and the
+   two spurious `lui $at, %hi(gKirbyState)` the old note identified are gone.
+   The old note had the SYMPTOM exactly right and the cause nowhere near:
+
+   THE LOOP CLAMP MUST BE THE LITERAL, NOT THE `lim` LOCAL. The ROM hoists
+   0.78539819f into $f20 for the whole loop and stores IT to gKirbyState.unk40
+   -- but writing that store as `gKirbyState.unk40 = lim` makes IDO address the
+   store through `lui $at` + `%lo(gKirbyState+0x40)` instead of the $s0 it
+   already holds, and the same for the `<=` test above it. Spelling BOTH of
+   those two uses as the literal, while leaving the loop's `if (lim != cur)`
+   test on the local, took the draft 86/180 -> 8/178 in one edit. Operand KIND
+   again (LEVERS 7/20/21): a local and a literal holding the same constant are
+   different nodes to IDO, and here the difference decides whether a STORE gets
+   the held base or its own address.
+   Measured, so nobody re-sweeps it:
+     lim local at all three sites (the old draft)              86/180
+     literal at the two clamp sites, local at the != test       8/178
+     literal at all three sites                                88/179
+   The remaining 8 are one FP-register rotation: the ROM computes `cur + step`
+   into a fresh $f8 and keeps `cur` in $f0 for the `-cur` store, where this C
+   writes `cur += step` in place. That spelling is NOT free to undo -- every
+   form that keeps `cur` live (`gKirbyState.unk40 = cur + step`, the two
+   statements swapped, a separate `nxt` local, re-reading unk40 for the
+   negation) puts a `lui $at` back and scores 87-90. So the last 8 words and
+   the 2 spurious words are the same trade, and 8/178 is the better side of it.
 
    THE 3/178 EXTERN SPELLING IS A MIRAGE AND HAS BEEN WITHDRAWN, 2026-08-25.
    This draft used to read `step = D_801976A0_ovl3; lim = D_801976A4_ovl3;`
-   and scored 3/178, which is what measure_seeds has been reporting. It can
-   never be un-guarded: both symbols are defined ONLY by this function's own
+   and scored 3/178, which is what measure_seeds was reporting. It can never
+   be un-guarded: both symbols are defined ONLY by this function's own
    listing, in its `.section .late_rodata` head, so deleting the pragma
    leaves them undefined at link. 0xF7FB0 is a dotted `.rodata, ovl3/ovl3_6`
    subsegment, i.e. this TU owns its pool and emits it from C, so the
-   literals below are the only sealable spelling (LEVERS 20).
+   literals are the only sealable spelling (LEVERS 20).
 
-   What the literals bought: the extern spelling's 3 diffs were a schedule
-   rotation, the ROM sinking the `lim` load past the two loop-invariant base
-   addiu's for gEntitiesAngleXArray/gKirbyController. As literals that
-   rotation disappears -- an operand-KIND effect, same family as LEVERS 20.
-
-   Swept without moving the two `lui`s: declaration order and position,
-   initialisers at declaration, `const f32` in the same object (lands in
-   .data), `+=` vs `x = x + step` for the unk40 update, hoisting the pre-
-   branch unk40 load into `cur` (LEVERS 16, kept -- it reads better and is
-   score-neutral), and routing gKirbyState through a held `struct Player *`
-   (worse, 182 words: the pointer local displaces $s1/$s3). */
+   Swept and negative at 8/178: every barrier placement
+   (tools/decomp/barrier_sweep.py, 17 of them); the zero-score permuter
+   candidate for this function, whose only change is an `int new_var = 0x70`
+   for the D_800E1B50 subscript -- byte-inert here, and its zero was scored on
+   the withdrawn extern spelling (LEVER 72). Previously swept: declaration
+   order and position, initialisers at declaration, `const f32` in the same
+   object (lands in .data), `+=` vs `x = x + step` for the unk40 update,
+   hoisting the pre-branch unk40 load into `cur` (LEVERS 16, kept), and
+   routing gKirbyState through a held `struct Player *` (182 words). */
 void func_8017E284_ovl3(s32 arg0)
 {
   f32 cur;
@@ -3409,10 +3425,11 @@ void func_8017E284_ovl3(s32 arg0)
     if (lim != cur)
     {
       gEntitiesAngleXArray[omCurrentObj->objId] = -cur;
-      gKirbyState.unk40 = cur + step;
-      if (lim <= gKirbyState.unk40)
+      cur += step;
+      gKirbyState.unk40 = cur;
+      if (0.78539819f <= gKirbyState.unk40)
       {
-        gKirbyState.unk40 = lim;
+        gKirbyState.unk40 = 0.78539819f;
       }
       D_800E9720[omCurrentObj->objId]++;
     }
