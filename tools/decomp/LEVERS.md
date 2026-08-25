@@ -1983,11 +1983,15 @@ the pool allocator's real stride is 0x78.
                            after. Its residue starts at instruction 0 with a
                            frame 0x68 against the ROM's 0x60 (LEVER 79).
 
-    The remaining four CALL candidates (func_801D1334_ovl8, func_801D1718_ovl9,
-    func_801D74EC_ovl9's sibling func_801E1F34_ovl15, func_801D66A0_ovl9)
-    already pass an argument at the call site, so there is nothing for the
-    lever to add; func_801D1334_ovl8's note records the same edit as measured
-    inert at 50/128.
+    The other four CALL candidates -- func_801D1334_ovl8 (func_800B5A7C),
+    func_801D1718_ovl9 (func_801D0FF4_ovl9), func_8020C378_ovl9
+    (func_801A0D74_ovl7) and func_801E1F34_ovl15 (func_800F8E6C) -- are not in
+    LEVER 89's class at all: three of them already pass an argument at the call
+    site, so there is nothing for the lever to add, and func_801D1334_ovl8's
+    note records the retype as measured inert at 50/128. func_8020C378_ovl9 is
+    the documented negative control in its own note: the parameter version is
+    54/55 against 22/55, because IDO homes it in the prologue and the ROM has
+    no such store.
 
     Also re-confirmed the two `(void)`-headed exceptions in this scope:
     func_8020F078_ovl9 screens "homed AND re-read 3 times" and its own note
