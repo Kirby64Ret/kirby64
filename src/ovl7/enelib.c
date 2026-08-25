@@ -1356,43 +1356,59 @@ void func_8019B7D8_ovl7(void) {
     }
 }
 
-#ifdef NON_MATCHING
+/* MATCHED 2026-08-25, 52/56 -> 0, in two edits and both are frame:
+ *  52 -> 49  LEVER 78, in the position the entry actually names. The ROM's
+ *            frame is 0x30 with $ra at 0x14, so the local region is
+ *            0x18..0x2F, six words, and `grep -o '0x[0-9A-Fa-f]*(\$sp)'` on
+ *            the listing shows only 0x1C, 0x24, 0x28 and 0x2C are ever
+ *            touched. 0x20 is a DEAD WORD BETWEEN two locals that own slots
+ *            -- exactly LEVER 78 -- and 0x18 is the align8 slack at the
+ *            bottom (LEVER 57). One `s32 pad` declared between the position
+ *            triple and `sp1C` puts the frame on 0x30 exactly.
+ *  49 ->  0  THE POSITION TRIPLE IS ONE AGGREGATE, and this is the part worth
+ *            keeping. With three separate `f32 sp24/sp28/sp2C` IDO SINKS all
+ *            three stores into the third arm of the `&&` chain -- their
+ *            address is only taken there, so the sink is legal -- and the
+ *            `jal func_8019A900_ovl7` comes out at word 10 where the ROM has
+ *            it at 22. Declared as a `Vector pos` the address is taken of the
+ *            OBJECT, IDO stops treating the three words as independently dead,
+ *            and the stores stay where the source puts them. That is a general
+ *            tell: a draft whose call is scheduled far EARLIER than the ROM's,
+ *            with stack stores that should precede it, is describing a sink,
+ *            and the fix is usually to give the stores one name. */
 #ifdef PORT
-/* PORT: same 4-byte-local landmine as func_8019B164_ovl7 -- and here the
- * spilled unk4 would corrupt the live sp24/sp28/sp2C position vector that
- * func_800A4F48 reads. Real struct local instead. */
+/* PORT: same 4-byte-local landmine as func_8019B164_ovl7 -- the spilled unk4
+ * would corrupt the live position vector that func_800A4F48 reads. Real struct
+ * local instead. */
 s32 func_8019B834_ovl7(void) {
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
+    Vector pos;
+    s32 pad;
     struct TrackPosition sp1C;
 
-    sp24 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    sp28 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    sp2C = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C.unk0 != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data.ptr, &sp24, 1.075f, 1.075f) == 0)) {
+    pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C.unk0 != D_800E6A10[omCurrentObj->objId]) &&
+        (func_800A4F48(D_800D799C->data.ptr, &pos, 1.075f, 1.075f) == 0)) {
         return 1;
     }
     return 0;
 }
 #else
 s32 func_8019B834_ovl7(void) {
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
+    Vector pos;
+    s32 pad;
     s32 sp1C;
 
-    sp24 = gEntitiesNextPosXArray[omCurrentObj->objId];
-    sp28 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    sp2C = gEntitiesNextPosZArray[omCurrentObj->objId];
-    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) && (func_800A4F48(D_800D799C->data.ptr, &sp24, 1.075f, 1.075f) == 0)) {
+    pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    if ((func_8019A900_ovl7(&sp1C) != 0) && (sp1C != D_800E6A10[omCurrentObj->objId]) &&
+        (func_800A4F48(D_800D799C->data.ptr, &pos, 1.075f, 1.075f) == 0)) {
         return 1;
     }
     return 0;
 }
-#endif
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019B834_ovl7.s")
 #endif
 s32 func_8019B918_ovl7(void) {
     Vector vec;
