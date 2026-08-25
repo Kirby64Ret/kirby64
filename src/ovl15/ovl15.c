@@ -1743,7 +1743,34 @@ void func_801E0380_ovl15(struct GObj *arg0) {
      IDO folds it to a bare `c.lt.s` of the two loads and never forms the
      subtraction (407/615 -> 269/615).
    - `s32 pad` BEFORE `f32 d` is load-bearing: later locals take the lower
-     address and the ROM's `d` lives at sp+0x38, not sp+0x3C. */
+     address and the ROM's `d` lives at sp+0x38, not sp+0x3C.
+
+   THE 2/615 RESIDUE, LOCALISED 2026-08-25. It is a two-instruction SCHEDULE
+   swap of an independent pair, and it happens in exactly ONE of the three
+   near-identical `+/-1.0f` blocks in this function:
+
+       ROM  801E0CB0:  addiu $a0, $zero, 0xA        <- ohSleep's argument
+                       lui   $at, (0x3F800000>>16)
+       IDO             lui   $at, (0x3F800000>>16)
+                       addiu $a0, $zero, 0xA
+
+   Both fill the delay slot after `c.lt.s $f20, $f0`, both are legal, and the
+   choice follows the scheduler's ready-list order. The block is the SECOND
+   D_800E3590 if/else -- the one whose true arm is -1.0f, immediately after the
+   55.0f do-while -- identified from the branch: `bc1fl` taken gives 0x3F800000
+   and the fallthrough gives 0xBF800000, which is `0.0f < d ? -1.0f : 1.0f`.
+
+   What makes it worth recording rather than guessing at: the FIRST such block
+   (true arm 1.0f, at 801E0B10) is byte-exact with the same `ohSleep(0xA)`
+   after it. The two differ in source only by which arm holds which constant,
+   so the cause is the DAG state on entry -- the second block is reached from a
+   do-while that recomputes `d`, the first from a plain `if`. Do not re-sweep
+   the arm polarity: inverting the test to keep the arms in the other order
+   also inverts the `bc1fl`, which the ROM has locked.
+
+   This is the residue class LEVERS says mutation reaches and source spelling
+   does not -- two independent instructions in the opposite order -- so it is
+   in priority_queue.py's TARGETS rather than on a lane. */
 #if defined(MIPS_TO_C) || defined(PORT)
 /* One arm: nothing here is N64-only. */
 void func_801E05A8_ovl15(struct GObj *arg0) {

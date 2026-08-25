@@ -307,6 +307,18 @@ struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
 // both sides, and mutating `arg0` as the scratch (5/10, worse -- it moves the
 // `ori $at` too). A second unused parameter does not even compile: the call at
 // func_800A89E0 passes one argument and IDO rejects the arity mismatch.
+// 2026-08-25, and this one narrows where the missing temp has to come from.
+// Reading the global TWICE (`D_800D7C10 = D_800D7C10 + size;` in place of
+// `temp_v0 + size`) DOES burn an extra register -- but the wrong one. It costs
+// 7/10, because the CSE temp is created before the ADDRESS is materialised and
+// the whole thing shifts one register up together: $a1 becomes $a2 and the
+// t6/t7/t8 chain does not move at all. So the extra value the ROM holds is
+// created AFTER the `lw $v0` and BEFORE the `addiu $t7,$a0,0xF` -- a
+// two-instruction window with no source statement in it. Note also that this
+// function has NO FRAME (there is no `addiu $sp`), so a declaration buys a
+// register rather than a home slot, and lever 60's question -- which of the
+// ROM's values is a temp and not a local -- is asked here against the register
+// NUMBERING rather than against spill offsets.
 u32 func_800A84F0(s32 arg0) {
     u32 temp_v0;
     u32 size;

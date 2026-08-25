@@ -5155,7 +5155,29 @@ void func_80109318(struct PositionState *arg0, struct CollisionResult *arg1) {
  * declaring an unused `f32 sp48` between sp4C and sp44 reserves it (IDO keeps an
  * unused SCALAR among used locals, unlike an unused array), worth 41/123 -> 24/123;
  * (2) the facing dot product must be written z-term FIRST, 24 -> 19. Note the y
- * solve really does scale only the z term: `x*dx + z*dz*inv + sp38.y`. */
+ * solve really does scale only the z term: `x*dx + z*dz*inv + sp38.y`.
+ *
+ * The whole 19 is downstream of ONE word: instruction 64, the x-term multiply.
+ * The ROM emits `mul.s $f8, $f16, $f18` (sub result, then the BD00 load); IDO
+ * emits the same two registers in the opposite slots, and every later $f16/$f18
+ * is that swap propagating. Everything up to and including instruction 63 --
+ * both subs, both BD00 loads, the schedule -- is byte-exact, so the values are
+ * already in the ROM's registers when the multiply reads them backwards.
+ *
+ * Ruled out this session, each one compiled (LEVERS 21 says the slot moves by
+ * operand KIND, not by source order, and all three of these leave the kind
+ * alone -- so this is now confirmed for a (sub-result, struct-field load) pair,
+ * which is a kind combination lever 21 had not covered):
+ *   - `BD00.backZ * (z diff)` for BOTH terms          -> 23/123 (worse)
+ *   - `BD00.backX * (x diff)` for the x term only     -> 19/123, byte-identical
+ *   - `(&BD00.backX)[0]` to spell the load as an
+ *     indirection instead of a member reference       -> 19/123, byte-identical
+ *   - sp48 given the dot product as a real value
+ *     (i.e. "the dead word is a named local")         -> 35/123: a live local
+ *     there takes $f0 and pushes 1.0f/sp4C->y to $f2, so the dead word really
+ *     is dead and LEVER 30 is the right reading of it.
+ * func_80109784 and func_80109970 are the same function with two substitutions
+ * and sit at the same 19, so this one word is worth ~370 words of ovl2_7. */
 void func_80109504(struct PositionState *arg0, struct CollisionResult *arg1) {
     struct Normal *sp4C;
     f32 sp48;
