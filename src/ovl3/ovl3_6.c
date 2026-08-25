@@ -157,10 +157,31 @@ extern Unk80198830 D_80198830_ovl3;
  *
  * The `k` pointer is RIGHT and is kept: the ROM holds &gKirbyState in $s0 for
  * the whole function (`sw $zero, 0x30($s0)`), which a direct `gKirbyState.x`
- * spelling does not produce. What is still wrong is one saved register too
- * many -- the ROM has $s0 and $s1 in a 0x20 frame, this has $s0/$s1/$s2 in
- * 0x28 -- so the body is materialising something the ROM keeps live. That is
- * the next thing to look at, and it is a lane's job, not the permuter's. */
+ * spelling does not produce.
+ *
+ * WORKED 2026-08-25: 299/303 -> 300/303 positional, SHAPE DISTANCE 39 -> 25
+ * (aligndiff.py run count).  The positional score is pinned here -- the draft
+ * is three words long and the frame is still wrong -- so it is the wrong
+ * meter (LEVERS 48/104); the shape count is the one that moved.  Three edits:
+ *   39 -> 31  the cached `s32 id = omCurrentObj->objId` spelled inline
+ *             (LEVER 97).  The ROM holds &omCurrentObj in a register and
+ *             re-reads `lw $v1, 0x0($s1)` at every use.
+ *   31 -> 27  `u8 *chargeBlk = (u8 *) &D_80198830_ovl3` deleted, the three
+ *             uses written `((s16 *) &D_80198830_ovl3)[0]` and `[1]`.
+ *   27 -> 25  the countdown written `if (D_800E9720[objId]-- == 0) break;`
+ *             instead of a named `pre` and a separate store.  The ROM loads,
+ *             `addiu $t3, $v1, -0x1`, and stores through the SAME $v0 with
+ *             the store in the branch's delay slot, which the three-statement
+ *             form cannot schedule.
+ *
+ * WHAT IS LEFT is still one saved register too many -- the ROM has $s0/$s1 in
+ * a 0x20 frame, this has $s0/$s1/$s2 in 0x28 -- and it is now identified:
+ * $s0 is &gKirbyState in both, $s2 is &omCurrentObj (the ROM's $s1), and the
+ * extra one is &D_800E9720 held across instructions 92..188.  The ROM does
+ * NOT hold it: it folds `%lo(D_800E9720)($at)` into the first store and
+ * re-materialises `lui $t1; addiu $t1, %lo(D_800E9720)` INSIDE the countdown
+ * loop, two words per iteration.  So the question is what stops IDO
+ * loop-hoisting that base, and it is a lane's job, not the permuter's. */
 /* PORT: the ability lunge coroutine (track action 0x21), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80179370_ovl3.s (via m2c, floats
  * re-derived against kirby_2.rodata). Arms the current ability, freezes
@@ -188,11 +209,8 @@ void func_80179370_ovl3(s32 arg0) {
     extern u8 D_801904B0_ovl3[];
     extern u32 D_80196D80_ovl3[];
     extern s16 D_80198832_ovl3;
-    u8 *chargeBlk = (u8 *) &D_80198830_ovl3;
     struct Player *k;
     f32 spd;
-    s32 id;
-    s32 pre;
 
     k = &gKirbyState;
     k->unk30 = 0;
@@ -200,46 +218,39 @@ void func_80179370_ovl3(s32 arg0) {
     gKirbyState.unk7 = 0;
     func_8011CF58();
     gKirbyState.abilityInUse = gKirbyState.ability;
-    id = omCurrentObj->objId;
-    D_800DDFD0[id] = 0x21;
-    D_800E0490[id] = D_80192794_ovl3;
+    D_800DDFD0[omCurrentObj->objId] = 0x21;
+    D_800E0490[omCurrentObj->objId] = D_80192794_ovl3;
     gKirbyState.unk15C = (u32) (uintptr_t) D_801904B0_ovl3;
-    D_800E3750[id] = 0.0f;
-    D_800E3210[id] = D_800E3750[id];
-    D_800E3C90[id] = 65535.0f;
-    D_800E6690[id] = 0.0f;
-    D_800E64D0[id] = D_800E6690[id];
-    D_800E6850[id] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     func_80122F08(0x2000A);
     gKirbyState.unk154 = 2;
     func_801230E8(0x20182, 0x20183, 1);
-    id = omCurrentObj->objId;
-    D_800E9720[id] = D_80196D80_ovl3[D_80198832_ovl3 * 2];
+    D_800E9720[omCurrentObj->objId] = D_80196D80_ovl3[D_80198832_ovl3 * 2];
     play_sound(D_80196D80_ovl3[D_80198832_ovl3 * 2 + 1]);
     gKirbyState.unk4C = ((s32 (*)(s32, s32, s32, struct DObj *)) func_800A8100)(
         1, 1, 0x21, D_800DFBD0[omCurrentObj->objId][2]);
-    id = omCurrentObj->objId;
-    if (!(D_800E8AE0[id] & 6)) {
+    if (!(D_800E8AE0[omCurrentObj->objId] & 6)) {
         spd = 8.5f;
     } else {
         spd = 4.25f;
     }
-    D_800E64D0[id] = spd * D_800E6A10[id];
-    D_800E6690[id] = D_800E6A10[id] * 0.5f;
-    D_800E6850[id] = spd;
+    D_800E64D0[omCurrentObj->objId] = spd * D_800E6A10[omCurrentObj->objId];
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 0.5f;
+    D_800E6850[omCurrentObj->objId] = spd;
     func_801230E8(0x20184, 0x20185, 0);
     for (;;) {
         if (gKirbyState.unk17 != 0) {
-            id = omCurrentObj->objId;
-            D_800E6690[id] = 0.0f;
-            D_800E64D0[id] = D_800E6690[id];
-            D_800E6850[id] = 65535.0f;
+                    D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
             break;
         }
-        id = omCurrentObj->objId;
-        pre = D_800E9720[id];
-        D_800E9720[id] = pre - 1;
-        if (pre == 0) {
+        if (D_800E9720[omCurrentObj->objId]-- == 0) {
             break;
         }
         ohSleep(1);
@@ -247,22 +258,20 @@ void func_80179370_ovl3(s32 arg0) {
     func_8011E0E8();
     func_801230E8(0x20186, 0x20187, 1);
     if (gKirbyState.unk17 != 0) {
-        id = omCurrentObj->objId;
-        D_800E6690[id] = 0.0f;
-        D_800E64D0[id] = D_800E6690[id];
-        D_800E6850[id] = 65535.0f;
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
         gKirbyState.abilityInUse = 0;
     } else {
         func_80120A28();
         gKirbyState.abilityInUse = 0;
-        if (*(s16 *) &chargeBlk[2] > 0) {
-            *(s16 *) &chargeBlk[2] -= 1;
+        if (((s16 *) &D_80198830_ovl3)[1] > 0) {
+            ((s16 *) &D_80198830_ovl3)[1] -= 1;
         }
-        *(s16 *) &chargeBlk[0] = 0x1E;
+        ((s16 *) &D_80198830_ovl3)[0] = 0x1E;
         func_8011D614();
-        id = omCurrentObj->objId;
-        if (!(D_800E8AE0[id] & 6)) {
-            D_800E6690[id] *= 3.0f;
+            if (!(D_800E8AE0[omCurrentObj->objId] & 6)) {
+            D_800E6690[omCurrentObj->objId] *= 3.0f;
         }
         func_801230E8(0x20188, 0x20189, 1);
     }
