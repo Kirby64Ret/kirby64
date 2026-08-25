@@ -900,7 +900,7 @@ s32 random_soft_s32_range(s32);
  * matching first-compile does not by itself explain this draft's register
  * choice.
  *
- * THE SAVED-REGISTER PRIORITY FAMILY (measured 2026-08-25 across four drafts
+ * THE SAVED-REGISTER PRIORITY FAMILY (measured 2026-08-25 across five drafts
  * in three files; this is the cheapest instance, so start any attack here).
  * IDO hoists each global's ADDRESS into a saved register and assigns those
  * registers by a priority order. The ROM's order and this compiler's order
@@ -916,13 +916,20 @@ s32 random_soft_s32_range(s32);
  *                                       s2=D_800E0D50 s1=D_800E8060, IDO puts
  *                                       omCurrentObj at s1 and shifts the two
  *                                       loop-only symbols up
+ *   func_801EDBEC_ovl9  (48/286)        ROM s1=omCurrentObj, IDO s2 -- note
+ *                                       this is the OPPOSITE direction to
+ *                                       func_801EEC28_ovl9 in the same file
  *
- * In every case the ROM ranks HIGHEST the symbol that is materialised FIRST --
- * the one whose first reference is OUTSIDE the loop -- and this compiler ranks
- * the loop-only symbols above it. The emission ORDER of the lui/addiu pairs is
- * identical in both; only the register numbers are permuted, and the prologue's
- * sw order follows (func_801EEC28_ovl9 saves $s2 before $s1 because it defines
- * $s2 first). So this is a priority-list difference, not scheduling.
+ * What is common is the SHAPE, not the direction: a one-position permutation of
+ * one priority list. The emission ORDER of the lui/addiu pairs is identical in
+ * ROM and draft; only the register numbers are permuted, and the prologue's sw
+ * order follows the assignment (func_801EEC28_ovl9 saves $s2 before $s1 because
+ * it defines $s2 first, func_801EDBEC_ovl9 saves $s1 first). So this is a
+ * priority-list difference and not a scheduling one. Where three or more
+ * symbols are involved the permutation is a cyclic rotation by one and the
+ * symbol that moves is the one first materialised OUTSIDE the loop; with only
+ * two it is a swap and the direction goes both ways, so do not read a rule into
+ * which of the pair ends up higher.
  * Ruled out here: if/continue polarity, an inner do-while around the ohSleep
  * wait, a local for the switch operand (both strictly worse), and the fact that
  * D_800E9C60 has more uses than D_800E77A0 -- which should already rank it

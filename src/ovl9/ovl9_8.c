@@ -996,7 +996,23 @@ void func_801FB528_ovl9(void) {
 #else
 /* Whole-function register shift: the ROM materialises &omCurrentObj and
    &D_800E9AA0 only AFTER the random_soft_s32_range call, IDO hoists both above
-   it, so every instruction is offset. */
+   it, so every instruction is offset.
+   Measured 2026-08-25, and it is worse than a shift -- it is a LENGTH bug. The
+   draft is 50 words against the ROM's 43, and the excess is that IDO
+   materialises BOTH bases TWICE: lui+addiu for each before the call (where the
+   ROM uses the folded `lui/lw %lo(sym)(reg)` form for its one pre-call read),
+   and lui+addiu for each again afterwards, because the pre-call copies do not
+   survive the jal. So this is the LEVER 59 family seen through addresses
+   rather than values: one early read shares an address with two later ones and
+   IDO CSEs all three into a held base it then cannot keep.
+   Two spellings tried and neither breaks the CSE: hoisting the GObj pointer
+   into a local (`struct GObj *o = omCurrentObj;` for the early read only) and
+   flipping the ternary to `(r == 0) ? -1 : r`. Both still emit the doubled
+   lui+addiu pairs. What is wanted is a second, differently-typed path to
+   D_800E9AA0 for the early read -- note this TU's two headers declare that
+   array with DIFFERENT types (ovl1_6.h `struct EntityThing800E9AA0 *[]`,
+   track_arrays.h `MultiType[]`), which is exactly such a path and is the next
+   thing to try here. */
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_8/func_801FB528_ovl9.s")
 #endif
 
