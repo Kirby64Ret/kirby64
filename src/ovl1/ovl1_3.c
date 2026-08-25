@@ -895,10 +895,29 @@ void func_800A8E54(u32 arg0, s32 arg1) {
 // swap in both leading loops (the ROM puts the walking pointer in $v0 and the
 // counter in $v1). m2c-shaped do/while loops with an explicit pointer local
 // are worse (111).
-/* FACTORY: 95/113 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 92/113 -- MEASURED 2026-08-25, was 95/113. The frame was four slots
+   short, 0x20 against the ROM's 0x30, so every stack displacement and the
+   whole prologue order were wrong before anything in the body could be
+   scored (LEVERS 69/74/79). Four reserved slots ahead of the named locals fix
+   it exactly; see the comment on them.
+
+   The 92 that remain are register class and prologue order: the ROM materialises
+   &D_800D6E68 into $v0 and holds the loop's running index in $v1, while the
+   draft uses $v1 and $a3 and orders the `lui`/`sw $ra`/`or` differently. Body
+   structure, loop bounds and every offset are already right. */
 #ifdef NON_MATCHING
 void func_800A8EC0(u32 arg0) {
+    /* LEVER 78: four reserved slots, and their POSITION is what makes them
+       count. Declared here, ahead of every named local, they put the frame on
+       the ROM's 0x30 (the draft was 0x20, four slots short) and take the score
+       95/113 -> 92/113. The same four interleaved between the named locals are
+       dropped whole and score 95 -- so these are standing in for four values
+       the ROM's source had and this draft has not identified, not for padding.
+       Whoever names them should delete these in the same edit. */
+    s32 pad0;
+    s32 pad1;
+    s32 pad2;
+    s32 pad3;
     u32 **slot;
     u32 *ptr;
     u32 *r;
