@@ -7,6 +7,8 @@
 #include "ovl2/ovl2_6.h"
 #include "ovl19/ovl19_5.h"
 
+#include "types.h"
+
 typedef union {
     u32 as_u32;
     u32 *as_u32p;
@@ -43,7 +45,7 @@ extern void (*D_800DF150[])(struct GObj *);
 extern void (*D_800DF310[])(s32, s32, f32);
 extern MultiType D_800DF850[];
 extern MultiType D_800DF690[];
-extern u32 *gEntityGeoDataArray[];
+extern struct GeometryBlockHeader *gEntityGeoDataArray[];
 
 // i think this is an array of pairs (2-length arrays) of pointers but cba to figure out syntax
 extern struct DObj **D_800DFBD0[];

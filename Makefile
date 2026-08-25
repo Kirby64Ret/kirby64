@@ -221,21 +221,21 @@ $(BUILD_DIR)/libn_audio.a:
 $(BUILD_DIR)/$(UCODE_BASE_DIR)/$(GRUCODE)/$(GRUCODE).%.o: $(BUILD_DIR)/$(GRUCODE)/$(GRUCODE).%
 	$(OBJCOPY) -I binary -O elf32-big $< $@
 
-$(BUILD_DIR)/%.o: %.bin
+$(BUILD_DIR)/%.o: %.bin | $(GAME_ASSETS)
 	@printf "    [BIN] $<\n"
 	$(V)$(LD) -r -b binary -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s
+$(BUILD_DIR)/%.o: %.s | $(GAME_ASSETS)
 	@printf "    [ASM] $<\n"
 	$(V)$(CPP) $(GCC_CFLAGS) -o $(@:.o=.i) $<
 	$(V)$(AS) $(ASFLAGS) -o $@ $(@:.o=.i)
 
-$(BUILD_DIR)/%.o: %.c
+$(BUILD_DIR)/%.o: %.c | $(GAME_ASSETS)
 	@printf "    [CC] $<\n"
 	$(V)$(CC_CHECK) -Wno-unknown-pragmas -MMD -MP -MT $@ -MF $(BUILD_DIR)/$*.d $<
 	$(V)$(CC) -c $(CFLAGS) $(TRACING_FLAGS) -o $@ $<
 
-$(BUILD_DIR)/data/%.o: data/%.c
+$(BUILD_DIR)/data/%.o: data/%.c | $(GAME_ASSETS)
 	$(GCC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
 # TODO: Fix build system to allow building to /tmp

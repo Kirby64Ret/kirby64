@@ -150,7 +150,7 @@ void func_800F716C(GObj *gobj) {
         gSPFogPosition(gDisplayListHeads[0]++, 920, 1000);
         gSPFogPosition(gDisplayListHeads[1]++, 920, 1000);
     }
-    gDrawFuncList[gEntityGeoDataArray[gobj->objId][2]](gobj);
+    gDrawFuncList[gEntityGeoDataArray[gobj->objId]->layoutMode](gobj);
 }
 
 #ifdef MIPS_TO_C

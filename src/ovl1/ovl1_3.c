@@ -1580,7 +1580,7 @@ void func_800AA864(? arg1) {
 
 // Is current obj's model loaded?
 s32 func_800AA888(u32 model) {
-    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
+    struct GeometryBlockHeader **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
     if (gEntityGeoDataArray[omCurrentObj->objId] == *modelPtr) {
         return 1;
@@ -1591,7 +1591,7 @@ s32 func_800AA888(u32 model) {
 
 // Match History: https://decomp.me/scratch/wW3bP
 s32 func_800AA8E4(s32 track, u32 model) {
-    u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
+    struct GeometryBlockHeader **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
 
     if (gEntityGeoDataArray[track] == *modelPtr) {
         return 1;
