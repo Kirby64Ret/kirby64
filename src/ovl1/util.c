@@ -831,7 +831,24 @@ void func_800A5D24(f32 (*arg0)[3], f32 (*arg1)[3]) {
  * loads 0(v0); plus c.eq.s operand order (f18,f16 vs f16,f18) and the bc1t
  * offsets that follow from the sink. Address-fold/schedule-shaped -- the
  * LEVERS floor class. Frame, saves, spill slots, home-reload of arg0 (via
- * pp=&arg0), row order and scale-block reload pattern all match. */
+ * pp=&arg0), row order and scale-block reload pattern all match.
+ *
+ * Swept 2026-08-25 on exactly that sink, all 61/132 or worse: hoisting
+ * `pos = &o2->pos.v` up beside `scl` (62/133 -- it costs a word), hoisting it
+ * ABOVE `scl` (62/133), and swapping the two declarations while leaving the
+ * assignments where they are (61/132, inert). The ROM's own `pos` is
+ * materialised twice, once in the `bc1tl` delay slot at index 108 and once at
+ * 120, which is IDO duplicating it into both paths of the last `if` -- not
+ * something a source position produces.
+ *
+ * READING NOTE for anyone who runs a moved-block screen over this function:
+ * an aligned diff reports an 18-word block displaced from 74 to 102, which
+ * looks like an arm-order fault worth a switch (LEVER 115). It is NOT. The
+ * three scale blocks are instruction-for-instruction identical at the
+ * mnemonic level, so a single inserted word at the top makes difflib align
+ * block N against block N+1 and report the whole thing as moved. A repeated
+ * block defeats that screen; check that the blocks differ before believing
+ * it. */
 void func_800A5D88(DObj *arg0, f32 *m) {
     UNUSED f32 pad2[4];
     f32 sy;
