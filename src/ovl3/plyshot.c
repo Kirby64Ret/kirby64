@@ -1668,24 +1668,58 @@ void func_8015D7A0_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 531/533 [was noted 2/533], whole-function callee-saved permutation (same floor class documented across this cluster). Gives the effect blocks a local NeedleFx view instead of the guarded struct PcPlyshotFx. Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 531 of 533 words differ (99%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 52/534, register permutation plus two scheduling rotations. Was
+   531/533 [noted 2/533], and the ROM's .text is 534 words -- the old 533 came
+   from counting the listing's three .late_rodata floats in and its own words
+   out. The count is now exact.
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+   Re-derived from the listing 2026-08-25. Unlike its plyshot siblings this
+   ROM does NOT hold &omCurrentObj in a saved register: it re-materialises
+   lui/lw %hi/%lo(omCurrentObj) at all twenty uses and allocates NO
+   callee-saved register at all. That is the frame constraint here, and the
+   first draft of this re-derivation violated it -- see (5).
+
+   1. `s32 id = omCurrentObj->objId;` again; spell the field inline.
+   2. ONE 12-byte stack buffer serves as both the ground probe and the
+      Vector handed to func_800B2340/func_800B26D8: the ROM passes
+      `addiu $a0, $sp, 0x3C` to all three. The draft had a separate
+      `f32 probe[3]` and `Vector sp`, which is 12 bytes of frame the ROM does
+      not have.
+   3. The kind dispatch is a SWITCH, not an if/else chain (LEVER 34): the ROM
+      compares 0 then 1 while laying the bodies 1 then 0, which is exactly
+      LEVER 34's "compares sorted by value, bodies in source order".
+   4. Four chained/re-read assignments the draft wrote as independent stores:
+      `D_800EA520[objId] = D_800EB4E0[objId] = D_800EB6A0[objId]` after the
+      zeroing (one value, two stores, no reload);
+      `D_800E64D0[objId] = D_800E6690[objId]` after setting D_800E6690 to 0
+      (the ROM RELOADS it); `gEntitiesScaleXArray[objId] =
+      gEntitiesScaleYArray[objId] = D_800EA6E0[objId] * 0.2f` (Y computed
+      first, X takes the same register); and the timer decrement is GUARDED,
+      `if (D_800E9720[objId] != 0) D_800E9720[objId] -= 1;`, even though the
+      test above it already proved it non-zero.
+   5. THREE GObj* effect pointers, and the third one is what unlocked the
+      function. The final block re-seats D_800EA520, D_800EB4E0 and
+      D_800EB6A0; each is held across six `lw 0x4C(..)` re-reads. Writing the
+      third inline cost 5 extra `omCurrentObj->objId` reads, which pushed IDO
+      past its threshold for hoisting `&omCurrentObj` into $s0 -- a saved
+      register this ROM never allocates -- and every stack offset moved with
+      it. 517/548 with the third inline, 77/534 with it named. Declaring a
+      third pointer costs a fourth scalar and the frame goes 0x48 -> 0x50, so
+      the third one REUSES the second's variable after its last read: 53/534.
+      An inner-block `GObj *fc` is not equivalent (77) -- IDO gives it its own
+      slot.
+   6. `D_800E6A10[objId] * (ternary)`, not `(ternary) * D_800E6A10[objId]`
+      (LEVER 21, operand KIND): worth the 53rd word.
+   Both wet ternaries are also spelled with the EQUAL case first
+   (`((flags & 4) == 0) ? 10.0f : 5.0f`), which is what puts the wet arm at
+   the branch target the way the ROM lays it (LEVER 5).
+
+   WHAT IS LEFT: the ROM keeps D_800EA520[objId] in $a3 and copies it to $a0
+   for each call (`or $a0, $a3, $zero`); this C has it in $a0 already and
+   fills the delay slot with `nop`, and the same value is $v1 rather than $a3
+   in the final block. Measured and NOT the cause: naming that value a local
+   and passing it (53, one word worse than inline). The rest is two one-slot
+   rotations of a `lui %hi(omCurrentObj)` inside the re-seat block. */
 
 /* PORT: service routine for func_8015D7A0_ovl3's shot above (anim 0x20032,
  * the needle/spike burst -- kind 1 travels flat, kind 0 drops straight
@@ -1705,103 +1739,111 @@ void func_8015DBE4_ovl3(s32 arg0) {
     extern char D_80190CE4_ovl3[];
     extern s32 D_801935A8_ovl3[];
     extern s32 D_801935E4_ovl3[];
-    s32 id = omCurrentObj->objId;
-    f32 probe[3];
+    Vector sp;
+    GObj *fa;
+    GObj *fb;
     s32 splash = 0;
-    u32 kind;
 
     if (func_800B3158() == 0) {
-        if (D_800EA520[id] != 0) {
-            func_800A22D4(D_800EA520[id]);
-            func_800A22D4(D_800EB4E0[id]);
-            if (D_800EB6A0[id] != 0) {
-                func_800A22D4(D_800EB6A0[id]);
+        if (D_800EA520[omCurrentObj->objId] != 0) {
+            func_800A22D4(D_800EA520[omCurrentObj->objId]);
+            func_800A22D4(D_800EB4E0[omCurrentObj->objId]);
+            if (D_800EB6A0[omCurrentObj->objId] != 0) {
+                func_800A22D4(D_800EB6A0[omCurrentObj->objId]);
             }
         }
-        func_800B1900((u16) id);
+        func_800B1900((u16) omCurrentObj->objId);
         return;
     }
-    if ((D_800E9720[id] == 0) || (D_800E6310[id] != 0)) {
-        if (D_800EA520[id] != 0) {
-            func_800A1F30(D_800EA520[id]);
-            func_800A1F30(D_800EB4E0[id]);
-            if (D_800EB6A0[id] != 0) {
-                func_800A1F30(D_800EB6A0[id]);
+    if ((D_800E9720[omCurrentObj->objId] == 0) || (D_800E6310[omCurrentObj->objId] != 0)) {
+        if (D_800EA520[omCurrentObj->objId] != 0) {
+            func_800A1F30(D_800EA520[omCurrentObj->objId]);
+            func_800A1F30(D_800EB4E0[omCurrentObj->objId]);
+            if (D_800EB6A0[omCurrentObj->objId] != 0) {
+                func_800A1F30(D_800EB6A0[omCurrentObj->objId]);
             }
-            D_800EB6A0[id] = 0;
-            D_800EB4E0[id] = 0;
-            D_800EA520[id] = 0;
-            D_800E6690[id] = 0.0f;
-            D_800E64D0[id] = 0.0f;
-            D_800E6850[id] = 65535.0f;
+            D_800EB6A0[omCurrentObj->objId] = 0;
+            D_800EA520[omCurrentObj->objId] = D_800EB4E0[omCurrentObj->objId] =
+                D_800EB6A0[omCurrentObj->objId];
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+            D_800E6850[omCurrentObj->objId] = 65535.0f;
         }
-        D_800EA6E0[id] -= 0.125f;
-        if (D_800EA6E0[id] == 0.0f) {
-            func_800B1900((u16) id);
+        D_800EA6E0[omCurrentObj->objId] -= 0.125f;
+        if (D_800EA6E0[omCurrentObj->objId] == 0.0f) {
+            func_800B1900((u16) omCurrentObj->objId);
         }
-        D_800EA8A0[id] -= 0.07f;
-        gEntitiesScaleXArray[id] = D_800EA6E0[id] * 0.2f;
-        gEntitiesScaleYArray[id] = D_800EA6E0[id] * 0.2f;
-        gEntitiesScaleZArray[id] = D_800EA8A0[id] * 0.2f;
+        D_800EA8A0[omCurrentObj->objId] -= 0.07f;
+        gEntitiesScaleXArray[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId] =
+            D_800EA6E0[omCurrentObj->objId] * 0.2f;
+        gEntitiesScaleZArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] * 0.2f;
         return;
     }
-    D_800E9720[id] -= 1;
-    gEntitiesAngleYArray[id] = D_800E17D0[id];
-    func_80155664_ovl3(D_80197F60_ovl3[id - 4]);
-    D_800E8920[id] = 0;
-    probe[0] = gEntitiesNextPosXArray[id];
-    probe[1] = gEntitiesNextPosYArray[id];
-    probe[2] = gEntitiesNextPosZArray[id];
-    kind = D_800EC2E0[id].as_u32;
-    if (kind == 1) {
-        splash = func_80155838_ovl3(probe, 40.0f, 5);
-        D_800E64D0[id] = ((D_800E8AE0[id] & 4) ? 5.0f : 10.0f) * D_800E6A10[id];
-        D_800E6690[id] = 0.0f;
-        D_800E6850[id] = 10.0f;
-        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801935A8_ovl3, 0, id);
-        func_80162000_ovl3(D_80190CA0_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
-    } else if (kind == 0) {
-        splash = func_80155838_ovl3(probe, -40.0f, 3);
-        D_800E3210[id] = (D_800E8AE0[id] & 4) ? -8.5f : -17.0f;
-        D_800E3750[id] = 0.0f;
-        D_800E3C90[id] = 17.0f;
-        func_80155D50_ovl3(D_801982F8_ovl3[id - 4], (s32) (uintptr_t) D_801935E4_ovl3, 0, id);
-        func_80162000_ovl3(D_80190CE4_ovl3, (s32) (uintptr_t) D_800DFBD0[id][1], 1.0f);
+    if (D_800E9720[omCurrentObj->objId] != 0) {
+        D_800E9720[omCurrentObj->objId] -= 1;
     }
-    if ((splash != 0) && (D_800EB6A0[id] == 0)) {
-        D_800EB6A0[id] = func_800A8234(2, 1, 0x4D);
+    gEntitiesAngleYArray[omCurrentObj->objId] = D_800E17D0[omCurrentObj->objId];
+    func_80155664_ovl3(D_80197F60_ovl3[omCurrentObj->objId - 4]);
+    D_800E8920[omCurrentObj->objId] = 0;
+    sp.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+    switch (D_800EC2E0[omCurrentObj->objId].as_u32) {
+        case 1:
+            splash = func_80155838_ovl3(&sp.x, 40.0f, 5);
+            D_800E64D0[omCurrentObj->objId] =
+                D_800E6A10[omCurrentObj->objId]
+                * (((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? 10.0f : 5.0f);
+            D_800E6690[omCurrentObj->objId] = 0.0f;
+            D_800E6850[omCurrentObj->objId] = 10.0f;
+            func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4],
+                               (s32) (uintptr_t) D_801935A8_ovl3, 0, omCurrentObj->objId);
+            func_80162000_ovl3(D_80190CA0_ovl3,
+                               (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1], 1.0f);
+            break;
+        case 0:
+            splash = func_80155838_ovl3(&sp.x, -40.0f, 3);
+            D_800E3210[omCurrentObj->objId] =
+                ((D_800E8AE0[omCurrentObj->objId] & 4) == 0) ? -17.0f : -8.5f;
+            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3C90[omCurrentObj->objId] = 17.0f;
+            func_80155D50_ovl3(D_801982F8_ovl3[omCurrentObj->objId - 4],
+                               (s32) (uintptr_t) D_801935E4_ovl3, 0, omCurrentObj->objId);
+            func_80162000_ovl3(D_80190CE4_ovl3,
+                               (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1], 1.0f);
+            break;
     }
-    if ((D_800EA520[id] != 0) && (D_800EB4E0[id] != 0)) {
-        struct NeedleFx *fa = (struct NeedleFx *) ((GObj *) D_800EA520[id])->unk4C;
-        struct NeedleFx *fb = (struct NeedleFx *) ((GObj *) D_800EB4E0[id])->unk4C;
-        Vector sp;
-
-        func_800B2340(&sp, (s32) (uintptr_t) D_800DFBD0[id][1], 0xFFFF);
-        fb->unk4 = sp.x;
-        fa->unk4 = fb->unk4;
-        fb->unk8 = sp.y;
-        fa->unk8 = fb->unk8;
-        fb->unkC = sp.z;
-        fa->unkC = fb->unkC;
-        func_800B26D8(&sp, (s32) (uintptr_t) D_800DFBD0[id][1], 0xFFFF);
-        fb->unk10 = sp.x;
-        fa->unk10 = fb->unk10;
-        fb->unk14 = sp.y;
-        fa->unk14 = fb->unk14;
-        fb->unk18 = sp.z;
-        fa->unk18 = fb->unk18;
-        if (D_800EB6A0[id] != 0) {
-            struct NeedleFx *fc = (struct NeedleFx *) ((GObj *) D_800EB6A0[id])->unk4C;
-
-            fc->unk4 = fa->unk4;
-            fc->unk8 = fa->unk8;
-            fc->unkC = fa->unkC;
-            fc->unk10 = fa->unk10;
-            fc->unk14 = fa->unk14;
-            fc->unk18 = fa->unk18;
+    if ((splash != 0) && (D_800EB6A0[omCurrentObj->objId] == 0)) {
+        D_800EB6A0[omCurrentObj->objId] = func_800A8234(2, 1, 0x4D);
+    }
+    fa = (GObj *) D_800EA520[omCurrentObj->objId];
+    if (fa != NULL) {
+        fb = (GObj *) D_800EB4E0[omCurrentObj->objId];
+        func_800B2340(&sp, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1], 0xFFFF);
+        ((struct NeedleFx *) fb->unk4C)->unk4 = sp.x;
+        ((struct NeedleFx *) fa->unk4C)->unk4 = ((struct NeedleFx *) fb->unk4C)->unk4;
+        ((struct NeedleFx *) fb->unk4C)->unk8 = sp.y;
+        ((struct NeedleFx *) fa->unk4C)->unk8 = ((struct NeedleFx *) fb->unk4C)->unk8;
+        ((struct NeedleFx *) fb->unk4C)->unkC = sp.z;
+        ((struct NeedleFx *) fa->unk4C)->unkC = ((struct NeedleFx *) fb->unk4C)->unkC;
+        func_800B26D8(&sp, (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][1], 0xFFFF);
+        ((struct NeedleFx *) fb->unk4C)->unk10 = sp.x;
+        ((struct NeedleFx *) fa->unk4C)->unk10 = ((struct NeedleFx *) fb->unk4C)->unk10;
+        ((struct NeedleFx *) fb->unk4C)->unk14 = sp.y;
+        ((struct NeedleFx *) fa->unk4C)->unk14 = ((struct NeedleFx *) fb->unk4C)->unk14;
+        ((struct NeedleFx *) fb->unk4C)->unk18 = sp.z;
+        ((struct NeedleFx *) fa->unk4C)->unk18 = ((struct NeedleFx *) fb->unk4C)->unk18;
+        fb = (GObj *) D_800EB6A0[omCurrentObj->objId];
+        if (fb != NULL) {
+            ((struct NeedleFx *) fb->unk4C)->unk4 = ((struct NeedleFx *) fa->unk4C)->unk4;
+            ((struct NeedleFx *) fb->unk4C)->unk8 = ((struct NeedleFx *) fa->unk4C)->unk8;
+            ((struct NeedleFx *) fb->unk4C)->unkC = ((struct NeedleFx *) fa->unk4C)->unkC;
+            ((struct NeedleFx *) fb->unk4C)->unk10 = ((struct NeedleFx *) fa->unk4C)->unk10;
+            ((struct NeedleFx *) fb->unk4C)->unk14 = ((struct NeedleFx *) fa->unk4C)->unk14;
+            ((struct NeedleFx *) fb->unk4C)->unk18 = ((struct NeedleFx *) fa->unk4C)->unk18;
         }
     }
-    if (D_800E8AE0[id] & 4) {
+    if (D_800E8AE0[omCurrentObj->objId] & 4) {
         func_800AECC0(1.0f);
         func_800AED20(1.0f);
     } else {
