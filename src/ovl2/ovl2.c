@@ -247,7 +247,31 @@ void func_800F62A4(UNUSED s32 arg0) {
  * about to store). Measured: `&D_800D6B18[8]` inside the cast, and
  * `((u32)D_800D6B18 + 8)`, are both byte-identical at 3/224; storing the call
  * expression directly instead of through var_v0 is 216/232, far worse. The
- * LEVER 35 (u32) cast is load-bearing and must stay. */
+ * LEVER 35 (u32) cast is load-bearing and must stay.
+ *
+ * DECIDED 2026-08-25, and the residue is a MISSING SYMBOL, not a spelling.
+ * The three words are
+ *     ROM   lui $v1,%hi(D_800D6B18+0x8) / addiu $v1,$v1,%lo(D_800D6B18+0x8)
+ *           / sw $v0,0x0($v1)
+ *     ours  lui $t7,%hi(D_800D6B18)     / addiu $t7,$t7,8 / sw $v0,0x0($t7)
+ * i.e. the ROM's +8 is inside the RELOCATION and ours is an integer add. IDO
+ * puts the offset in the reloc only when the source names an object at that
+ * address; every spelling that keeps the (u32) cast does integer arithmetic
+ * instead, and every spelling that drops the cast lets IDO fold the whole
+ * thing to the two-word `lui $at,%hi(SYM)` / `sw $v0,8($at)` form -- MEASURED
+ * 2026-08-25, `*(u8 **)(D_800D6B18 + 8) = var_v0;` (no cast) and a named
+ * `u8 **slot = (u8 **)&D_800D6B18[8];` local are BOTH 210/223, one word short
+ * and everything after it shifted. So the cast is not a stylistic wart: it is
+ * what buys the third word, and there is no third spelling between the two.
+ * What the original source had is a NAMED GLOBAL at 0x800D6B20; with
+ * `SYM(D_800D6B20, 0x800D6B20);` in unnamed_syms.txt and
+ * `*(u8 **)(u32)D_800D6B20 = var_v0;` here, IDO emits %hi/%lo of that symbol
+ * and the assembled words are identical to the ROM's (the listing only spells
+ * it `D_800D6B18 + 0x8` because no symbol exists there yet). unnamed_syms.txt
+ * feeds the LINKER SCRIPT (Makefile:251) and adding an absolute symbol emits
+ * no bytes, but it is a shared file -- coordinator task, same class as LEVER
+ * 80's `struct GObj;` header line. The remaining register ($v1 vs $t7) is not
+ * separately measurable until that lands. */
 void func_800F64B0(void) {
     extern u16 D_800D6B30;
     extern u8 D_800D6B18[];

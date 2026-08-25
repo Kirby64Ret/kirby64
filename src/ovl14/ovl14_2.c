@@ -412,16 +412,37 @@ extern s32 D_801DAA48;
    from the gEntitiesPosXArray statement above; and the ROM's frame is 0x50
    against IDO's 0x48 because the ROM hoists three array bases (&D_800E3910,
    &D_800E3590, &D_800E3E50) into $s2/$s3/$s4 and IDO picks a different set.
-   Swept and rejected: `z = 0.0f` hoisted next to `c` (no change), two
-   unreferenced scalar pads and an unreferenced `s32 pad[2]` (neither reserves
-   a slot -- lever 30's leaf case), and `a[i] = a[i] + x` vs `a[i] += x`
-   (one word, kept the `+=`). */
+   Swept and rejected: `z = 0.0f` hoisted next to `c` (no change), and
+   `a[i] = a[i] + x` vs `a[i] += x` (one word, kept the `+=`).
+
+   FRAME SOLVED 2026-08-25, and the "two unreferenced scalar pads ... neither
+   reserves a slot (lever 30's leaf case)" line that used to stand here was
+   WRONG ABOUT THE POSITION, not about the lever. 268/366 -> 266/366 with
+   `s32 pad0; s32 pad1;` declared BEFORE the named locals (LEVER 78: the
+   operative words are "between two locals that own slots", and at the TOP of
+   the list they sit between the saved-register block and `rec`). Diff 0 was
+   `addiu $sp, -0x50` against our -0x48 and diff 12 the `sw $a0, 0x50($sp)`
+   home; both are gone and the frame is now the ROM's exactly.
+   How the count was read off the listing rather than swept -- worth copying:
+   the ROM's saved block is $f20/$f22 at 0x18/0x20, $s0..$s4 at 0x28..0x38 and
+   $ra at 0x3C, so the LOCAL region is 0x40..0x4F, four words. `grep -o
+   '0x[0-9A-Fa-f]*(\$sp)'` on the listing shows only 0x44 is ever touched in
+   it (that is `rec`, reloaded at the end), so three of those four words are
+   RESERVED AND NEVER WRITTEN. Ours had 0x40..0x47. Two words short, two pads,
+   and LEVER 57's top-down order says they go above `rec`, i.e. FIRST.
+   Remaining 266 is THREE words short plus a whole-function $t renaming: the
+   ROM re-reads `omCurrentObj->objId` (lw+sll) for stores our draft folds onto
+   a held $s0 -- e.g. at target word 342 it reloads for the D_800E9C60 store
+   where we are already at the `jal ohSleep`. That is the next thing to attack
+   and it is now readable, which it was not through a wrong prologue. */
 #if defined(MIPS_TO_C) || defined(PORT)
 /* The PORT arm is this same body: nothing here is N64-only -- every array is
    indexed through its declared type, the only pointer written is
    EnemyRecord.unk8C (a real `s32 *`), and D_800D7098 is read through its
    struct.  One arm rather than two duplicated copies. */
 void func_801E1728_ovl14(GObj *arg0) {
+    s32 pad0;
+    s32 pad1;
     struct EnemyRecord *rec;
     f32 c;
     f32 z;

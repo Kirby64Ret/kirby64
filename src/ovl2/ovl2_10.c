@@ -3056,6 +3056,30 @@ extern f32 D_80126CF4[];
 // inlining both 91/94. Same closed form that DID close func_80112B4C above --
 // there the named `f32 *` locals were replaceable by array stores that IDO
 // CSEs on its own, and here there is no such substitute.
+//
+// 2026-08-25: the "TWO declared locals" conclusion above is CONFIRMED, and
+// here is the derivation that pins WHICH value has to stop being one, so the
+// next lane does not re-derive it from the four frame data points.
+// LEVER 54's `spill = frame - 4n - 8` names the SECOND compiler temp. Our
+// index spill (`sw $v1, 0x18($sp)` in the delay slot of the func_8011E244
+// call) sits at 0x18 with frame 0x30 and n=4, which is 0x30-16-8 = 0x18 --
+// exact. Apply it to the ROM: spill 0x18, frame 0x28 -> 4n = 8 -> n=2, t=2.
+// So the ROM's four local words are ptr@0x24 and objId@0x20 DECLARED, and
+// f32@0x1C plus index@0x18 as the TWO COMPILER TEMPS. The f32 that gets
+// spilled by `swc1 $f12, 0x1C($sp)` in func_800B4924's delay slot is not a
+// local at all, which is why every spelling that declares it is one word too
+// many and every spelling that inlines it recomputes AFTER the call.
+// Two NEW negatives from trying to make it a pre-call temp by sequencing,
+// both 91/94 (i.e. no better than plain inlining) -- IDO evaluates the
+// call-bearing operand of a comparison FIRST whichever side it is written on:
+//   if ((func_800B4924(g), nextY[i] - base[i]) < D_80126CF4[D_800E77A0[i]])
+//   if (D_80126CF4[D_800E77A0[i]] > (func_800B4924(g), nextY[i] - base[i]))
+// And one more INERT datum, worth knowing because it looks like it should
+// matter: heading the draft `(struct GObj *arg0)` and dropping all three
+// `(struct GObj *)` casts (with the file-scope prototype relaxed to K&R `()`)
+// is EXACTLY 8/95, byte-for-byte the same output. The casts are not the extra
+// temp. What is needed is a C construct that computes a global-indexed f32
+// before a void call without naming it; nothing in the tree does that yet.
 #ifdef NON_MATCHING
 /* FACTORY: 8/95 (verify.py prints 9 on a scratch copy; one is a PHANTOM
    own-.rodata note that resolves to the right symbol on the real path).

@@ -695,7 +695,31 @@ extern Gfx D_80126EB0[];
    knob: it is ONE COMPILER TEMP TOO MANY, and the question for the next pass
    is which of this body's values the ROM keeps as a temp that this spelling
    makes a local (or the reverse). Inlining `mtx` is the negative control --
-   it removes a local and costs 73 words (81/142). */
+   it removes a local and costs 73 words (81/142).
+
+   2026-08-25, the missing word LOCATED and two more negatives. The ROM's
+   layout is fully determined now: saved block 0x18..0x4F ($f20/$f22 then
+   $s0..$s7/$ra), then 0x50..0x9F = 80 bytes of locals+temps. ROM spends
+   64 + 16, this draft 60 + 20. Descending in declaration order the ROM has
+   five scalars 0x9C..0x8C, `base` 0x80, `i` 0x7C, ONE DEAD WORD AT 0x78,
+   `pos` 0x6C, `prev` 0x60 -- and `grep -o '0x[0-9A-Fa-f]*(\$sp)'` on the
+   listing shows 0x78 is never read or written, so it is a register-allocated
+   or reserved local, not a spill. So the missing 4 bytes belong BETWEEN `i`
+   and `pos`, which is LEVER 78's "between two locals that own slots" and is
+   the one position the sweep above had not tried. It still does not pay:
+     - `s32 pad;` declared between `i` and `pos`: 20/142, frame 0xA8. The
+       LAYOUT is then the ROM's (pad 0x78, pos 0x6C, prev 0x60) and IDO simply
+       keeps 20 bytes of temps under it, so the whole block moves up 8 again.
+     - naming the twice-used `pt->unk4` in an `f32 h` at that same position,
+       on the theory that a CSE temp would become the local: 86/142, frame
+       0xA8, and the instruction COUNT moves too (the `beqz` displacement at
+       word 17 changes). Naming a CSE'd load does not retire its temp here.
+   So n+t is pinned at 80 for this body (LEVER 57's pinned case): every 4
+   bytes added to the locals is 4 bytes ADDED to the total, not traded against
+   the temps. The lever that reaches this function has to delete a compiler
+   temp outright, and nothing in the body's own spelling does -- the compiled
+   instruction stream is already the ROM's, word for word. Permuter food, and
+   a good one: 8 diffs, all one constant offset. */
 void func_8011C4E8(s32 arg0, struct PlyRibbonHolder *arg1) {
     struct PlyRibbon *ribbon;
     struct PlyRibbonPoint *pt;
