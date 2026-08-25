@@ -1839,17 +1839,20 @@ void func_801E9770_ovl10(GObj *arg0) {
     }
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 46/129: structure, frame, saved-register set and every offset are the ROM's
-   (`s32 i = 0;` at declaration is worth 25 diffs over an `i = 0;` statement).
-   Residue: the hoisted base addresses land in a rotated set of saved registers
-   -- the ROM runs s1=&D_800E3750, s2=&omCurrentObj, s3=&D_800E3210,
-   s4=&D_800E3C90 where IDO puts &omCurrentObj last (s4) and shifts the arrays
-   down; and the post-loop `= 0.0f` reuses the loop's $f20 zero where the ROM
-   materialises a fresh `mtc1 $zero,$f4`. A named `f32 zero = 0.0f` local for
-   the loop compare does not fork the constant (still 46). */
+/* The `u32 one` and the empty `if (omCurrentObj && omCurrentObj)` are load-bearing,
+   not tidy-up candidates.  The ohSleep argument and the terminal
+   D_800E9E20 store are ONE constant held across the loop in a saved register,
+   and IDO only hoists it when both uses have the same integer type (LEVER 45);
+   spelling both as literal 1 leaves the four hoisted array bases rotated one
+   saved register apart from the ROM's s1..s4.  The empty if is the scheduling
+   barrier of LEVER 61 -- it emits nothing and stops the objId reload after
+   ohSleep being folded into the block above it.  The post-loop
+   `D_800E3750[..] = 0.0` is a DOUBLE literal so IDO forks it from the loop
+   compare's $f20 zero and re-materialises `mtc1 $zero, $f4` (LEVER 7); as
+   `0.0f` it reuses $f20.  Was 46/129; all three came from the permuter. */
 void func_801E980C_ovl10(GObj *arg0) {
     s32 i = 0;
+    u32 one;
     f32 temp;
     f32 v;
 
@@ -1864,7 +1867,10 @@ void func_801E980C_ovl10(GObj *arg0) {
     D_800E3C90[omCurrentObj->objId] = 4.5f;
 
     do {
-        ohSleep(1);
+        one = 1;
+        ohSleep(one);
+        if (omCurrentObj && omCurrentObj) {
+        }
         temp = D_800E3210[omCurrentObj->objId];
         if (temp < 0.0f) {
             v = -temp;
@@ -1876,15 +1882,12 @@ void func_801E980C_ovl10(GObj *arg0) {
             D_800E3750[omCurrentObj->objId] = -D_800E3750[omCurrentObj->objId];
         }
     } while (i != 2);
-    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    D_800E9E20[omCurrentObj->objId] = 1;
+    D_800E9E20[omCurrentObj->objId] = one;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl10/ovl10_3/func_801E980C_ovl10.s")
-#endif
 
 void func_801E9A10_ovl10(GObj *arg0) {
     if (D_800E9E20[omCurrentObj->objId] != 0) {
