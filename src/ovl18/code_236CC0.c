@@ -14,9 +14,9 @@ extern u32 D_800E0D50[];
 void func_800A9864();
 void func_800AA018(s32);
 void curObjSleepForever(void);
-void func_801ACF5C_ovl7(void);
+void func_801ACF5C_ovl7(struct GObj *);
 void func_801ACF84_ovl7(void);
-void func_802244FC_ovl18(void);
+void func_802244FC_ovl18(struct GObj *);
 
 void func_80224320_ovl18(UNUSED s32 arg0) {
     struct EnemyRecord *temp_a3 = D_800E1B50[omCurrentObj->objId];
@@ -38,36 +38,41 @@ void func_80224320_ovl18(UNUSED s32 arg0) {
     curObjSleepForever();
 }
 
-#ifdef NON_MATCHING
-/* FACTORY: 7/26 -- MEASURED 2026-08-25, and the first measurement this draft
-   has ever had. It carried no note at all, and it could not have carried one:
-   verify.py REFUSES to score a padding-trapped listing, so measure_seeds has
-   always reported this draft UNSCORABLE and no number existed. Scoring it
-   needed padtrap.classify neutralised for the measurement only.
+/* MATCHED 2026-08-25 and un-guarded, by LEVER 58. It went 7/26 to byte-exact
+   on one edit: this function takes a `struct GObj *` and hands it straight to
+   func_801ACF5C_ovl7.
 
-   The residue is one register choice and its knock-on schedule. The ROM reads
-   the counter into $a1 (`lw $a1, 0($v1)`), so $a1 is busy at the branch and
-   the `&func_801ACF84_ovl7` constant can only be materialised inside the
-   taken arm, after gEntityGObjProcessArray's address. This draft's counter
-   lands in $a0, $a1 is free, and IDO hoists the constant above the `bnez`.
-   Tried and rejected: dropping the `&` (identical, 7/26 -- so the address-of
-   is not what hoists it), and reading the counter into a named `s32 count`
-   (11/26 -- it moves objId's own load from $v0 to $v1 and costs four more).
+   The tell is textbook. `jal func_801ACF5C_ovl7` leaves $a0 UNTOUCHED -- no
+   instruction on that path writes it -- and there is no `sw $a0` home store
+   anywhere in the function, which is the refined discriminator: an untouched
+   $a0 with a home store means the parameter is dead, and without one it means
+   the parameter is passed through. That reservation of $a0 is also the whole
+   register residue the previous note described from the outside: with $a0 live
+   across the branch IDO cannot put the loaded counter there, so it goes to $a1
+   exactly as the ROM does, $a1 is busy at the `bnez`, and the
+   `&func_801ACF84_ovl7` constant can no longer be hoisted above it. One cause,
+   seven words.
 
-   PADDING TRAP CLEARED 2026-08-25: `- [0x236F10, pad]` is in kirby64.yaml,
-   sha1-gated green, so this draft is scorable normally and CAN be un-guarded
-   the moment it matches. It is the last function in code_236CC0.o with 7
-   words of linker fill past its own .size. Seven words from byte-exact and no
-   longer blocked by layout -- this is the best-conditioned target left in
-   ovl18. */
-void func_802244FC_ovl18(void) {
+   The callee was already spelled `(GObj *)` in ovl9_7.c and ovl14_2.c; only
+   this file declared it `(void)`, so no tree-wide retype was involved -- the
+   local declarations were simply wrong. Both were corrected in the same edit.
+
+   Recorded from before, so nobody re-runs them: dropping the `&` on the
+   process-entry argument is byte-identical at 7/26, so the address-of was
+   never what hoisted it; reading the counter into a named `s32 count` is
+   11/26, four worse, because it moves objId's own load from $v0 to $v1.
+   barrier_sweep.py over all seven placements is negative -- the hoist crosses
+   a branch and a barrier inside the taken arm cannot reach it.
+
+   PADDING TRAP CLEARED 2026-08-25 and that is what made this reachable at all:
+   `- [0x236F10, pad]` is in kirby64.yaml, so verify.py scores this listing
+   instead of refusing it, and un-guarding no longer shortens the TU. Before
+   the pad this function had never carried a number. */
+void func_802244FC_ovl18(struct GObj *arg0) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801ACF84_ovl7);
     } else {
         D_800E98E0[omCurrentObj->objId] -= 1;
-        func_801ACF5C_ovl7();
+        func_801ACF5C_ovl7(arg0);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl18/code_236CC0/func_802244FC_ovl18.s")
-#endif
