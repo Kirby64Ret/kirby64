@@ -3451,8 +3451,23 @@ void func_800AB0CC(s32 arg0) {
     tmp2->unk74 = -3.4028235e38f;
 }
 
+/* Returns the object's DRAW KIND: the third word of its segment-4 block, which
+ * func_800BB6B0 (ovl1_11.c) and func_8017CCE0_ovl5 switch on for values 19..30.
+ * src/ovl2/ovl2_2.c reads the same word as `gSegment4StartArray[objId][2]` and
+ * uses it to index gDrawFuncList.
+ *
+ * `u32 *`, NOT `u32 **`, AND THE DIFFERENCE IS ONLY VISIBLE OFF THE N64.
+ * gSegment4StartArray is `u32 *[]`, so an element is a `u32 *`; the double
+ * star was inert on hardware because both spellings put `buf[2]` eight bytes
+ * in when a pointer is four bytes wide. On the LP64 port a `u32 **` element is
+ * eight bytes and `buf[2]` reads SIXTEEN bytes in, which is a different word
+ * of the block entirely. Measured: in world 1-1 this returned -603586556, no
+ * case in func_800BB6B0's switch matched, that switch has no default, and the
+ * object was silently not drawn -- the level rendered around a player who was
+ * never emitted. The ROM is unchanged; a 4-byte pointer makes both spellings
+ * the same `lw` at +8. */
 s32 func_800AB0F4(GObj *g) {
-    u32 **buf = gSegment4StartArray[g->objId];
+    u32 *buf = gSegment4StartArray[g->objId];
 
     return buf[2];
 }
