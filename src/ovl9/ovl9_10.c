@@ -1166,6 +1166,11 @@ void func_802052E8_ovl9(void) {
 // func_802052E8_ovl9 / func_802050E4_ovl9). Re-measured this session, still
 // exactly 20 -- the same $v0/$v1 CSE-neighbour floor, four times over in this
 // larger function.
+// 2026-08-25: barrier_sweep (LEVERS 71) run and NEGATIVE -- 10 placements, best
+// 23/86, no placement beats the base. Also an ABSF FALSE POSITIVE: absf_sweep
+// lists this function at 2 compares / 1 neg, but the compare is the genuine
+// `if (a->pos.v.y < 0.0f)` clamp and the neg is the unrelated
+// `b->pos.v.y = -a->pos.v.y`. There is no macro here; do not convert anything.
 void func_80205360_ovl9(void) {
     struct DObj *a = D_800DFBD0[omCurrentObj->objId][1];
     struct DObj *b = D_800DFBD0[omCurrentObj->objId][2];

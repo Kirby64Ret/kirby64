@@ -1098,17 +1098,36 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
  * and it is the missing half of LEVERS.md's padding-trap section; the ovl17_2
  * failure at 0x22BED8 is the same 8-mod-16 address.
  *
- * WHAT IS STILL UNKNOWN is the un-guard.  With the pad in AND this function
- * un-guarded the coordinator measured sha1 a6c1a859 and 29 REAL DEFECTS on the
- * shared tree, and my own build of that combination was contaminated by
- * another lane's -512 in src/ovl5/ovl5_5.c, so I have no clean measurement of
- * it.  The arithmetic says it should work -- the C body is 42 words where the
- * listing is 42 words plus three nops, so .text goes 0x3360 -> 0x3354 and the
- * assembler rounds it straight back to 0x3360 with zero fill, which is what a
- * nop encodes as.  Something in that chain is wrong and 29 is far too FEW
- * defects for a 12-byte shift of everything after ovl9_8, so the next lane
- * should get the defect LIST before theorising.  Both changes are reverted;
- * re-apply the pad first, gate it guarded, and only then un-guard.
+ * THE UN-GUARD ON TOP OF THAT PAD IS ALSO INERT, and the evidence is a sha1
+ * COINCIDENCE that is worth more than either build on its own.  The pad plus
+ * the un-guard was reported red at sha1 a6c1a859 with 29 real defects.  I then
+ * reverted BOTH -- yaml clean, this function back behind its pragma, splat
+ * re-run so the listing has its seven nops again, ovl9_8.o deleted and rebuilt
+ * -- and got a6c1a8599a427ffa168ff2e48d30f34cc793e60e AGAIN, with the same 29.
+ * Two configurations that differ by a pad subsegment and an un-guard cannot
+ * produce the same 160-bit hash unless the difference between them is zero
+ * bytes.  A segment byte-diff of that ROM against baserom agrees: ovl9 0
+ * differing bytes, ovl9_8 0, ovl15 0, ovl16 0 -- all 11915 of them were in
+ * ovl5, from a lane mid-edit, and that is what both readings of "29 defects"
+ * were measuring.
+ *
+ * The arithmetic says the same thing: the C body is 42 words where the listing
+ * is 42 words plus three nops, so .text goes 0x3360 -> 0x3354 and the
+ * assembler rounds it straight back to 0x3360 with zero fill, which is exactly
+ * what a nop encodes as.
+ *
+ * So this SHOULD close.  It is reverted only because four lanes share the tree
+ * and a yaml edit forces a re-split on all of them; it needs one quiet build,
+ * not more thinking.  The recipe, in order:
+ *     1. add `- [0x1A9AE0, pad]` after the ovl9/ovl9_8 subsegment
+ *     2. `flock /tmp/kirby_build.lock uv run splat split kirby64.yaml`
+ *     3. `rm -f build/src/ovl9/ovl9_8.o build/src/ovl9/ovl9_8.o.srchash`
+ *        -- REQUIRED: make does not treat a .s as a dependency of its object,
+ *        so without this you link a stale .text against the new layout
+ *     4. mk.sh, gate on sha1 -- expect 6cea2d46 with this draft still guarded
+ *     5. only then drop the guard, rebuild, gate again.
+ * Revert on any sha1 change, and check WHICH segment moved before believing
+ * the pad caused it.
  *
  * The `^ 0` is a CSE BARRIER and it is load-bearing.  The ROM recomputes
  * `subu / addiu -3` INSIDE the then-arm (801FBA34) after having already
