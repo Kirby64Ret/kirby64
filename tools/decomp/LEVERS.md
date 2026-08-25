@@ -189,14 +189,21 @@ pad's ADDRESS.
 in its TU, computed with the formula above -- each still needs its draft to be
 byte-exact before un-guarding, and the pad gated guarded first):
 
-    ovl1/ovl1          - [0x4AB00, pad]   16   func_800A2550
-    ovl1/save_file     - [0x629E0, pad]   16   saveForceCompleteFile
-    ovl3/ovl3_4        - [0xCC970, pad]   48   func_8016BD24_ovl3
-    ovl8/ovl8          - [0x175B10, pad]  16   func_801D1E98_ovl8
-    ovl9/ovl9_4        - [0x193760, pad]  16   func_801E5660_ovl9
-    ovl9/ovl9_13       - [0x1BDFC0, pad]  16   func_8020FD34_ovl9
-    ovl12/code_1EB520  - [0x1F18C0, pad]  16   func_801DB1E0_ovl12
-    ovl18/code_236CC0  - [0x236F10, pad]  16   func_802244FC_ovl18
+    ovl1/ovl1          - [0x4AB00, pad]   16   func_800A2550           DONE
+    ovl1/save_file     - [0x629E0, pad]   16   saveForceCompleteFile   DONE
+    ovl3/ovl3_4        - [0xCC970, pad]   48   func_8016BD24_ovl3      open
+    ovl8/ovl8          - [0x175B10, pad]  16   func_801D1E98_ovl8      DONE, closed
+    ovl9/ovl9_4        - [0x193760, pad]  16   func_801E5660_ovl9      DONE, closed
+    ovl9/ovl9_13       - [0x1BDFC0, pad]  16   func_8020FD34_ovl9      DONE, closed
+    ovl12/code_1EB520  - [0x1F18C0, pad]  16   func_801DB1E0_ovl12     BOGUS - see LEVER 87
+    ovl18/code_236CC0  - [0x236F10, pad]  16   func_802244FC_ovl18     DONE, closed
+
+    All three of the 2026-08-25 ovl8/ovl9 pads were gated with their drafts
+    still GUARDED, each on its own build: sha1 6cea2d46, check_tu_size 0 wrong,
+    check_rodata_bytes 0 problems. The formula above predicted all three
+    addresses first time and none of them needed a sweep. Every one of the
+    three drafts then closed -- one on the FIRST measurement with no edit at
+    all (LEVER 88).
 
 The older text below is kept because its measurements are real; read it as
 history, not as guidance.
@@ -1497,3 +1504,114 @@ the pool allocator's real stride is 0x78.
     number you edited is inside the guard `scratchverify` reports. A near miss
     like this costs nothing if caught and puts a false lever in the file if
     not.
+
+84. **`flag = 0;` INSIDE an `if` block leaves the flag MEMORY-resident; hoist
+    it to the entry block and IDO register-allocates it.** This was worth
+    48 of the 83 words on func_801D1E98_ovl8 and it is the cause behind two
+    separate symptoms other lanes had already written down as floors.
+
+    The shape is the common one: a `flag`/`ok` scalar set to 0, raised to 1
+    inside a nested test chain, read once at the end.
+
+        if (p != NULL) {           |    flag = 0;
+            flag = 0;              |    if (p != NULL) {
+            ... two calls ...      |        ... two calls ...
+            if (a) if (b) flag = 1;|        if (a) if (b) flag = 1;
+            if (flag) ... else ... |        if (flag) ... else ...
+
+    LEFT: IDO keeps `flag` in memory. Every branch out of the test chain
+    becomes a branch-LIKELY with `lw flag` in its delay slot, where the ROM has
+    a plain `beqz` + `nop`, and `flag = 1` costs an `li` plus a `sw`.
+    RIGHT: `flag` is a register variable in $t0, spilled around each call. The
+    `sw $zero, 0x2C($sp)` sitting in a jal's delay slot, which reads exactly
+    like the assignment, is the SPILL of that register; the reload right after
+    the call (`lw $t0, 0x2C($sp)`) is the other half, and it is the extra word
+    that made the draft one instruction short.
+
+    Two things follow, and both had been sealed as unreachable:
+      - The extra spill SLOT. func_801D1CAC_ovl8's note read "the ROM's local
+        block starts at 0x20 with a FOURTH, unused compiler spill slot at 0x3C;
+        IDO only ever allocates three" and called it a 4-byte frame
+        displacement that leading/trailing pads move in 8-byte steps and cannot
+        reach. There is no displacement: four locals, four spill slots. The
+        fourth appears the moment `flag` is promoted.
+      - The whole-function temp renumbering. Reserving $t0 for `flag` pushes
+        one address chain out of the $t pool, so IDO spends $a0 on it -- which
+        is exactly what the ROM does. Read the other way round (as both ovl8
+        notes did) it looks like an arbitrary register permutation.
+
+    Measured INERT on the same function, all EXACTLY 83/98: `register s32
+    flag`, `u8`/`s16` flag, the `&&`-chain form of the test, the inverted final
+    test, a goto-merge form, and every declaration-order permutation. The
+    position of the INITIALISER is the only knob.
+
+85. **Naming an array TWICE where the ROM names it once costs a base register
+    and a reload; the chained assignment is what spells "once".** 101/143 to
+    byte-exact on func_8020FD34_ovl9 in one edit, at two sites.
+
+        D_800E6150[track] = D_800E5F90[id];      /* two statements: */
+        D_800E5F90[track] = D_800E6150[track];   /* D_800E6150 twice */
+
+        D_800E5F90[track] = D_800E6150[track] = D_800E5F90[id];   /* once */
+
+    With the name used twice IDO materialises a full base register for it
+    (`lui` + `addiu` + `addu`) and RELOADS the word it has just stored. Used
+    once it gets the folded single-use form -- `lui $at, %hi(X)` /
+    `addu $at,$at,$idx` / `sw $v, %lo(X)($at)` -- and the value is stored to
+    both arrays out of the one register. Three words per site, plus every
+    register name downstream.
+
+    The general form: **count the %hi/%lo pairs against the base registers in
+    the listing before reading the residue as colouring.** A symbol the ROM
+    reaches through `$at` with a `%lo` displacement is referenced exactly once
+    in the source; a symbol with its own `lui`+`addiu` base is referenced more
+    than once. That is a direct, checkable statement about the source text.
+
+86. **Reuse a DEAD local rather than introducing a new one when the ROM reuses
+    its register.** Last 3 words of func_801D1E98_ovl8. `d` is dead after the
+    second call; the ROM's next value (`g->data.dobj`) lands in d's register
+    $a2, IDO otherwise takes a fresh $v0. Writing `d = g->data.dobj;` and
+    testing `d` closes it. A separate `dob` local does NOT: measured 3, 13 and
+    23 depending on where it is declared. Naming the same variable is the
+    lever, not adding one -- and it is plausible source, scratch pointers get
+    reused in this codebase all the time.
+
+    Related and also measured on that function: splitting a two-step lookup
+    into its own local (`rec = D_800E1B50[id];` then `p = rec[0x20];` instead of
+    `D_800E1B50[id][0x20]`) was worth 32 words. Same two loads either way;
+    naming the intermediate is what gives it $a0. unk_structs/D_800E1B50.h
+    already records the same split as load-bearing for func_801A4754_ovl7, so
+    this is now twice-measured: **when the ROM holds an intermediate in a
+    register across an unrelated instruction, give it a name.**
+
+87. **padscan.py NAMES THE WRONG FUNCTION when a TU has more than one trapped
+    listing, and two of its rows are pads that already exist.** Do not apply a
+    padscan row without checking that the function it names is really the last
+    one in that subsegment.
+      - It picks the LAST listing in `glob` order that classifies as a trap,
+        not the one with the highest address. For `ovl12/code_1EB520` it names
+        `func_801DB1E0_ovl12` -- the stray one-word `nop` at 0x1EB520, which
+        is not in that subsegment at all and is ALREADY covered by the existing
+        `- [0x1EB520, pad]` line -- and then feeds its 7 trailing nops into the
+        formula for the code_1EB520 subsegment, suggesting `- [0x1F18C0, pad]`.
+        That TU's real last functions are already decompiled, its .text is
+        exactly 0x6390 (the full subsegment) and check_tu_size is clean, so the
+        suggested pad would shift everything after it. Ignore that row.
+      - Rows for TUs that already carry their pad reappear one 16-byte step
+        lower (`- [0x1a9ad0, pad]` for ovl9_8, `- [0x22bed0, pad]` for
+        ovl17_2), because the scan reads the pad as the subsegment end. The
+        docstring says so; it is easy to miss in the output.
+    After 2026-08-25 the only genuine class-(a) row left is `ovl3/ovl3_4`
+    (`- [0xCC970, pad]`, 48 bytes, func_8016BD24_ovl3 -- checked, it really is
+    the highest-address listing in that subsegment). ovl8/ovl8, ovl9/ovl9_4 and
+    ovl9/ovl9_13 were closed today and all three of their drafts closed with
+    them.
+
+88. **A "not byte-exact" note on a padding-trapped function is an assertion
+    about something nobody could measure.** func_801E5660_ovl9 carried
+    "m2c draft, for the PORT only. Not byte-exact and not claimed to be" and
+    was byte-exact on the first measurement after its pad went in, with no edit
+    at all. func_8020FD34_ovl9 carried a hand-scored "25/141"; the first tool
+    measurement of the same source was 101/143. verify.py refuses these
+    listings, so every number and every claim attached to one is unbacked until
+    the pad exists. Pad first, then read the note.
