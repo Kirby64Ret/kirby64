@@ -70,7 +70,7 @@ extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
  * return. The definition in src/ovl2/ovl2_7.c is spelled u16. */
 extern s32 func_8010DC24(struct CollisionTriangle *);
 extern void func_8011D40C(void);
-extern f32 func_800F8728(s32, f32, f32);
+extern f32 func_800F8728(u32, f32, f32);
 extern s32 func_80103EA0(Vector *, Vector *, void *, void *, s32, s32, s32, s32);
 extern void func_801530BC_ovl3(f32 *);
 

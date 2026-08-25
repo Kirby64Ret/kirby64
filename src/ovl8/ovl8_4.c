@@ -927,7 +927,7 @@ void func_801D6F1C_ovl8(struct GObj *arg0) {
     extern s32 D_801CA980;
     extern f32 gKirbyHp;
     s32 func_801128A4(void *);
-    f32 func_800F8728(s32, f32, f32);
+    f32 func_800F8728(u32, f32, f32);
     s32 hits;
     u32 flags;
     f32 dx;
@@ -991,7 +991,7 @@ void func_801D6F1C_ovl8(struct GObj *arg0) {
     extern s32 D_801CA980;
     extern f32 gKirbyHp;
     s32 func_801128A4(void *);
-    f32 func_800F8728(s32, f32, f32);
+    f32 func_800F8728(u32, f32, f32);
     s32 hits;
     u32 flags;
     f32 dx;
@@ -1152,7 +1152,7 @@ void func_801D75A8_ovl8(struct GObj *arg0) {
     extern s32 D_801CA980;
     extern f32 gKirbyHp;
     s32 func_801128A4(void *);
-    f32 func_800F8728(s32, f32, f32);
+    f32 func_800F8728(u32, f32, f32);
     s32 hits;
     f32 dx;
     f32 dz;
@@ -1214,7 +1214,7 @@ void func_801D75A8_ovl8(struct GObj *arg0) {
     extern s32 D_801CA980;
     extern f32 gKirbyHp;
     s32 func_801128A4(void *);
-    f32 func_800F8728(s32, f32, f32);
+    f32 func_800F8728(u32, f32, f32);
     s32 hits;
     f32 dx;
     f32 dz;

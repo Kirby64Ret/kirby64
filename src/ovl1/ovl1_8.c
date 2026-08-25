@@ -13,7 +13,7 @@ void func_8011D40C(void);
 u8 func_8011E244(void);
 void func_8011E31C(Vector *);
 void func_80112A40(s32, Vector *, Vector *);
-f32 func_800F8728(s32, f32, f32);
+f32 func_800F8728(u32, f32, f32);
 #define M_TAU (2 * M_PIF)
 
 void func_800B35F0(void) {

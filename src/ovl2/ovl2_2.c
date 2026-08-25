@@ -2252,7 +2252,7 @@ void func_800F8570(s32 arg0) {
  * projected distance, and returns it (ovl1_8's func_800B531C stores it as
  * the knockback carry-over). func_800F8570 (grouped-follower update) is
  * still asm-only; its weak stub logs once under KIRBY_PC_TRACE. */
-f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
+f32 func_800F8728(u32 arg0, f32 arg1, f32 arg2) {
     struct Unk80129114_4_4 *footer;
     Vector tang;
     f32 inv;
@@ -2284,7 +2284,7 @@ f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
  * ovl2_2.o's .rodata links at 0x80128710, so +0x80 IS D_80128790. Scored on
  * the real path verify.py prints MATCH; measure_seeds.py now passes
  * VERIFY_SECBASE_SRC so it does too.) */
-f32 func_800F8728(s32 arg0, f32 arg1, f32 arg2) {
+f32 func_800F8728(u32 arg0, f32 arg1, f32 arg2) {
     extern void *D_80129114;
     extern s32 D_800E5F90[];
     extern f32 D_800E6BD0[];

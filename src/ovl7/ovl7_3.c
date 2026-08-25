@@ -1386,11 +1386,15 @@ void func_801A32EC(struct Ovl7TrackParams *arg0) {
  * `volatile` is a crutch and is NOT needed -- plain `u32` matches, measured
  * both ways.  u32 is also the honest type: the argument is omCurrentObj->objId.
  * Gated: `verify.py --all` on this TU is unchanged by the retype.
- * OPEN, needs a coordinator task (out of this lane's scope): the DEFINITION in
- * src/ovl2/ovl2_2.c:2255/2287 and the declarations in src/ovl2/ovl2_2.h,
- * src/ovl1/ovl1_8.c:16, src/ovl3/ovl3_1.c:73 and four block-scope ones in
- * src/ovl8/ovl8_4.c still say s32.  Same register class, so nothing is broken,
- * but the tree now disagrees with itself about this parameter. */
+ * CLOSED 2026-08-25: the tree now agrees.  Both DEFINITIONS in
+ * src/ovl2/ovl2_2.c (the PORT arm and the matched one) and every declaration
+ * -- src/ovl2/ovl2_2.h, src/ovl1/ovl1_8.c:16, src/ovl3/ovl3_1.c:73 and the
+ * four block-scope ones in src/ovl8/ovl8_4.c -- say u32.  All four affected
+ * objects (ovl2_2, ovl1_8, ovl3_1, ovl8_4) are .text-IDENTICAL across the
+ * retype, objdump A/B, and the linked sha1 is unchanged, which is what
+ * LEVER 68's gate asks for.  The retype had to move as one change: ovl1_8.c
+ * both includes ovl2_2.h and redeclares the function locally, so a partial
+ * move is the LEVER 49 collision. */
 void func_801A33B8(struct Ovl7TrackParams *arg0) {
     f32 dx;
     f32 dz;
