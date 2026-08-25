@@ -779,6 +779,23 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
 extern f32 D_800D515C[];
 extern s32 random_soft_s32_range(s32);
 
+/* FACTORY: 4/169, and all four are ONE register-pair swap between two
+ * loop-hoisted constants. The ROM materialises 0x51 into $a3 and 1 into $a2;
+ * IDO materialises 1 into $a3 and 0x51 into $a2, and the two `bne $s0, ...`
+ * that consume them follow. Both compilers emit the pair into $a3 then $a2 in
+ * the loop preheader -- what differs is which constant goes first. IDO takes
+ * them in order of USE (1 is compared at the `i == 1` test, 0x51 at the
+ * loop-back test); the ROM takes them in the opposite order.
+ *
+ * MEASURED AND INERT 2026-08-25: `for (i = 0; i != 81; i++)` in place of
+ * `i < 81`. Byte-identical, all four diffs unchanged -- IDO has already
+ * rewritten the signed `<` into the `bne` the ROM has, so the loop-test
+ * spelling is not where the ordering comes from. Nothing in the loop body
+ * introduces 0x51 before the `i == 1` test, so there is no source position
+ * left to move it to.
+ *
+ * A preheader constant-hoist ORDER is what mutation reaches and spelling does
+ * not; this belongs in priority_queue.py's TARGETS. */
 s32 func_800B9FE0(s32 fileNum) {
     extern u8 D_800D6C10[];
     s32 count;
