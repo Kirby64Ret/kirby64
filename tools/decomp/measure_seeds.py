@@ -3,11 +3,22 @@
 
 WHY THIS EXISTS
 
-The `/* FACTORY: N/M */` notes are written by hand and the tree mixes two
+The `/* FACTORY: N/M */` notes are written by hand and the tree mixes
 opposite conventions: some lanes wrote N = words MATCHED, others wrote
 N = words DIFFERING. A note reading `1/312` therefore means either "one word
 away from byte-exact" or "one word correct out of 312" -- the best and the
-worst case in the pool, spelled identically.
+worst case in the pool, spelled identically. See MATCHFORM below for the
+three spellings found so far, and for how to tell an unfamiliar one apart
+(its disagreements will be exact COMPLEMENTS of the measurement).
+
+A fourth axis exists and MATCHFORM cannot help with it: some notes were
+scored with an ALIGNING differ, which reports only the changed lines, while
+this tool is positional. When a cause changes the instruction COUNT or the
+frame size, everything after it slides and the positional score goes to
+near-total while the aligned one stays small. src/ovl17/ovl17_2.c's notes
+carry both numbers for exactly that reason. A "one callee-saved register"
+diagnosis sitting next to a 99% positional score is not necessarily a bad
+diagnosis -- an EXTRA saved register inserts an instruction.
 
 That is not a cosmetic problem. It decides which functions lanes work on. Six
 notes claiming N in {0,1,2} were re-measured and every one was the opposite:
@@ -70,12 +81,17 @@ VERIFY = 'tools/decomp/verify.py'
 # "the whole body shifts". Without this line `--fix` would have rewritten all
 # six correct notes into wrong ones.
 #
+# The word boundary after `positional` is load-bearing: src/ovl17/ovl17_2.c's
+# notes say "N/M positionally", which is the OPPOSITE convention (N is the
+# positional DIFF count), and without the \b they were read as matched counts
+# and flipped.
+#
 # The general lesson for anyone adding a fourth convention: don't. But if you
 # meet an unfamiliar one, check whether the disagreements are COMPLEMENTS
 # before believing the tool.
 FACTORY = re.compile(r'FACTORY:\s*(\d+)\s*/\s*(\d+)')
 MATCHFORM = re.compile(r'FACTORY:\s*\d+\s*/\s*\d+\s*'
-                       r'(instructions?\s+match|positional)')
+                       r'(instructions?\s+match|positional\b)')
 PRAGMA = re.compile(r'^\s*#pragma\s+GLOBAL_ASM\("([^"]+)"\)\s*$')
 DIFFLINE = re.compile(r'(\w+):\s*DIFF\s+(\d+)/(\d+)\s+insns')
 MATCHLINE = re.compile(r'(\w+):\s*MATCH')

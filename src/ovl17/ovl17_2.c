@@ -364,7 +364,10 @@ void func_801DE9A8_ovl17(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 29/835, frame 0x140 vs the ROM's 0x138.
+/* FACTORY: 806/835 positionally, 29 under an aligning differ (see the
+   reconciliation note over func_801DF768_ovl17).  Frame 0x140 vs the ROM's
+   0x138 -- that 8-byte difference is itself why the positional score is near
+   total: every stack reference below it moves.
    One real lever landed here and is worth carrying to the other matrix
    functions in this overlay: writing the two zero arguments of the first
    HS64_MkRotationMtxF call as DOUBLE literals (0.0, not 0.0f) stops IDO
@@ -759,7 +762,23 @@ void func_801DEA5C_ovl17(void) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/213, one callee-saved register.  Frame is now the ROM's 0x128
+/* THIS FILE'S FOUR DRAFT NOTES COUNT DIFFERENTLY -- reconciled 2026-08-25.
+   verify.py compares word-for-word BY POSITION, so a
+   cause that changes the instruction COUNT or the frame shifts everything
+   after it and scores near-total.  These notes were written against an
+   ALIGNING diff, which reports only the changed lines.  Both numbers are
+   real and they answer different questions: the aligned one says how many
+   places are wrong, the positional one is what measure_seeds and
+   priority_queue.py will read.  Each note in this file now leads with the
+   positional number and keeps its own in the prose.
+   (The apparent paradox -- "one callee-saved register" next to a 99%
+   positional score -- is not a bad diagnosis.  A pure register PERMUTATION
+   cannot move 99% of the words, but an EXTRA saved register inserts an
+   instruction, and everything after it slides by one.  Measured here: the
+   draft's extra `sw $s0` is diff [2], and diffs [3] onward are the same
+   instructions one slot late.) */
+/* FACTORY: 210/213 positionally, 3 under an aligning differ: one
+   callee-saved register.  Frame is now the ROM's 0x128
    with arg0 homed at 0x128; the residue is that our IDO parks the objId in
    $s0 (adding an s0 save the ROM does not have) where the ROM re-materialises
    omCurrentObj.  Inlining objId at every use is worse -- it grows the
@@ -885,7 +904,9 @@ void func_801DF768_ovl17(f32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/759, and the draft's shape is wrong in one specific way worth
+/* FACTORY: 755/759 positionally, 4 under an aligning differ (see the
+   reconciliation note over func_801DF768_ovl17).  The draft's shape is wrong
+   in one specific way worth
    fixing before any permuter time: the ROM runs this whole 759-instruction
    function on a 0x18 frame whose ONLY stack slot is the $ra save at 0x14 --
    every value stays in registers.  This draft holds six locals (dobjs,
@@ -1091,7 +1112,8 @@ void func_801E0704_ovl17(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/205, one callee-saved register.  The ROM saves only $ra (at 0x14)
+/* FACTORY: 202/205 positionally, 3 under an aligning differ: one
+   callee-saved register.  The ROM saves only $ra (at 0x14)
    and spills the record and hand pointers to 0x4C and 0x48; ours keeps one of
    them in $s0, which adds the save and renames the body.
    Everything else is now the ROM's, and the layout facts below were read off
