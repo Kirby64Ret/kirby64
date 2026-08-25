@@ -14,10 +14,11 @@ candidate line in turn, score, and report. Every measurement runs on a scratch
 copy through scratchverify, so the shared tree is never un-guarded: several
 lanes and a permuter build it concurrently.
 
-Two placements are tried per candidate line, because they are not equivalent:
-a barrier BEFORE a statement stops motion up past it, and one wrapped AROUND a
-following block stops motion out of the block. This does the first; wrap the
-block by hand once the sweep says which statement matters.
+One placement per candidate line: the barrier goes BEFORE the statement, which
+stops motion up past it. Wrapping a following block is a DIFFERENT transform --
+it stops motion out of the block -- and this does not try it. Do the wrap by
+hand once the sweep names the statement; on func_800BDE0C both forms reach the
+same 2/72, but there is no reason to assume that in general.
 
 VALIDATED against the case it was written for. Given func_800BDE0C's draft with
 its barrier taken back out, the sweep reports base 13/72 and finds 2/72 -- the

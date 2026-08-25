@@ -880,3 +880,55 @@ the pool allocator's real stride is 0x78.
     param direct, copied to a local, copied to a local plus separate `absX`
     locals -- homes both floats and gets frame 0x18. Score the macro change on
     its own and record the leftover; do not spend the session on the residue.
+
+71. **Do not read for a barrier placement -- sweep for it.** LEVER 61 says an
+    empty `do { } while (0);` is an IDO scheduling barrier. What it did not say
+    is where to put one, and that is the hard half: the symptom appears as a
+    register-name disagreement several instructions away from the statement
+    that actually needs pinning. func_800BDE0C (ovl1_13) carried a note calling
+    its 13/72 residue "a single caller-saved register swap" for as long as the
+    note existed. That was the symptom. The cause was that IDO hoisted the row
+    pointer setup up past the `lhu` of the fill value, and one barrier round
+    the row loop took it to 2/72.
+
+    `tools/decomp/barrier_sweep.py <file.c> <func>` places one barrier before
+    each candidate statement in turn and scores it on a scratch copy. It skips
+    declarations (a barrier before one is not C89), labels, `case`, `else` and
+    closing braces. Validated both ways: on func_800BDE0C's draft with the
+    barrier removed it reports base 13/72 and finds 2/72 at eight equivalent
+    placements; on func_800B9FE0 (save_file.c, base 4/169) it reports five
+    placements between 7/169 and 118/169 and lands on none, which is what a
+    genuine negative looks like as distinct from a sweep that failed to run.
+
+    Swept and negative, do not re-run: func_800B9FE0 4/169, func_800BB24C
+    8/70, func_800BA90C 13/62, func_800A238C 17/45, func_800A52F0 40/69.
+
+    The sweep tries the BEFORE placement only. Wrapping a following block is a
+    different transform -- before stops motion up past the statement, a wrap
+    stops motion out of the block -- so do the wrap by hand once the sweep
+    names the statement.
+
+72. **A permuter "win" is a candidate, not a closure, and until 2026-08-25 it
+    was often not even the right candidate.** permute_queue.py published
+    `hits[-1]` on a zero score: the last `output-<pid>-<n>` directory by
+    LEXICOGRAPHIC name. output-<pid>-10 sorts before output-<pid>-9, and
+    several pids interleave in one run, so the published source frequently was
+    not the one that scored zero -- two of the first three wins had score.txt
+    396 and 46. Fixed to read each directory's own score.txt.
+
+    Two consequences worth keeping. First, `tools/decomp/harvest_zero_scores.py`
+    walks the working directories instead of the log and found 53 functions
+    with a zero-score candidate on disk, 22 of them STILL GUARDED, from runs
+    going back sessions. Run it before starting a permuter -- the answer may
+    already be sitting in tools/decomp/perm/.
+
+    Second, re-measure every candidate in the tree with scratchverify before
+    believing it. asm-differ normalises stack offsets unless `--stack-diffs` is
+    passed and that flag went into the queue partway through, so an older run
+    can score 0 on a pure frame-size residue. And the permuter compiles a
+    PREPROCESSED STANDALONE file whose struct layouts and prototypes are its
+    own, so a change that scores 0 there can score worse in the real
+    translation unit. Measured: func_80158E98_ovl4's candidate goes 3/163 ->
+    24/163 (its extra `f32` declaration moves sp24 from 0x24 to 0x20), and
+    func_801E14B0_ovl17's goes 3/61 -> 12/61. Read diff.txt and apply the
+    change by hand; never copy source.c into src/.
