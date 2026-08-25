@@ -731,7 +731,6 @@ void func_801DC594_ovl15(struct GObj *arg0) {
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 
-#ifdef NON_MATCHING
 /* 10/107, and all ten are the same register: the ROM parks `temp` in $a2 --
    the register the 3rd argument of the func_800A7F74 call below it wants --
    while IDO puts it in $v0 and only claims $a2 for the argument. Swept:
@@ -749,31 +748,32 @@ struct Ovl15XformOwner {
     struct Ovl15Xform *unk4C;
 };
 
-void func_801DC890_ovl15(struct GObj *arg0) {
-    struct Ovl15XformOwner *temp;
-
-    if (D_800E98E0[omCurrentObj->objId] == 1) {
-        temp = (struct Ovl15XformOwner *) D_800EA360[omCurrentObj->objId];
-        if (temp != NULL) {
-            temp->unk4C->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
-            temp->unk4C->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
-            temp->unk4C->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
-            temp->unk4C->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
-            temp->unk4C->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
-            temp->unk4C->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
-        }
-        if ((D_800EA1A0[omCurrentObj->objId]++ & 1) == 0) {
-            func_800A7F74(6, 2, D_800E6A10[omCurrentObj->objId] == 1.0f ? 3 : 8,
-                          gEntitiesNextPosXArray[omCurrentObj->objId],
-                          gEntitiesNextPosYArray[omCurrentObj->objId],
-                          gEntitiesNextPosZArray[omCurrentObj->objId]);
-        }
-        func_8019F3B0_ovl7();
+void func_801DC890_ovl15(struct GObj *arg0)
+{
+  int new_var;
+  struct Ovl15XformOwner *temp;
+  if (D_800E98E0[omCurrentObj->objId] == 1)
+  {
+    temp = (struct Ovl15XformOwner *) D_800EA360[omCurrentObj->objId];
+ dummy_label_523957: ;
+    new_var = 0;
+    if (temp != ((void *) new_var))
+    {
+      temp->unk4C->pos.x = gEntitiesNextPosXArray[omCurrentObj->objId];
+      temp->unk4C->pos.y = gEntitiesNextPosYArray[omCurrentObj->objId];
+      temp->unk4C->pos.z = gEntitiesNextPosZArray[omCurrentObj->objId];
+      temp->unk4C->angle.x = gEntitiesAngleXArray[omCurrentObj->objId];
+      temp->unk4C->angle.y = gEntitiesAngleYArray[omCurrentObj->objId];
+      temp->unk4C->angle.z = gEntitiesAngleZArray[omCurrentObj->objId];
     }
+    temp = (struct Ovl15XformOwner *) D_800EA360[omCurrentObj->objId];
+    if (((D_800EA1A0[omCurrentObj->objId]++) & 1) == new_var)
+    {
+      func_800A7F74(6, 2, (D_800E6A10[omCurrentObj->objId] == 1.0f) ? (3) : (8), gEntitiesNextPosXArray[omCurrentObj->objId], gEntitiesNextPosYArray[omCurrentObj->objId], gEntitiesNextPosZArray[omCurrentObj->objId]);
+    }
+    func_8019F3B0_ovl7();
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl15/ovl15/func_801DC890_ovl15.s")
-#endif
 
 void func_801DCA3C_ovl15(struct GObj *arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B7560;
