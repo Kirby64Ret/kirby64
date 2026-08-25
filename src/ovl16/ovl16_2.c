@@ -2011,6 +2011,14 @@ void func_801ED634_ovl16(struct GObj *arg0) {
  */
 #ifdef MIPS_TO_C
 /* FACTORY: 187/450 [was noted 189/450], register-naming cascade ONLY.
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 187 of 450 words differ (41%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  *
  * Instruction count, schedule, every branch and every branch-likely, the whole
  * frame (0x68) and EVERY stack slot are the ROM's: sp30/sp3C at 0x30/0x3C,

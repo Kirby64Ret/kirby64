@@ -567,6 +567,14 @@ void func_801DD674_ovl10(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 198/207 [was noted 202/207] with the instruction count EXACT -- register naming only.
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 198 of 207 words differ (95%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * Note the prototype this needs: func_800F951C takes FOUR arguments
  * (f32,f32,f32,f32), not two; ovl2_3.c spells it `f32 func_800F951C(s32, f32, s32,
  * f32)`. It is declared in-body because this draft is the TU's first use and a

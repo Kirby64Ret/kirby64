@@ -1318,6 +1318,14 @@ u32 func_801033A8(struct struct8011BA10_temp *arg0, Vector *arg1, Vector *arg2) 
 
 #ifdef MIPS_TO_C
 /* FACTORY: 223/258, whole-function callee-saved permutation. Frame and EVERY
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 223 of 258 words differ (86%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * stack slot now match the ROM exactly (0xB0 frame; spAC 0xAC, spA8 0xA8,
  * sp9C/sp90 Vectors, sp88/sp84, sp68/sp5C Vectors, sp54; arg homes 0xB0/0xB4,
  * arg4 0xC0) via the pad8C/pad58 dead slots and ROM-order declarations.

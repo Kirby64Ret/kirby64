@@ -157,6 +157,14 @@ extern s32 func_801BC580_ovl7(s32);
 
 #ifdef MIPS_TO_C
 /* FACTORY: 353/363 [was noted 10/363], whole-function callee-saved permutation (same floor class documented across this cluster). Renames the shadow-particle record to struct Ovl2Particle (matching the real N64 type in src/ovl2/ovl2_5.c, a plain 4-byte-pointer struct on this 32-bit target) instead of the PORT arm's host-only PcOvl2Particle mirror, dropping the now-unneeded uintptr_t round-trip. Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 353 of 363 words differ (97%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the ovl3 player init -- the function that actually creates Kirby,
  * from asm/nonmatchings/ovl3/kirby/func_8016BF60_ovl3.s. Reached through
  * plylib's func_8011C720 on the player track object's first tick. It
@@ -547,6 +555,14 @@ void func_8016C510_ovl3(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 206/334 [was noted 128/334], whole-function callee-saved permutation (same floor class documented across this cluster). Redeclares the shadow-particle record as struct Ovl2Particle (the real N64 layout from src/ovl2/ovl2_5.c) with ANSI-prototyped helpers instead of the PORT arm's host-only PcOvl2Particle mirror, since neither is reachable here without a file-scope move. Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 206 of 334 words differ (61%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: Kirby's per-frame service callback (installed in D_800DF150 by the
  * init above; dispatched by func_800B0D90 every tick), from
  * asm/nonmatchings/ovl3/kirby/func_8016C558_ovl3.s. Runs the turn-around
@@ -880,6 +896,14 @@ void func_8016C558_ovl3(struct GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 439/471 [was noted 32/471], whole-function callee-saved permutation (same floor class documented across this cluster). Adds a local extern for D_800D6B54 (declared elsewhere in this TU inside a different #ifdef PORT block). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 439 of 471 words differ (93%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the idle action coroutine (D_80196990_ovl3[0], run on the player's
  * action thread process), from asm/nonmatchings/ovl3/kirby/
  * func_8016CA8C_ovl3.s. Picks the stand animation for the current ability
@@ -1670,6 +1694,14 @@ void func_8016DDE8_ovl3(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 273/310 [was noted 31/310], whole-function callee-saved permutation (same floor class documented across this cluster). Gives func_8015449C_ovl3 a local s32-returning extern (dropping the PORT arm's function-pointer cast, which triggered an unrelated cfe redeclaration error against a later unguarded call site) and drops list[] as a literal initializer instead of a struct copy -- both real, not just register-shaped; a residual defect for whoever continues is that the ROM copies the 7-byte predicate list via an unaligned lwr/swr pair from its rodata source, not a byte-literal local array (same class of issue as func_8016F240_ovl3's D_80196C6C_ovl3). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 273 of 310 words differ (88%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* Airborne action handler (via m2c, deps all compiled): the predicate list
  * is D_80196C64_ovl3's big-endian bytes {1,5,9,8,7,6,0xF} (the PC data emits
  * the two native words, same treatment as D_80196C6C_ovl3); the collision
@@ -2893,6 +2925,14 @@ void func_80170AC4_ovl3(s32 arg0) {
 }
 #ifdef MIPS_TO_C
 /* FACTORY: 317/347 [was noted 31/347], whole-function callee-saved permutation (same floor class documented across this cluster). Declares func_8011E0E8 as ANSI void(void) rather than leaving it implicit: the PORT arm's comment claims a local prototype would clash with later int()-folded calls, but the already-matched func_80173AF4_ovl3 further down this TU declares it void(void) explicitly, and letting this earlier function's call go implicit-int instead conflicts with THAT declaration and breaks the TU. Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 317 of 347 words differ (91%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the hover (puffed-up flight) per-tick action handler, from
  * asm/nonmatchings/ovl3/kirby/func_80170D88_ovl3.s (via m2c). Runs the
  * shared tick prologue, clears the ground flag while ascending, feeds the
@@ -3224,6 +3264,14 @@ void func_801712F8_ovl3(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 383/387 [was noted 4/387], whole-function callee-saved permutation (same floor class documented across this cluster). Adds an ANSI void(void) prototype for func_8011E0E8 (see func_80170D88_ovl3's note -- the already-matched func_80173AF4_ovl3 further down this TU declares it void(void), so leaving it implicit here conflicts). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 383 of 387 words differ (98%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the slide-attack (action 0xC) per-tick handler, from
  * asm/nonmatchings/ovl3/kirby/func_801717F0_ovl3.s (via m2c). While
  * uncontrolled it runs the plain tick prologue in phase 5 (recovery,
@@ -3557,6 +3605,14 @@ void func_80171E00_ovl3(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 353/360 [was noted 7/360], whole-function callee-saved permutation (same floor class documented across this cluster). Adds an ANSI void(void) prototype for func_8011E0E8 (the PORT arm leaves it implicit; this earlier-in-file call needs it explicit so it doesn't conflict with the already-matched func_80173AF4_ovl3's void(void) declaration further down the TU, same issue as func_80170D88_ovl3). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 353 of 360 words differ (98%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the pole/door slide (action 0xD, coroutine func_80171E00_ovl3)
  * per-tick handler, from asm/nonmatchings/ovl3/kirby/func_80172234_ovl3.s
  * (via m2c). Twin of func_801717F0_ovl3: in phases 5/6 while grounded it
@@ -3850,6 +3906,14 @@ void func_80172A3C_ovl3(s32 arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 453/479 [was noted 13/479], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 453 of 479 words differ (94%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the swallow action coroutine (track action 0x16), from
  * asm/nonmatchings/ovl3/kirby/func_80172AE4_ovl3.s (via m2c, re-derived
  * against the raw asm). Clears the whole inhale bookkeeping block, plays
@@ -4243,6 +4307,14 @@ done:
 
 #ifdef MIPS_TO_C
 /* FACTORY: 254/278 [was noted 24/278], whole-function callee-saved permutation (same floor
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 254 of 278 words differ (91%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * class documented in ovl3_1.c/plyshot.c -- correct instruction count
  * and control flow, near-total register/local-slot naming mismatch).
  * Queued for the permuter. */
@@ -4968,6 +5040,14 @@ void func_80174B7C_ovl3(s32 arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 709/720 [was noted 11/720], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 709 of 720 words differ (98%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the damage/knockback coroutine (track action 0x13), from
  * asm/nonmatchings/ovl3/kirby/func_80174C10_ovl3.s (via m2c). Resets the
  * whole player kit for a hit -- anim speed by water, squash scale 0.2,
@@ -5523,6 +5603,14 @@ void func_80175754_ovl3(GObj *arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 456/471 [was noted 15/471], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 456 of 471 words differ (96%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
 /* PORT: the light-hit coroutine (track action 0x14 -- the no-damage-word
  * flinch, e.g. gas/contact stagger), from asm/nonmatchings/ovl3/kirby/
  * func_8017599C_ovl3.s (via m2c). A trimmed twin of func_80174C10_ovl3:

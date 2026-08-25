@@ -871,6 +871,14 @@ void func_801E2AD8_ovl14(GObj *arg0) {
 
 #ifdef NON_MATCHING
 /* FACTORY: 178/181, whole-function callee-saved permutation. Every statement
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 178 of 181 words differ (98%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * is right; IDO promotes one base pointer more than the ROM (s0-s7 vs the
  * ROM's s0-s6) and so renames every saved register, shifting the prologue.
  * The `f32 s; f32 t;` loop-constant locals ARE load-bearing -- without them

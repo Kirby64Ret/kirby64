@@ -23,6 +23,8 @@ whether $a0 still holds the incoming argument, and reports:
                   (a parameter used directly rather than handed on --
                    `lw $s1,0x3C($a0)`, `or $s0,$a0,$zero`)
   HOME  <insn>    a `sw $a0, N($sp)` home store
+  RELOAD <insn>   a `lw` back out of that home slot -- the parameter is USED
+                  and has to survive a call
 
 The home store is not a veto, and lever 58's original caution reads more
 sharply once you separate the two sides:
@@ -132,6 +134,15 @@ def screen(func):
     homes = [(a, m, o) for a, m, o in rows
              if m in STORE and re.findall(r'\$[a-z0-9]+', o)[:1] == ['$a0']
              and '($sp)' in o]
+    # A homed parameter that has to survive a call is RE-READ from its home
+    # slot, and a liveness scan cannot see that: the home store is normally
+    # followed at once by a write to $a0 for the first call's argument, so the
+    # incoming value looks dead. Count the reloads instead.
+    homereads = []
+    for a, m, o in homes:
+        slot = o.split(',', 1)[1].strip()          # e.g. "0x48($sp)"
+        homereads += [(a2, m2, o2) for a2, m2, o2 in rows
+                      if m2.startswith('lw') and o2.endswith(slot) and a2 > a]
 
     live = [None] * n            # True = $a0 still the incoming argument
     calls, reads = {}, []
@@ -182,6 +193,7 @@ def screen(func):
         work.append((i + 1, False if _writes_a0(m, o) else st))
 
     return dict(path=path, words=n, frame=frame, homes=homes,
+                homereads=homereads,
                 calls=[t for t, ok in calls.items() if ok], reads=reads)
 
 
@@ -191,10 +203,13 @@ def report(func):
         print('%-26s NO LISTING (matched already, or wrong name)' % func)
         return
     used = bool(d['calls'] or d['reads'])
-    if d['homes'] and used:
+    if d['homereads']:
+        verdict = ('CANDIDATE -- homed AND re-read %d times: declare it AND delete '
+                   'whatever local rebuilds it' % len(d['homereads']))
+    elif d['homes'] and used:
         verdict = 'CANDIDATE -- parameter used AND homed by the ROM'
     elif d['homes']:
-        verdict = 'CANDIDATE -- parameter unused, but the ROM homes it, so declare it'
+        verdict = 'CANDIDATE -- homed but never re-read: the parameter is unused, declare it anyway'
     elif used:
         verdict = 'CANDIDATE -- parameter used, no home store'
     else:
@@ -202,6 +217,10 @@ def report(func):
     print('%-26s frame=%-6s words=%-4d %s' % (func, d['frame'], d['words'], verdict))
     for a, m, o in d['homes']:
         print('    HOME  %s  %s %s' % (a, m, o))
+    if d['homereads']:
+        a, m, o = d['homereads'][0]
+        print('    RELOAD %s  %s %s   (and %d more)'
+              % (a, m, o, len(d['homereads']) - 1))
     for t in d['calls']:
         print('    CALL  %s        <- check this callee CONSUMES $a0' % t)
     for a, m, o in d['reads'][:6]:

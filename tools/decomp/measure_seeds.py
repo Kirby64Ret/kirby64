@@ -47,21 +47,35 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 os.chdir(REPO)
 VERIFY = 'tools/decomp/verify.py'
 
-# TWO CONVENTIONS ARE IN USE IN THE TREE AND THEY MEAN OPPOSITE THINGS.
+# THREE CONVENTIONS ARE IN USE IN THE TREE AND THEY MEAN OPPOSITE THINGS.
 #
 #   `FACTORY: 3/61, ...`                        3 words WRONG out of 61
 #   `FACTORY: 201/224 instructions match (23 diffs)`   201 words RIGHT
+#   `FACTORY: 43/317 positional; ...`                   43 words RIGHT
 #
-# Reading every note the first way flags all seven of the second kind as
+# Reading every note the first way flags all of the other two kinds as
 # disagreeing when they are exactly correct -- and the --fix pass then
 # rewrote them into nonsense ("23/224 instructions match (23 diffs)").
-# `MATCHFORM` recognises the second convention so the number can be flipped
-# rather than mis-read. Nothing normalises the notes to one convention: the
-# second one carries the diff count in its own parentheses and is perfectly
-# readable, and rewriting a lane's prose to satisfy a regex is the wrong way
-# round.
+# `MATCHFORM` recognises them so the number can be flipped rather than
+# mis-read. Nothing normalises the notes to one convention: both alternatives
+# are perfectly readable, and rewriting a lane's prose to satisfy a regex is
+# the wrong way round.
+#
+# The `positional` form was found 2026-08-25, six notes in src/ovl2/ovl2_3.c
+# and src/ovl2/plylib.c, every one of them reported as "note wrong" and every
+# one of them EXACTLY the complement of the measurement (28/166 measuring 138,
+# 24/192 measuring 168, 20/202 measuring 182, 13/202 measuring 189, 43/317
+# measuring 274, 7/139 measuring 132). Six exact complements is not
+# coincidence, and the prose agrees -- 43/317 "positional" sits next to
+# "the whole body shifts". Without this line `--fix` would have rewritten all
+# six correct notes into wrong ones.
+#
+# The general lesson for anyone adding a fourth convention: don't. But if you
+# meet an unfamiliar one, check whether the disagreements are COMPLEMENTS
+# before believing the tool.
 FACTORY = re.compile(r'FACTORY:\s*(\d+)\s*/\s*(\d+)')
-MATCHFORM = re.compile(r'FACTORY:\s*\d+\s*/\s*\d+\s+instructions?\s+match')
+MATCHFORM = re.compile(r'FACTORY:\s*\d+\s*/\s*\d+\s*'
+                       r'(instructions?\s+match|positional)')
 PRAGMA = re.compile(r'^\s*#pragma\s+GLOBAL_ASM\("([^"]+)"\)\s*$')
 DIFFLINE = re.compile(r'(\w+):\s*DIFF\s+(\d+)/(\d+)\s+insns')
 MATCHLINE = re.compile(r'(\w+):\s*MATCH')

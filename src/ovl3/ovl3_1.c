@@ -402,6 +402,14 @@ s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 435/446 [was noted 13/446], whole-function callee-saved permutation (same floor
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 435 of 446 words differ (97%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * class as func_80152348_ovl3/func_801530BC_ovl3 in this TU -- correct
  * instruction count and control flow, near-total register-naming/frame
  * mismatch, -0xA0 vs -0x70 frame). Queued for the permuter. */
@@ -1425,6 +1433,14 @@ s32 func_80153B98_ovl3(void) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 253/260 [was noted 7/260], whole-function callee-saved permutation. The ROM caches
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 253 of 260 words differ (97%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * &D_8012BCA0 early into a saved reg ($s0, -0x40 frame) for the
  * func_80105238 call; this draft lets IDO compute it lazily (-0x30 frame,
  * no s0 save) and otherwise picks the neighbouring temp registers
@@ -1921,6 +1937,14 @@ void func_801548DC_ovl3(arg0)
 
 #ifdef MIPS_TO_C
 /* FACTORY: 209/226 [was noted 17/226], whole-function callee-saved permutation. The ROM holds
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 209 of 226 words differ (92%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * &omCurrentObj in a caller-saved reg ($a3) that it recomputes (lui+addiu)
  * after each call rather than spilling it to a saved register; this draft's
  * repeated omCurrentObj->objId gets IDO to allocate a callee-saved $s0
@@ -2285,6 +2309,14 @@ s32 func_801556D8_ovl3(f32 arg0) {
 
 #ifdef MIPS_TO_C
 /* FACTORY: 259/268 [was noted 9/268], whole-function callee-saved permutation plus a frame
+   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
+   this a register/permutation floor; 259 of 268 words differ (96%). A
+   permutation RENAMES registers -- it does not change what the function
+   computes, so it cannot account for this. At this fraction the draft is
+   simply not this function yet. Re-derive from the listing before spending a
+   compile on register spelling, and do NOT queue it for the permuter:
+   mutation has no purchase at this distance.
+
  * delta (-0x68 vs -0x58, 4-word over-allocation) through the trig probe.
  * Queued for the permuter. */
 s32 func_8010423C(Vector *, Vector *, void *, void *, void *, void *, void *, void *);
