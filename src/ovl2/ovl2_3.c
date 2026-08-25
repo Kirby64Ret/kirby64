@@ -1782,7 +1782,6 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
     }
 }
 
-#ifdef MIPS_TO_C
 /* FACTORY: 207/210, scheduler rotation only: the 360.0f 'lui at' sits one
  * slot BEFORE the post-atan2f v0/a3 reloads in the ROM and one slot after
  * in the draft. Frame 0x70, every stack slot, both flag forms (flagA
@@ -1795,86 +1794,6 @@ void func_800FA7EC(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
  * calls and reloaded for the next `if`; the ROM's list-scheduler places the
  * unconditional 360.0f lui ahead of those two reloads where IDO here places
  * it after. Not reachable from source spelling. */
-void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
-    DObj *dobj;
-    s32 flagA;
-    s32 flagB;
-    Vector pad1;
-    Vector vec;
-    Vector axis;
-    f32 ang;
-    f32 ang2;
-    Vector *tgt;
-    s32 pad2;
-
-    dobj = D_800D799C->data.dobj;
-    flagB = 0;
-    arg2->atX = arg2->focusX;
-    arg2->atY = arg2->focusY;
-    arg2->atZ = arg2->focusZ;
-    flagA = 0;
-    if (arg1->atXOverride != 9999.0f) {
-        arg2->atX = arg1->atXOverride;
-    }
-    if (arg1->atYOverride != 9999.0f) {
-        arg2->atY = arg1->atYOverride + arg1->heightOffset;
-    }
-    if (arg1->atZOverride != 9999.0f) {
-        arg2->atZ = arg1->atZOverride;
-    }
-    if (arg1->yawLimitEnable != 0) {
-        tgt = (Vector *) &arg2->eyeX;
-        if ((arg2->eyeXClampFlags | arg2->eyeZClampFlags) != 0) {
-            lbvector_Diff(&vec, (Vector *) arg2, tgt);
-            ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f;
-            if (ang < 0.0f) {
-                ang += 360.0f;
-            }
-            if (arg1->yawMin > ang) {
-                ang = arg1->yawMin;
-                flagA = 1;
-            }
-            if (arg1->yawMax < ang) {
-                ang = arg1->yawMax;
-                flagA |= 2;
-            }
-            if (flagA != 0) {
-                vec.x = -sqrtf((vec.z * vec.z) + (vec.x * vec.x));
-                vec.y = 0.0f;
-                vec.z = 0.0f;
-                func_800191F8(&vec, (Vector *) ((s32) dobj + 0x54),
-                              (ang * 3.1415927f) / 180.0f);
-                lbvector_Add(&vec, tgt);
-                arg2->atX = vec.x;
-                arg2->atZ = vec.z;
-            }
-        }
-    }
-    if (arg1->pitchLimitEnable != 0) {
-        if (arg2->eyeYClampFlags != 0) {
-            lbvector_Diff(&vec, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
-            ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y)
-                              / 3.1415927f) * 180.0f);
-            if (ang2 < arg1->pitchMin) {
-                ang2 = arg1->pitchMin;
-                flagB = 1;
-            }
-            if (arg1->pitchMax < ang2) {
-                ang2 = arg1->pitchMax;
-                flagB |= 2;
-            }
-            if (flagB != 0) {
-                vec.y = 0.0f;
-                vec3_normalized_cross_product((Vector *) ((s32) dobj + 0x54), &vec, &axis);
-                func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
-                arg2->atX = arg2->eyeX + vec.x;
-                arg2->atY = arg2->eyeY - vec.y;
-                arg2->atZ = arg2->eyeZ + vec.z;
-            }
-        }
-    }
-}
-#elif defined(PORT)
 /* PORT: camera eye yaw/pitch limiting, from asm/nonmatchings/ovl2/ovl2_3/
  * func_800FA92C.s (the m2c sketch above mangles every vector-helper call).
  * arg2->atX..atZ is the published look-at point, eyeX..eyeZ the clamped eye
@@ -1883,82 +1802,88 @@ void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut
  * outside [yawMin, yawMax] and pitch outside [pitchMin, pitchMax] are
  * pulled back onto the limit by rotating the at-eye offset around the
  * camera up vector (host Camera.viewMtx.lookAt.up, N64 +0x54). */
-void func_800FA92C(UNUSED s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2) {
-    Camera *cam = D_800D799C->data.cam;
-    Vector d;
-    Vector axis;
-    s32 flags;
-    f32 ang;
-    f32 mag;
-
-    arg2->atX = arg2->focusX;
-    arg2->atY = arg2->focusY;
-    arg2->atZ = arg2->focusZ;
-    if (arg1->atXOverride != 9999.0f) {
-        arg2->atX = arg1->atXOverride;
-    }
-    if (arg1->atYOverride != 9999.0f) {
-        arg2->atY = arg1->atYOverride + arg1->heightOffset;
-    }
-    if (arg1->atZOverride != 9999.0f) {
-        arg2->atZ = arg1->atZOverride;
-    }
-    if (arg1->yawLimitEnable != 0) {
-        if ((arg2->eyeXClampFlags | arg2->eyeZClampFlags) != 0) {
-            flags = 0;
-            lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
-            ang = (atan2f(d.z, -d.x) / 3.1415927f) * 180.0f;
-            if (ang < 0.0f) {
-                ang += 360.0f;
-            }
-            if (ang < arg1->yawMin) {
-                ang = arg1->yawMin;
-                flags = 1;
-            }
-            if (arg1->yawMax < ang) {
-                ang = arg1->yawMax;
-                flags |= 2;
-            }
-            if (flags != 0) {
-                mag = sqrtf((d.z * d.z) + (d.x * d.x));
-                d.x = -mag;
-                d.y = 0.0f;
-                d.z = 0.0f;
-                func_800191F8(&d, &cam->viewMtx.lookAt.up,
-                              (ang * 3.1415927f) / 180.0f);
-                lbvector_Add(&d, (Vector *) &arg2->eyeX);
-                arg2->atX = d.x;
-                arg2->atZ = d.z;
-            }
+void func_800FA92C(s32 arg0, struct Ovl2CamState *arg1, struct Ovl2CamOut *arg2)
+{
+  DObj *dobj;
+  s32 flagA;
+  s32 flagB;
+  Vector pad1;
+  Vector vec;
+  Vector axis;
+  f32 ang;
+  f32 ang2;
+  Vector *tgt;
+  s32 pad2;
+  dobj = D_800D799C->data.dobj;
+  flagB = 0;
+  arg2->atX = arg2->focusX;
+  arg2->atY = arg2->focusY;
+  arg2->atZ = arg2->focusZ;
+  flagA = 0;
+  if (arg1->atXOverride != 9999.0f)
+  {
+    arg2->atX = arg1->atXOverride;
+  }
+  if (arg1->atYOverride != 9999.0f)
+  {
+    arg2->atY = arg1->atYOverride + arg1->heightOffset;
+  }
+  if (arg1->atZOverride != 9999.0f)
+  {
+ arg2->atZ = arg1->atZOverride; } if (arg1->yawLimitEnable != 0) { tgt = (Vector *) (&arg2->eyeX); if ((arg2->eyeXClampFlags | arg2->eyeZClampFlags) != 0) { lbvector_Diff(&vec, (Vector *) arg2, tgt); ang = (atan2f(vec.z, -vec.x) / 3.1415927f) * 180.0f; if (ang < 0.0f) { ang += 360.0f; }
+      if (arg1->yawMin > ang)
+      {
+        ang = arg1->yawMin;
+        flagA = 1;
+      }
+      if (arg1->yawMax < ang)
+      {
+        if (1)
+        {
+          ang = arg1->yawMax;
+          flagA |= 2;
         }
+      }
+      if (flagA != 0)
+      {
+        vec.x = -sqrtf((vec.z * vec.z) + (vec.x * vec.x));
+        vec.y = 0.0f;
+        vec.z = 0.0f;
+        func_800191F8(&vec, (Vector *) (((s32) dobj) + 0x54), (ang * 3.1415927f) / 180.0f);
+        lbvector_Add(&vec, tgt);
+        arg2->atX = vec.x;
+        arg2->atZ = vec.z;
+      }
     }
-    if ((arg1->pitchLimitEnable != 0) && (arg2->eyeYClampFlags != 0)) {
-        flags = 0;
-        lbvector_Diff(&d, (Vector *) &arg2->atX, (Vector *) &arg2->eyeX);
-        ang = 180.0f -
-              ((atan2f(sqrtf((d.z * d.z) + (d.x * d.x)), d.y) / 3.1415927f) *
-               180.0f);
-        if (ang < arg1->pitchMin) {
-            ang = arg1->pitchMin;
-            flags = 1;
-        }
-        if (arg1->pitchMax < ang) {
-            ang = arg1->pitchMax;
-            flags |= 2;
-        }
-        if (flags != 0) {
-            d.y = 0.0f;
-            vec3_normalized_cross_product(&cam->viewMtx.lookAt.up, &d, &axis);
-            func_800191F8(&d, &axis, ((ang - 90.0f) * 3.1415927f) / 180.0f);
-            arg2->atX = arg2->eyeX + d.x;
-            arg2->atY = arg2->eyeY - d.y;
-            arg2->atZ = arg2->eyeZ + d.z;
-        }
+  }
+  if (arg1->pitchLimitEnable != 0)
+  {
+    if (arg2->eyeYClampFlags != 0)
+    {
+      lbvector_Diff(&vec, (Vector *) (&arg2->atX), (Vector *) (&arg2->eyeX));
+      ang2 = 180.0f - ((atan2f(sqrtf((vec.z * vec.z) + (vec.x * vec.x)), vec.y) / 3.1415927f) * 180.0f);
+      if (ang2 < arg1->pitchMin)
+      {
+        ang2 = arg1->pitchMin;
+        flagB = 1;
+      }
+      if (arg1->pitchMax < ang2)
+      {
+        ang2 = arg1->pitchMax;
+        flagB |= 2;
+      }
+      if (flagB != 0)
+      {
+        vec.y = 0.0f;
+        vec3_normalized_cross_product((Vector *) (((s32) dobj) + 0x54), &vec, &axis);
+        func_800191F8(&vec, &axis, ((ang2 - 90.0f) * 3.1415927f) / 180.0f);
+        arg2->atX = arg2->eyeX + vec.x;
+        arg2->atY = arg2->eyeY - vec.y;
+        arg2->atZ = arg2->eyeZ + vec.z;
+      }
     }
+  }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_3/func_800FA92C.s")
-#endif
 
 #ifdef MIPS_TO_C
 /* FACTORY: 43/317 positional; all control flow, both goto-merge zero-velocity paths, the s32->f32 cvt.s.w compare on D_801292E0, the lhu-at-offset-0 controller read (extern u16 gPlayerControllers, NOT the Controller_800D6FE8[] view -- the ROM reads one halfword and CSEs it for both button tests), the arg1->unk5C re-read in the clamp pair, and frame 0x60 all reproduce. Residue: the ROM parks arg2 in s0 (its only callee-saved register) while IDO here spills it to the a2 home slot and saves nothing, so every later reference is a reload from a different base and the whole body shifts. Tried: explicit src local, with/without, pad sizing to fix the frame first */
