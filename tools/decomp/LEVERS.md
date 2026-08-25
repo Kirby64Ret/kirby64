@@ -1087,10 +1087,18 @@ the pool allocator's real stride is 0x78.
     someone pasted at you is a snapshot of their working tree, not of yours.
 
     `absf_sweep.py --screen` now scores every candidate and prints where its
-    FIRST diff is, flagging the ones whose diff 0 is the frame. That is not a
+    FIRST diff is, flagging the ones whose PROLOGUE is wrong. That is not a
     refinement, it is a precondition -- and the size of the problem is bigger
-    than the four functions that prompted it. **Screened 2026-08-25: of 123
-    candidates, 55 are wrong at instruction 0.** Forty-five per cent of the
+    than the four functions that prompted it. **Screened 2026-08-25: of 118
+    candidates, 74 have a wrong prologue.**
+
+    The first cut of the screen tested index 0 alone and a lane refuted it:
+    prologues in this tree routinely materialise a global BEFORE the stack
+    adjustment, so func_801E429C_ovl9 reports its first diff at index 2 and is
+    nonetheless completely frame-blocked. It now reads the first four diffs and
+    marks any that names $sp with a `*`, which took the flagged count from 55
+    to 74 -- a fifth of the list was being handed out as workable when it was
+    not. Forty-five per cent of the
     list cannot move on a macro edit at all, including the four strongest by
     compare count: func_801DF5D0_ovl13 (32), func_801A7524_ovl7 (23),
     func_801DEA5C_ovl17 (20), func_801567B8_ovl3 (14). For those the job is the

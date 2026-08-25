@@ -16,7 +16,7 @@ THREE THINGS THIS LIST DOES NOT TELL YOU, all learned the hard way:
    materialises no zero at all and never appears here. func_801B9E80_ovl7
    closed on an ABSF this sweep listed for an unrelated reason. See LEVER 73.
 
-3. It does not screen for drafts whose diff 0 is the frame. Four of the
+3. It does not screen for drafts whose PROLOGUE is wrong. Four of the
    strongest-looking candidates -- func_801DF5D0_ovl13, func_801A7524_ovl7,
    func_801133C8, func_801DB870_ovl13 -- are wrong at instruction 0
    (`addiu $sp, -408` against `-0x70` and the like), and a macro edit in the
@@ -97,15 +97,28 @@ if '--screen' in sys.argv:
                 r = subprocess.run([sys.executable, 'tools/decomp/verify.py',
                                     sp, func], capture_output=True, text=True,
                                    env=env)
-                m = re.search(r'^\s*\[\s*(\d+)\]', r.stdout, re.M)
-                if m:
-                    first = m.group(1)
+                # NOT just index 0. A lane showed the index-0 test
+                # under-reports: prologues here routinely materialise a global
+                # before the stack adjustment, so func_801E429C_ovl9 reports
+                # its first diff at index 2 and is nonetheless completely
+                # frame-blocked. Read the first few diffs and flag any that
+                # names $sp or a saved-register slot.
+                idx = re.findall(r'^\s*\[\s*(\d+)\]([^\n]*)', r.stdout, re.M)
+                if idx:
+                    first = idx[0][0]
+                    for at, body in idx[:4]:
+                        if int(at) > 4:
+                            break
+                        if re.search(r'\$sp|\bsp,|addiu\s+\$?sp', body):
+                            first = f'{first}*'
+                            break
                 elif 'MATCH' in r.stdout:
                     first = 'MATCH'
             finally:
                 shutil.rmtree(d, ignore_errors=True)
             break
-        flag = '  <-- FRAME-BLOCKED, fix the shape first' if first == '0' else ''
+        flag = ('  <-- FRAME-BLOCKED, fix the shape first'
+                if first.startswith('0') or first.endswith('*') else '')
         print(f'{n:5d} {nneg:5d}  {first:>10s}  {func:28s} {path}{flag}')
     raise SystemExit(0)
 
