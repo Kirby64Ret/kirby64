@@ -580,12 +580,31 @@ void func_8002C790(KSeqPlayer *seqp) {
    after `.size`. Here that means splitting at 0x2D5B0 (0x8002C9B0,
    func_8002C9B0) so this function ends libn_audio_2.o.
 
+   RE-CONFIRMED 2026-08-25, by doing it and measuring. Un-guarded, rebuilt with
+   the object deleted: `.text=0x1FC0 expected=0x1FD0 (-16)`, sha1
+   dad9b5da984ad481b5da5388d3329f06cf208ee5. Reverted.
+
+   And the reason a `pad` subsegment cannot rescue this one is now precise.
+   padscan.py's formula is
+       content   = (subseg_end - subseg_start) - 4 * (trailing nops in the .s)
+       pad_start = subseg_start + align16(content)
+       pad_bytes = subseg_end - pad_start
+   and it reports pad_bytes = 0 here, which is why this TU is not on its list of
+   ten. The three nops belong to THIS FUNCTION'S OWN LISTING, not to inter-object
+   space, so un-guarding deletes them along with the listing; there is no gap
+   between two objects for a pad to fill. That is what separates this class from
+   the class-(a) traps the pads fixed today in ovl1/ovl1, ovl1/save_file,
+   ovl18/code_236CC0, ovl9/ovl9_8 and ovl17/ovl17_2.
+
    NOT DONE, deliberately, and this is the one place the recipe has a real
    cost: everything from func_8002C9B0 to __alSeqNextDelta would move to the
    new file, and that includes alSeqNextEvent's `#pragma GLOBAL_ASM`, whose
    listing lives in asm/nonmatchings/main/libn_audio_2/. A pragma whose listing
    directory no longer matches its own subsegment is a landmine for the next
-   `splat split`, which writes listings under the new subsegment's name. The
+   `splat split`, which writes listings under the new subsegment's name -- and
+   that is not hypothetical: a lane forced a re-split on 2026-08-25 by touching
+   kirby64.yaml, which regenerated every listing in the tree and silently
+   reverted three symbol renames that had only been sed'd into asm/. The
    four splits already made moved only pragma-free code, which is why they were
    safe. Twenty bytes is not worth that; do this one only together with
    alSeqNextEvent's own closure, or after the listings are regenerated. */
