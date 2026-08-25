@@ -455,27 +455,34 @@ void func_801F3D2C_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 134/153 [was 139/153, and noted 14/153 before that].
-   2026-08-25: THE FRAME IS NOW RIGHT, and its POSITION matters as much as its
-   size (LEVER 78). Two reserved `s32` slots take it from 0x48 to the ROM's
-   0x50 wherever they are declared -- but declared AHEAD of every named local
-   they take 0x4C/0x48 and push `rec` and `tp` DOWN 8 bytes, so every
-   sp-relative diff survives and the score only goes 139 -> 137. Declared
-   BETWEEN `tp` and `id` they take the two dead words the ROM has below `tp`,
-   `rec` lands on the ROM's 0x4C and `tp` on 0x44/0x48, and it is 134.
-   So "reserved slots ahead of every named local" is the wrong rule in general:
-   the rule is to put them where the ROM's DEAD words are, read off the
-   listing's sp offsets. Here the ROM's used slots are rec 0x4C, tp 0x44-0x4B,
-   ang 0x38, acc 0x2C-0x37, with 0x3C/0x40 dead between tp and ang.
-   What is left is two things, both scoreable now:
-     - the objId register, $v0 in the ROM (which overwrites the objId with its
-       own shifted index) against $v1 here (which keeps both live);
-     - a scheduling hoist. The ROM emits `lwc1 $f4, 0x48($sp)` -- tp.unk4, for
-       the atan2f on the OTHER side of the `bgtz` -- at 801F3ED0, and this
-       draft emits it at its use. Everything from there on is one word out of
-       phase, which is what makes 134 of 153 differ on what is really a
-       handful of causes.
-   Measured inert: `s32 id` in place of `u32 id`, 134 either way. */
+/* FACTORY: 52/154 [was 134/153, 139/153 before that, and noted 14/153 before
+   that].  TWO findings, and the second is the one that mattered.
+
+   (1) THE FRAME, and its POSITION as much as its size (LEVER 78).  Reserved
+   `s32` slots take it to the ROM's 0x50 wherever they are declared -- but
+   declared AHEAD of every named local they push `rec` and `tp` down 8 bytes
+   and score 137, where declared between `tp` and `id` they take the ROM's own
+   dead words and score 134.  Put a reserved slot where the ROM's DEAD word is,
+   read off the listing's sp offsets; do not put it first by habit.
+
+   (2) `dist`.  With the frame right, `aligndiff.py` (LEVER 104) reduced 134
+   positional diffs to TWO shape differences: the ROM emits
+   `lwc1 $f4, 0x48($sp)` at word 28 and `swc1 $f4, 0x38($sp)` at word 80, and
+   this draft had neither.  That pair is a local holding `tp.unk4`, read
+   straight after `func_8019A900_ovl7(&tp)` and spilled to 0x38 across the
+   `eneGetPlayerHeight()` call inside the atan2f argument.  Reading it at its
+   USE, as m2c wrote it, can never produce either word.  Hoisting it into
+   `dist` is 134 -> 62, and dropping the now-surplus second reserved slot
+   (the real local pays for it) is 62 -> 52.
+
+   What is left is 50 aligned renames and 2 genuinely different words by
+   LEVER 65b's opcode test -- a register permutation plus the `lwc1` landing
+   at word 26 instead of 28.  The register half is one decision: the ROM
+   overwrites the objId with its own shifted index (`sll $v0, $v0, 2`) where
+   IDO takes a fresh $v1, and every name below follows.  Permuter fodder.
+   Measured inert: `s32 id` in place of `u32 id` (134 either way, before the
+   `dist` hoist); moving `dist = tp.unk4;` after `id = omCurrentObj->objId;`
+   rather than before it (52 either way). */
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
 extern f32 eneGetPlayerHeight(void);
 extern void func_80199F1C_ovl7(GObj *);
@@ -496,11 +503,13 @@ void func_801F399C_ovl9(struct GObj *);
 void func_801F3E60_ovl9(GObj *arg0) {
     EnemyRecord *rec;
     struct PcTrackPosition tp;
-    /* RESERVED: two words the ROM's source had and this draft has not
-       identified (LEVER 78).  They stand in for real locals; whoever names
-       those locals deletes these in the same edit. */
+    /* RESERVED: one word the ROM's source had and this draft has not
+       identified (LEVER 78).  It stands in for a real local; whoever names
+       that local deletes this in the same edit.  It sits HERE, between tp and
+       dist, because that is where the ROM's dead word is -- 0x40, with tp on
+       0x44-0x4B above it and dist on 0x38 below. */
     s32 reserved0;
-    s32 reserved1;
+    f32 dist;
     u32 id;
 
     id = omCurrentObj->objId;
@@ -509,6 +518,7 @@ void func_801F3E60_ovl9(GObj *arg0) {
         D_800E98E0[id]--;
         func_8019A900_ovl7(&tp);
         id = omCurrentObj->objId;
+        dist = tp.unk4;
         if ((D_800E98E0[id] <= 0) && (rec->unk3C == 0)) {
             if ((f32) tp.unk0 == D_800E6A10[id]) {
                 func_80199F1C_ovl7(arg0);
@@ -524,7 +534,7 @@ void func_801F3E60_ovl9(GObj *arg0) {
             Vector acc;
             f32 ang;
 
-            ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4);
+            ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], dist);
             acc.x = 0.4f;
             acc.y = 0.0f;
             acc.z = 0.0f;
