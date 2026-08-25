@@ -1053,3 +1053,55 @@ the pool allocator's real stride is 0x78.
     ROM. A caller still behind a pragma in the SAME file does not block the
     seal -- asm-processor assembles it into the same object and it binds to the
     local symbol, proven by readelf on libn_audio.o.
+
+76. **LEVER 75 IS AN -O3 LEVER, AND ONLY THIRTEEN OBJECTS IN THIS TREE ARE
+    BUILT AT -O3.** Measured 2026-08-25 on all three of the sweep's ovl5
+    candidates; the seal is BYTE-INERT in every one, and the Makefile says why.
+
+    IDO's interprocedural register allocation is a `uopt`/`ujoin` pass that
+    only runs at -O3. `Makefile:279-286` gives -O3 to the thirteen
+    `N_AUDIO_O_FILES` and to nothing else ("These two objects, and only these
+    two, need it -- src/main/audio.c is game code and is -O2"). libn_audio.c,
+    where __getTrackByte and __readVarLen paid 111 words, is one of them. Every
+    overlay is -O2, so `static` there changes linkage and nothing else.
+
+    Three measurements, each with the helpers sealed on a private copy so the
+    still-guarded caller's draft really references them (a seal in the tree
+    makes an unreferenced static, and IDO REPLACES ITS BODY WITH `jr $ra; nop`
+    -- see the correction below):
+      - func_80176F04_ovl5 (ovl5_5.c), helpers func_80176EC8_ovl5 (10 calls)
+        and func_80171768_ovl5 (2): 5/138 -> 5/138, the same five diffs at the
+        same five indices.
+      - func_8016F40C_ovl5 (ovl5_4.c), helpers func_8016E650_ovl5 (10 calls)
+        plus three more: 25/202 -> 25/202, likewise identical.
+      - func_8017232C_ovl5 (ovl5_5.c), func_80172B10_ovl5 sealed in the tree:
+        330/508 -> 330/508. Its object is byte-identical to the unsealed one
+        apart from the `jal` relocations resolving locally, and the linked ROM
+        sha1 is unchanged -- which is the cleanest form of the negative.
+    Count the diffs WITHOUT the `RELOC TARGET` lines or the seal looks like a
+    regression: verify.py scores a `jal` to a now-LOCAL FUNC symbol as a diff,
+    so func_80176F04_ovl5 reads 5 -> 11 and ten of those eleven are artifacts.
+
+    **CORRECTION TO LEVER 75's LAST SENTENCE.** "A caller still behind a pragma
+    in the SAME file does not block the seal" is true about LINKING and false
+    about compiling. A static function that no *C* code calls is unreferenced,
+    and IDO deletes its body: sealing func_80170464_ovl5 and func_80170584_ovl5
+    (288 and 264 bytes, called only from func_8017232C_ovl5's guarded draft)
+    left two `jr $ra; nop` stubs, shrank ovl5_5.o by 512 bytes and broke the
+    ROM. So a helper is only sealable once its callers are live C -- which for
+    a caller that is still a pragma means the seal and the un-guard have to
+    land in the same commit, and cannot be measured in the tree at all.
+
+    **AND static_sweep.py --near RANKS ON THE FACTORY NOTES, WHICH IS THE ONE
+    NUMBER measure_seeds.py EXISTS BECAUSE NOBODY SHOULD TRUST.** It reads the
+    last `FACTORY: n/m` in the 45 lines BEFORE the guard opens. Where the note
+    lives INSIDE the guard -- the ovl5_5.c convention -- that window holds the
+    PREVIOUS function's note. Every ovl5_5.c row is therefore mis-attributed:
+    "func_8017232C_ovl5 2/88, the best-conditioned target in the tree" is
+    func_801721CC_ovl5's note two functions above it; the real residue is
+    328/508 with diff 0 at `addiu $sp, -0x48` against `-0x40`. "12/327" for
+    func_80171950_ovl5 measures 317/327, also frame-first. Of the four ovl5
+    callers on the --near list only func_80176F04_ovl5 (5/138) and
+    func_8016F40C_ovl5 (25/202, note said 12/201) are near-misses at all.
+    LEVERS 69 and 74 say to look at where diff 0 is before spending a compile;
+    the prior step is to MEASURE the caller rather than read its note.
