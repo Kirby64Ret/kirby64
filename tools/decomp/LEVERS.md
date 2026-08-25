@@ -2234,3 +2234,97 @@ the pool allocator's real stride is 0x78.
     address you added. If the `. += 0x10;` you expect is not in it, the sha1
     you just read is about the previous layout. Do that before either
     believing a pad or reverting one.
+
+108. **AN UNTOUCHED m2c DUMP IS A WORK QUEUE, NOT A DRAFT, AND "NOT BYTE-EXACT
+    AND NOT CLAIMED TO BE" IS NOT A MEASUREMENT.** LEVER 88 says that about
+    padding-trapped functions. It is just as true of the drafts nobody has
+    edited: in ovl8/ovl9/ovl12/ovl15/ovl16 there are twenty carrying the
+    verbatim note "m2c draft, for the PORT only. Not byte-exact and not claimed
+    to be", and on 2026-08-25 FIVE of them closed or nearly closed in one
+    stint, four of them byte-exact:
+
+        func_801E76EC_ovl9   107/152 -> MATCH
+        func_801E73C4_ovl9    89/153 -> MATCH   (one lever on top, see 109)
+        func_801DD4EC_ovl15  106/154 -> MATCH   (one LEVER 45 on top)
+        func_801E2E44_ovl16  141/220 -> MATCH   (nothing on top at all)
+        func_801E1230_ovl15  192/224 -> MATCH
+        func_80218520_ovl9   116/123 -> 64/121
+
+    The edit is mechanical and it is the same edit every time: **delete every
+    `temp_*` / `var_*` declaration m2c emitted and write what they held.**
+    Those names are not the source's locals, they are IDO's own CSEs printed
+    back out, and naming them is precisely what stops IDO forming them. Four
+    kinds, in descending order of how often they paid:
+
+    a) **A cached `omCurrentObj->objId`, or a cached `omCurrentObj`.** The ROM
+       holds `&omCurrentObj` in a saved register and re-reads the pointer per
+       statement; a named `u32 id` or `GObj *p` costs an extra read of the
+       global, or a `move` that displaces a base register. Spell every
+       subscript `omCurrentObj->objId` (LEVERS 4/97).
+    b) **A named `&array[objId]` pointer.** `temp_v1 = &D_800E6A10[objId];
+       *temp_v1 = -*temp_v1;` reads objId once more than
+       `D_800E6A10[objId] = -D_800E6A10[objId];` does.
+    c) **`var_v0 = objId * 4` carried round a loop.** That is IDO's
+       strength-reduced index CSE'd into the store after the loop -- LEVER 62's
+       observation from the other side. Write the store with the subscript and
+       IDO re-forms the sharing. (It is also a live PORT BUG whenever the
+       byte offset is then used as an ELEMENT index, which is what
+       func_80218520_ovl9 was doing to gEntityFuncListIDArray.)
+    d) **A COMPARISON BETWEEN TWO LITERALS IS m2c's CONSTANT PROPAGATION, NOT
+       THE SOURCE, and it is the one that does not look like an artefact.**
+       func_801E1230_ovl15 has two ramp loops that m2c printed as
+       `if (0.0f < 1.0f) do { ... scale -= 0.02f; } while (scale > 0.0f);`
+       -- it propagated `scale = 1.0f` into the rotated pre-test. Two float
+       literals compare at COMPILE time, so IDO folds the whole guard away and
+       the draft is eight words short, while the ROM emits a real
+       `lui 0x3F80 / mtc1 / c.lt.s $f22, $f4 / bc1fl` because IDO did the
+       propagation itself and still emitted the compare. Writing the guard on
+       the VARIABLE (`if (0.0f < scale)`) is 158 -> 2 on that function.
+       Grep a fresh m2c draft for a comparison whose both sides are constants
+       before anything else; it is free and it is worth more than any lever.
+
+    And these are exactly the drafts whose positional score reads as hopeless,
+    so they never appear on a near-miss list. `shapescan.py` sees them
+    (func_801E2E44_ovl16 read 141/220 positionally and shape 11), which is the
+    argument for ranking by shape: the whole class is invisible to the number
+    every FACTORY note quotes.
+
+109. **LEVER 6's DISCRIMINATOR IS A REDUNDANT `b`, AND AN EMPTY `else` IS NOT
+    THE if/else FORM.** LEVER 6 says the flag-variable choice is per-function
+    and tells you to read the listing. Here is the tell, measured on
+    func_801E73C4_ovl9 (89/153 -> 13/153 on this one edit):
+
+        ROM   lui/ori $a0, 0x101F2        <- the DEFAULT value, in the ENTRY block
+              c.eq.s ; bc1f  .Lmerge
+              lui    $a0, 0x101F3
+              b      .Lmerge              <- BRANCHES TO THE NEXT INSTRUCTION
+              ori    $a0, 0x101F3
+
+    That `b` goes to the instruction immediately after its own delay slot: it
+    is pure overhead and IDO only emits it for an if/ELSE. m2c's natural
+    `anim = 0x101F2; if (c) anim = 0x101F3;` cannot produce it, and neither can
+    the same thing with an EMPTY `else { }` -- measured, 89/153 for both. The
+    two-armed form does produce it, AND IDO still hoists the else arm's
+    constant above the compare, so the two spellings are not the same program
+    to it even though they look interchangeable.
+
+    So: **a redundant `b` at the end of a two-value assignment is an if/else.**
+    Its absence, with the default in the entry block, is the plain `if`. Do not
+    reach for the empty else -- it is the plain `if` with extra characters.
+
+    Two other things measured in the same stint, both worth not re-spending:
+      - **LEVER 45's knob is the DESTINATION's type, not a suffix on the
+        literal.** func_80218520_ovl9 stores `1` to D_800DDFD0[objId] (s32),
+        D_800E8920[objId] (s32) and rec->unk3C (u8); the ROM groups them
+        {D_800DDFD0} and {D_800E8920, unk3C} -- i.e. its CSE CROSSES an s32/u8
+        boundary, which LEVER 45 as written says cannot happen. Spelling the
+        literal `1U` at each of the three sites in turn is EXACTLY inert, 64/121
+        every time.
+      - **LEVER 45 in the direction that pays needs a cast at the STORE.**
+        func_801DD4EC_ovl15's last 13 words were the ROM sharing one `1`
+        between `D_800D7098.unk3C` (u32 in the header) and
+        `gEntityFuncListIDArray[objId]` (s32). `*(s32 *) &D_800D7098.unk3C = 1;`
+        shares it and the function matches. The same header already carries the
+        comment "unk8 MUST be a different 32bit type than
+        gEntityFuncListIDArray", so this mechanism was already known there and
+        recorded only for the fork direction.
