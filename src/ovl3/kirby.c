@@ -1472,7 +1472,18 @@ extern void func_8012307C(s32, s32, f32, s32);
    reproduce the identical 1/190 diff: (u32)1, 1L, (s16)1, and an
    unprototyped local declaration of func_801230E8 -- none forks the
    constant node or blocks the $s2 reuse. This is a pure IDO scheduling
-   choice, not a source spelling; good permuter seed. */
+   choice, not a source spelling; good permuter seed.
+   LEVER 45 (constant CSE is keyed on TYPE) IS THE RIGHT THEORY AND IS
+   UNREACHABLE FROM THIS FILE, measured 2026-08-25. A cast at the call site
+   cannot fork the node because the prototype converts it back; the only
+   spelling that would is a third parameter typed differently from the int
+   the switch labels and `unk44 = 1` produce. The declaration on line 39 here
+   is a duplicate -- src/ovl2/ovl2_8.h:159 already declares
+   `void func_801230E8(s32, s32, s32)` and reaches this TU transitively
+   through plylib.h, so retyping the local copy is rejected outright by IDO
+   ("redeclaration ... previous declaration at line 159"). Forking this one
+   word means retyping the SHARED header, which re-types every call site in
+   the tree; not worth one word. */
 void func_8016DA14_ovl3(GObj *arg0) {
     f32 temp;
     f32 temp2;

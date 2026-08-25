@@ -594,7 +594,11 @@ void func_800F7258(s32 arg0) {
  * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
  * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
  * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad,
- * priming all three locals in the ROM's register order (temp, idx, seg).
+ * priming all three locals in the ROM's register order (temp, idx, seg), and
+ * the one combination the earlier passes had not tried -- inlining objId at
+ * both uses AND retyping func_800A9864 non-void in the same compile, on the
+ * theory that the in-place shift only needs $v0 to be unavailable. It is not:
+ * that spelling scores 16/85, because dropping `idx` also costs `seg` its $a1.
  * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
  * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
  * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad.
