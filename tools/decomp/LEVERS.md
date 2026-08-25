@@ -2283,6 +2283,17 @@ the pool allocator's real stride is 0x78.
        Grep a fresh m2c draft for a comparison whose both sides are constants
        before anything else; it is free and it is worth more than any lever.
 
+    **THE CAVEAT, and it cost 20 words to learn: an m2c temporary that carries
+    a VALUE BETWEEN TWO STATEMENTS is real.** Only the ones that re-express a
+    subscript, a pointer or an induction variable are artefacts.
+    func_8020EB60_ovl9 stores its complement angle to two arrays out of one
+    register (`t = 6.2831855f - a; D_800EA6E0[objId] = t;
+    D_800EB320[objId] = t;`); m2c had that right in `temp_f12`, a blanket
+    cleanup threw it away with the rest, and re-reading D_800EA6E0 for the
+    second store cost a load and a base register -- 31/132 against 51/132.
+    Sort the declarations before deleting them: does this name hold a COMPUTED
+    value, or does it hold an ADDRESS/INDEX the ROM recomputes?
+
     And these are exactly the drafts whose positional score reads as hopeless,
     so they never appear on a near-miss list. `shapescan.py` sees them
     (func_801E2E44_ovl16 read 141/220 positionally and shape 11), which is the
@@ -2328,3 +2339,102 @@ the pool allocator's real stride is 0x78.
         comment "unk8 MUST be a different 32bit type than
         gEntityFuncListIDArray", so this mechanism was already known there and
         recorded only for the fork direction.
+
+
+110. **A DECLARATION-ORDER SWEEP NEEDS THE LAYOUT LAW, AND LEVER 57's IS OFF BY
+    ONE WORD: IDO'S LOCAL REGION TOP IS THE FRAME, NOT frame-4, AND A u16
+    LOCAL PACKS INTO TWO BYTES.** Measured on func_801606A0_ovl3 (closed) by
+    sweeping ten declaration shapes at a fixed frame of 0x48 and reading the
+    resulting offsets off the diff:
+
+        void *h; u16 sid; pad; pad2     h 0x44, sid 0x42
+        u16 sid; void *h; pad; pad2     sid 0x46, h 0x40
+        pad; pad2; void *h; u16 sid     pad 0x44, pad2 0x40, h 0x3C, sid 0x3A
+        pad; void *h; u16 sid; pad2     pad 0x44, h 0x40, sid 0x3E
+        pad; u16 sid; void *h; pad2     pad 0x44, sid 0x42, h 0x3C
+
+    i.e. allocate downward from `frame` in declaration order, each local at
+    its OWN alignment, and a `u16` takes 2 bytes not 4. That is enough to
+    SOLVE for a target map instead of sweeping it: func_801606A0_ovl3's ROM
+    wants `h` on 0x3C and `sid` on 0x40, which is six bytes above sid, which
+    is `s32 padA; u16 padB;` and nothing else -- one compile instead of the
+    combinatorial sweep, and the sweep would never have found it because
+    every shape a lane naturally writes uses 4-byte pads only. Read the ROM's
+    offsets, subtract, and spell the gap in the right WIDTHS.
+
+111. **"SEALED AS A REGISTER FLOOR" IS NOT EVIDENCE, AND THREE OF THEM IN ONE
+    STINT WERE LEVER 97 PLUS A FRAME.** All three notes described the ROM's
+    shape accurately and none of them tried the one edit that produces it:
+
+      func_801606A0_ovl3  "reproducing IDO's specific choice of what to hold
+                          in s0 and when to drop it is a floor per LEVERS.md,
+                          not a source-level nudge"   233/235 -> MATCHED
+      func_80161058_ovl3  "a rewrite needs the struct-pointer-in-s2,
+                          id-recomputed-from-*s2-each-time shape; not
+                          attempted here"             288/288 -> 133/288,
+                                                      aligndiff-clean
+      func_8016BF60_ovl3  "353 of 363 words differ, the draft is simply not
+                          this function yet"          353/363 -> 260/363
+
+    In every case the note's description of the ROM -- "holds &omCurrentObj
+    in a saved register and re-derives the index at every access" -- IS the
+    output of deleting `s32 id = omCurrentObj->objId`. The cache is what
+    stops IDO doing it. So when a note describes a held base and per-use
+    re-reads, that is not a floor report, it is LEVER 97 written out longhand,
+    and objid_screen.py rates all three (10/2/43, 10/3/41 and 20/6/26 for
+    reads/inline/cached). Their frames were -0x38, -0x50 and -0x20 against
+    -0x48, -0x38 and -0x18, and in all three the objId edit moved the frame
+    on its own (LEVER 97c) -- which is also why the old scores meant nothing.
+
+112. **THREE MORE SHAPES FROM THE SAME STINT, EACH WORTH 30-90 DIFFS AND EACH
+    INVISIBLE IN A POSITIONAL DIFF.**
+
+    a) **A CONSTANT PRODUCT IS FOLDED; THE ROM MAY HAVE A REAL `mul.s`.**
+       func_8015C7F4_ovl3's `v.y = 8.0f * 1.6f` compiles to one rodata word;
+       the ROM has `mul.s $f16, $f0, $f10` against its own late_rodata 1.6f
+       and reuses the $f0 it just stored to `v.y`. `v.y = v.y * 1.6f` is
+       239 -> 208. Two lanes missed it because the positional diff hid it and
+       aligndiff.py named it in ONE line ("delete ROM 124 mul.s").
+
+    b) **A TERNARY CANNOT PRODUCE IDO'S `beql` FILL, SO A DUPLICATED PAIR OF
+       STATEMENTS IS A REAL SOURCE SHAPE.** func_80161058_ovl3's ROM writes
+       `D_800E64D0[id] = D_800E6A10[id] * K; D_800E6850[id] = K;` TWICE, once
+       per arm of the `& 4` test, with the else arm's `mtc1 $at, $f0` copied
+       into a `beql` delay slot and left stranded before the label. The
+       `f32 spd = cond ? 6.0f : 10.0f` form cannot emit that, and `spd` was
+       also the 8 bytes the frame was over. Writing both arms out: 197 -> 133
+       and the frame exact. The tell is a stranded instruction immediately
+       above a branch-likely's target label.
+
+    c) **A RE-READ OF THE ARRAY YOU JUST STORED MAKES IDO HOLD ITS BASE.**
+       func_801606A0_ovl3's last defect was `X[id] = Z[id];` after
+       `Z[id] = D_800EA8A0[id] * 0.2f;`. The re-read is why IDO materialised
+       `&gEntitiesScaleZArray` into a held register for the whole block; the
+       ROM just stores $f0 twice. `X[id] = Z[id] = expr;` as one chained
+       assignment closed the function. Same family as LEVER 10, reached from
+       the store side.
+
+113. **LEVER 4's MIRROR IS NOT REPRODUCIBLE AND SHOULD NOT BE SPENT ON.**
+    LEVER 4 (and objid_screen.py's header) say an initialised pointer local
+    `T *p = &D_xxxx;` is folded away by IDO, which then re-CSEs the address
+    two words per basic block, where direct symbol access gives one held
+    base. On func_8016BF60_ovl3 the ROM has the two-words-per-arm form
+    (`lui $v1,%hi; addiu $v1,$v1,%lo; addu; sw 0x0($t2)`) in each of nine
+    switch arms, and `s32 *fl = gEntityFuncListIDArray;` used at all nine
+    sites reproduces NEITHER half: IDO folds the pointer and emits exactly
+    the same `%lo`-folded stores the direct symbol gives (261 against 260,
+    identical aligned-diff runs). Whatever makes IDO hold that base, an
+    initialised pointer local is not it.
+
+114. **THE MEASURE FOR A DRAFT THAT IS LONGER THAN THE ROM IS THE SET OF
+    `NN($sp)` OFFSETS, NOT THE SCORE.** func_8015ED2C_ovl3 is 27 words long
+    and its positional score is therefore pinned (LEVER 48); two lanes in a
+    row have reported a number for it that could not move. Extract the
+    distinct sp offsets from the listing and from the `current=` side of the
+    diff and compare the SETS: the ROM uses 24, the draft used 20 of them and
+    after two declaration edits uses 23. That is a real, monotone meter for
+    frame work on a draft whose score is frozen, and it is three lines of
+    python. Corollary measured there: declarations ABOVE the aggregate block
+    and declarations BELOW it are DIFFERENT KNOBS -- deleting one word above
+    fixed the spill temps and broke the vectors (21 of 24), deleting one word
+    below fixed both (23 of 24).
