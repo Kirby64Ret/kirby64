@@ -19,6 +19,8 @@ extern struct Unk800ECA08 D_800ECA08[];
 extern s32 D_800EC9FC;
 extern s32 saveCurrentFileNum;
 
+void func_800AFBB4(s32, GObj *);
+void func_800ACBDC(GObj *);
 extern void func_800B8BDC(void);
 extern void func_800B96A0(s32, s32);
 extern void func_800B94FC(s32);
@@ -948,11 +950,19 @@ u8 func_80157004_ovl4(s32 arg0) {
     return D_800ECA08[arg0].unk10;
 }
 
-/* 1/138: instruction-for-instruction exact except the operand ORDER of one
- * `beq $v0, $fp` (ROM) vs `beq $fp, $v0`. Swept: both compare operand orders,
- * (u32)/(s32) casts, embedded assignment in the condition, goto into a shared
- * block, empty-then/else, u8 types for either variable, declaration order of
- * every local, sentinel local. All inert; the rest of the function is exact. */
+/* FACTORY: 1 of 138 words DIFFERS, MEASURED 2026-08-25 -- until this pass the
+ * site could not be scored at all: the draft's own `void func_800AFBB4(s32,
+ * GObj *);` collided with the implicit `int func_800AFBB4()` that eight
+ * earlier call sites in this TU had already created, so un-guarding it did
+ * not compile. The prototype (and func_800ACBDC's) now sits at file scope at
+ * the top of the file, spelled as ovl1/ovl1_7.h spells it; the ROM sha1 is
+ * unchanged by that hoist (LEVERS lever 55).
+ * The one word left is the operand ORDER of `beq $v0, $fp` (ROM) against
+ * `beq $fp, $v0` here -- the register ASSIGNMENT is already identical
+ * ($fp = v, $v0 = the fresh func_80157004_ovl4 result). Swept and inert:
+ * `t != v`, `v != t`, both `== `/empty-then polarities, the assignment
+ * embedded in the condition, and `u8 t`. Adjacent-operand transposition;
+ * permuter food. */
 #ifdef NON_MATCHING
 typedef struct {
     f32 unk0;
@@ -968,9 +978,6 @@ typedef struct {
 extern Unk2Floats D_8015ADC4_ovl4[];
 extern Unk3Halfs D_8015ADDC_ovl4[];
 extern s32 D_8015C6F8_ovl4[];
-
-void func_800AFBB4(s32, GObj *);
-void func_800ACBDC(GObj *);
 
 void func_80157028_ovl4(GObj *arg0, s32 arg1) {
     Unk2Floats *p;

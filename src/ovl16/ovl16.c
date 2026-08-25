@@ -872,7 +872,22 @@ s32 func_801DC83C_ovl16(s32 arg0, s32 arg1) {
  * work here: this function's only parameter, arg0, is still live at the point
  * the anim pointer is needed, so there is no homed slot to borrow. The two
  * remaining shapes to try are a caller-side change (a second parameter that
- * the ROM's callers already pass) or the permuter. */
+ * the ROM's callers already pass) or the permuter.
+ *
+ * 2026-08-25, re-measured 7/43 and the frame is now expressed exactly.
+ * ROM: frame 0x40, $ra 0x14, sp1C at 0x1C, the 0x20-byte struct at 0x20..0x40
+ * and four bytes of slack at 0x18 -- i.e. TWO declared locals and ZERO
+ * compiler temps, align8(0x18 + 0x24) = 0x40. This draft is n=3 (the two
+ * pointers plus the struct) and t=2, L=0x30, align8(0x18+0x30) = 0x48, and
+ * BOTH extra words have to go, not just the anim pointer's. Swept this pass
+ * and all still 0x48: the struct declared first (10/43 -- the frame does not
+ * move, only the slot does), the struct first with sp1C initialised at its
+ * declaration (10/43), the anim pointer moved into a nested block WITH an
+ * initialiser so LEVERS lever 57's "initialised pointer gets no home slot"
+ * corollary would apply (10/43 in all three declaration orders), and sp1C
+ * initialised at declaration with the struct second (7/43). So the nested
+ * initialised pointer does NOT give up its word here, which is a real
+ * counter-example to that corollary worth knowing. */
 s32 func_801DC8E4_ovl16(s32 arg0) {
     struct EnemyRecord *sp1C;
     struct Ovl16AnimObj *temp_v0;

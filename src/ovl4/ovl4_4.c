@@ -375,12 +375,23 @@ void func_80158CFC_ovl4(GObj *arg0) {
     }
 }
 
-/* 6/163: semantically complete. Residue is the stack slot of the f32 temp
- * (ROM 0x24, IDO 0x20 -- the local block anchors one word lower) and the FP
- * register pairing of the `== 0.0f` compare (ROM materialises 0.0 into $f16
- * first, IDO loads the temp there). Swept: 0..3 dead scalars in every position
- * around the f32, f32 vs s32 pads, both compare operand orders, the empty-then
- * polarity form. */
+/* FACTORY: 3 of 163 words DIFFER (was 6; measured 2026-08-25).
+ * The stack half is SOLVED and it was a declaration COUNT, not an order:
+ * this frame's locals base is 0x20 (there is a saved $s0 at 0x18 under $ra at
+ * 0x1C), frame = align8(0x20 + 4*(ndecl+ntemp)) = 0x38, and `sp24` is not
+ * homed as a declared local at all -- IDO gives it the first COMPILER TEMP
+ * slot, so it lands at 0x24 only when exactly THREE scalars are declared
+ * ahead of it. Measured: 2 scalars -> 13/163, 3 -> 3/163, 4 -> 6/163,
+ * 5 -> 10/163, 6 -> 13/163, and with 4 scalars every one of the six
+ * declaration ORDERS is byte-identical (LEVERS levers 54/57).
+ * The 3 that remain are one scheduling floor: the ROM hoists `mtc1 $zero,
+ * $f16` (the compare's 0.0) into the two branch delay slots and reloads
+ * sp24 into $f18 after the join; IDO hoists the RELOAD into $f16 and
+ * materialises the zero into $f18 after it. Swept and inert: `sp24 ==
+ * 0.0f`, `0.0f == sp24`, `(f32) 0.0f == sp24`, `sp24 == 0`, `0 == sp24`,
+ * `sp24 == (f32) 0`, `!(sp24 != 0.0f)` and the empty-then polarity form in
+ * both operand orders -- all 3/163. `sp24 == 0.0` (double) is 100/164 and
+ * an integer-bits compare is 102/162. */
 #ifdef NON_MATCHING
 extern f32 D_8015C3BC_ovl4[];
 extern f32 D_8015C384_ovl4[];
@@ -392,7 +403,6 @@ void animUpdateModelTreeAnimation(GObj *);
 void func_80158E98_ovl4(s32 arg0, s32 arg1, s32 arg2) {
     f32 sp24;
     s32 pad0;
-    s32 pad1;
     s32 v;
     s32 i;
 

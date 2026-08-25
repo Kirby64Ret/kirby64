@@ -6,6 +6,7 @@
 #include "ovl1/ovl1_7.h"
 #include "ovl1/util.h"
 #include "ovl1/save_file.h"
+#include "main/object_helpers.h"
 
 extern Gfx D_801874A0_ovl5[];
 extern u8 D_8018EA00_ovl5[];
@@ -2365,7 +2366,8 @@ void func_80173EBC_ovl5(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* FACTORY: 164/185, residue, verify.py-confirmed. Length, frame and
+/* FACTORY: 21 of 185 words DIFFER (the old header read "164/185", which is
+   the same measurement written the other way round; re-measured 2026-08-25). Length, frame and
    control flow are exact. Two known floors: (a) the value reloaded
    from the Vector2 at 0x28($sp) lands in $v1 instead of the ROM's $v0
    -- the CSE'd-load-in-the-neighbouring-register floor -- which also

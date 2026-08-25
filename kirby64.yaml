@@ -83,11 +83,15 @@ segments:
     # all plain C now. No `pad` entry is needed -- each residue is exactly the
     # 16-byte alignment.
     - [0x2B990, c, main/libn_audio_2]
+    - [0x2D960, c, main/libn_audio_2a]
     - [0x2D9A0, c, main/libn_audio_2b]
     - [0x2DA20, c, main/libn_audio_2c]
     - [0x2DB00, c, main/libn_audio_2d]
     - [0x2DB40, c, main/libn_audio_2e]
+    - [0x2DC70, c, main/libn_audio_2e2]
     - [0x2DCA0, c, main/libn_audio_2f]
+    - [0x2DD20, c, main/libn_audio_2f2]
+    - [0x2DD80, c, main/libn_audio_2f3]
     - [0x2DE50, lib, libn_audio, n_synsetvol]
     - [0x2DEF0, lib, libultra_rom, sendmesg]
     - [0x2E040, lib, libultra_rom, stopthread]

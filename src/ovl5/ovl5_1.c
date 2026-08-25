@@ -84,11 +84,23 @@ struct UnkStruct8015C9B4 {
     f32 zUp;       // 0x5C
 };
 
-/* FACTORY: 13 of 112 words DIFFER, and the whole residue is ONE FP register
+/* FACTORY: 14 of 113 words DIFFER as the file stands (13 of 112 once the
+ * swallowed stub below is written out). The whole residue is ONE FP register
  * permutation: the ROM keeps `w` in $f16 and `divisor` in $f14, this draft has
- * them the other way round and every mov.s/c.lt.s/div.s below follows. Swept
- * and inert: reordering the two declarations, and reordering `absW`/`divisor`.
- * Permuter fuel (LEVERS: register-naming cascade).
+ * them the other way round and every mov.s/c.lt.s/div.s below follows.
+ * Re-swept 2026-08-25 and every one of these is byte-identical at 14/113:
+ * all eight declaration orders that keep the frame (moving `divisor` before
+ * `w`, first, or `w` first), a ternary for `absW`, a ternary for the inner
+ * -0.1/+0.1 pick, a separate reciprocal variable, dividing at each use,
+ * testing `divisor < 0.0f` instead of `w < 0.0f` in the inner branch,
+ * computing `absW` from `divisor`, and reversing the two multiply operands.
+ * Worse: `>=` polarity 15, `divisor = w` moved below the absW branch (the
+ * spill of `y` disappears), an if/else that assigns `divisor` in both arms 46,
+ * hoisting `absW`'s initialiser 52, dropping `absW` entirely 36.
+ * The measured law behind it: IDO ranks the three held FP webs by live-range
+ * length and hands out $f18/$f16/$f14 in that order, and `divisor` (defined
+ * one instruction after `w` but live to the last multiply) always outranks
+ * `w`. No source spelling reorders them. Permuter fuel.
  *
  * The listing swallows the next, unnamed function of the TU inside its own
  * `.size` (`jr $ra; nop` at 0x8015CB74, with func_8015CB7C_ovl5 following --

@@ -1731,24 +1731,15 @@ void func_801ED400_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 
-#ifdef NON_MATCHING
-/* 36/125 (target 124). Structure, control flow and all four `func_800AA038`
- * calls are right. The unlock was reading the THIRD argument out of the
- * listing: `lw $a2, 0x2C($sp)` before each call is `idx`, not a live-range
- * reload -- func_800AA038 is (s32, f32, s32) (see src/ovl1/ovl1_3.c) and the
- * `addiu $a1, $zero, 0` second argument is 0.0f. That alone took it 62 -> 36.
- * Residue: (a) the two compiler spill slots sit at 0x18/0x1C where the ROM has
- * 0x1C/0x20 -- pads in every position make it worse, not better; (b) the ROM
- * keeps `omCurrentObj` in $v0 across the last `if` so the final
- * `omCurrentObj->objId` re-read is `lw $v1, 0($v0)`, while IDO treats the
- * `*p = 0` store as an aliasing barrier and re-materialises the global
- * (one instruction long). Hoisting omCurrentObj into a local fixes the length
- * but takes $v0 away from `*p` and costs more (55/124). */
+/* Held-bomb detach thread. The last 36 diffs were the `s32 *p` cache of
+ * &D_800E9AA0[idx]: it takes a home word, which pushes the two compiler spill
+ * slots from the ROM's 0x1C/0x20 down to 0x18/0x1C, and it makes the `*p = 0`
+ * store an aliasing barrier that costs the final omCurrentObj re-read. Writing
+ * the subscript out at each use gives back both (LEVERS levers 4 and 54). */
 void func_801ED444_ovl16(s32 arg0) {
     extern void func_800AA038(s32, f32, s32);
     extern s32 D_800E9C60[];
     s32 idx = D_800D7098.unk34;
-    s32 *p;
 
     func_8019BB58_ovl7();
     func_800B19F4(0x79, omCurrentObj->objId);
@@ -1756,27 +1747,23 @@ void func_801ED444_ovl16(s32 arg0) {
     D_800DEF90[omCurrentObj->objId] = func_800B4924;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], procMainStub);
     D_800DF150[omCurrentObj->objId] = NULL;
-    p = &((s32 *) D_800E9AA0)[idx];
-    if ((*p == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
+    if ((((s32 *) D_800E9AA0)[idx] == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
         func_800AA038(0x104B0, 0.0f, idx);
         ohSleep(5);
     }
-    if ((*p == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
+    if ((((s32 *) D_800E9AA0)[idx] == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
         func_800AA038(0x104B2, 0.0f, idx);
         ohSleep(0x14);
     }
-    if ((*p == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
+    if ((((s32 *) D_800E9AA0)[idx] == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
         func_800AA038(0x104B4, 0.0f, idx);
         ohSleep(5);
     }
-    if ((*p == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
-        *p = 0;
+    if ((((s32 *) D_800E9AA0)[idx] == 1) && (omCurrentObj->objId == D_800E9C60[idx])) {
+        ((s32 *) D_800E9AA0)[idx] = 0;
     }
     func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16_2/func_801ED444_ovl16.s")
-#endif
 #ifdef MIPS_TO_C
 /* FACTORY: 413/519, 11 instructions short. Structure and naming are sound; close the
  * count first (repeated entity-array reads that IDO merges), then register naming. */

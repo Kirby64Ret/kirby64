@@ -4560,13 +4560,18 @@ void func_80164DF0_ovl5(GObj *arg0) {
     }
 }
 
-/* Faithful, not byte-exact (125/134), verify.py-confirmed. Everything
-   but the final clear loop is exact; there the ROM puts the induction
-   pointer in $v0 and the 0xFF constant in $v1 and IDO swaps them --
+/* FACTORY: 9 of 134 words DIFFER (measured 2026-08-25; the old header read
+   "125/134", which is the same measurement written the other way round).
+   Everything but the final clear loop is exact; there the ROM puts the
+   induction pointer in $v0 and the 0xFF constant in $v1 and IDO swaps them --
    the named $v0/$v1 CSE-into-neighbouring-register floor (LEVERS
-   "guard on the second variant"). Swept: all 24 scalar declaration
-   orders, all 6 loop-variable assignments, index vs pointer walk, do/while,
-   reverse iteration, (u32) and byte-bias forms -- all inert at 9 or worse. */
+   "guard on the second variant"). NOT lever 55: this function calls nothing
+   at all, so no implicit `int f()` is available to blame.
+   Swept: all 24 scalar declaration orders, all 6 loop-variable assignments,
+   index vs pointer walk, do/while, reverse iteration, (u32) and byte-bias
+   forms; re-swept 2026-08-25 with the unbraced loop body (LEVERS lever 56),
+   `k < 100`, the `while` form and the constant spelled `255` -- all 9/134,
+   and moving `k` to the head of the declaration list is 16/134. */
 #ifdef NON_MATCHING
 typedef struct Unk16Ptrs {
     s32 *unk0[4];

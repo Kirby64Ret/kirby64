@@ -8,6 +8,7 @@
 #include "ovl1/track.h"
 #include "ovl1/game.h"
 #include "unk_structs/D_800D7178.h"
+#include "main/object_helpers.h"
 
 extern s32 D_800D6B24;
 #include "main/vi.h"
@@ -525,12 +526,10 @@ s32 func_8017AEE8_ovl5(s32 arg0, s32 arg1, f32 arg2, s32 arg3)
   return 0;
 }
 
-#ifdef NON_MATCHING
-/* 10/134: same length, same frame, same saved-register set, and the four
-   trailing nops after the infinite loop come out of this C by themselves.
-   The residue is the $v0/$v1 rotation of the `omCurrentObj->objId << 2` index
-   temp inside the loop (ROM $v0, IDO $v1) -- the named blocker. Swept: the
-   `&&` split into nested ifs (10). */
+/* Player-input thread for pad `arg1`. The $v0/$v1 rotation this site was
+   sealed on came from `ohSleep` being an implicit `int ohSleep()` in this TU
+   -- main/object_helpers.h was not included -- so IDO held $v0 as defined by
+   every call in the loop (LEVERS lever 55). */
 void func_8017B230_ovl5(GObj *);
 s32 func_8017AEE8_ovl5(s32, s32, f32, s32);
 
@@ -557,9 +556,6 @@ void func_8017B018_ovl5(GObj *arg0, s32 arg1) {
         ohSleep(1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_7/func_8017B018_ovl5.s")
-#endif
 
 #include "main/contpad.h"
 

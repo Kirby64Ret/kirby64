@@ -282,7 +282,7 @@ endif
 # only these two, need it -- src/main/audio.c is game code and is -O2.
 # This assignment must come AFTER the GLOBAL_ASM_O_FILES one above: for the
 # same target the last target-specific assignment wins.
-N_AUDIO_O_FILES := $(BUILD_DIR)/src/main/libn_audio.o $(BUILD_DIR)/src/main/libn_audio_b.o $(BUILD_DIR)/src/main/libn_audio_c.o $(BUILD_DIR)/src/main/libn_audio_2.o $(BUILD_DIR)/src/main/libn_audio_2b.o $(BUILD_DIR)/src/main/libn_audio_2c.o $(BUILD_DIR)/src/main/libn_audio_2d.o $(BUILD_DIR)/src/main/libn_audio_2e.o $(BUILD_DIR)/src/main/libn_audio_2f.o
+N_AUDIO_O_FILES := $(BUILD_DIR)/src/main/libn_audio.o $(BUILD_DIR)/src/main/libn_audio_b.o $(BUILD_DIR)/src/main/libn_audio_c.o $(BUILD_DIR)/src/main/libn_audio_2.o $(BUILD_DIR)/src/main/libn_audio_2a.o $(BUILD_DIR)/src/main/libn_audio_2b.o $(BUILD_DIR)/src/main/libn_audio_2c.o $(BUILD_DIR)/src/main/libn_audio_2d.o $(BUILD_DIR)/src/main/libn_audio_2e.o $(BUILD_DIR)/src/main/libn_audio_2e2.o $(BUILD_DIR)/src/main/libn_audio_2f.o $(BUILD_DIR)/src/main/libn_audio_2f2.o $(BUILD_DIR)/src/main/libn_audio_2f3.o
 $(N_AUDIO_O_FILES): CC := $(PYTHON) tools/asm-processor/build.py --asm-prelude $(ASMPP_PRELUDE) $(PYTHON) tools/decomp/cc_o3.py -- $(AS) $(ASFLAGS) --
 
 setup:

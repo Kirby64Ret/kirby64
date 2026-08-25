@@ -35,13 +35,14 @@ void func_8002CF40(N_ALVoice *v, u8 arg1, u8 arg2) {
  * upstream n_alSynSetPan.  The `< 0` test on the u8 parameter is upstream's and
  * the ROM has the dead bgez/negu pair, same as its twin.
  *
- * MATCHES byte-for-byte (34 insns, first compile), but it is INTERIOR to the
- * libn_audio_2e subsegment and its listing has a 1-word post-.size tail, so
- * un-guarding it shortens the TU by 4 bytes.  It was its own object in
- * libn_audio.a: split the `c` subsegment at 0x2DC70 (PAD 0 -- SUBALIGN(16)
- * emits the residue) and this file becomes pragma-free.  This lane does not own
- * kirby64.yaml. */
-#ifdef NON_MATCHING
+ * SEALED 2026-08-25 (34 insns).  The 1-word post-.size tail in its listing is
+ * the alignment gap in front of n_alSynDelete, which was its own object in
+ * libn_audio.a -- so un-guarding this used to leave the TU 4 bytes short.  The
+ * fix asked for in the old note is now applied: n_alSynDelete moved to
+ * src/main/libn_audio_2e2.c with its own `c` subsegment at 0x2DC70, and IDO's
+ * 16-byte .text padding emits the missing word as this object's tail
+ * (libn_audio_2e.o .text = 0x130, all of it accounted for).  This file is now
+ * pragma-free. */
 void func_8002CFE4(N_ALVoice *v, u8 arg1) {
     KParam *update;
 
@@ -63,13 +64,8 @@ void func_8002CFE4(N_ALVoice *v, u8 arg1) {
         n_alEnvmixerParam((KPVoice *) v->pvoice, 3, update);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio_2e/func_8002CFE4.s")
-#endif
 
-void n_alSynDelete(void) {
-    n_syn->head = 0;
-    n_syn->n_seqp1 = NULL;
-    n_syn->n_seqp2 = NULL;
-    n_syn->n_sndp = NULL;
-}
+/* n_alSynDelete followed here until 2026-08-25.  It was its own libn_audio.a
+ * object, so it starts on a 16-byte boundary and the fill in front of it has to
+ * come from THIS object's .text padding; that only works with the two in
+ * separate C files.  See src/main/libn_audio_2e2.c. */
