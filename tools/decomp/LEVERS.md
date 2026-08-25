@@ -1339,3 +1339,45 @@ the pool allocator's real stride is 0x78.
     Adding `struct GObj;` above line 37 of src/ovl1/ovl1_6.h would silence the
     64 and make the grep useful again. It is a pure type declaration and
     cannot move a byte, but it is a shared header -- coordinator task.
+
+81. **GATE A PROTOTYPE CHANGE ON THE LINKED ROM. An object list derived from
+    the edit cannot see the TU that breaks.** Two retypes of exactly the same
+    shape landed on 2026-08-25 and they went opposite ways, which is what
+    makes the rule worth writing down rather than the individual results.
+
+    func_800B2340's third parameter, `u32 track` -> `s32 track`, takes
+    func_801D6534_ovl8 from 5/235 straight to MATCH (the u32 makes IDO build a
+    conversion node and refuse to coalesce into $a2, which is both the ROM's
+    CSE register and the callee's third argument register; the permuter found
+    the same thing independently). All fifteen TUs that DECLARE the symbol were
+    moved together and the object-level gate -- rebuild, diff the `.text` of
+    every affected object -- reported the change INERT across all fifteen.
+
+    It breaks twenty-nine functions in ovl5. `src/ovl5/ovl5_4.c` includes
+    `ovl1/ovl1_7.h` and calls func_800B2340 five times WITHOUT declaring it,
+    so it never appeared in the grep that built the object list, and its
+    codegen depends on the u32. Full rebuild both ways: with the retype 5577
+    byte-exact and 29 REAL DEFECTS, without it 5606 and 0. Reverted; the
+    measurement lives in func_801D6534_ovl8's note.
+
+    func_800F8728's first parameter, `s32` -> `u32`, is the same job and it
+    stands: full `rm -rf build/src` rebuild, sha1 6cea2d46, check_tu_size 0,
+    verify_rom 5606 byte-exact and 0 real defects.
+
+    What separates them is the INCLUDER SET, not the object diff.
+    `src/ovl2/ovl2_2.h` has exactly one includer in the tree; `ovl1/ovl1_7.h`
+    has many. So, before any header retype:
+
+        grep -rl '<header path>' src/          <- the set that actually moves
+        grep -rn '<symbol>' src/               <- only the set you can see
+
+    and gate on `bash tools/decomp/mk.sh` + the sha1 + `check_tu_size.py` +
+    `verify_rom.py` with 0 REAL DEFECTS. The object diff is still worth
+    running -- it tells you WHICH object moved when something does -- but it
+    decides nothing on its own. LEVER 52 makes the same point from the other
+    side: prove the gate bites before trusting it.
+
+    And when the answer is no, the note is the deliverable. "One function
+    against twenty-nine" with both rebuild numbers in it stops the next lane
+    re-deriving the same 5/235 case from scratch, which had already happened
+    once.
