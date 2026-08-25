@@ -2569,55 +2569,67 @@ void func_80160E6C_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80160E6C_ovl5.s")
 #endif
 
-// FACTORY: 34/76, and the residue is exactly one thing: IDO never uses $v0.
-// The 14/76 this note replaces was measured THROUGH A WRONG STACK ADJUSTMENT
-// (0x48 against the ROM's 0x40), which LEVERS 69/74 say cannot be scored at
-// all. The frame, every stack offset and every spill slot are now the ROM's,
-// and the whole diff is a uniform +1 rotation of the $t sequence because the
-// ROM parks D_800E98E0[objId] in $v0 for three instructions and this C parks
-// it in $t9.
+// FACTORY: 9/76, and the frame, every stack offset and every spill slot are
+// the ROM's. What is left is ONE register pair: the ROM puts the index in $v0
+// and the CSE'd &D_8018E040_ovl5[t] in $v1; this C puts them in $v1 and $a3.
+// Every other register in the function, and all 76 words, agree.
 //
-// THE DEAD LOCAL IS REAL AND IT IS WHAT FIXES THE SLOTS. The ROM's map:
-//     0x3C  a 4-byte local DECLARED AND NEVER WRITTEN
-//     0x30..0x3B  sp30      (addiu $a0, $sp, 0x30)
+// THE 34/76 THIS REPLACES WAS THE WRONG SHAPE, AND THE MATCHED SIBLING EIGHTY
+// LINES ABOVE HAD THE RIGHT ONE ALL ALONG (LEVER 1, provenance beats size).
+// func_80160D50_ovl5 is unguarded and byte-exact and reads
+//     s32 t; Vector sp30; Vector sp24; void *dobj;
+//     t = D_800E98E0[omCurrentObj->objId];
+//     dobj = ...;
+//     func_800B2340(&sp30, dobj, D_8018E030_ovl5[t]);
+//     ... func_800B26D8(&sp24, dobj, D_8018E030_ovl5[t]);
+// i.e. a NAMED INDEX and the array read written INLINE at both call sites.
+// This draft had the opposite: a dead `s32 pad`, no index, and a named
+// pointer `s32 *p` dereferenced at both sites. Porting the sibling's spelling
+// verbatim is 34 -> 9 in one edit.
+//
+// Why the old note's own numbers pointed away from it: it measured
+//   dead pad + named p            34, frame 0x40 (right)
+//   live t   + named p            22, frame 0x48 (wrong, LEVERS 69/74)
+// and concluded that `t` "buys a compiler temp as well as a declaration" and
+// so could never pay. Both halves were true and the conclusion was still
+// wrong -- it is `p` that costs the two temps, not `t`. With `t` named and
+// `p` gone the count is 8 declared words + 2 temps = the ROM's 0x40, and
+// LEVER 57's formula predicts it exactly:
+//     0x3C  t     (declared, never stored -- it lives in $v0/$v1)
+//     0x30..0x3B  sp30
 //     0x24..0x2F  sp24
-//     0x20  dobj            (sw $a1, 0x20($sp))
-//     0x1C  p               (sw $v1, 0x1C($sp))
-// so the declaration order is [dead scalar], sp30, sp24, dobj, p. Measured at
-// that order: with the dead `s32 pad` 34; without it 46 (dobj and p both land
-// one slot high); with a live `s32 t` in its place 22 BUT the frame grows to
-// 0x48, because `t` buys a compiler temp as well as a declaration -- and 22
-// through a wrong frame is worth less than 34 through the right one.
-// `p = &D_8018E040_ovl5[t = D_800E98E0[...]]` is the same 22. This is LEVER 30
-// in the flesh: the function already has real stack locals, so an unreferenced
-// scalar DOES reserve its word.
+//     0x20  dobj
+//     0x1C, 0x18  the two compiler temps, of which 0x1C is the CSE'd address
+//                 the ROM spills and reloads round both calls
+// So the old note's "0x1C p" was reading a COMPILER TEMP as a declaration,
+// and its "dead local at 0x3C" is not dead -- it is the index.
 //
-// Swept and negative at 34: every barrier placement (tools/decomp/
-// barrier_sweep.py, 17 placements), and the permuter's `if (1) { }` wrap
-// round the func_800B2340 block, which is what its zero-score candidate was
-// -- that candidate was a LEVER 72 artifact, scored before --stack-diffs went
-// into the queue, so it never saw the frame it was really fixing.
-// Previously swept and negative at the old order: 24 declaration permutations
-// with and without `t`, pointer arithmetic instead of &arr[i], a (u8 *) byte
-// bias, and reusing the parameter as the scratch (72).
+// Measured and negative here, do not re-cost:
+//   - fully inlining the index as well (dead pad, no t, no p, the whole
+//     D_8018E040_ovl5[D_800E98E0[omCurrentObj->objId]] chain at all three
+//     sites): 69/81, and it grows the function by five words.
+//   - p = D_8018E040_ovl5 + t instead of &D_8018E040_ovl5[t]: exactly inert
+//     at the old 34, which is also what the old note found.
+//   - the old note's sweeps (17 barrier placements, 24 declaration
+//     permutations, the permuter if (1) {} wrap) were all run against the
+//     named-p body and none of them could have found this.
 #ifdef NON_MATCHING
 extern s32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
 
 void func_80161078_ovl5(GObj *arg0) {
-    s32 pad;
+    s32 t;
     Vector sp30;
     Vector sp24;
     void *dobj;
-    s32 *p;
 
-    p = &D_8018E040_ovl5[D_800E98E0[omCurrentObj->objId]];
-    dobj = D_800DFBD0[*p][D_801868FC_ovl5];
-    func_800B2340(&sp30, dobj, *p);
+    t = D_800E98E0[omCurrentObj->objId];
+    dobj = D_800DFBD0[D_8018E040_ovl5[t]][D_801868FC_ovl5];
+    func_800B2340(&sp30, dobj, D_8018E040_ovl5[t]);
     gEntitiesNextPosXArray[omCurrentObj->objId] = sp30.x;
     gEntitiesNextPosYArray[omCurrentObj->objId] = sp30.y;
     gEntitiesNextPosZArray[omCurrentObj->objId] = sp30.z;
-    func_800B26D8(&sp24, dobj, *p);
+    func_800B26D8(&sp24, dobj, D_8018E040_ovl5[t]);
     gEntitiesAngleXArray[omCurrentObj->objId] = sp24.x;
     gEntitiesAngleYArray[omCurrentObj->objId] = sp24.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp24.z;
