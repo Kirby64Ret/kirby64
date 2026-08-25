@@ -1818,50 +1818,55 @@ void func_8019C79C_ovl7(void) {
     ent->unk2C = -1;
 }
 
-// m2c draft, measured 86/91 diffs
-#ifdef NON_MATCHING
+/* MATCHED 2026-08-25, from a raw m2c draft at 84/91, in two steps.
+ *
+ * 84 -> 37: LEVER 4, spelled out. The draft cached `omCurrentObj->objId` in
+ *   an `u32 temp_a1` and then re-cached it three more times (`var_a1`,
+ *   `temp_a1_2`, `temp_a1_3`), which is FOUR references to the symbol, and IDO
+ *   answered with a `lui`+`addiu` ADDRESS base read through `$t1` -- three
+ *   words where the ROM has the folded two-word
+ *   `lui $v1,%hi(omCurrentObj)` / `lw $v1,%lo(omCurrentObj)($v1)`, and every
+ *   register after it renamed. Written inline at every site the whole prefix
+ *   falls into place.
+ *   WHY THE ROM MATERIALISES IT TWICE, which is what a "name the GObj" reading
+ *   gets wrong: the store `ent->unk3C = 0` may alias `omCurrentObj`, so IDO
+ *   cannot carry the load across it and re-emits `lui`/`lw` plus the objId
+ *   re-read inside that arm. Afterwards it DOES hold the value, and every
+ *   later statement is a plain `lw $x, 0x0($v1)`. A named `GObj *cur` local
+ *   would give one materialisation and cannot reproduce the second.
+ *
+ * 37 -> 0: LEVER 90. The ROM has TWO materialised zeros -- `mtc1 $zero,$f8`
+ *   for the D_800E9020 store and `mtc1 $zero,$f18` for the `z < 0.0f` compare
+ *   -- and the draft was ONE WORD SHORT because `= 0.0f` CSEs with the
+ *   compare's zero. Spelling the store `= 0` forks it, and that single
+ *   character is the last word.
+ *
+ * The two `.float 3.141592741` late_rodata entries are separate words in the
+ * listing (LEVER 91: IDO does not merge late_rodata), which is why the
+ * literal is written out in both arms of the if. */
 void func_8019C844_ovl7(Vector *arg0) {
-    EnemyRecord *temp_v0;
-    f32 *temp_v0_2;
-    f32 *temp_v0_3;
-    f32 *temp_v0_4;
-    f32 temp_f0;
-    s32 var_a1;
-    u32 temp_a1;
-    u32 temp_a1_2;
-    u32 temp_a1_3;
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+    f32 z;
 
-    temp_a1 = omCurrentObj->objId;
-    var_a1 = temp_a1;
-    temp_v0 = D_800E1B50[temp_a1];
-    if (temp_v0->unk3C != 0) {
-        temp_v0->unk3C = 0;
-        var_a1 = omCurrentObj->objId;
+    if (ent->unk3C != 0) {
+        ent->unk3C = 0;
     }
-    temp_v0_2 = D_800E17D0 + var_a1;
-    if (*(D_800E6A10 + var_a1) == 1.0f) {
-        temp_v0_3 = D_800E17D0 + var_a1;
-        *temp_v0_3 += 3.1415927f;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        D_800E17D0[omCurrentObj->objId] += 3.141592741f;
     } else {
-        *temp_v0_2 -= 3.1415927f;
+        D_800E17D0[omCurrentObj->objId] -= 3.141592741f;
     }
-    D_800E9020[omCurrentObj->objId] = 0.0f;
-    temp_v0_4 = &D_800E6A10[omCurrentObj->objId];
-    *temp_v0_4 = -*temp_v0_4;
-    temp_a1_2 = omCurrentObj->objId;
-    D_800E64D0[temp_a1_2] = D_800E6A10[temp_a1_2] * arg0->x;
-    temp_a1_3 = omCurrentObj->objId;
-    D_800E6690[temp_a1_3] = D_800E6A10[temp_a1_3] * arg0->y;
-    temp_f0 = arg0->z;
-    if (temp_f0 < 0.0f) {
-        D_800E6850[omCurrentObj->objId] = -temp_f0;
-        return;
+    D_800E9020[omCurrentObj->objId] = 0;
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * arg0->x;
+    D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * arg0->y;
+    z = arg0->z;
+    if (z < 0.0f) {
+        D_800E6850[omCurrentObj->objId] = -z;
+    } else {
+        D_800E6850[omCurrentObj->objId] = z;
     }
-    D_800E6850[omCurrentObj->objId] = temp_f0;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019C844_ovl7.s")
-#endif
 // m2c draft, measured 211/220 diffs
 #ifdef NON_MATCHING
 void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
