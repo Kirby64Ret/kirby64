@@ -306,6 +306,30 @@ void func_80221440_ovl18(void) {
 
 extern f32 D_8022BBFC_ovl18;
 #ifdef NON_MATCHING
+/* FACTORY: 13/138 -- MEASURED 2026-08-25, was 17/138 and had never carried a
+   note. LEVER 71: found by barrier_sweep.py, which reported the placement
+   below at 13 and four neighbouring placements at 17 (unchanged) or 90.
+   The barrier at the top of the loop body is what pays; the same sweep run
+   again over the fixed draft finds nothing further.
+
+   The 13 that remain are ONE instruction's position, not thirteen decisions.
+   The ROM materialises the three loop constants first (-0.25f into $f26,
+   1.0f into $f24, 4.5f into $f22), then the six %lo addends for the entity
+   arrays, and loads `temp_f20` from D_8022BBFC_ovl18 LAST, at index 51. The
+   draft loads it FIRST, at index 33, and every instruction between the two
+   points is the ROM's shifted by one slot -- which is what an insertion looks
+   like, not a register disagreement (see the LEVER 66 caveat).
+
+   Measured and rejected 2026-08-25, so they are not retried:
+     - dropping the unused `u32 phi_a0` m2c leftover: byte-identical at 17
+       before the barrier. IDO gives an unused declaration a slot but nothing
+       here is competing for it.
+     - moving `temp_f20 = D_8022BBFC_ovl18;` above `func_800B3520()`: 80/138,
+       far worse -- the call is what forces the load to be re-materialised.
+     - assigning temp_f20 at the top of the function as well: byte-identical
+       at 13; IDO folds the duplicate.
+   What is left wants the load sunk below the array bases, and source position
+   does not reach it. Permuter fuel. */
 void func_80221498_ovl18(s32 arg0) {
     f32 temp_f20;
     u32 phi_a0;
@@ -317,6 +341,7 @@ void func_80221498_ovl18(s32 arg0) {
     temp_f20 = D_8022BBFC_ovl18;
     while (TRUE) {
         D_800E8920[omCurrentObj->objId] = 0;
+        do { } while (0);
         func_800AECC0(gameTicksPerDraw * temp_f20);
         func_800AED20(gameTicksPerDraw * temp_f20);
         func_800A9EA4((D_800E6A10[omCurrentObj->objId] == 1.0f) ? 0x000101B6 : 0x000101B4);
