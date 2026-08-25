@@ -1105,3 +1105,99 @@ the pool allocator's real stride is 0x78.
     func_8016F40C_ovl5 (25/202, note said 12/201) are near-misses at all.
     LEVERS 69 and 74 say to look at where diff 0 is before spending a compile;
     the prior step is to MEASURE the caller rather than read its note.
+
+77. **`multu` against a REGISTER holding a size constant is IDO indexing a
+    STRUCT ARRAY. No respelling of an integer multiply reaches it.** The tell
+    is an asymmetry inside one basic block, and it is unmistakable once you
+    know to look for it. func_80113F08 (ovl2_10.c) hoists
+    `addiu $fp, $zero, 0xC` out of the whole function and spends
+    `multu $v0, $fp` at six sites -- while two instructions later, in the same
+    block, it strength-reduces the OTHER stride in the same statement pair to
+    `sll; subu; sll` for `vi * 6`. IDO does not "hoist constant multipliers":
+    if the multiplier were a literal it would reduce both. A held size plus a
+    general multiply means the source indexed an array whose ELEMENT TYPE is
+    that many bytes wide.
+
+    Measured on that function and its sibling func_801133C8: the draft wrote
+    `&mesh->header.vertices.VerticesF[vi * 3]` -- an `f32 *` scaled by hand --
+    and IDO emitted `li 3` plus a shift. Writing the index for what it really
+    is,
+
+        (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi]
+
+    reproduces `multu` against the hoisted 0xC on the FIRST compile:
+    629 -> 493 of 667 on func_80113F08, 697 -> 685 of 720 on func_801133C8.
+    136 words from one cast.
+
+    Two negatives worth not re-spending. Spelling it as a byte offset
+    (`(u8 *)base + vi * 0xC`) is inert -- that is still an integer multiply by
+    a literal and IDO reduces it identically; func_80113F08's note had
+    recorded exactly that experiment as "measured inert" and concluded the
+    stride was unreachable. And the s16 model-vertex index two lines down
+    genuinely IS `&modelVtx[vi * 3]`, which is why the ROM reduces that one:
+    do not "fix" both.
+
+78. **SCOPE CORRECTION TO LEVER 13: a pad reserves its words only when it is
+    unreferenced AND sits BETWEEN two locals that own stack slots.** LEVER 13
+    says pad locals go at the END of the declaration list, and several notes
+    have since read that as a placement rule. It is not; it is a statement
+    about which direction a KEPT pad pushes the locals above it. Measured
+    three ways on func_801133C8 (ovl2_10.c), one compile each:
+
+        u8  pad[88] declared LAST   -> frame 0xC8, dropped whole, not one
+                                       byte reserved
+        f32 pad[1]  declared FIRST  -> dropped
+        f32 pad0[3] between `world` and `mn`, f32 pad1[25] between `mx` and
+        `tmn`                       -> frame 0xC8 -> the ROM's 0x138, exact
+
+    In a function with this many register-allocated locals the end of the list
+    is the one place a pad is guaranteed to evaporate. LEVER 30 says the same
+    thing about scalars ("an unreferenced SCALAR BETWEEN two used locals does
+    reserve its word") and the array case is identical -- the operative words
+    in both are "between two used locals", not the size and not the type.
+
+    Corollary, and it cost a compile to learn: **the pad count is not portable
+    across a reordering.** Moving `rec`/`recIndex` to the front of the same
+    function's list, to reach the ROM's 0x130/0x134 spill slots, dropped words
+    elsewhere in the list, and pad1 had to go 17 -> 41 to hold the SAME 0x138.
+    Re-tune the count after every order change; a frame that was exact before
+    the move will not be exact after it.
+
+    Also measured on the way, against the "frame is arithmetic" family
+    (LEVERS 54/57): a USED temp is not a declaration for this purpose. The
+    previous note here had tried eighteen per-component `f32` temps and
+    reported the frame did not grow at all. It does not -- IDO forwards them.
+    That is a true measurement pointing the wrong way, and it is what sealed
+    both of these functions as permuter-only for several sessions.
+
+79. **`absf_sweep.py --screen` flags the frame only when the first diff is at
+    INDEX 0, and that is not the same question as whether the frame is the
+    first diff.** func_800FB164 (ovl2_3.c) is reported as first-diff 5 and
+    therefore unflagged; instruction 5 IS its `addiu $sp, -0x50` against our
+    -0x78. Five prologue words happened to match ahead of it. Same for
+    func_800FAC74 at first-diff 9 (`sw $ra` at the wrong offset) and
+    func_800FE154 at 6. Read what the first diff IS, not where it is -- the
+    flag is a convenience, not the screen.
+
+80. **IDO warning 709 does NOT discriminate LEVER 68's class in this tree, and
+    the corollary that says to grep it needs this caveat.** LEVER 68 ends
+    "grep the warnings, not the listings, to find the next cluster". Done:
+    289 distinct 709 sites, 64 of them assignments into the `D_800DEDD0` /
+    `D_800DEF90` / `D_800DF150` GObj proc tables. They are not evidence of a
+    type disagreement. `src/ovl1/ovl1_6.h` declares those three tables as
+    `extern void (*D_800DF150[])(struct GObj *)` with NO prior declaration of
+    `struct GObj` in scope, so the parameter type is a fresh incomplete struct
+    local to each prototype, and EVERY assignment into them warns -- including
+    `D_800DF150[objId] = func_801DB358_ovl13`, whose callee is a correctly
+    typed `void (GObj *)`. Verified both directions.
+
+    The discriminator that does work is already in the tree:
+    `tools/decomp/check_local_protos.py`, whose CONFLICT section reports a
+    definition and its disagreeing declarations by name. It is what found the
+    live one left in my scope (`func_801AC840_ovl7` declared `void (void)`
+    twice in src/ovl7/ovl7_8.c against its `void (GObj *)` definition in
+    ovl7_5.c).
+
+    Adding `struct GObj;` above line 37 of src/ovl1/ovl1_6.h would silence the
+    64 and make the grep useful again. It is a pure type declaration and
+    cannot move a byte, but it is a shared header -- coordinator task.
