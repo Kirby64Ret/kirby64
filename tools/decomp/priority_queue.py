@@ -51,53 +51,52 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 # order locked by bc1fl polarity, 2 diffs out of 299, and a lane has proved no
 # source spelling reaches it.
 TARGETS = [
-    # REGENERATED 2026-08-25 (second pass) from a fresh measure over every
-    # file no lane was holding open. Ordered by residue, then by SIZE within
-    # a residue -- a 615-word function two words from byte-exact is worth
-    # more than a 20-word one, and the first list did not say so.
+    # REBUILT 2026-08-25 from the tree's own FACTORY/FLOOR notes, after the
+    # ABSF sweep, the barrier sweep and the zero-score harvest closed or moved
+    # most of the previous list. Ordered by residue, then by SIZE within a
+    # residue -- a 754-word function nineteen words from byte-exact is worth
+    # more of a slot than a 24-word one.
     #
-    # Re-derive after any measure_seeds run. Do NOT build it from the FACTORY
-    # notes: 90 of those were corrected today for disagreeing with verify.py
-    # and 57 more carry a register-floor DIAGNOSIS on functions that are
-    # 30-99% wrong. priority_queue also skips any entry whose function no
-    # longer has a guarded draft, so a stale line here costs a log message
-    # rather than a 420-second slot.
-    (  1, 'src/ovl3/kirby.c', 'func_8016DA14_ovl3'),
-    (  1, 'src/ovl4/ovl4_3.c', 'func_80157028_ovl4'),
-    (  2, 'src/ovl15/ovl15.c', 'func_801E05A8_ovl15'),
-    (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
-    (  2, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),
-    (  2, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
-    (  3, 'src/ovl4/ovl4_4.c', 'func_80158E98_ovl4'),
-    (  3, 'src/ovl7/ovl7_3.c', 'func_801A33B8'),
-    (  3, 'src/ovl3/plyeff.c', 'func_80164130_ovl3'),
-    (  3, 'src/ovl3/kirby.c', 'func_801708A0_ovl3'),
-    (  3, 'src/ovl17/ovl17_3.c', 'func_801E14B0_ovl17'),
-    (  3, 'src/main/libn_audio.c', 'n_alSavePull'),
-    (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),
-    (  4, 'src/ovl14/ovl14.c', 'func_801DF290_ovl14'),
-    (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),
-    (  4, 'src/ovl5/ovl5_5.c', 'func_8017462C_ovl5'),
-    (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),
-    (  5, 'src/ovl8/ovl8_4.c', 'func_801D6534_ovl8'),
-    (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),
-    (  6, 'src/ovl3/kirby.c', 'func_80171E00_ovl3'),
-    (  6, 'src/ovl1/ovl1_11.c', 'func_800BB98C'),
-    (  6, 'src/ovl11/ovl11_2.c', 'func_801DF728_ovl11'),
-    (  6, 'src/ovl17/ovl17.c', 'func_801DC91C_ovl17'),
-    (  7, 'src/ovl5/ovl5_3.c', 'func_8016626C_ovl5'),
-    (  7, 'src/ovl9/ovl9_6.c', 'func_801ED9AC_ovl9'),
-    (  7, 'src/ovl9/ovl9_7_2.c', 'func_801F58A0_ovl9'),
-    (  7, 'src/ovl16/ovl16.c', 'func_801DC8E4_ovl16'),
-    (  7, 'src/main/render.c', 'func_8001479C'),
-    (  8, 'src/ovl3/ovl3_6.c', 'func_8017EA0C_ovl3'),
-    (  8, 'src/ovl3/ovl3_6.c', 'func_80184538_ovl3'),
-    (  8, 'src/ovl5/ovl5_3.c', 'func_80165634_ovl5'),
-    (  8, 'src/ovl5/ovl5_6.c', 'func_80178690_ovl5'),
-    (  8, 'src/ovl2/plylib.c', 'func_8011C4E8'),
-    (  8, 'src/ovl2/ovl2_10.c', 'func_801173F4'),
-    (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),
-    (  8, 'src/ovl6/ovl6.c', 'func_80154A40_ovl6'),
+    # Re-derive after any measure_seeds run with the snippet in the module
+    # docstring. priority_queue skips any entry whose function no longer has a
+    # guarded draft, so a stale line costs a log message rather than a slot.
+    (  2, 'src/ovl1/ovl1_13.c', 'func_800BDE0C'),   # of 72
+    (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),   # of 88
+    (  2, 'src/ovl5/ovl5_5.c', 'func_8017232C_ovl5'),   # of 88
+    (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),   # of 169
+    (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),   # of 146
+    (  5, 'src/ovl5/ovl5_5.c', 'func_80176F04_ovl5'),   # of 138
+    (  7, 'src/main/render.c', 'func_8001479C'),   # of 13
+    (  8, 'src/ovl1/ovl1_10.c', 'func_800BB24C'),   # of 70
+    ( 12, 'src/ovl5/ovl5_4.c', 'func_8016F40C_ovl5'),   # of 201
+    ( 12, 'src/ovl5/ovl5_5.c', 'func_80171950_ovl5'),   # of 327
+    ( 13, 'src/ovl1/ovl1_10.c', 'func_800BA90C'),   # of 62
+    ( 13, 'src/ovl18/code_232B60.c', 'func_80221498_ovl18'),   # of 138
+    ( 13, 'src/ovl4/ovl4_1.c', 'func_80151CEC_ovl4'),   # of 59
+    ( 13, 'src/ovl7/ovl7_3.c', 'func_801A1B6C_ovl7'),   # of 318
+    ( 14, 'src/ovl7/ovl7_17.c', 'func_801C02D0_ovl7'),   # of 174
+    ( 17, 'src/ovl1/ovl1.c', 'func_800A238C'),   # of 45
+    ( 18, 'src/ovl1/ovl1.c', 'func_8009BA74'),   # of 117
+    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109504'),   # of 123
+    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109784'),   # of 123
+    ( 19, 'src/ovl2/ovl2_7.c', 'func_80109970'),   # of 123
+    ( 19, 'src/ovl7/yakulib.c', 'func_801BC978_ovl7'),   # of 754
+    ( 20, 'src/ovl1/save_file.c', 'func_800B9008'),   # of 24
+    ( 20, 'src/ovl2/ovl2_3.c', 'func_800FC03C'),   # of 74
+    ( 20, 'src/ovl6/ovl6.c', 'func_80154628_ovl6'),   # of 27
+    ( 21, 'src/ovl15/ovl15.c', 'func_801DCDA8_ovl15'),   # of 165
+    ( 21, 'src/ovl19/helper.c', 'func_8021F174_ovl19'),   # of 144
+    ( 23, 'src/ovl2/ovl2_7.c', 'func_8010B284'),   # of 127
+    ( 24, 'src/main/libn_audio.c', 'func_80023A28'),   # of 47
+    ( 24, 'src/ovl6/ovl6.c', 'func_80154C64_ovl6'),   # of 63
+    ( 24, 'src/ovl7/enelib.c', 'func_8019D4D0_ovl7'),   # of 244
+    ( 24, 'src/ovl7/ovl7_4.c', 'func_801A6434_ovl7'),   # of 119
+    ( 25, 'src/ovl1/save_file.c', 'func_800B91B8'),   # of 30
+    ( 25, 'src/ovl1/save_file.c', 'saveCalcHeaderChecksum'),   # of 30
+    ( 25, 'src/ovl7/ovl7_16.c', 'func_801BE79C_ovl7'),   # of 429
+    ( 26, 'src/ovl1/ovl1.c', 'func_8009E834'),   # of 48
+    ( 27, 'src/ovl7/ovl7_3.c', 'func_801A2C78_ovl7'),   # of 123
+    ( 27, 'src/ovl9/ovl9_3.c', 'func_801DE280_ovl9'),   # of 227
 ]
 
 
