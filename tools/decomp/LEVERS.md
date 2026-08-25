@@ -1478,6 +1478,18 @@ the pool allocator's real stride is 0x78.
     `(struct GObj *arg0)` and already HAS its parameter; what was missing was
     passing it on, which no `(void)`-headed screen can see.
 
+    THE LEVER 89 SCREEN OF ovl1/main/ovl18 IS NOW COMPLETE, five sites:
+      func_80225FA8_ovl18 -> func_801A0D74_ovl7   PAID, 94/97 -> 45/97
+      func_800222C4       -> osWritebackDCacheAll  libultra, genuinely no-arg
+      func_80227308_ovl18 -> scRemovePostProcessFunc  engine, genuinely no-arg
+      func_800A8724       -> func_800A82C0   LEVER 67(b): that callee is a
+                            MATCHED `void (void)` definition in the same file
+                            whose whole body writes globals
+      func_800B531C       -> func_800B35F0   LEVER 67(b), same shape -- it
+                            reaches its object through omCurrentObj
+    One payer of five, and the two 67(b) rejections were settled by reading the
+    callee's DEFINITION, which is the check LEVER 89's own caveat asks for.
+
     The original entry, kept because the nineteen negatives are real:
 
     **LEVER 58 is exhausted among the `(void)`-HEADED drafts of ovl1, main and
