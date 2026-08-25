@@ -291,11 +291,12 @@ void func_801D1BB0_ovl8(struct GObj *arg0) {
     func_800B31B4();
 }
 
-/* FACTORY: 94/106, but structurally instruction-for-instruction: the whole residue is a
- * 4-byte frame displacement (the ROM's local block starts at 0x20 with a
- * FOURTH, unused compiler spill slot at 0x3C; IDO only ever allocates three)
- * plus the temp-register renumbering that follows from it. Leading/trailing
- * pad locals move the block in 8-byte steps and cannot land on +4. */
+/* The "FOURTH, unused compiler spill slot at 0x3C" this note used to describe
+ * as an unreachable 4-byte frame displacement was func_801D1CAC_ovl8's `flag`
+ * being REGISTER-allocated: four locals, four spill slots. IDO only leaves
+ * three when `flag = 0;` sits inside the `if (p != NULL)` block. Both users of
+ * this struct are byte-exact as of 2026-08-25; see the note on
+ * func_801D1E98_ovl8 below for the three levers. */
 struct Ovl8Unk80 {
     /* 0x00 */ u32 unk0;
     /* 0x04 */ f32 unk4;
@@ -308,29 +309,33 @@ struct Ovl8Unk80 {
     /* 0x20 */ u8 unk20;
 };
 
-/* FACTORY: 94/106 -- see the note above the struct. Re-measured 2026-08-25:
- * `p` and `d` also carry each other's registers (ROM $a2=p/$v1=d, IDO the
- * reverse). Swapping their declaration order costs one (95); swapping the two
- * ASSIGNMENTS scores 87 but moves the Vector off the ROM's sp+0x20, so 94 with
- * the frame right is the better seed. */
-#ifdef NON_MATCHING
+/* Byte-exact, un-guarded 2026-08-25. 94/106 -> 8/107 by porting the three
+ * levers from func_801D1E98_ovl8 verbatim (flag = 0 hoisted out of the
+ * `if (p != NULL)` block, the record lookup split into `rec`, and the dead `d`
+ * reused for g->data.dobj), then 8 -> 0 by putting `g` BEFORE `d` in both the
+ * declaration list and the assignments -- that is what puts d's spill at
+ * sp+0x30 and g's at sp+0x34, the way the ROM has them. Declaration order
+ * alone is 2/107 and assignment order alone is 6/107; it takes both.
+ * The old note's reading, that `p` and `d` "carry each other's registers", was
+ * a symptom of the flag allocation, not a separate floor. */
 void func_801D1CAC_ovl8(void) {
     extern void **D_800E1B50[];
     extern struct DObj **D_800DFBD0[];
     void utilGetTransformSRT(Vector *, struct DObj *);
     void func_800A4DB8(Vector *, struct DObj *);
+    void **rec;
     struct Ovl8Unk80 *p;
-    struct DObj *d;
     struct GObj *g;
+    struct DObj *d;
     s32 flag;
     Vector sp20;
-    s32 pad;
 
-    p = (struct Ovl8Unk80 *) D_800E1B50[omCurrentObj->objId][0x20];
-    d = D_800DFBD0[omCurrentObj->objId][D_800EA520[omCurrentObj->objId]];
+    rec = D_800E1B50[omCurrentObj->objId];
+    p = (struct Ovl8Unk80 *) rec[0x20];
     g = D_800DE350[omCurrentObj->objId];
+    d = D_800DFBD0[omCurrentObj->objId][D_800EA520[omCurrentObj->objId]];
+    flag = 0;
     if (p != NULL) {
-        flag = 0;
         utilGetTransformSRT(&sp20, d->firstChild->firstChild);
         p->unk4 = sp20.x;
         p->unk8 = sp20.y;
@@ -344,8 +349,9 @@ void func_801D1CAC_ovl8(void) {
         }
         if (g != NULL) {
             if (!(g->flags & 1)) {
-                if (g->data.dobj != NULL) {
-                    if (!(g->data.dobj->flags & 3)) {
+                d = g->data.dobj;
+                if (d != NULL) {
+                    if (!(d->flags & 3)) {
                         flag = 1;
                     }
                 }
@@ -358,42 +364,63 @@ void func_801D1CAC_ovl8(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1CAC_ovl8.s")
-#endif
 
 void func_801D1E58_ovl8(s32 arg0) {
     func_800B4B9C(arg0);
     gEntitiesNextPosYArray[omCurrentObj->objId] = -20.0f;
 }
 
-/* PADDING TRAP: this listing carries 7 words of linker alignment fill after
- * its own .size, so converting it would leave the TU short under kirby.ld's
- * SUBALIGN(16). It is the LAST function of this translation unit, so the fix is
- * a `pad` subsegment in kirby64.yaml plus the matching kirby.ld edit -- a
- * coordinator job, not a source one. Draft kept for whoever owns that.
- * Measured 2026-08-25 with the trap check bypassed: 83/98, i.e. the draft is
- * far from exact as well, so the yaml change alone would not close it.
- * measure_seeds reports this one as "unscorable" -- that is the trap, not a
- * compile failure. */
-#ifdef NON_MATCHING
+/* Byte-exact, un-guarded 2026-08-25.  It was PADDING-TRAPPED (seven words of
+ * alignment fill past its own .size) until `- [0x175B10, pad]` went into
+ * kirby64.yaml; the old note here said "the draft is far from exact as well,
+ * so the yaml change alone would not close it", which was true and beside the
+ * point -- being SCORABLE is what closed it.  83/98 -> MATCH in three edits,
+ * and all three are about who owns a register:
+ *
+ *  1. `flag = 0;` moved OUT of the `if (p != NULL)` block: 83 -> 35.  With the
+ *     initialiser inside the block IDO leaves `flag` memory-resident and
+ *     reloads it in the delay slot of every branch out of the g-chain
+ *     (`beqzl`/`bnezl` + `lw`); with it in the entry block `flag` becomes a
+ *     register variable in $t0, the ROM's plain `beqz` + `nop` fall out, and
+ *     `sw $zero, 0x2C($sp)` in the jal's delay slot turns out to be its SPILL,
+ *     not the assignment.  That one reservation of $t0 is also what pushes the
+ *     D_800E1B50 chain out of the $t pool, which is why the ROM spends $a0 on
+ *     it -- the "temp renumbering" the old note described was downstream of
+ *     this, not a separate problem.
+ *  2. The record lookup split into its own local -- `rec = D_800E1B50[id];`
+ *     then `p = rec[0x20];` instead of one subscripted expression: 35 -> 3.
+ *     Same two loads either way; the split gives the intermediate a NAME and
+ *     it takes $a0.
+ *  3. The dead `d` reused for the collision object -- `d = g->data.dobj;`
+ *     instead of naming `g->data.dobj` twice: 3 -> 0.  `d` is dead after
+ *     func_800A4DB8, and the ROM reuses its register ($a2) rather than taking
+ *     a fresh one ($v0).  A separate `dob` local does NOT do it (measured 3,
+ *     13 and 23 depending on where it is declared) -- the point is reusing the
+ *     variable whose register the ROM reuses.
+ *
+ * `s32 pad` is gone: `rec` occupies the slot it was holding open, and the
+ * frame is 0x40 either way.  Measured negatives, so nobody re-runs them:
+ * `register s32 flag`, a u8/s16 flag, the `&&`-chain form of the g test, the
+ * inverted final test, and a goto-merge form are all EXACTLY 83 -- none of
+ * them is the knob.  Declaration-order sweeps are all worse (35 -> 36..49). */
 void func_801D1E98_ovl8(void) {
     extern void **D_800E1B50[];
     extern struct DObj **D_800DFBD0[];
     void utilGetTransformSRT(Vector *, struct DObj *);
     void func_800A4DB8(Vector *, struct DObj *);
-    s32 pad;
+    void **rec;
     struct Ovl8Unk80 *p;
     struct GObj *g;
     struct DObj *d;
     s32 flag;
     Vector sp20;
 
-    p = (struct Ovl8Unk80 *) D_800E1B50[omCurrentObj->objId][0x20];
+    rec = D_800E1B50[omCurrentObj->objId];
+    p = (struct Ovl8Unk80 *) rec[0x20];
     g = D_800DE350[omCurrentObj->objId];
     d = D_800DFBD0[omCurrentObj->objId][D_800EA520[omCurrentObj->objId]];
+    flag = 0;
     if (p != NULL) {
-        flag = 0;
         utilGetTransformSRT(&sp20, d);
         p->unk4 = sp20.x;
         p->unk8 = sp20.y;
@@ -406,8 +433,9 @@ void func_801D1E98_ovl8(void) {
         }
         if (g != NULL) {
             if (!(g->flags & 1)) {
-                if (g->data.dobj != NULL) {
-                    if (!(g->data.dobj->flags & 3)) {
+                d = g->data.dobj;
+                if (d != NULL) {
+                    if (!(d->flags & 3)) {
                         flag = 1;
                     }
                 }
@@ -420,6 +448,3 @@ void func_801D1E98_ovl8(void) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl8/ovl8/func_801D1E98_ovl8.s")
-#endif
