@@ -5745,24 +5745,38 @@ void func_80175754_ovl3(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 456/471 [was noted 15/471], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 456 of 471 words differ (96%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 382/471 (was 456/471, i.e. a near-total mismatch), and the frame
+   is now the ROM's -0x38.  The note this replaces claimed 15/471 and a
+   "whole-function callee-saved permutation"; the real number was 456/471,
+   which the annotation below correctly said cannot be a permutation.
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+     456 -> 384  the cached `s32 id = omCurrentObj->objId` spelled inline at
+                 all 39 uses (LEVER 97).  Frame -0x40 -> -0x30 against the
+                 ROM's -0x38.
+     384 -> 382  ONE reserved `s32 pad` declared BETWEEN `anim` and
+                 `animSpd`, giving the order spd, drift, anim, pad, animSpd.
+                 That is LEVER 110 solved rather than swept: the ROM keeps
+                 animSpd at 0x24 in a 0x38 frame, i.e. four words below the
+                 region top, so animSpd has to be the FIFTH declaration.
+                 Worth recording that the same pad declared LAST is dropped
+                 by IDO and leaves the frame at -0x30 (LEVER 22) -- a
+                 reserved slot only counts where a later declaration sits
+                 below it.
+
+   Measured inert: `animSpd = (D_800E8AE0[id] & 6) ? 2.0f : 4.0f` in place of
+   the two-armed if/else is EXACTLY 382 with the same aligned-diff runs, so
+   the `beql $t0, $zero` + `mtc1 $at, $f6`-in-the-delay-slot form the ROM uses
+   there is not reachable from either spelling.
+
+   WHAT IS LEFT (aligned-diff run count 39): the ROM uses PLAIN branches with
+   `b <merge>` tails and an unfilled `nop` where this C uses branch-LIKELY
+   chains -- at the `gKirbyState.unk4 == 1` table swaps (ROM `bne $a0,$v0`
+   against this C's `bnel`), and through the whole `switch (gKirbyState.unkD)`
+   ladder (ROM 130-148: `sb; b .L80175BE4` per arm, and `bnez $t1; nop` for
+   the `&&`).  LEVER 109 says a redundant `b` at the end of a two-value
+   assignment is the if/else form; these arms already ARE if/else and a
+   switch, so the discriminator here is something else and it is the next
+   thing to read. */
 
 /* PORT: the light-hit coroutine (track action 0x14 -- the no-damage-word
  * flinch, e.g. gas/contact stagger), from asm/nonmatchings/ovl3/kirby/
@@ -5784,42 +5798,36 @@ void func_8017599C_ovl3(s32 arg0) {
     extern s16 D_80198838_ovl3;
     extern s32 D_800E85A0[];
     extern s32 D_800D6F10;
-    f32 animSpd;
     f32 spd;
     f32 drift;
     s32 anim;
-    s32 id;
-
+    s32 pad;
+    f32 animSpd;
     gKirbyState.unk30 = 0;
-    id = omCurrentObj->objId;
-    if (D_800E8AE0[id] & 6) {
-        animSpd = 2.0f;
-    } else {
-        animSpd = 4.0f;
-    }
+    animSpd = (D_800E8AE0[omCurrentObj->objId] & 6) ? 2.0f : 4.0f;
     func_800AECC0(animSpd);
     func_800AED20(animSpd);
-    D_800DDFD0[id] = 0x14;
+    D_800DDFD0[omCurrentObj->objId] = 0x14;
     if (gKirbyState.unk4 == 1) {
-        D_800E0490[id] = D_80192704_ovl3;
+        D_800E0490[omCurrentObj->objId] = D_80192704_ovl3;
     } else {
-        D_800E0490[id] = D_801926E8_ovl3;
+        D_800E0490[omCurrentObj->objId] = D_801926E8_ovl3;
     }
     if (gKirbyState.unk4 == 1) {
         gKirbyState.unk15C = (u32) (uintptr_t) D_801903E0_ovl3;
     } else {
         gKirbyState.unk15C = (u32) (uintptr_t) D_80190358_ovl3;
     }
-    gEntitiesScaleXArray[id] = 0.2f;
-    gEntitiesScaleYArray[id] = 0.2f;
-    gEntitiesScaleZArray[id] = 0.2f;
-    D_800DF310[id] = 0;
-    gEntitiesAngleXArray[id] = 0.0f;
+    gEntitiesScaleXArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleYArray[omCurrentObj->objId] = 0.2f;
+    gEntitiesScaleZArray[omCurrentObj->objId] = 0.2f;
+    D_800DF310[omCurrentObj->objId] = 0;
+    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
     D_800D6F10 = 0;
     gKirbyState.isTurning = 0;
     gKirbyState.unk7 = 0;
     gKirbyState.isInhaling = 0;
-    D_800E8060[id] = -1U;
+    D_800E8060[omCurrentObj->objId] = -1U;
     func_8011DC5C();
     func_8011E0E8();
     func_8011E234();
@@ -5851,14 +5859,13 @@ void func_8017599C_ovl3(s32 arg0) {
         func_80122F08(0x20007);
     }
     gKirbyState.unk154 = 2;
-    id = omCurrentObj->objId;
-    D_800E3750[id] = 0.0f;
-    D_800E3210[id] = D_800E3750[id];
-    D_800E3C90[id] = 65535.0f;
+    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     play_sound(0x263);
     gKirbyState.unk68 = 1;
-    if ((((f32) D_800E85A0[id] == 1.0f) && (D_800E6A10[id] == 1.0f))
-        || (((f32) D_800E85A0[id] == -1.0f) && (D_800E6A10[id] == -1.0f))) {
+    if ((((f32) D_800E85A0[omCurrentObj->objId] == 1.0f) && (D_800E6A10[omCurrentObj->objId] == 1.0f))
+        || (((f32) D_800E85A0[omCurrentObj->objId] == -1.0f) && (D_800E6A10[omCurrentObj->objId] == -1.0f))) {
         gKirbyState.unk44 = 1;
     } else {
         gKirbyState.unk44 = 0;
@@ -5874,21 +5881,20 @@ void func_8017599C_ovl3(s32 arg0) {
         func_800AECC0(animSpd);
         func_800AED20(animSpd);
     }
-    id = omCurrentObj->objId;
-    if ((f32) D_800E85A0[id] == 1.0f) {
+    if ((f32) D_800E85A0[omCurrentObj->objId] == 1.0f) {
         spd = 8.0f;
         drift = -0.4f;
     } else {
         spd = -8.0f;
         drift = 0.4f;
     }
-    if (D_800E8AE0[id] != 0) {
+    if (D_800E8AE0[omCurrentObj->objId] != 0) {
         spd *= 0.5f;
         drift *= 0.5f;
     }
-    D_800E64D0[id] = spd;
-    D_800E6690[id] = drift;
-    D_800E6850[id] = ABSF(spd);
+    D_800E64D0[omCurrentObj->objId] = spd;
+    D_800E6690[omCurrentObj->objId] = drift;
+    D_800E6850[omCurrentObj->objId] = ABSF(spd);
     switch (gKirbyState.unk4) {
         case 0:
             if (gKirbyState.unk44 != 0) {
@@ -5896,14 +5902,13 @@ void func_8017599C_ovl3(s32 arg0) {
             } else {
                 func_801230E8(0x20071, 0x20072, 1);
             }
-            id = omCurrentObj->objId;
-            if (D_800E8920[id] == 0) {
-                if (D_800E8AE0[id] & 6) {
-                    D_800E3750[id] = -0.4f;
-                    D_800E3C90[id] = 1.0f;
+                    if (D_800E8920[omCurrentObj->objId] == 0) {
+                if (D_800E8AE0[omCurrentObj->objId] & 6) {
+                    D_800E3750[omCurrentObj->objId] = -0.4f;
+                    D_800E3C90[omCurrentObj->objId] = 1.0f;
                 } else {
-                    D_800E3750[id] = -0.980665f;
-                    D_800E3C90[id] = 16.0f;
+                    D_800E3750[omCurrentObj->objId] = -0.980665f;
+                    D_800E3C90[omCurrentObj->objId] = 16.0f;
                 }
                 if (gKirbyState.unk44 != 0) {
                     func_801230E8(0x2006F, 0x20070, 1);
@@ -5923,10 +5928,9 @@ void func_8017599C_ovl3(s32 arg0) {
             func_801230E8(0x20161, 0x20162, 1);
             break;
     }
-    id = omCurrentObj->objId;
-    D_800E6690[id] = 0.0f;
-    D_800E64D0[id] = D_800E6690[id];
-    D_800E6850[id] = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
     gKirbyState.unk68 = 0;
     gKirbyState.unk30 += 1;
     curObjSleepForever();

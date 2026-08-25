@@ -419,6 +419,12 @@ void animUpdateModelTreeAnimation(GObj *);
  *     3/163. A barrier stops motion ACROSS it; here both compilers already
  *     hoist something into the same slots and the disagreement is over WHICH,
  *     which a barrier cannot express.
+ *   - 2026-08-25: swapping the compare to `sp24 == 0.0f` is EXACTLY inert,
+ *     3/163 and the same three words. So the note above is right that the
+ *     operand order is not the knob here, and it is now measured rather than
+ *     inferred -- LEVER 14 moves a compare whose operands are a load and a
+ *     local, and does nothing when the two candidates are a load and a
+ *     materialised constant competing for the same delay slot.
  * The likely cause of the preference is that sp24 has a second use further
  * down (`func_800B2F54(..., sp24)`), so IDO ranks its load above the constant
  * in the ready list. That points at the later use, not at this comparison. */
