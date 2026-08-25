@@ -1884,6 +1884,32 @@ the pool allocator's real stride is 0x78.
        exactly zero in a three-arm function is a reason to check the arm before
        it is a reason to believe anything about IDO.
 
+104. **READ AN ALIGNED DIFF BEFORE YOU BELIEVE A POSITIONAL SCORE.**
+    verify.py compares word i to word i, so ONE inserted instruction reports
+    every word after it as wrong. LEVER 48 warns about the denominator; this is
+    the other half. A draft that is two words long reads 99% different and the
+    two words are invisible -- which is exactly how six functions in ovl3 sat
+    at "99% wrong, must be re-derived" while being three source edits from
+    exact.
+
+    `tools/decomp/aligndiff.py <listing.s> <difflines.txt>` rebuilds the whole
+    compiled stream from the positional diff (an index verify.py does not list
+    is an index where current == target), reduces each instruction to its
+    MNEMONIC, and difflibs the two. Register-only differences vanish from the
+    output, which is the point: what prints is the handful of places where the
+    two functions differ in SHAPE.
+
+        VERIFY_MAXDIFF=900 python3 tools/decomp/scratchverify.py f.c func \
+          | grep -a '^  \[' > /tmp/d.txt
+        python3 tools/decomp/aligndiff.py asm/nonmatchings/seg/f/func.s /tmp/d.txt
+
+    Pass a VERIFY_MAXDIFF larger than the diff count -- the default caps the
+    listing at 40 lines and a truncated diff rebuilds a stream that is wrong
+    past the cap. If the output is empty but for `li`/`addiu` and `move`/`or`
+    (objdump aliases for the same encodings), the draft is instruction-exact
+    and the rest is a permutation; confirm with LEVER 65b's opcode test and
+    queue it for the permuter instead of sweeping it by hand.
+
 97. **THE objId LEVER, WITH THE SCREEN CORRECTED AND THE COST MEASURED.**
     (Written as "80" and renumbered to 97 on 2026-08-25: several lanes
     numbered concurrently and 80 was already taken. Content unchanged.)
