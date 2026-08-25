@@ -3222,17 +3222,26 @@ void func_80170D88_ovl3(s32 arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* 45/318: every instruction and both switch shapes are right; the residue is a
-   two-register swap plus its knock-on. The ROM gives $a1 to the D_800E6690 base
-   and $a2 to the gKirbyState base; this C gives $a1 to gKirbyState and $a2 to
-   D_800E6690, and correspondingly $f0/$f2 are swapped between the shared 0.0f
-   and the 65535.0f literal (which pushes 6.0f into $f12 in the case 1/5 arms).
-   Measured: spelling BOTH gKirbyState.floatTimer and the case 4 store as
-   gKirbyState fields costs 59; using D_8012E7DC/D_8012E80C for those two (the
-   spelling src/ovl2/plylib.c uses for the same words) takes it to 45 by cutting
-   the gKirbyState base to four uses. Also swept: moving `gKirbyState.unk4C = 0`
-   one statement later (88), two later (94), before D_800DDFD0 (101), and an
-   integer 0 for D_800E6690 (266 -- the two 0.0f stores must share one mtc1). */
+/* FACTORY: 14/318, one register-pair swap ($a1/$a2 between the D_800E6690
+   and gKirbyState bases) and nothing else. Was 45/318.
+
+   THE OLD NOTE'S LAST SWEEP LINE WAS A NEAR MISS AND IS CORRECTED HERE: it
+   records "an integer 0 for D_800E6690 (266 -- the two 0.0f stores must share
+   one mtc1)". They share one mtc1 either way; what matters is that BOTH the
+   D_800E6690 and the D_800E3750 store are written as the integer `0`
+   together. One of the two alone is catastrophic (the recorded 266); both
+   together take the $f0/$f2 half of the residue away completely, 45 -> 14.
+   Same knob as LEVER 20's operand-kind reading and as func_80171E00_ovl3
+   thirty lines below, which is matched and un-guarded: with both zeros
+   written `0.0f` IDO gives $f0 to the 65535 pool load and pushes the
+   mtc1 $zero to $f2, which is the reverse of the ROM.
+
+   Still true and re-confirmed: the raw D_8012E7DC / D_8012E7E8+8 spellings
+   ARE the ROM's -- retyping them to gKirbyState.floatTimer / .unk30 costs 11
+   words (14 -> 25), because the ROM really does materialise a separate
+   address for the entry test and only later holds a gKirbyState base.
+   Re-swept at the new baseline and negative: every barrier_sweep placement
+   (LEVER 61/71), and moving `gKirbyState.unk4C = 0` later (66). */
 void func_801712F8_ovl3(GObj *arg0) {
     extern s16 D_80198838_ovl3;
     extern u32 D_8012E7DC;
@@ -3246,10 +3255,10 @@ void func_801712F8_ovl3(GObj *arg0) {
         gKirbyState.unk4C = 0;
         D_800E9AA0[omCurrentObj->objId].as_s32 = 1;
         D_800E98E0[omCurrentObj->objId] = D_800E9AA0[omCurrentObj->objId].as_s32;
-        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E6690[omCurrentObj->objId] = 0;
         D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
         D_800E6850[omCurrentObj->objId] = 65535.0f;
-        D_800E3750[omCurrentObj->objId] = 0.0f;
+        D_800E3750[omCurrentObj->objId] = 0;
         D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
         D_800E3C90[omCurrentObj->objId] = 65535.0f;
         if (gKirbyState.previousAction != 0x1E) {
