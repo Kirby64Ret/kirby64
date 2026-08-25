@@ -33,7 +33,7 @@ void func_801DDC40_ovl17(struct GObj *);
 void func_801DFABC_ovl17(void);
 void func_801E069C_ovl17(void);
 void func_801E0704_ovl17(void);
-void func_801E073C_ovl17(void);
+s32 func_801E073C_ovl17(void);
 void func_801DEA5C_ovl17(void);
 void func_801DF768_ovl17(f32);
 void func_800A9EA4(s32, s32);
@@ -1232,8 +1232,36 @@ extern f32 D_800D6E5C;
    run the hand's own script -- pinning the attach record to the hand DObj and
    growing its reach with the charge -- then drain the resulting event into
    D_800E83E0/unk43.  Event 1 hands the process to func_801DDB8C_ovl17, event 2
-   latches the old contact timer and plays the grab cue. */
-void func_801E073C_ovl17(void) {
+   latches the old contact timer and plays the grab cue.
+
+   FACTORY: 124/206, down from 202/205. Two findings.
+
+   IT RETURNS s32, NOT void. Every early exit in the listing is
+   `b .L801E0A64_ovl17` with `or $v0, $zero, $zero` in the delay slot, and
+   both event arms end `b .L801E0A64_ovl17` with `addiu $v0, $zero, 0x1`.
+   So the three guards return 0, both handled events return 1, and falling
+   off the end returns 0. Both call sites discard it, which is why the
+   draft could be written `void` and still look right. The PORT arm carries
+   the same signature, because the shared prototype above reaches both.
+
+   objId INLINED at every use (LEVER 4/97): the ROM materialises
+   &omCurrentObj once into a saved register and re-reads BOTH the pointer
+   and ->objId at every use, because any store in between may alias the
+   global. The cached `s32 objId` deleted those re-reads. Worth 202 -> 192
+   on its own; with the return type, 124.
+
+   Measured and REJECTED: rewriting the trailing
+   `if (D_800E83E0[..] == 1) ... else if (== 2) ...` as a switch is 148/206,
+   worse -- LEVER 115's shape is not this one. The ROM keeps the constant 1
+   in $a2 and tests `beq $a0, $a2` before materialising the 2, which is the
+   chain, not a switch.
+
+   What is left: the draft is ONE WORD long (206 against 205). The
+   `if (D_800EA1A0[..] < 5) return 0;` guard compiles here to
+   `beqz/nop/b/move` where the ROM folds it into `bnel $at, $zero` with the
+   `or $v0, $zero, $zero` in the delay slot -- the same guard shape IDO DID
+   fold for the two earlier ones. Everything after it shifts by two. */
+s32 func_801E073C_ovl17(void) {
     void func_80111550(s32);
     struct Ovl17AnimSlot *func_80111C88(void *, s32);
     void func_80111ECC(struct Ovl17AnimSlot *);
@@ -1243,59 +1271,60 @@ void func_801E073C_ovl17(void) {
     struct Ovl17AnimSlot *slot;
     struct DObj *hand;
     u32 *shape;
-    s32 objId;
     struct Ovl17AnimEvent event;
 
-    objId = omCurrentObj->objId;
-    hand = D_800DFBD0[objId][0x1F];
-    ent = D_800E1B50[objId];
+    hand = D_800DFBD0[omCurrentObj->objId][0x1F];
+    ent = D_800E1B50[omCurrentObj->objId];
     if (ent == NULL) {
-        return;
+        return 0;
     }
     if (ent->unk8C == NULL) {
-        return;
+        return 0;
     }
-    func_80111550(objId);
+    func_80111550(omCurrentObj->objId);
     func_80111ECC(func_80111C88(D_801E510C_ovl17, omCurrentObj->objId));
-    if ((func_80110B00(&event) != 0) && (D_800E7B20[objId] <= 0.0f) && (event.target != 0)) {
+    if ((func_80110B00(&event) != 0) && (D_800E7B20[omCurrentObj->objId] <= 0.0f) && (event.target != 0)) {
         D_800E98E0[event.target] = 1;
     }
-    if (D_800EA1A0[objId] < 5) {
-        return;
+    if (D_800EA1A0[omCurrentObj->objId] < 5) {
+        return 0;
     }
-    func_80111550(objId);
+    func_80111550(omCurrentObj->objId);
     slot = func_80111C88(ent->unk8C, omCurrentObj->objId);
     /* word 2 of the anim header is the shape table; its word 1 is the joint */
     shape = ((u32 **) ent->unk8C)[2];
     if ((shape[1] == 0) && (hand != NULL)) {
         slot->attach->pinnedTo = hand;
-        slot->attach->reach = ((f32) D_800EA1A0[objId] * 3.0f) + 30.0f;
+        slot->attach->reach = ((f32) D_800EA1A0[omCurrentObj->objId] * 3.0f) + 30.0f;
     }
     func_80111ECC(slot);
     if (func_80110B00(&event) != 0) {
-        D_800E83E0[objId] = event.code;
+        D_800E83E0[omCurrentObj->objId] = event.code;
         ent->unk43 = event.param;
     } else {
-        D_800E83E0[objId] = 0;
+        D_800E83E0[omCurrentObj->objId] = 0;
         ent->unk43 = 0;
     }
     if (D_800D6E5C != 0.0f) {
-        func_800BC11C(D_800E7B20[objId]);
+        func_800BC11C(D_800E7B20[omCurrentObj->objId]);
     }
-    if (D_800E83E0[objId] == 1) {
-        gEntityFuncListIDArray[objId] = 4;
-        assign_new_process_entry(gEntityGObjProcessArray[objId], func_801DDB8C_ovl17);
+    if (D_800E83E0[omCurrentObj->objId] == 1) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
+        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DDB8C_ovl17);
         if (event.target != 0) {
             D_800E98E0[event.target] = 1;
         }
-    } else if (D_800E83E0[objId] == 2) {
-        D_800EA360[objId] = D_800E7CE0[objId];
-        D_800E7CE0[objId] = 1;
+        return 1;
+    } else if (D_800E83E0[omCurrentObj->objId] == 2) {
+        D_800EA360[omCurrentObj->objId] = D_800E7CE0[omCurrentObj->objId];
+        D_800E7CE0[omCurrentObj->objId] = 1;
         play_sound(0x1BF);
         if (event.target != 0) {
             D_800E98E0[event.target] = 1;
         }
+        return 1;
     }
+    return 0;
 }
 #elif defined(PORT)
 /* PORT: boss body collision service, from asm/nonmatchings/ovl17/ovl17_2/
@@ -1347,7 +1376,7 @@ _Static_assert(__builtin_offsetof(struct PcOvl17CollSlot, unk24) == 48, "body sh
 extern void *D_801E510C_ovl17[];
 extern f32 D_800D6E5C;
 
-void func_801E073C_ovl17(void) {
+s32 func_801E073C_ovl17(void) {
     void func_80111550(s32);
     struct PcOvl17CollSlot *func_80111C88(void *, void *);
     void func_80111ECC(void *);
@@ -1365,10 +1394,10 @@ void func_801E073C_ovl17(void) {
     hand = D_800DFBD0[objId][0x1F];
     ent = D_800E1B50[objId];
     if (ent == NULL) {
-        return;
+        return 0;
     }
     if (ent->unk8C == NULL) {
-        return;
+        return 0;
     }
     func_80111550(objId);
     func_80111ECC(func_80111C88(D_801E510C_ovl17, (void *) (uintptr_t) omCurrentObj->objId));
@@ -1376,7 +1405,7 @@ void func_801E073C_ovl17(void) {
         D_800E98E0[sp28.unkC] = 1;
     }
     if (D_800EA1A0[objId] < 5) {
-        return;
+        return 0;
     }
     func_80111550(objId);
     slot = func_80111C88(ent->unk8C, (void *) (uintptr_t) omCurrentObj->objId);
@@ -1413,6 +1442,7 @@ void func_801E073C_ovl17(void) {
             D_800E98E0[sp28.unkC] = 1;
         }
     }
+    return 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_2/func_801E073C_ovl17.s")
