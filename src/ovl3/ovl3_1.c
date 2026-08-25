@@ -64,7 +64,11 @@ extern s32 func_8010D668(struct PositionState *);
 extern s32 func_801128A4(struct PositionState *);
 extern s32 func_8010DF9C(f32 *);
 extern s32 func_8010E048(void *, s32, f32 *, f32 *, void *, f32 *);
-extern u16 func_8010DC24(struct CollisionTriangle *);
+/* Returns a word here: all three listings in this TU (func_801529C0_ovl3,
+ * func_80153B98_ovl3, func_80153FC8_ovl3) OR the result straight into
+ * gKirbyState.unk140 with no `andi 0xFFFF`, so this TU saw a 32-bit
+ * return. The definition in src/ovl2/ovl2_7.c is spelled u16. */
+extern s32 func_8010DC24(struct CollisionTriangle *);
 extern void func_8011D40C(void);
 extern f32 func_800F8728(s32, f32, f32);
 extern s32 func_80103EA0(Vector *, Vector *, void *, void *, s32, s32, s32, s32);
@@ -462,7 +466,7 @@ struct PortColBlock3 {
 };
 s32 func_801128A4(struct PositionState *);
 void func_8011D40C(void);
-u16 func_8010DC24(struct CollisionTriangle *);
+s32 func_8010DC24(struct CollisionTriangle *);
 s32 func_80104B70(f32 *, f32 *, s32, void *, s32, s32, s32);
 void func_801530BC_ovl3(f32 *);
 void func_80153668_ovl3(void);
@@ -674,7 +678,7 @@ struct PortColBlock3 {
 };
 s32 func_801128A4(struct PositionState *);
 void func_8011D40C(void);
-u16 func_8010DC24(struct CollisionTriangle *);
+s32 func_8010DC24(struct CollisionTriangle *);
 s32 func_80104B70(f32 *, f32 *, s32, void *, s32, s32, s32);
 void func_801530BC_ovl3(f32 *);
 void func_80153668_ovl3(void);
@@ -1442,41 +1446,50 @@ s32 func_80153B98_ovl3(void) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 253/260 [was noted 7/260], whole-function callee-saved permutation. The ROM caches
-   DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 253 of 260 words differ (97%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 152/245, frame + saved-register permutation (was 253/260).
+   RE-DERIVED FROM THE LISTING 2026-08-25; the old note called it a
+   callee-saved permutation and it was four real source defects:
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand.
+   1. gPositionState, gKirbyState+0x10C and D_8012BCA0 were each reached
+      through a POINTER LOCAL initialised to the symbol's address
+      (`struct PositionState *st = &gPositionState;` etc.). IDO constant-
+      folds such a local away and then re-CSEs the address INSIDE EVERY
+      BASIC BLOCK -- two words (lui + %lo) per conditional arm. Spelling
+      them as direct symbol accesses (`gPositionState.faceAngle[0]`,
+      `*(u32 *) D_8012BCA0`) makes IDO hold ONE base register across the
+      whole region, which is what puts &D_8012BCA0 in $s0 and produces the
+      -0x40 frame the old note attributed to a register floor. Worth 15
+      words on its own; this is the general lesson, not a local trick.
+   2. The packed flag halfword is at OFFSET 0 of D_8012BCA0, not +2 -- the
+      ROM rewrites the TOP halfword of the word it reads with srl 19.
+      The draft's union put the field at +2.
+   3. `st->scale[1] = fr[1] + fr[0]` had its operands the wrong way round
+      (LEVER 2); the matched sibling func_80152828_ovl3 twenty lines above
+      spells the same three stores as `arg0[0] + arg0[1]`.
+   4. func_8010DC24 was declared `u16` in this TU, so both uses of its
+      result carried an `andi 0xFFFF` the ROM does not have. All THREE
+      listings in this file OR it straight into gKirbyState.unk140 with no
+      mask, so this TU saw a 32-bit return; the declaration is now s32.
+      (The definition in src/ovl2/ovl2_7.c is still spelled u16 -- left
+      alone, it is matched, unguarded C.)
 
- * &D_8012BCA0 early into a saved reg ($s0, -0x40 frame) for the
- * func_80105238 call; this draft lets IDO compute it lazily (-0x30 frame,
- * no s0 save) and otherwise picks the neighbouring temp registers
- * ($a2/$t2 vs $a3/$t0) for gPositionState/gKirbyState -- correct
- * instruction count and control flow, near-total register-naming diff.
- * Queued for the
- * permuter. */
+   WHAT IS LEFT is a genuine allocation residue: 242 words against the
+   ROM's 245, frame 0x30 against 0x40. The ROM homes `hits` at 0x3C and
+   `id` at 0x24 -- i.e. it gives those two DECLARED locals real home slots
+   and reloads `id` into $a0 for the func_800F8728 call, where our IDO
+   keeps both in registers and needs no spill. The eight-slot local region
+   (0x20..0x3C, six of them dead) is what makes the frame 0x40. An
+   unreferenced `s32 pad[4]` does NOT buy them (measured: dropped, frame
+   unchanged), so this is the LEVER 57 "n+t is pinned" shape rather than a
+   pad problem. Everything downstream of the missing spill is the same
+   instruction one slot early plus a $t0/$t1 swap for
+   gKirbyState-base/hits. Permuter fuel. */
 s32 func_80153FC8_ovl3(void) {
-    struct PCRec { s32 type; struct CollisionTriangle *tri; void *norm; };
-    struct PCBlk {
-        union { u32 w; struct { u16 hwpad_; u16 hw; }; } flags;
-        struct PCRec rec[5];
-    };
+    /* D_8012BCA0 is ovl2_7's collision result block: a u32 of packed face
+     * flags at +0x0 (the ROM rewrites only its TOP halfword, so every
+     * lhu/sh here is at offset 0), then five 12-byte {type, tri, norm}
+     * records; the right/left face records are #2 (+0x20) and #3 (+0x2C). */
     extern u8 D_8012BCA0[];
-    struct PCBlk *cb = (struct PCBlk *) D_8012BCA0;
-    struct PositionState *st = &gPositionState;
     GObj *obj = omCurrentObj;
     f32 **rec = D_800E0490[obj->objId];
     f32 *fr = rec[1];
@@ -1486,77 +1499,83 @@ s32 func_80153FC8_ovl3(void) {
     u32 f;
     u32 rightM;
     u32 leftM;
-    u16 *hm = (u16 *) &gKirbyState.unk10C;
+    s32 id;
     struct CollisionTriangle *tri;
-    u16 r;
+    s32 r;
 
-    st->kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
-    st->kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
-    st->kirbyFootPos[2] = gEntitiesNextPosZArray[obj->objId];
-    st->scale[0] = fr[0];
-    st->scale[1] = fr[1] + fr[0];
-    st->scale[2] = fr[2] + fr[0];
+    gPositionState.kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
+    gPositionState.kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
+    gPositionState.kirbyFootPos[2] = gEntitiesNextPosZArray[obj->objId];
+    gPositionState.scale[0] = fr[0];
+    gPositionState.scale[1] = fr[0] + fr[1];
+    gPositionState.scale[2] = fr[0] + fr[2];
     if (D_800E6A10[obj->objId] == 1.0f) {
-        st->faceAngle[0] = fr[3];
-        st->faceAngle[1] = fr[4];
+        gPositionState.faceAngle[0] = fr[3];
+        gPositionState.faceAngle[1] = fr[4];
     } else {
-        st->faceAngle[0] = fr[4];
-        st->faceAngle[1] = fr[3];
+        gPositionState.faceAngle[0] = fr[4];
+        gPositionState.faceAngle[1] = fr[3];
     }
     if (gKirbyState.isTurning & 1) {
-        st->faceAngle[2] = gKirbyState.unk7C;
+        gPositionState.faceAngle[2] = gKirbyState.unk7C;
     } else {
-        st->faceAngle[2] = D_800E17D0[obj->objId];
+        gPositionState.faceAngle[2] = D_800E17D0[obj->objId];
     }
-    func_8010BFAC(st);
-    func_80105238((f32 *) st, D_8012BCA0);
-    hits = func_801128A4(st);
-    dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
-    dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[omCurrentObj->objId];
+    func_8010BFAC(&gPositionState);
+    func_80105238((f32 *) &gPositionState, D_8012BCA0);
+    hits = func_801128A4(&gPositionState);
+    id = omCurrentObj->objId;
+    dx = gPositionState.kirbyFootPos[0] - gEntitiesNextPosXArray[id];
+    dz = gPositionState.kirbyFootPos[2] - gEntitiesNextPosZArray[id];
     if ((dx != 0.0f) || (dz != 0.0f)) {
-        func_800F8728(omCurrentObj->objId, dx, dz);
-        gEntitiesNextPosXArray[omCurrentObj->objId] = st->kirbyFootPos[0];
-        gEntitiesNextPosZArray[omCurrentObj->objId] = st->kirbyFootPos[2];
+        func_800F8728(id, dx, dz);
+        gEntitiesNextPosXArray[omCurrentObj->objId] = gPositionState.kirbyFootPos[0];
+        gEntitiesNextPosZArray[omCurrentObj->objId] = gPositionState.kirbyFootPos[2];
     }
     if (hits != 0) {
         if (hits & 1) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 7) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 7) * 8));
         }
         if (hits & 2) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x38) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 0x38) * 8));
         }
         if (hits & 4) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x1C0) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 0x1C0) * 8));
         }
         if (hits & 8) {
             func_8011D40C();
         }
     }
-    f = cb->flags.w >> 0x13;
+    f = *(u32 *) D_8012BCA0 >> 0x13;
     rightM = f & 7;
     leftM = f & 0x38;
     gKirbyState.rightCollisionNext = rightM;
     gKirbyState.leftCollisionNext = leftM;
     gKirbyState.horizontalCollision = rightM | leftM;
-    tri = cb->rec[2].tri;
+    tri = *(struct CollisionTriangle **) &D_8012BCA0[0x20];
     if ((tri != NULL) && (rightM != 0)) {
         gKirbyState.unk104 = tri->collisionType;
-        hm[0] = tri->Halt_Movement;
+        ((u16 *) &gKirbyState.unk10C)[0] = tri->Halt_Movement;
     } else {
         gKirbyState.unk104 = 0;
-        hm[0] = 0;
+        ((u16 *) &gKirbyState.unk10C)[0] = 0;
     }
-    tri = cb->rec[3].tri;
+    tri = *(struct CollisionTriangle **) &D_8012BCA0[0x2C];
     if ((tri != NULL) && (leftM != 0)) {
         gKirbyState.unk106 = tri->collisionType;
-        hm[1] = tri->Halt_Movement;
+        ((u16 *) &gKirbyState.unk10C)[1] = tri->Halt_Movement;
     } else {
         gKirbyState.unk106 = 0;
-        hm[1] = 0;
+        ((u16 *) &gKirbyState.unk10C)[1] = 0;
     }
-    if ((rightM != 0) && ((r = func_8010DC24(cb->rec[2].tri)) != 0)) {
+    if ((rightM != 0) &&
+        ((r = func_8010DC24(*(struct CollisionTriangle **) &D_8012BCA0[0x20])) != 0)) {
         gKirbyState.unk140 = (u32) r | 0x40000;
-    } else if ((gKirbyState.leftCollisionNext != 0) && ((r = func_8010DC24(cb->rec[3].tri)) != 0)) {
+    } else if ((gKirbyState.leftCollisionNext != 0) &&
+               ((r = func_8010DC24(*(struct CollisionTriangle **) &D_8012BCA0[0x2C])) != 0)) {
         gKirbyState.unk140 = (u32) r | 0x80000;
     } else if (gKirbyState.action != 0x16) {
         gKirbyState.unk140 = 0;
