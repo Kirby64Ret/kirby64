@@ -716,46 +716,47 @@ struct BGHeader *func_800A8C40(u32 arg0) {
 }
 #endif /* PORT */
 
-#ifdef NON_MATCHING
-// 2/33 (was 9): reusing `arg0` as the scratch for the masked, doubled index --
-// the same lever that closed func_800A89E0/func_800A8B0C -- plus the two dead
-// pads for the ROM's 0x30 frame and 0x1C/0x20/0x2C spills. All 120 declaration
-// permutations swept at this shape; the floor is 2. Residue: the ROM loads the
-// block table into $v0 and writes the element pointer to $v1, where IDO reuses
-// $v1 for both (`lw $v1` / `addu $v1,$v1,$t9`). An explicit `base` local for
-// the table makes it worse (3), as does any pad count other than two.
-// Re-confirmed 2026-08-23 (measure_seeds.py + verify.py): residue is exactly
-// this $v0/$v1 CSE floor (LEVERS.md "GUARD ON THE SECOND VARIANT" class), not
-// source-reachable. Left guarded.
-// 2026-08-25, LEVER 55 CHECKED AND DISPROVED HERE. This TU really does call
-// `dma_read` and `func_800A8358` with NO declaration in scope (dma_read is
-// declared only in src/main/dma.h, which nothing includes; func_800A8358's
-// only declarations are its two guarded definitions), so both are implicit
-// `int f()` in the matching build -- textbook lever 55. Adding
-// `void dma_read(u32, void *, u32);` and `void *func_800A8358(s32);` at file
-// scope is completely INERT: build/src/ovl1/ovl1_3.o's .text comes back
-// byte-identical (12752 bytes, cmp clean), and this function still scores
-// 2/33. In-body copies cannot be used at all -- the implicit declarations at
-// lines 589/637 come first and IDO rejects the later real one (lever 49).
-// The base-local family was also re-swept and the best is 3/33, worse:
-//     decls                       frame  size  buf   entry  score
-//     size,pad0,pad1,buf,entry    0x30   0x2C  0x20  0x1C    2/33 <- kept
-//     size,pad0,base,buf,entry    0x30   0x2C  0x20  0x18    3/33
-//     size,base,buf,entry         0x30   0x2C  0x24  0x1C    3/33
-//     size,pad0,buf,base,entry    0x30   0x2C  0x24  0x18    5/33
-//     size,pad0,pad1,buf,base,en  0x38    --    --    --     7/33
-// An explicit `base` DOES fix the ROM's `lw $v0` (the whole point of the
-// residue) but always costs a dead word between `buf` and `entry`, which moves
-// one spill; `entry = base + arg0` and `arg0 + base` are byte-identical
-// (pointer arithmetic is canonicalised), and folding the whole address into
-// one expression collapses the ROM's two `sll`s into one `sll 3` (25/32).
-// Reusing `buf` as the base scratch is 9/33.
+/* MATCHED. Two things had to be true at once, and every earlier sweep had one
+ * of them.
+ *
+ * THE REGISTERS. The ROM loads the block table into $v0 and writes the element
+ * pointer to $v1; a draft that ADVANCES one pointer (`entry += arg0`) gives
+ * IDO one value to keep and it reuses $v1 for both (`lw $v1` / `addu
+ * $v1,$v1,$t9`). Keeping the base live and subscripting it -- `base[arg0]`,
+ * `base[arg0 + 1]` -- gives IDO two live values and the ROM's register pair
+ * falls out. The old note had found this ("an explicit `base` DOES fix the
+ * ROM's `lw $v0`") and rejected it, because with the base declared the
+ * remaining spill lands one word low.
+ *
+ * THE FRAME (LEVERS 54/57). frame = align8(0x18 + 4*ndecl + 4*ntemp), and
+ * declarations lay out top-down so the LAST one takes the LOWEST address. The
+ * ROM's slots are 0x1C, 0x20 and 0x2C in a 0x30 frame, which is FOUR
+ * declarations plus ONE compiler temp -- not five declarations, which is what
+ * every entry in the old table below has. The advanced pointer is that temp,
+ * so it must NOT be a declared local:
+ *
+ *     size(0x2C)  pad0(0x28)  base(0x24)  buf(0x20)   + temp(0x1C)
+ *
+ * The old sweep never reached this because it kept `entry` as a variable in
+ * all 120 permutations and only varied where `base` went among them; dropping
+ * `entry` entirely is a different declaration COUNT, not another ordering.
+ *
+ * Also recorded, from the same sweep and still true: `entry = base + arg0` and
+ * `arg0 + base` are byte-identical (pointer arithmetic is canonicalised);
+ * folding the whole address into one expression collapses the ROM's two `sll`s
+ * into one `sll 3` (25/32); and reusing `buf` as the base scratch is 9/33.
+ *
+ * LEVER 55 CHECKED AND DISPROVED HERE, and worth keeping. This TU really does
+ * call `dma_read` and `func_800A8358` with NO declaration in scope, so both
+ * are implicit `int f()` in the matching build. Declaring them at file scope
+ * is completely INERT: .text comes back byte-identical (cmp clean). In-body
+ * copies cannot be used at all -- the implicit declarations earlier in the
+ * file come first and IDO rejects the later real one (lever 49). */
 void *func_800A8CE0(u32 arg0, s32 arg1) {
     s32 size;
     s32 pad0;
-    s32 pad1;
-    void *buf;
     u32 *base;
+    void *buf;
 
     base = D_800D0184[arg0 >> 16]->geoBlockTable;
     arg0 &= 0xFFFF;
@@ -765,9 +766,6 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     dma_read(base[arg0], buf, size & 0xFFFFFC);
     return buf;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
-#endif
 // Draft, 60/62: shape and frame are right; the residue is that the ROM keeps
 // `slot` (&D_800D00C4[arg0>>16]) in $s0 across the func_800A8578 call and
 // reuses $s0 for `p` afterwards, where IDO leaves it in $v1 and spills it.
