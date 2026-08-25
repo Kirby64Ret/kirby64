@@ -889,6 +889,25 @@ void func_801F172C_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+/* SCORABILITY FIX 2026-08-25: the ten declarations below were only ever
+   present in func_801F0060_ovl9's guard at the top of this file, so this draft
+   compiled ONLY when that unrelated draft happened to be open too. Cutting
+   this one on its own -- which is what scratchverify.py and measure_seeds.py
+   do -- left func_801ACF5C_ovl7, D_801CB4DC_ovl7, func_800B7514, func_800A9864
+   and func_800AA018 undefined and the measurement came back "unscorable",
+   which reads exactly like a padding trap and is not one. Declarations a
+   guarded draft needs go INSIDE ITS OWN guard, per the RULES in LEVERS.md;
+   sharing them across guards is the same bug at file scope. */
+extern struct EnemyEventTable D_801CB4DC_ovl7;
+void func_801ACF5C_ovl7(GObj *);
+extern void func_800A9864(s32, s32, s32);
+extern void func_800AA018(s32);
+extern void func_8019D958_ovl7(u16);
+extern void func_8019BAC8_ovl7(void);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
+void func_801ACF84_ovl7(GObj *);
+void func_800B7514(s32);
+void ohSleep(s32);
 /* FACTORY: 36/313, $s0/$s1 transposition for &omCurrentObj with the rest
    renamed to follow.  Frame and save set are the ROM's. */
 extern s32 D_801C9A4C_ovl7;
@@ -1053,6 +1072,25 @@ void func_801F1C68_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
+/* SCORABILITY FIX 2026-08-25: the ten declarations below were only ever
+   present in func_801F0060_ovl9's guard at the top of this file, so this draft
+   compiled ONLY when that unrelated draft happened to be open too. Cutting
+   this one on its own -- which is what scratchverify.py and measure_seeds.py
+   do -- left func_801ACF5C_ovl7, D_801CB4DC_ovl7, func_800B7514, func_800A9864
+   and func_800AA018 undefined and the measurement came back "unscorable",
+   which reads exactly like a padding trap and is not one. Declarations a
+   guarded draft needs go INSIDE ITS OWN guard, per the RULES in LEVERS.md;
+   sharing them across guards is the same bug at file scope. */
+extern struct EnemyEventTable D_801CB4DC_ovl7;
+void func_801ACF5C_ovl7(GObj *);
+extern void func_800A9864(s32, s32, s32);
+extern void func_800AA018(s32);
+extern void func_8019D958_ovl7(u16);
+extern void func_8019BAC8_ovl7(void);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
+void func_801ACF84_ovl7(GObj *);
+void func_800B7514(s32);
+void ohSleep(s32);
 /* FACTORY: 16/366, frame 0x68 vs the ROM's 0x70 plus the objId register
    ($v0 in the ROM, $a3 here).  Sibling of func_801F0060_ovl9 in this file and
    carries the same two defects -- fixing them once should fix both. */
@@ -1297,6 +1335,24 @@ void func_801F253C_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
+/* SCORABILITY FIX 2026-08-25: the ten declarations below were only ever
+   present in func_801F0060_ovl9's guard at the top of this file, so this draft
+   compiled ONLY when that unrelated draft happened to be open too. Cutting
+   this one on its own -- which is what scratchverify.py and measure_seeds.py
+   do -- left func_801ACF5C_ovl7, D_801CB4DC_ovl7, func_800B7514, func_800A9864
+   and func_800AA018 undefined and the measurement came back "unscorable",
+   which reads exactly like a padding trap and is not one. Declarations a
+   guarded draft needs go INSIDE ITS OWN guard, per the RULES in LEVERS.md;
+   sharing them across guards is the same bug at file scope. */
+extern struct EnemyEventTable D_801CB4DC_ovl7;
+void func_801ACF5C_ovl7(GObj *);
+extern void func_800A9864(s32, s32, s32);
+extern void func_800AA018(s32);
+extern void func_8019D958_ovl7(u16);
+extern void func_8019BAC8_ovl7(void);
+extern u32 func_800FD570(s32, u32, f32, f32, f32);
+void func_801ACF84_ovl7(GObj *);
+void func_800B7514(s32);
 /* FACTORY: 45/226, $t0/$t1 transposition for the &omCurrentObj pointer.
    Body, frame and schedule agree. */
 void func_801F2910_ovl9(void);
