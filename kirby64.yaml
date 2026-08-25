@@ -497,6 +497,14 @@ segments:
     vram: 0x8015C740
     exclusive_ram_id: self_contained
     bss_size: 0xe40
+    # SUBALIGN(8), not the file-wide 16, and it is the price of splitting the
+    # 0x134A60 rodata blob at 0x8018D658 so ovl5_3.c can own its own jump
+    # table. MEASURED: with the default 16 the linker pads ovl5_3.o's .rodata
+    # (objdump reports 2**4 alignment) from the 8-aligned 0x8018D658 up to
+    # 0x8018D660 and the ROM comes out wrong. ovl7 already carries
+    # `subalign: 4` for the same class of reason, so a per-segment override
+    # here is precedent rather than a new idea.
+    subalign: 8
     subsegments:
     - [0x103BB0, c, ovl5/ovl5_1]
     - [0x104170, c, ovl5/ovl5_2]
@@ -525,8 +533,26 @@ segments:
     # func_80166F14/80168804/80169D90, all inside ovl5_4) are emitted BEFORE
     # the late-rodata run at 0x8018D658, whose referencing addresses climb
     # monotonically from ovl5_3's first function through ovl5_4 with no reset.
-    # Two separate objects cannot interleave that way. Stays an asm blob.
+    # Two separate objects cannot interleave that way as WHOLE blocks -- but
+    # ONE symbol out of the block is a smaller question, and the answer decides
+    # func_80165440_ovl5 (116 words, code complete, 1 diff).
+    #
+    # That diff is `lw $t7, %lo(jtbl_8018D658_ovl5)($at)` against our own
+    # `lw $t7, 0($at) <.rodata>`: the draft's switch makes IDO emit its own
+    # copy of the 20-entry jump table, so un-guarding grows ovl5_3.o a NEW 0x50
+    # .rodata section on top of the one the blob already carries and the
+    # segment gains 0x50 bytes. Giving the C file the table instead of a copy
+    # of it is the whole fix, and it needs the blob split in three around
+    # 0x134AC8 (VRAM 0x8018D658).
+    #
+    # THE ALIGNMENT IS THE RISK AND IT IS CHECKED BY THE LINKED sha1, not by
+    # argument: 0x8018D658 is 8-aligned and IDO gives an object's .rodata
+    # 16-byte alignment, so the link may push the table to 0x8018D660 and shift
+    # everything after it. If the ROM comes out wrong this splits back into the
+    # single blob above and the function stays guarded.
     - [0x134A60, rodata, ovl5/ovl5_3_rd]
+    - [0x134AC8, .rodata, ovl5/ovl5_3]
+    - [0x134B18, rodata, ovl5/ovl5_3_rd2]
     - [0x134B30, rodata, ovl5/ovl5_4_rd]
     - [0x134BF0, .rodata, ovl5/ovl5_5]
     - [0x135120, .rodata, ovl5/ovl5_6]

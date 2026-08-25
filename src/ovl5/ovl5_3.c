@@ -39,7 +39,6 @@ void func_8016EF78_ovl5(GObj *);
 void func_8016F2F0_ovl5(GObj *);
 void func_8016F40C_ovl5(GObj *);
 
-#ifdef NON_MATCHING
 /* FACTORY: 1/116, and the CODE IS DONE -- this is a rodata-migration block,
    not a source problem. Measured on a scratch copy of the TU with this one
    draft un-guarded: .text comes out 0x14A0, byte-identical to the pragma
@@ -124,9 +123,6 @@ void func_80165440_ovl5(GObj *arg0) {
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_3/func_80165440_ovl5.s")
-#endif
 
 void func_80165610_ovl5(void) {
     play_music(0, 0x19);
