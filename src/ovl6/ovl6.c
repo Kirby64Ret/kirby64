@@ -702,7 +702,32 @@ void func_80152EA8_ovl6(void) {
             d = omCurrentObj->data.dobj;
             src = (u8 *) bank[0];
             while (d != NULL) {
+#ifdef PORT
+                /* The entry at `src` is segment-4 blob data in N64 4-BYTE
+                 * SLOTS -- the `src += 0x2C` stride below is the N64 stride,
+                 * and the port does not widen this table (see the PORT block
+                 * in include/DObj.h: "the dlist slots are u32s holding native
+                 * pointers"). `*(void **)(src + 4)` therefore reads EIGHT
+                 * bytes on LP64 and takes the following float with it.
+                 *
+                 * Measured on the galaxy map, entry at 0x17D38FC:
+                 *   +0x00 00000002  +0x04 00000000 (dlist: NULL)
+                 *   +0x08 B58637BD (pos.x -1e-06)  +0x0C 42C80002 (pos.y)
+                 * The wide read produced 0xB58637BD00000000, a non-NULL
+                 * glist, so renderDrawDObj emitted
+                 *   DE000000 B58637BD00000000
+                 * and Fast3D took SIGSEGV walking into it. The N64 value is
+                 * slot 1, which is NULL: this node has no display list.
+                 *
+                 * This is the same class as func_800AB0F4 in ovl1_3.c, where
+                 * a `u32 **` local read sixteen bytes into a block whose slots
+                 * are four. Both are inert on hardware and neither is visible
+                 * to tools/pc/lp64_audit.py, which audits call signatures
+                 * rather than dereference widths. */
+                d->data.data = (void *) (uintptr_t) ((u32 *) src)[1];
+#else
                 d->data.data = *(void **) (src + 4);
+#endif
                 if (d->firstChild != NULL) {
                     d = d->firstChild;
                 } else if (d->next != NULL) {
