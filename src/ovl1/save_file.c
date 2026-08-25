@@ -981,9 +981,11 @@ void func_800BA40C(s32 fileNum) {
 
 void init_save_file_maybe(s32);
 
-// PADDING TRAP: this is the last function in the TU and its listing carries 6
-// words of linker fill past its own .size, so converting it shortens the TU.
-// Draft is behaviourally complete but must stay guarded.
+// PADDING TRAP CLEARED: `- [0x629E0, pad]` is in kirby64.yaml, sha1-gated
+// green, and this draft is scorable by verify.py without neutralising
+// padtrap.classify. It is the last function in the TU with 6 words of linker
+// fill past its own .size; the pad supplies the remainder the object's own
+// 16-byte size rounding does not.
 //
 // FACTORY: 91/112 -- MEASURED 2026-08-25, and the first measurement this draft
 // has ever had. It carried no number before, and could not have: verify.py

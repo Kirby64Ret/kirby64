@@ -54,8 +54,12 @@ void func_80224320_ovl18(UNUSED s32 arg0) {
    is not what hoists it), and reading the counter into a named `s32 count`
    (11/26 -- it moves objId's own load from $v0 to $v1 and costs four more).
 
-   Padding-trapped either way: last function in code_236CC0.o, 7 words of
-   linker fill past its own .size, so un-guarding shortens the TU. */
+   PADDING TRAP CLEARED 2026-08-25: `- [0x236F10, pad]` is in kirby64.yaml,
+   sha1-gated green, so this draft is scorable normally and CAN be un-guarded
+   the moment it matches. It is the last function in code_236CC0.o with 7
+   words of linker fill past its own .size. Seven words from byte-exact and no
+   longer blocked by layout -- this is the best-conditioned target left in
+   ovl18. */
 void func_802244FC_ovl18(void) {
     if (D_800E98E0[omCurrentObj->objId] == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801ACF84_ovl7);

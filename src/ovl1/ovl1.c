@@ -5530,13 +5530,14 @@ void func_800A24C4(u16 arg0, s32 arg1) {
 }
 
 #ifdef MIPS_TO_C
-/* PADDING-TRAPPED + FACTORY: DIFF 211/220 (measured by hand -- verify.py
- * REFUSES to score this one: padtrap.classify reports 'trap', 6 words after
- * the function's own .size, so even a byte-exact MATCH must NOT be
- * un-guarded here; converting it would shorten the TU by 24 bytes under
- * kirby.ld's SUBALIGN(16). Fixing that needs a `pad` subsegment in
- * kirby64.yaml plus the matching `. += ` in kirby.ld, in the same edit as
- * the conversion -- a layout change outside this lane.)
+/* FACTORY: DIFF 211/220. THE PADDING TRAP IS GONE: `- [0x4AB00, pad]` is in
+ * kirby64.yaml, sha1-gated green, and verify.py scores this draft normally
+ * now. The old note said fixing it "needs a pad subsegment plus the matching
+ * `. += ` in kirby.ld" -- the second half was wrong, the Makefile derives
+ * build/kirby.ld from the yaml and no hand edit of the linker script is
+ * involved. It also called the fix "a layout change outside this lane"; it
+ * was one yaml line and a deleted stale object.
+ * 211 of 220 words still differ, so being scorable is all that changed.)
  * Residue is a whole-function register assignment: the ROM walks the layout
  * with the node pointer in $s1 (callee-saved, then reused as the entry
  * cursor `s1 += 0x2C`) and holds the 0x12 terminator constant in $v0, while

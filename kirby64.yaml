@@ -320,6 +320,7 @@ segments:
     subsegments:
     - [0x43790, pad]
     - [0x437A0, c, ovl1/ovl1]
+    - [0x4AB00, pad]
     - [0x4AB10, c, ovl1/game]
     - [0x4C4C0, c, ovl1/util]
     - [0x4EE10, c, ovl1/ovl1_2]
@@ -333,6 +334,7 @@ segments:
     - [0x5B820, pad]
     - [0x5B840, c, ovl1/ovl1_8]
     - [0x60950, c, ovl1/save_file]
+    - [0x629E0, pad]
     - [0x629F0, c, ovl1/ovl1_10]
     - [0x637C0, pad]
     - [0x637D0, c, ovl1/ovl1_11]
@@ -1032,6 +1034,7 @@ segments:
     - [0x234830, c, ovl18/code_234830]
     - [0x234BC0, c, ovl18/code_234BC0]
     - [0x236CC0, c, ovl18/code_236CC0]
+    - [0x236F10, pad]
     - [0x236F20, c, ovl18/code_236F20]
     - [0x2385A0, c, ovl18/code_2385A0]
     - [0x239070, pad]
