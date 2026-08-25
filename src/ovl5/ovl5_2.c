@@ -195,10 +195,32 @@ static u8 ovl5_pers_(s32 i) {
    {}` after this one, as done for func_80160A70_ovl5 below. It is not what
    blocks this site -- the draft does not even compile alone (its file-scope
    declarations of func_80160AF8_ovl5 / func_801611A8_ovl5 collide with the
-   earlier ones at the top of the file), so it is unscored. */
+   earlier ones at the top of the file), so it is unscored.
+
+   MEASURED 2026-08-24: that diagnosis was wrong. Nothing collided with the
+   declarations at the top of the file -- six functions the draft CALLS are
+   defined much later with no declaration in between, so each call compiled as
+   an implicit `int f()` and then collided with its own definition. Lever 55.
+   With the six prototypes added above the draft it scores 17/91, and the
+   residue is a real one: the ROM builds each array address in $a1 (the call's
+   SECOND argument) where IDO uses $a0. */
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
    claimed to be: the N64 build takes the pragma below. */
+/* These six are CALLED by the draft below and defined much later in this
+ * file, with no declaration in between -- so each call compiled as an
+ * implicit `int f()` and collided with its own definition, which is why
+ * this site read "does not compile alone" and went unmeasured. With them
+ * it scores 16/91. func_80164490_ovl5 keeps the unspecified-args form:
+ * the draft calls it with no arguments and relies on the value already in
+ * $a0, which an ANSI prototype refuses. */
+void func_80160AF8_ovl5(GObj *, s32);
+void func_801611A8_ovl5(GObj *, s32);
+void func_80162B1C_ovl5(GObj *arg0, f32 arg1, f32 arg2, f32 arg3);
+void func_80162C68_ovl5(GObj *arg0);
+void func_80162CCC_ovl5(GObj *arg0);
+void func_80164490_ovl5();
+
 void func_8015CD00_ovl5(GObj *arg0) {
     s32 temp_t7;
     u32 temp_v0;
