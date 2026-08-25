@@ -1736,8 +1736,11 @@ the pool allocator's real stride is 0x78.
     swapping the `r`/`i` declaration order, 36/196 (LEVER 57's top-down rule
     moves r's spill slot 0x34 -> 0x30).
 
-84. **A permuter zero on a SCHEDULING residue is a coin flip; on a STRUCTURAL
-    change it is reliable. Here is the proof.** func_800BDE0C's residue is two
+94. **A permuter zero on a SCHEDULING residue is a coin flip; on a STRUCTURAL
+    change it is reliable. Here is the proof.**
+    (Written as "84" and renumbered here on 2026-08-25: two lanes claimed 84
+    within the same hour. The other 84 -- the `flag = 0;` hoist -- was already
+    committed and is referenced from src/ovl8/ovl8.c, so this one moved.) func_800BDE0C's residue is two
     `addiu` completing the %hi/%lo pairs for D_800F4324 and D_800EDA10,
     emitted in the opposite order. Objdump of three builds of the SAME function
     source, all with the same compile line (`tools/decomp/perm/<fn>/compile.sh`
@@ -1773,3 +1776,22 @@ the pool allocator's real stride is 0x78.
         priority_queue.py's TARGETS with the reason in its note.
 
     Read the diff and classify it before spending the compile.
+
+    **SCOPE, measured on a STRUCTURAL zero that did NOT transfer.**
+    func_801D56D0_ovl9 (ovl9_1) has a harvested zero whose diff DELETES a
+    declaration -- `perm/func_801D56D0_ovl9/output-0-1` drops the `b` local and
+    inlines `ABSF(dy)` into the return. That is structural by the rule above,
+    and it still scores 27/96 in the real TU, not 0. The mechanism is not the
+    tipping point in this entry: deleting the declaration takes the frame from
+    the ROM's 0x38 to 0x30 and carries every sp offset with it (0x2C -> 0x24),
+    and asm-differ run without `--stack-diffs` normalises exactly that class
+    away. Keeping the declaration count at 7 with an unused `f32 b` and
+    inlining ABSF(dy) anyway is 21/96, identical to the readable spelling, so
+    the inline buys nothing either.
+
+    So the classification needs one more question after "does it change the
+    program": **does it change the number or size of LOCALS?** If it does, the
+    permuter's zero may be an artifact of stack normalisation rather than
+    evidence, whichever side of the structural/scheduling line the diff falls
+    on. Cheap to check -- count the declarations in the candidate against the
+    draft before spending the compile.
