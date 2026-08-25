@@ -1331,7 +1331,21 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
    top of this TU. Previously rejected and still true: no locals at all (the
    D_8018ECA8_ovl5 load is not hoisted above play_sound, 62/63), a declared
    `s32 i = arg0` index local (58/62), `temp` assigned rather than initialised
-   and `register s32 temp` (5/61 each). */
+   and `register s32 temp` (5/61 each).
+   ADDED 2026-08-25, WHERE THE THIRD TEMP ACTUALLY SITS. Objdumped the n=1
+   spelling (only `temp` declared, `D_801875F0_ovl5[temp].unkN` inline): the
+   FRAME IS THE ROM'S 0x28 and `temp` IS AT THE ROM'S 0x24. The dead word is
+   at 0x20 and the two real spills follow at 0x1C/0x18, where the ROM has them
+   at 0x20/0x1C with the dead word at the BOTTOM. So the residue is not "one
+   temp too many" in the abstract -- it is one temp too many CREATED BEFORE
+   `arg0 << 2`, and lever 57's "temps in CREATION order" then puts it above
+   both spills. Anything that makes the surviving dead slot the LAST temp
+   created closes this; a pad DECLARATION cannot, because declarations are laid
+   out above the temps by construction. Also tried and rejected this pass:
+   spelling the shared index as a byte offset (`off = arg0 * 4` with
+   `*(s32 *)((u8 *)D_8018ECA8_ovl5 + off)`, lever 11's shape) -- it reaches
+   n=2 but grows t to 4, frame 0x30, and loses the `addu $t2, $v0, $t1`
+   operand order as well (5/61). */
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;
