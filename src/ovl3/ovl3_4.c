@@ -975,44 +975,36 @@ void func_8016AAA4_ovl3(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016AAA4_ovl3.s")
 #endif
 
-#ifdef NON_MATCHING
-/* FACTORY: 11/207, delay-slot-fill SCHEDULING floor -- re-confirmed
-   2026-08-23, identical 11/207. Everything matches except ONE delay-slot
-   fill: the ROM puts `lui $a2, %hi(D_8012BCA0)` (from the branch TARGET)
-   in the delay slot of `beqz $v0` and starts the fall-through block with
-   `lui $t5, %hi(omCurrentObj)`; IDO fills the slot from the fall-through
-   instead, so everything after is shifted by one. Swept: else-if vs
-   early-break vs inverted polarity, one-line then-block, `!= 0` vs bare
-   call, an empty do-while, and a struct pointer over D_8012BCA0 (113
-   diffs -- much worse). The float operand swap in case 0 is load-bearing:
-   it took this from 17 to 11. Good permuter seed. */
-extern s32 D_800BE500;
-extern s32 D_800BE504;
-extern s32 D_800BE508;
-extern f32 D_801292B0[];
-extern u8 D_801CB1FC;
-extern u8 D_801CA840;
-extern void func_801A36CC(void *);
-extern void func_801A38BC_ovl7(void);
-extern s32 func_8016B74C_ovl3(void);
-void func_8016B9D4_ovl3(s32);
-/* src/ovl2/ovl2_9.c:1529 defines struct PlySlot *func_80111574(struct
- * PlyEntry *, void *); neither struct is visible outside that TU, and the
- * result feeds func_80111C4C(s32) directly here. */
-extern s32 func_80111574(u8 *, s32);
-extern void func_80111C4C(s32);
-
-/* FACTORY: 11/207. The first diff is a branch displacement -- `beqz $v0,
- * +0x0A` against our `+0x09` -- which LEVERS 66 says is never a register
- * residue. It is not a semantics bug either, and this function is the
- * caveat recorded there: the ROM's skipped block is one instruction longer
- * because the SCHEDULER hoisted `lui $a2, %hi(D_8012BCA0)` into it, and
- * D_8012BCA0 is used after the join. Our version emits that same
- * materialisation ten instructions later, at index 95. The blocks agree about
- * what they do; they disagree about what got hoisted into one of them.
- * Everything after index 95 lines back up, which is why the residue is 11 and
- * not 100. */
+/* MATCHED 2026-08-25. This sat at 11/207 under two successive notes calling
+ * it a delay-slot-fill / scheduler floor, and both readings of the symptom
+ * were right: the ROM hoists `lui $a2, %hi(D_8012BCA0)` into the block the
+ * `beqz $v0` skips, ours emitted it ten instructions later, and everything
+ * after realigned. What neither note could get to is that the statement
+ * needing to be PINNED is nowhere near where the symptom shows -- it is the
+ * end of `case 0`, forty instructions earlier. An empty `do {} while (0);`
+ * there stops IDO sinking that case's tail into the switch join and the
+ * hoist lands where the ROM has it. Found by the permuter and harvested;
+ * the published candidate spells the barrier `goto L; L: ;`, which is
+ * byte-identical to the do-while here. LEVER 71's point exactly: you cannot
+ * read the barrier's placement off the diff. */
 void func_8016B410_ovl3(s32 arg0) {
+    extern s32 D_800BE500;
+    extern s32 D_800BE504;
+    extern s32 D_800BE508;
+    extern f32 D_801292B0[];
+    extern u8 D_801CB1FC;
+    extern u8 D_801CA840;
+    extern void func_801A36CC(void *);
+    extern void func_801A38BC_ovl7(void);
+    extern s32 func_8016B74C_ovl3(void);
+    void func_8016B9D4_ovl3(s32);
+    /* src/ovl2/ovl2_9.c:1529 defines struct PlySlot *func_80111574(struct
+     * PlyEntry *, void *); neither struct is visible outside that TU, and the
+     * result feeds func_80111C4C(s32) directly here. */
+    extern s32 func_80111574(u8 *, s32);
+    extern void func_80111C4C(s32);
+
+
     if ((D_800BE500 == 4) && (D_800BE504 == 1) && (D_800BE508 == 0)) {
         D_801292B0[0] = gEntitiesNextPosXArray[0];
         D_801292B0[1] = gEntitiesNextPosYArray[0];
@@ -1023,6 +1015,9 @@ void func_8016B410_ovl3(s32 arg0) {
             gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId] + gEntitiesNextPosXArray[omCurrentObj->objId];
             gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId] + gEntitiesNextPosYArray[omCurrentObj->objId];
             gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] + gEntitiesNextPosZArray[omCurrentObj->objId];
+            /* LEVER 61 barrier -- see the note above. Do not delete. */
+            do {
+            } while (0);
             break;
         case 4:
             func_801A3938((s32) &D_801CB1FC);
@@ -1065,9 +1060,6 @@ void func_8016B410_ovl3(s32 arg0) {
     }
     func_801696F0_ovl3(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016B410_ovl3.s")
-#endif
 extern void *D_8012BCA8;
 extern void *D_8012BCB4;
 extern void *D_8012BCC0;
