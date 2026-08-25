@@ -718,6 +718,25 @@ the pool allocator's real stride is 0x78.
            your draft cannot use. That is the 38/40 func_801B3C54_ovl7's note
            recorded before its callee was retyped (LEVER 68).
 
+       **AFTER a `sw $a0, N($sp)`, every `lw` from `N($sp)` is a RE-READ of the
+       parameter**, and no liveness scan will tell you: the home store is
+       normally followed at once by a write to $a0 for the first call's
+       argument, so the incoming value looks dead from there on.
+       func_80164A34_ovl5 reloads 0x48($sp) TEN times and its draft was
+       rebuilding the same value as `GObj *arg0 = omCurrentObj;`.
+       `lever58_screen.py` reports these as RELOAD.
+
+       **On a homed-and-reloaded one, declare the parameter and DELETE the
+       local that rebuilds it in the SAME edit, or do neither.** Measured on
+       func_80164A34_ovl5: baseline 135/223; parameter added with the local
+       kept, 194 (the extra declaration grows the frame 0x48 -> 0x50 and IDO
+       spills a word at 0x4C); parameter added and local deleted, 123. The
+       middle step looks like a refutation of the lever and is really lever 54
+       arithmetic -- the declaration count moved.
+       Two more of the same class, both worth having and neither close:
+       func_801DD760_ovl10 198 -> 186 and func_80199A38_ovl7 198 -> 195, both
+       homed-and-unused, both just needing the store to exist.
+
 68. **Retyping a `(void)` callee that only ever passes $a0 on is BYTE-INERT,
     which is what makes LEVER 58's cluster version safe.** func_801B3C54_ovl7
     sat at 4/40 with a note recording that the `GObj *` parameter had been
