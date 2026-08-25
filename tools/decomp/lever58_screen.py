@@ -148,34 +148,31 @@ def screen(func):
         homereads += [(a2, m2, o2) for a2, m2, o2 in rows
                       if m2.startswith('lw') and o2.endswith(slot) and a2 > a]
 
-    live = [None] * n            # True = $a0 still the incoming argument
-    calls, reads = {}, []
+    # Two passes, and the split matters: collecting CALL/READ during the
+    # worklist made the answer depend on visit order, because a block first
+    # reached with $a0 live can be re-reached later on a path where it is not,
+    # and a read already recorded cannot be taken back. Run the dataflow to a
+    # fixed point first, then read the answers off the settled state.
+    # live[i]: True = $a0 still holds the incoming argument on EVERY path here.
+    live = [None] * n
     work = [(0, True)]
     while work:
         i, st = work.pop()
         if i >= n:
             continue
         if live[i] is not None:
-            if live[i] and not st:
-                live[i] = False  # unknown on some other path: demote and redo
-            else:
-                continue
+            if not (live[i] and not st):
+                continue                    # nothing new to propagate
+            live[i] = False                 # demote True -> False and re-walk
         else:
             live[i] = st
         st = live[i]
-        a, m, o = rows[i]
+        m, o = rows[i][1], rows[i][2]
 
         if m.startswith('j') or (m.startswith('b') and m != 'break'):
             ds = rows[i + 1] if i + 1 < n else None
             st2 = st and not (ds and _writes_a0(ds[1], ds[2]))
-            if ds and st and _reads_a0(ds[1], ds[2]) and m not in ('jal', 'jalr'):
-                reads.append(ds)
             if m in ('jal', 'jalr'):
-                tgt = o.strip() or '<indirect>'
-                if tgt in calls:
-                    calls[tgt] = calls[tgt] and st2
-                else:
-                    calls[tgt] = st2
                 work.append((i + 2, False))     # the call clobbers $a0
                 continue
             tgt = o.split(',')[-1].strip().lstrip('.')
@@ -192,9 +189,25 @@ def screen(func):
             work.append((i + 2, st2))
             continue
 
-        if st and _reads_a0(m, o) and not (m in STORE and '($sp)' in o):
-            reads.append((a, m, o))
         work.append((i + 1, False if _writes_a0(m, o) else st))
+
+    calls, reads = {}, []
+    for i, (a, m, o) in enumerate(rows):
+        if not live[i]:
+            continue
+        ds = rows[i + 1] if i + 1 < n else None
+        if m in ('jal', 'jalr'):
+            ok = not (ds and _writes_a0(ds[1], ds[2]))
+            tgt = o.strip() or '<indirect>'
+            calls[tgt] = ok if tgt not in calls else (calls[tgt] and ok)
+            continue
+        if m.startswith('b') and m != 'break':
+            if ds and _reads_a0(ds[1], ds[2]) and not _writes_a0(ds[1], ds[2]):
+                reads.append(ds)
+            continue
+        if _reads_a0(m, o) and not _writes_a0(m, o) \
+                and not (m in STORE and '($sp)' in o):
+            reads.append((a, m, o))
 
     return dict(path=path, words=n, frame=frame, homes=homes,
                 homereads=homereads,
