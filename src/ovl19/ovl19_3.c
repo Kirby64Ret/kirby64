@@ -541,7 +541,7 @@ void func_8022A9E8_ovl19(GObj *g) {
             D_800E9560[omCurrentObj->objId]--;
         }
         if (D_800E8920[omCurrentObj->objId] != 0) {
-            D_800E3750[omCurrentObj->objId] = 0.0f;
+            D_800E3750[omCurrentObj->objId] = 0;
             D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
             D_800E3C90[omCurrentObj->objId] = 65535.0f;
             play_sound(0x4C);
@@ -1255,7 +1255,7 @@ void func_8022D19C_ovl19(GObj *g) {
     gKirbyState.unk2C = 0xF;
     temp_v0 = omCurrentObj->objId;
     if (D_800E8920[temp_v0] == 0) {
-        if (D_800E3210[temp_v0] > 0.0f) {
+        if (D_800E3210[temp_v0] > 0) {
             D_800E3210[temp_v0] = 0.0f;
             func_801230E8(0x2037C, 0x2037D, 0);
         }

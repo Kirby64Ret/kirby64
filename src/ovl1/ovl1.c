@@ -828,7 +828,7 @@ UnkParticle *func_8009BC4C(UnkParticle *pc, s32 bank_id, s32 script_id) {
     script = D_800D6A78[id][script_id];
 
     return func_8009BA74(pc, bank_id, script->flags, script->texture_id, script->bytecode, script->particle_lifetime,
-                         0.0f, 0.0f, 0.0f, script->velX, script->velY, script->velZ, script->size, script->gravity,
+                         0, 0, 0, script->velX, script->velY, script->velZ, script->size, script->gravity,
                          script->friction, D_800D6A98[id][script->texture_id]->flags, NULL);
 }
 #else

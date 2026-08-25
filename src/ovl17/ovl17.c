@@ -542,7 +542,7 @@ void func_801DBDA8_ovl17(void) {
     if ((rot.y == 1.5707964f) || (rot.y == -1.5707964f)) {
         rot.x = (rot.y == 1.5707964f) ? atan2f(finalMtx[1][0], finalMtx[1][1])
                                       : atan2f(-finalMtx[1][0], finalMtx[1][1]);
-        rot.z = 0.0f;
+        rot.z = 0;
     } else {
         rot.x = atan2f(finalMtx[1][2], finalMtx[2][2]);
         rot.z = atan2f(finalMtx[0][1], finalMtx[0][0]);
