@@ -122,8 +122,43 @@ void func_801DCE44_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 231/260 [was noted 29/260], saved-register choice ($s2 in the ROM, $s1 here, and the
-   save block 4 bytes shallower).  Body order and schedule agree. */
+/* FACTORY: 8/260 (was 231/260, and the "saved-register choice" note it
+   carried was a misdiagnosis -- the $s1/$s2 swap was a SYMPTOM).  Four
+   real defects, re-derived from the listing 2026-08-25:
+     1. the switch and the `== 1` test must not share the held constant 1.
+        The ROM materialises `addiu $at, $zero, 1` fresh at both sites and
+        keeps $s1 for the three `= 1` STORES only; IDO CSEd all five, which
+        deleted two instructions and shifted ~200 words.  Casting the two
+        COMPARED values to u32 breaks the CSE (LEVER 45, keyed on type) --
+        and doing so is also what flips the saved-register assignment onto
+        the ROM's $s2=&omCurrentObj / $s1=1, because the constant's extra
+        uses were what ranked it above the address here.
+     2. case 2's wait is `while (240.0f < ABS(func_8019DA50_ovl7()))`.  The
+        three `jal func_8019DA50_ovl7` per test are ABS()'s three argument
+        expansions (LEVER 40), not a `dist` local; and it is ABS(), not
+        ABSF(), because the ROM re-materialises `mtc1 $zero, $f6` where
+        ABSF's 0.0f would have shared $f20 (LEVER 3).
+     3. there is no `id` local: every site reads omCurrentObj->objId inline.
+        The tell is that the ROM shifts in place (`sll $v0, $v0, 2`) at all
+        five index sites, which it can only do when the unshifted value is
+        dead.  Worth 66 words, and it is also what stops $s2 being used for
+        the re-read after play_sound.
+     4. `speed` is a function-scope f32 declared BEFORE sp48 (which the ROM
+        puts at 0x48, so one declared word sits above it), and the 0.5/1.0
+        choice is an if/else assigning it, not a ternary -- the ternary
+        duplicates the D_800EAC20 store into both arms (+62).
+   The 8 that remain are two known floors, 4 words each:
+     - %hi(D_800E8AE0) before %hi(D_800EAC20) at the shared preamble.  This
+       is the SAME floor already tabulated on func_801DE60C_ovl9 below in
+       this file, which has the identical block at 4/130; everything that
+       note lists as inert is inert here too.  Flipping the outer test to
+       `!= 0` fixes the order and breaks the ROM's `bnez` polarity, exactly
+       as recorded there (measured here: 15 diffs).
+     - `speed` lands in $f0 where the ROM uses $f2.  In func_801DE60C_ovl9
+       the same value gets $f2 because a call result owns $f0 ahead of it;
+       this function has no such value.  Swept and inert: ternary (70),
+       swapping the inner arms (11), an empty do-while barrier at the seam
+       (8), an extra leading f32 declaration (10). */
 void func_800AA018(s32);
 void ohSleep(s32);
 extern f32 func_8019DA50_ovl7(void);
@@ -137,8 +172,8 @@ extern struct EnemyEventTable D_801CB764;
  * the reveal cue when grounded and hand off to state 3 (or despawn
  * state 4 when airborne). */
 void func_801DCE6C_ovl9(struct GObj *arg0) {
+    f32 speed;
     s32 sp48;
-    u32 id;
 
     D_800DDFD0[omCurrentObj->objId] = 1;
     D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8080_ovl7;
@@ -148,16 +183,14 @@ void func_801DCE6C_ovl9(struct GObj *arg0) {
     func_800AA018(0x10049);
     D_800EB160[omCurrentObj->objId] = 0.0f;
     D_800E9AA0[omCurrentObj->objId].as_u32 = 0;
-    id = omCurrentObj->objId;
-    switch (D_800E7880[id]) {
+    switch ((u32) D_800E7880[omCurrentObj->objId]) {
         case 3:
             break;
         case 1:
-            D_800EA520[id] = 0;
+            D_800EA520[omCurrentObj->objId] = 0;
             D_800EB320[omCurrentObj->objId] = func_8019DA50_ovl7();
-            id = omCurrentObj->objId;
-            while (D_800EA520[id] == 0) {
-                if (D_800EB320[id] > 0.0f) {
+            while (D_800EA520[omCurrentObj->objId] == 0) {
+                if (D_800EB320[omCurrentObj->objId] > 0.0f) {
                     if (func_8019DA50_ovl7() < 0.0f) {
                         D_800EA520[omCurrentObj->objId] = 1;
                     }
@@ -165,52 +198,42 @@ void func_801DCE6C_ovl9(struct GObj *arg0) {
                     D_800EA520[omCurrentObj->objId] = 1;
                 }
                 ohSleep(1);
-                id = omCurrentObj->objId;
             }
             ohSleep(0xF);
             break;
-        case 2: {
-            f32 dist;
-
-            dist = func_8019DA50_ovl7();
-            if (dist < 0.0f) {
-                dist = -dist;
-            }
-            while (dist > 240.0f) {
+        case 2:
+            while (240.0f < ABS(func_8019DA50_ovl7())) {
                 ohSleep(1);
-                dist = func_8019DA50_ovl7();
-                if (dist < 0.0f) {
-                    dist = -dist;
-                }
             }
             break;
-        }
     }
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     func_800AF27C();
     func_800AECC0(0.0f);
     func_800AED20(0.0f);
-    id = omCurrentObj->objId;
-    if (D_800E8920[id] == 0) {
-        D_800EAC20[id] = 0.0f;
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        D_800EAC20[omCurrentObj->objId] = 0.0f;
     } else {
-        D_800EAC20[id] = (D_800E8AE0[id] & 1) ? 0.5f : 1.0f;
+        if (D_800E8AE0[omCurrentObj->objId] & 1) {
+            speed = 0.5f;
+        } else {
+            speed = 1.0f;
+        }
+        D_800EAC20[omCurrentObj->objId] = speed;
     }
     if (func_8019A900_ovl7(&sp48) != 0) {
         D_800E6A10[omCurrentObj->objId] = sp48;
     } else {
         D_800E6A10[omCurrentObj->objId] = func_8019B608_ovl7(0);
     }
-    id = omCurrentObj->objId;
-    if (D_800E8920[id] == 1) {
+    if ((u32) D_800E8920[omCurrentObj->objId] == 1) {
         play_sound(0xA4);
-        id = omCurrentObj->objId;
-    }
-    if (D_800E8920[id] == 0) {
-        gEntityFuncListIDArray[id] = 4;
+        }
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        gEntityFuncListIDArray[omCurrentObj->objId] = 4;
     } else {
-        gEntityFuncListIDArray[id] = 3;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
     }
 }
 #elif defined(PORT)
@@ -1552,6 +1575,25 @@ void func_801E06C0_ovl9(GObj *arg0) {
 
     func_801A0D74_ovl7(arg0);
     id = omCurrentObj->objId * 4;
+#ifdef PORT
+    /* The byte bias is right for D_800E9C60 (s32[]) and wrong for
+     * D_800E1B50, which is `struct EnemyRecord *[]` -- 8-byte elements on
+     * LP64, so `+ objId * 4` addresses element objId/2 and the ->unk8C
+     * store lands in another enemy's record (or, for an odd objId, across
+     * two of them). See the note in ovl9_9.c's func_801FFCE8_ovl9 and the
+     * PORT arm of func_800F6350 in ovl2.c, which fixed the same spelling
+     * over D_800DE350. */
+    if (*(s32 *) ((u8 *) D_800E9C60 + id) != 0) {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8520_ovl7;
+        func_8019F3B0_ovl7();
+        if (D_800E83E0[omCurrentObj->objId] != 0) {
+            D_800EBBE0[omCurrentObj->objId] = func_8019DD78_ovl7(0xD, 1);
+        }
+    } else {
+        D_800E1B50[omCurrentObj->objId]->unk8C = &D_801C8568;
+        func_8019F3B0_ovl7();
+    }
+#else
     if (*(s32 *) ((u8 *) D_800E9C60 + id) != 0) {
         (*(struct EnemyRecord **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8520_ovl7;
         func_8019F3B0_ovl7();
@@ -1562,6 +1604,7 @@ void func_801E06C0_ovl9(GObj *arg0) {
         (*(struct EnemyRecord **) ((u8 *) D_800E1B50 + id))->unk8C = &D_801C8568;
         func_8019F3B0_ovl7();
     }
+#endif
 }
 void func_801ACC34_ovl7(s32, s32);
 
