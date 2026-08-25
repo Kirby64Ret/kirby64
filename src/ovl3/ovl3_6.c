@@ -7571,6 +7571,30 @@ void func_80183FF4_ovl3(s32 arg0) {
    its siblings: the literal must not be un-guarded before the ovl3 re-split. */
 extern u8 D_8019080C_ovl3[];
 
+/* FACTORY: 8/219, and it is TWO independent residues, neither reachable from
+ * a source spelling:
+ *
+ *   six words -- an $f0/$f2 SWAP between the two FP constants this function
+ *   holds live at once. The ROM puts 65535.0f (D_801977D0_ovl3) in $f2 and
+ *   0.0f in $f0; IDO does the reverse, and the four stores that consume them
+ *   follow. Emission ORDER is identical on both sides -- the 65535.0f load is
+ *   index 22 and the `mtc1 $zero` is index 30 either way -- so this is the
+ *   allocator's choice and not a question of which constant the source
+ *   mentions first.
+ *
+ *   two words -- `addiu $s1, $s1, %lo(D_800EC2E0)` and `or $s0, $zero, $zero`
+ *   emitted in the opposite order at indices 156/157. A schedule swap of an
+ *   independent pair.
+ *
+ * Measured and INERT 2026-08-25, all three byte-identical at 8/219:
+ * chaining the top pair (`unk80 = unk7C = 0.0f`), chaining the D_800E3750
+ * pair the same way, and hoisting the zero into an `f32 zero = 0.0f` local
+ * used at all three sites. IDO canonicalises every one of them.
+ *
+ * Both halves are register/order residues of exactly the kind mutation
+ * reaches and spelling does not, so this stays in priority_queue.py's
+ * TARGETS -- and note that until 2026-08-25 the permuter could not have
+ * closed it honestly anyway: it scored without --stack-diffs. */
 void func_80184538_ovl3(s32 arg0) {
     s32 i;
 
