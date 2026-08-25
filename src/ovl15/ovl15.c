@@ -1765,7 +1765,15 @@ void func_801E0380_ovl15(struct GObj *arg0) {
 
    This is the residue class LEVERS says mutation reaches and source spelling
    does not -- two independent instructions in the opposite order -- so it is
-   in priority_queue.py's TARGETS rather than on a lane. */
+   in priority_queue.py's TARGETS rather than on a lane.
+
+   BARRIER SWEEP RUN AND NEGATIVE, 2026-08-25 (LEVERS 71).
+   `tools/decomp/barrier_sweep.py src/ovl15/ovl15.c func_801E05A8_ovl15`
+   reports base 2/615, 21 candidate placements, and "no placement beats the
+   base". So the mechanical form of LEVER 61 does not reach this either, and
+   the note above stands: the two instructions are independent and the choice
+   is made by the ready list, not by anything a barrier can pin. Do not
+   re-run the sweep here. */
 #if defined(MIPS_TO_C) || defined(PORT)
 /* One arm: nothing here is N64-only. */
 void func_801E05A8_ovl15(struct GObj *arg0) {

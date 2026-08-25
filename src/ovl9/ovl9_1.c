@@ -934,145 +934,55 @@ void func_801D3E7C_ovl9(GObj *arg0) {
     func_801D4C50_ovl9();
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Pendulum/see-saw carrier: every 0x3B ticks it flips the drive velocity for
+ * its axis (kind 1 = X/Y via D_800E64D0/D_800E6690, kind 2 = Z via
+ * D_800E3210/D_800E3750) and re-seeds the position from the parked
+ * D_800E98E0 / D_800EA6E0 / D_800EA8A0 / D_800EAA60 / D_800EAC20 values.
+ * The `ABSF(ABSF(..))` is the ROM's, not a transcription slip -- the same
+ * doubled macro is in this file's matched func_801D4594_ovl9 -- and it is
+ * what emits the four `mtc1 $zero, $f20`-relative compares the ABSF sweep
+ * (LEVERS 70) flags here. */
 void func_801D3EA4_ovl9(s32 arg0) {
-    GObj *temp_v1;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    f32 var_f2;
-    f32 var_f2_2;
-    f32 var_f2_3;
-    f32 var_f2_4;
-    f32 var_f2_5;
-    f32 var_f2_6;
-    u32 temp_a1;
-    u32 temp_a1_2;
-    u32 temp_v0;
-    u32 temp_v0_10;
-    u32 temp_v0_11;
-    u32 temp_v0_12;
-    u32 temp_v0_13;
-    u32 temp_v0_14;
-    u32 temp_v0_15;
-    u32 temp_v0_16;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
-    u32 temp_v0_7;
-    u32 temp_v0_8;
-    u32 temp_v0_9;
-    u8 temp_a0;
-    u8 temp_a0_2;
-
     func_801A3280_ovl7();
     D_800DDFD0[omCurrentObj->objId] = 0;
     func_800A9EA4(0x1001F);
-    temp_v1 = omCurrentObj;
-loop_1:
-    temp_a1 = temp_v1->objId;
-    temp_a0 = D_800E7880[temp_a1];
-    switch (temp_a0) {                              /* switch 1; irregular */
-    case 1:                                         /* switch 1 */
-        D_800E64D0[temp_a1] = D_800EADE0[temp_a1];
-        temp_v0 = temp_v1->objId;
-        D_800E6690[temp_v0] = D_800EAFA0[temp_v0];
-        temp_v0_2 = temp_v1->objId;
-        temp_f0 = D_800EADE0[temp_v0_2];
-        if (temp_f0 < 0.0f) {
-            var_f2 = -temp_f0;
-        } else {
-            var_f2 = temp_f0;
+    while (1) {
+        switch (D_800E7880[omCurrentObj->objId]) {
+            case 1:
+                D_800E64D0[omCurrentObj->objId] = D_800EADE0[omCurrentObj->objId];
+                D_800E6690[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId];
+                D_800E6850[omCurrentObj->objId] = ABSF(ABSF(D_800EADE0[omCurrentObj->objId]));
+                break;
+            case 2:
+                D_800E3210[omCurrentObj->objId] = D_800EADE0[omCurrentObj->objId];
+                D_800E3750[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId];
+                D_800E3C90[omCurrentObj->objId] = ABSF(ABSF(D_800EADE0[omCurrentObj->objId]));
+                break;
         }
-        if (var_f2 < 0.0f) {
-            if (temp_f0 < 0.0f) {
-                var_f2_2 = -temp_f0;
-            } else {
-                var_f2_2 = temp_f0;
-            }
-            D_800E6850[temp_v0_2] = -var_f2_2;
-        } else {
-            if (temp_f0 < 0.0f) {
-                var_f2_3 = -temp_f0;
-            } else {
-                var_f2_3 = temp_f0;
-            }
-            D_800E6850[temp_v0_2] = var_f2_3;
+        ohSleep(0x3B);
+        D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+        D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId];
+        switch (D_800E7880[omCurrentObj->objId]) {
+            case 1:
+                D_800E64D0[omCurrentObj->objId] = -D_800EADE0[omCurrentObj->objId];
+                D_800E6690[omCurrentObj->objId] = -D_800EAFA0[omCurrentObj->objId];
+                break;
+            case 2:
+                D_800E3210[omCurrentObj->objId] = -D_800EADE0[omCurrentObj->objId];
+                D_800E3750[omCurrentObj->objId] = -D_800EAFA0[omCurrentObj->objId];
+                break;
         }
-        break;
-    case 2:                                         /* switch 1 */
-        D_800E3210[temp_a1] = D_800EADE0[temp_a1];
-        temp_v0_3 = temp_v1->objId;
-        D_800E3750[temp_v0_3] = D_800EAFA0[temp_v0_3];
-        temp_v0_4 = temp_v1->objId;
-        temp_f0_2 = D_800EADE0[temp_v0_4];
-        if (temp_f0_2 < 0.0f) {
-            var_f2_4 = -temp_f0_2;
-        } else {
-            var_f2_4 = temp_f0_2;
-        }
-        if (var_f2_4 < 0.0f) {
-            if (temp_f0_2 < 0.0f) {
-                var_f2_5 = -temp_f0_2;
-            } else {
-                var_f2_5 = temp_f0_2;
-            }
-            D_800E3C90[temp_v0_4] = -var_f2_5;
-        } else {
-            if (temp_f0_2 < 0.0f) {
-                var_f2_6 = -temp_f0_2;
-            } else {
-                var_f2_6 = temp_f0_2;
-            }
-            D_800E3C90[temp_v0_4] = var_f2_6;
-        }
-        break;
+        ohSleep(0x3B);
+        D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+        D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+        gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId];
     }
-    ohSleep(0x3B);
-    temp_v0_5 = omCurrentObj->objId;
-    D_800E5F90[temp_v0_5] = D_800E98E0[temp_v0_5];
-    temp_v0_6 = omCurrentObj->objId;
-    D_800E6BD0[temp_v0_6] = D_800EA6E0[temp_v0_6];
-    temp_v0_7 = omCurrentObj->objId;
-    gEntitiesNextPosXArray[temp_v0_7] = D_800EA8A0[temp_v0_7];
-    temp_v0_8 = omCurrentObj->objId;
-    gEntitiesNextPosYArray[temp_v0_8] = D_800EAA60[temp_v0_8];
-    temp_v0_9 = omCurrentObj->objId;
-    gEntitiesNextPosZArray[temp_v0_9] = D_800EAC20[temp_v0_9];
-    temp_a1_2 = omCurrentObj->objId;
-    temp_a0_2 = D_800E7880[temp_a1_2];
-    switch (temp_a0_2) {                            /* switch 2; irregular */
-    case 1:                                         /* switch 2 */
-        D_800E64D0[temp_a1_2] = -D_800EADE0[temp_a1_2];
-        temp_v0_10 = omCurrentObj->objId;
-        D_800E6690[temp_v0_10] = -D_800EAFA0[temp_v0_10];
-        break;
-    case 2:                                         /* switch 2 */
-        D_800E3210[temp_a1_2] = -D_800EADE0[temp_a1_2];
-        temp_v0_11 = omCurrentObj->objId;
-        D_800E3750[temp_v0_11] = -D_800EAFA0[temp_v0_11];
-        break;
-    }
-    ohSleep(0x3B);
-    temp_v0_12 = omCurrentObj->objId;
-    D_800E5F90[temp_v0_12] = D_800E98E0[temp_v0_12];
-    temp_v0_13 = omCurrentObj->objId;
-    D_800E6BD0[temp_v0_13] = D_800EA6E0[temp_v0_13];
-    temp_v0_14 = omCurrentObj->objId;
-    gEntitiesNextPosXArray[temp_v0_14] = D_800EA8A0[temp_v0_14];
-    temp_v0_15 = omCurrentObj->objId;
-    gEntitiesNextPosYArray[temp_v0_15] = D_800EAA60[temp_v0_15];
-    temp_v0_16 = omCurrentObj->objId;
-    gEntitiesNextPosZArray[temp_v0_16] = D_800EAC20[temp_v0_16];
-    goto loop_1;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D3EA4_ovl9.s")
-#endif
 
 extern struct EnemyEventTable D_801CB68C;
 void func_800A9EA4(s32);

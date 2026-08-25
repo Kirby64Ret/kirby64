@@ -1335,7 +1335,20 @@ void func_800B72AC(s32);
 void func_800B33F4(void);
 
 #ifdef NON_MATCHING
-/* Left live by a lane mid-work, at 45/277 insns. Draft kept. */
+/* FACTORY: 7/277 (was 45/277).  The whole 38-word improvement is ONE
+ * scheduling barrier (LEVERS 61/71), placed by tools/decomp/barrier_sweep.py,
+ * before `ent->unk8C = ent->unk88->animTable;` -- the statement immediately
+ * after the switch.  Without it IDO hoists the post-switch `lw 0x88($s0)` and
+ * the `idx` reload up into the switch arms, which moves the join label and
+ * rotates the registers from there to the end of the function.
+ * Do not delete the empty do-while.  A second sweep from this base finds
+ * nothing further (best other placement 40/277).
+ * The 7 that remain: the ROM's join is `.L801EED80` (reload `idx` from its
+ * 0x30 spill, re-shift, load unk88) reached only by the third case's
+ * fall-through, with cases 1 and 2 branching past it to `.L801EED8C` and
+ * carrying `lw $v0, 0x88($s0)` in the delay slot.  Ours merges those into one
+ * block two words earlier, so the two `b` displacements are 0x18/0x0C against
+ * the ROM's 0x1A/0x0E and five instructions around the join are permuted. */
 void func_801EEC28_ovl9(struct GObj *arg0) {
     struct EnemyRecord *ent;
     s32 idx;
@@ -1370,6 +1383,7 @@ void func_801EEC28_ovl9(struct GObj *arg0) {
             func_800A9760(D_8021C220_ovl9[idx]);
             break;
     }
+    do { } while (0);
     ent->unk8C = ent->unk88->animTable;
     ent->unk94 = ent->unk88->animCue;
     D_800E0490[omCurrentObj->objId] = (f32 **) ent->unk88->unk10;
