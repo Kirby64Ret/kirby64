@@ -2318,6 +2318,23 @@ void func_8019D4D0_ovl7(f32 arg0, u8 arg1) {
 // The head is ANSI as of this pass: scored both ways on a scratch copy of
 // this TU with the draft un-guarded, 20/46 either way, so the K&R spelling
 // was buying nothing.
+// 2026-08-25, three more spellings of the index, none of which reaches the
+// home store. The frame is 0x30 against the ROM's 0x28 and the residue is
+// entirely downstream of that, so the home store IS the whole function:
+//   - `func_800B1900(arg0)` unmasked, letting the callee's `u16` prototype
+//     emit the `andi` (the ROM's last instruction is `andi $a0,$s0,0xFFFF`,
+//     a SECOND mask of an already-masked $s0, which looked like evidence that
+//     the source keeps the raw parameter live): 20/46, byte-identical.
+//   - a `u16 id = arg0;` local used at all six sites: 20/46, ALSO
+//     byte-identical to the `(u16) arg0` inline form. Worth recording as a
+//     LEVER 4 datum -- a narrowing local and a repeated narrowing cast are
+//     the same program to IDO here.
+//   - `s32 id = (u16) arg0;` used at all six sites: 38/45, one word SHORT.
+// What the ROM does that no spelling reproduces is a DEAD home store: `sw $a0,
+// 0x28($sp)` at word 8, after `andi $s0,$a0,0xFFFF` at word 2 has already
+// consumed $a0, and never reloaded. LEVER 67(e)'s first case says declaring
+// the parameter reproduces such a store; on this function it does not, and
+// that is a scope limit on 67(e) worth knowing.
 void func_8019D8A0(s32 arg0) {
     struct EnemyRecord *ent = D_800E1B50[(u16) arg0];
 
