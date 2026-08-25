@@ -1478,3 +1478,22 @@ the pool allocator's real stride is 0x78.
     screen is cheap enough (one pass over the listings) that the right move is
     to run it over a whole scope once and record the negative, rather than
     reaching for the lever function by function.
+
+83. **Check WHICH ARM you are editing before you believe a measurement.** A
+    three-arm function has an `#ifdef MIPS_TO_C` draft, an `#elif
+    defined(PORT)` body and the `#pragma GLOBAL_ASM`, and only the FIRST is
+    scored. I rewrote func_800A9648's dispatch from an if/else chain into a
+    switch, measured 69/70 before and after, and was about to record "IDO
+    builds the same jump table from a dense range chain, so a table is not
+    evidence for a switch" as a LEVER 34 correction. It is not a correction:
+    I had edited the PORT arm. The guarded draft was ALREADY a switch, and its
+    own note already said the 15-entry table appears only when the switch also
+    carries empty `case 0x1F` and `case 0x3E7` arms -- without them IDO emits a
+    14-entry table and no 0x3E7 test.
+
+    The tell that should have stopped me sooner: **a source change that moves
+    the score by exactly zero, twice, is usually not a finding about IDO.**
+    Before writing that down, `grep -n '<func>' <file>` and check the line
+    number you edited is inside the guard `scratchverify` reports. A near miss
+    like this costs nothing if caught and puts a false lever in the file if
+    not.
