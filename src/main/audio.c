@@ -448,10 +448,37 @@ void auInit(void) {
 }
 
 // https://decomp.me/scratch/CvKIB
-// Near-match draft (~92/338 insns differ, all in the auPublicSettings mirror
-// stores: target shares one lui/uses a base reg where this emits two luis).
-/* FACTORY: 92/336 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 92/336 -- MEASURED 2026-08-25. The first 224 instructions are
+   BYTE-IDENTICAL, including the $s1 base register for auCurrentSettings; the
+   residue is entirely the auPublicSettings mirror stores and the one-slot
+   shift they cause.
+
+   Exactly what the ROM does, at 8001F69C:
+       lui  $at, %hi(D_8003F39C)      <- hoisted ABOVE the loads
+       lw   $t2, 0x0($v1)
+       addiu $t3, $v1, 0x4
+       sh   $t2, 0x4C($s1)            <- auCurrentSettings.unk4C
+       sh   $t2, %lo(D_8003F39C)($at) <- auPublicSettings.unk4C
+       sw   $t3, 0x44($s1)
+       sw   $t3, %lo(D_8003F394)($at) <- SAME $at, second symbol
+   One `lui` serves both mirror stores because their %hi agree. The draft emits
+   a `lui` per store, which is one extra instruction per block and is why the
+   branch at index 224 is off by one displacement.
+
+   Measured 2026-08-25, and the chained form kept below is the best of them:
+     - splitting the chain into four statements in the ROM's interleaved order
+       (cur.unk4C, pub.unk4C, cur.unk44, pub.unk44): byte-identical, 92/336;
+     - grouping both pub stores after both cur stores: 98/337, WORSE;
+     - hoisting `pub = &auPublicSettings;` to the top and using `pub->` for the
+       bank3 and bank4 mirrors as the bank5 block already does: 93/337, worse
+       -- and the ROM does not use a base register there anyway, it uses
+       %lo($at) twice.
+     - barrier_sweep.py finds 91/336 with a barrier before the bank4
+       `auRomRead` call. One word, from a barrier in front of a call with no
+       loop or block around it; that is below the noise floor for LEVER 71 and
+       is not taken.
+   The fold is the assembler sharing $at between two %lo whose %hi match, and
+   no spelling of the C reaches it. */
 #ifdef NON_MATCHING
 void auLoadAssets(void) {
     s32 j;
