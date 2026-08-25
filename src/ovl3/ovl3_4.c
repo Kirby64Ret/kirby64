@@ -133,7 +133,6 @@ void func_801696F0_ovl3(s32 arg0) {
     func_800FF200(D_8012E944);
 }
 
-#ifdef NON_MATCHING
 /* FACTORY: 3/224, FP-register floor -- re-confirmed 2026-08-23. Was 12/224
    with the two constants as `extern f32`; ovl3's rodata is MIGRATED now, and
    the literal form fixed nine of the twelve FP-register diffs on its own.
@@ -152,50 +151,46 @@ extern void func_800FA414(s32);
 extern void func_800BB468(s32, s32);
 void func_80169A98_ovl3(s32);
 
-void func_80169718_ovl3(GObj *arg0) {
-    f32 temp;
-
-    if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0) {
-        func_800A9760(0x20007);
-    }
-    D_800DF150[omCurrentObj->objId] = func_80169A98_ovl3;
-    D_800DEF90[omCurrentObj->objId] = func_800B4924;
-    D_800E8920[omCurrentObj->objId] = 0;
-    D_800E98E0[omCurrentObj->objId] = 0;
-    func_8016BBD0_ovl3();
-    arg0->flags |= 1;
-    func_800FF0A8(D_8012E944);
-    temp = 65535.0f;
-    D_800E3910[omCurrentObj->objId] = 0.0f;
-    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] = D_800E33D0[omCurrentObj->objId] =
-        D_800E3590[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId];
-    D_800E3E50[omCurrentObj->objId] = temp;
-    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId];
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = temp;
-    func_800FBE1C();
-    func_800FA414(5);
-    func_800BB468(0, 0);
-    ohSleep(0x41);
-    D_800E98E0[omCurrentObj->objId] = 1;
-    arg0->flags ^= 1;
-    func_800FF0C4(D_8012E944);
-    D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId] =
-        D_800E5F90[D_800E0D50[omCurrentObj->objId]];
-    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] =
-        D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
-    D_800E8920[omCurrentObj->objId] = 0;
-    D_800DEF90[omCurrentObj->objId] = func_800B531C;
-    D_800E3210[omCurrentObj->objId] = -10.0f;
-    D_800E3750[omCurrentObj->objId] = -0.980665f;
-    D_800E3C90[omCurrentObj->objId] = 10.0f;
-    func_800FA414(3);
-    curObjSleepForever();
+void func_80169718_ovl3(GObj *arg0)
+{
+  f32 new_var;
+  f32 temp;
+  if ((D_800EA520[omCurrentObj->objId] & 0xFF) == 0)
+  {
+    func_800A9760(0x20007);
+  }
+  D_800DF150[omCurrentObj->objId] = func_80169A98_ovl3;
+  D_800DEF90[omCurrentObj->objId] = func_800B4924;
+  D_800E8920[omCurrentObj->objId] = 0;
+  D_800E98E0[omCurrentObj->objId] = 0;
+  func_8016BBD0_ovl3();
+  arg0->flags |= 1;
+  func_800FF0A8(D_8012E944);
+  temp = 65535.0f;
+  D_800E3910[omCurrentObj->objId] = 0.0f;
+  D_800E3050[omCurrentObj->objId] = (D_800E3210[omCurrentObj->objId] = (D_800E33D0[omCurrentObj->objId] = (D_800E3590[omCurrentObj->objId] = (D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId]))));
+  D_800E3E50[omCurrentObj->objId] = temp;
+  D_800E3AD0[omCurrentObj->objId] = (D_800E3C90[omCurrentObj->objId] = D_800E3E50[omCurrentObj->objId]);
+  D_800E6690[omCurrentObj->objId] = 0.0f;
+  D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+  D_800E6850[omCurrentObj->objId] = temp;
+  func_800FBE1C();
+  func_800FA414(5);
+  func_800BB468(0, 0);
+  ohSleep(0x41);
+  D_800E98E0[omCurrentObj->objId] = 1;
+  arg0->flags ^= 1;
+  func_800FF0C4(D_8012E944);
+  D_800E5F90[omCurrentObj->objId] = (D_800E6150[omCurrentObj->objId] = D_800E5F90[D_800E0D50[omCurrentObj->objId]]);
+  D_800E6BD0[omCurrentObj->objId] = (D_800E6D90[omCurrentObj->objId] = (new_var = D_800E6BD0[D_800E0D50[omCurrentObj->objId]]));
+  D_800E8920[omCurrentObj->objId] = 0;
+  D_800DEF90[omCurrentObj->objId] = func_800B531C;
+  D_800E3210[omCurrentObj->objId] = -10.0f;
+  D_800E3750[omCurrentObj->objId] = -0.980665f;
+  D_800E3C90[omCurrentObj->objId] = 10.0f;
+  func_800FA414(3);
+  curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169718_ovl3.s")
-#endif
 extern f32 gKirbyHp;
 extern void play_sound(s32);
 s32 change_kirby_hp(f32);
