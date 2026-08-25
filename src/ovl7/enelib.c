@@ -126,6 +126,7 @@ s32 func_800B30BC(f32, f32, s32);
 void func_8019D8A0(s32);
 s32 func_8019A7E8_ovl7(f32);
 void func_8019B164_ovl7(void);
+s32 func_800F98EC(s32, f32);
 f32 func_8019AAD0_ovl7(f32, f32, f32);
 f32 func_8019B608_ovl7(s32 track);
 void func_8019BC94_ovl7(void);
@@ -1012,42 +1013,75 @@ block_14:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A9AC_ovl7.s")
 #endif
-// m2c draft, measured 89/100 diffs
+/* FACTORY: 21/100, from 89/100, and the first 73 words are now exact.
+   Three things did it, in order of size:
+
+   89 -> 45  LEVER 55. `func_800F98EC` is declared NOWHERE this TU can see it
+             (src/ovl2/ovl2_3.c defines it, src/ovl11 and src/ovl3 carry
+             prototypes, no header does), so the call was an implicit
+             `int f()`: the draft emitted `cvt.d.s $f6,$f14` and passed a
+             DOUBLE in $a2/$a3 where the ROM passes a single float in $a1
+             (`mfc1 $a1,$f14`). One `s32 func_800F98EC(s32, f32);` at file
+             scope is worth 44 words. Same class as the func_8019AAD0_ovl7
+             prototype that closed func_8019AC60_ovl7 below.
+
+   45 -> 31  THE FRAME, read off the dead slots. `grep -o
+             '0x[0-9A-Fa-f]*(\$sp)'` on the listing gives 0x18, 0x20, 0x2C,
+             0x30, 0x34 used and 0x1C, 0x24, 0x28 NEVER touched, with $ra at
+             0x14 and the arg homes at 0x38/0x40 -- so the local region is
+             0x18..0x37, EIGHT words, three of them register-allocated locals
+             that own a slot and never use it (LEVER 30/78). m2c declared TEN.
+             Cutting the two redundant temps (`temp_f16`/`temp_f2_2` are just
+             `sp2C`/`sp30`) and ordering the rest so each named local lands on
+             its own offset -- sp34, sp30, sp2C, then two dead, then sp20, one
+             dead, sp18 -- puts the frame on the ROM's 0x38 exactly.
+
+   31 -> 21  IDO FOLDS `x + 0.0f` AND THE ROM DOES NOT, so the zero is a
+             VARIABLE. The ROM has `mtc1 $zero,$f10` / `add.s $f14,$f8,$f10`
+             for the `+ 0.0f` in `(sinf(arg0) * 16.0f) + 0.0f`, and every
+             literal spelling loses it: `+ 0.0f`, the integer `+ 0`, and
+             `0.0f + (...)` are ALL 31/99, two words short, with the add folded
+             away. An `f32 zx;` local assigned `0.0f` just before the add
+             reproduces both words, and it costs no frame because it takes one
+             of the three dead slots above. Note this is the opposite end of
+             LEVER 90: there the knob is which literal SHARES a materialised
+             zero, here it is that no literal survives at all.
+             (`(0.0f - temp_f14)` later keeps its own `mtc1 $zero,$f6` as a
+             literal, so the two really are different constants.)
+
+   Left: 21 words of FP-register naming and scheduling in the return
+   expression. Measured on the way, all worse: swapping `sp20`/`temp_f14` back
+   (22), using `sp20` instead of `temp_f14` in the return (22), merging them
+   into one local (22), and moving `zx` after `temp_f2` in the list (22). */
 #ifdef NON_MATCHING
 f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     f32 sp34;
     f32 sp30;
     f32 sp2C;
+    f32 zx;
+    f32 temp_f2;
+    f32 temp_f14;
     f32 sp20;
     f32 sp18;
-    f32 temp_f0;
-    f32 temp_f14;
-    f32 temp_f16;
-    f32 temp_f2;
-    f32 temp_f2_2;
 
-    temp_f2_2 = *D_800E6BD0;
-    temp_f16 = *D_800E5F90;
-    sp30 = temp_f2_2;
-    sp2C = temp_f16;
+    sp30 = *D_800E6BD0;
+    sp2C = *D_800E5F90;
     if (func_800F98EC(0, arg1) != 0) {
-        *D_800E6BD0 = temp_f2_2;
-        *D_800E5F90 = temp_f16;
+        *D_800E6BD0 = sp30;
+        *D_800E5F90 = sp2C;
         return 0.0f;
     }
-    sp2C = temp_f16;
-    sp30 = temp_f2_2;
-    temp_f0 = func_800F9828(omCurrentObj->objId, 0);
-    sp34 = temp_f0;
-    if (temp_f0 == 9999.0f) {
-        *D_800E6BD0 = temp_f2_2;
-        *D_800E5F90 = temp_f16;
+    sp34 = func_800F9828(omCurrentObj->objId, 0);
+    if (sp34 == 9999.0f) {
+        *D_800E6BD0 = sp30;
+        *D_800E5F90 = sp2C;
         return 0.0f;
     }
-    *D_800E6BD0 = temp_f2_2;
-    *D_800E5F90 = temp_f16;
+    *D_800E6BD0 = sp30;
+    *D_800E5F90 = sp2C;
     sp18 = gEntitiesNextPosYArray[omCurrentObj->objId];
-    temp_f14 = (sinf(arg0) * 16.0f) + 0.0f;
+    zx = 0.0f;
+    temp_f14 = (sinf(arg0) * 16.0f) + zx;
     sp20 = temp_f14;
     temp_f2 = (cosf(arg0) * 16.0f) + sp18;
     return (((*gEntitiesNextPosYArray + 20.0f + arg2) - temp_f2) * (0.0f - temp_f14)) - ((sp34 - temp_f14) * (sp18 - temp_f2));
@@ -1223,30 +1257,46 @@ s32 func_8019B260_ovl7(f32 offsetY) {
     return ((gEntitiesNextPosYArray[omCurrentObj->objId] + offsetY) < eneGetPlayerHeight()) ? 1 : -1;
 }
 
-// m2c draft, measured 63/70 diffs
+/* FACTORY: 63/70, and re-derived into readable C at the SAME score so the next
+   lane is not reading m2c temps. What is now solid: `p` (the ROM's $a2) is
+   `D_800E1B50[id]->unk78`, the two-arm dispatch really is on arg0 against 1
+   and 2, and the objId cache is load-bearing -- `s32 id` used for the three
+   pre-call array reads is 63, spelling `omCurrentObj->objId` inline at all
+   five sites is 66, because the ROM shares ONE `sll $v0, $v0, 2` across
+   D_800E1B50, D_800E8920 and D_800E17D0 and re-reads only AFTER the call.
+   Measured 2026-08-25 and all EXACTLY 63/70: an if/else-if chain instead of
+   the switch, an early `if (p == 0) return;` instead of the enclosing if, an
+   `s32 kind = arg0;` copy to dispatch on, and swapping the `v`/`id`
+   declaration order.
+   THE RESIDUE IS ONE INSTRUCTION AND IT IS LEVER 89 READ BACKWARDS. The ROM
+   does `or $a3, $a0, $zero` in the ENTRY block and homes that copy in the
+   `jal func_800F8824` DELAY SLOT (`sw $a3, 0x18($sp)`), reloading it after --
+   i.e. it keeps the parameter in a register and spills it only on the path
+   that actually calls. Every spelling above homes `$a0` in the PROLOGUE
+   instead, at word 5, and that one misplaced store is what rotates the whole
+   register file afterwards. LEVER 89 names this store as the tell for a draft
+   that cannot USE its parameter; here the draft uses it and still cannot sink
+   the store, so the lever's mechanism is understood and its lever is not. */
 #ifdef NON_MATCHING
 void func_8019B2C0_ovl7(s32 arg0) {
-    f32 var_f2;
-    u32 temp_a2;
-    u32 temp_v0;
-    u32 temp_v0_2;
+    f32 v;
+    s32 id = omCurrentObj->objId;
+    u32 p = D_800E1B50[id]->unk78;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a2 = D_800E1B50[temp_v0]->unk78;
-    if (temp_a2 != 0) {
-        if (D_800E8920[temp_v0] == 0) {
-            var_f2 = 0.0f;
+    if (p != 0) {
+        if (D_800E8920[id] == 0) {
+            v = 0.0f;
         } else {
-            var_f2 = func_800F8824((Vector *) temp_a2, D_800E17D0[temp_v0]);
+            v = func_800F8824((Vector *) p, D_800E17D0[id]);
         }
-        switch (arg0) {                             /* irregular */
-            case 1:
-                D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.x = -var_f2;
-                return;
-            case 2:
-                temp_v0_2 = omCurrentObj->objId;
-                D_800DE350[temp_v0_2]->data.dobj->parent->angle.v.z = var_f2 * D_800E6A10[temp_v0_2];
-                break;
+        switch (arg0) {
+        case 1:
+            D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.x = -v;
+            break;
+        case 2:
+            D_800DE350[omCurrentObj->objId]->data.dobj->parent->angle.v.z =
+                v * D_800E6A10[omCurrentObj->objId];
+            break;
         }
     }
 }
