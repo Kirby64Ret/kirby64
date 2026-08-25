@@ -664,7 +664,22 @@ void func_801DC724_ovl17(void) {
  * here there is no pointer local and deleting one is not available. The ROM's
  * temps start one argument register HIGHER ($a2 for the base, $a1 for the
  * element) with $a0 untouched, while IDO starts at $a1/$a0 -- i.e. the ROM
- * keeps $a0 reserved for a parameter that this body never reads. */
+ * keeps $a0 reserved for a parameter that this body never reads.
+ *
+ * LEVER 58 does not apply and the reason is measurable in this file. The
+ * closures it produced elsewhere today all had a jal whose $a0 the function
+ * never writes; here the only jal SETS $a0 itself ('or $a0, $v1, $zero'), so
+ * there is no pass-through to declare. And the ROM's prologue DOES home the
+ * parameter ('sw $a0, 0x18($sp)'), which this draft already reproduces, so the
+ * parameter is genuinely unused in the ROM too.
+ * The obvious next thought -- that an unused prototyped parameter is what
+ * reserves $a0 -- is FALSE, and the counter-example is func_801DBA8C_ovl17 200
+ * lines above: same 'void f(struct GObj *arg0)' head, same unused parameter,
+ * same home store, and it MATCHES while using $a0 as a plain temp for
+ * omCurrentObj. So an unused parameter does not reserve its register, and
+ * whatever occupies $a0 for the whole of func_801DC91C_ovl17 is not the
+ * parameter. Do not spend the K&R or pointer-local variants again; they are
+ * already recorded above at 6/28. */
 void func_801DC91C_ovl17(struct GObj *arg0) {
     struct GObj *obj;
     s32 temp_v1;
