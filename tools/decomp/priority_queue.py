@@ -73,6 +73,7 @@ TARGETS = [
     ( 12, 'src/ovl5/ovl5_5.c', 'func_80171950_ovl5'),   # of 327
     ( 13, 'src/ovl1/ovl1_10.c', 'func_800BA90C'),   # of 62
     ( 13, 'src/ovl18/code_232B60.c', 'func_80221498_ovl18'),   # of 138
+    ( 13, 'src/ovl1/ovl1_3.c', 'func_800AA96C'),   # of 116, saved-register assignment swap
     ( 13, 'src/ovl4/ovl4_1.c', 'func_80151CEC_ovl4'),   # of 59
     ( 13, 'src/ovl7/ovl7_3.c', 'func_801A1B6C_ovl7'),   # of 318
     ( 14, 'src/ovl7/ovl7_17.c', 'func_801C02D0_ovl7'),   # of 174

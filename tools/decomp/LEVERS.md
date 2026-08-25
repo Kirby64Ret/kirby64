@@ -1449,3 +1449,21 @@ the pool allocator's real stride is 0x78.
     against twenty-nine" with both rebuild numbers in it stops the next lane
     re-deriving the same 5/235 case from scratch, which had already happened
     once.
+
+82. **LEVER 58 is EXHAUSTED in ovl1, main and ovl18, and here is the list so
+    nobody re-screens it.** Nineteen guarded drafts in those overlays are
+    declared `(void)`. `lever58_screen.py` walks the control-flow graph of each
+    and reports the same verdict for every one of the nine worth checking:
+    `$a0 never read, never homed: there is no parameter`.
+
+        func_8021FDF4_ovl18   func_80220038_ovl18   func_80225958_ovl18
+        func_8021F70C_ovl18   func_800A71E0         func_800A34C8
+        func_800BE098         func_800B922C         func_800183BC
+
+    The lever is not dead -- func_802244FC_ovl18 closed on it the same evening,
+    7/26 to byte-exact -- but that one was reachable only because a `pad`
+    subsegment made its listing scorable in the first place. The remaining
+    (void) population in these overlays genuinely takes no argument, and the
+    screen is cheap enough (one pass over the listings) that the right move is
+    to run it over a whole scope once and record the negative, rather than
+    reaching for the lever function by function.

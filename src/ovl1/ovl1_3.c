@@ -3129,6 +3129,24 @@ s32 func_800AA934(s32 arg0) {
  * 13 words are the $s1/$s2/$s6 saved-register permutation described above
  * (LEVERS.md "Whole-function callee-saved permutation" floor, first entry
  * in the unclosable list). Left guarded. */
+/* FACTORY: 13/116 -- MEASURED 2026-08-25, the first measurement this draft has
+ * had. Structure, count, frame and the whole prologue are exact: the first
+ * disagreement is at index 33 and every saved register and FP pair is stored
+ * at the ROM's offset.
+ *
+ * The 13 are one saved-register ASSIGNMENT difference and the schedule that
+ * follows it. The ROM puts arg2's copy in $s2 and uses $s1 as the scratch it
+ * re-materialises `&D_800DFA10` into -- twice, at 800AA9F4 and 800AAA24, so
+ * that is not a held base but a saved register being spent as a temp. The
+ * draft puts arg2's copy in $s1 and the address in $s6. Same registers saved,
+ * same count, opposite assignment, and the `lwc1 $f22, 0x78($sp)` / `or $s1,
+ * $s5, $zero` pair at indices 65 and 71 swaps with it.
+ *
+ * Allocation order is what decides this -- IDO hands out $s1 before $s2 to
+ * whichever value becomes live first -- and no statement order in the body
+ * changes which of the two that is, because the address is re-materialised at
+ * its point of use rather than held. Permuter fuel; queued in
+ * priority_queue.py's TARGETS. */
 void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, f32 arg3, f32 arg4) {
     /* Kept in-body: the PORT arm of this same function below spells
      * func_8000EC98 with host pointer/variadic arguments, and the two arms
