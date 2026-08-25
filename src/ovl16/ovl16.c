@@ -2767,8 +2767,9 @@ void func_801E3518_ovl16(s32 arg0) {
  *      the subtraction in each arm -- that is most of the 79 missing words.
  *      The `(a - b) < 0.0f` of the outer macro is emitted as a direct
  *      `c.lt.s $f14, $f2` (a < b): IDO folds a difference used only in a float
- *      comparison and never forms the subtraction there (LEVERS' ovl7 entry
- *      20), which is why the listing looks like a plain compare of two ABSFs.
+ *      comparison and never forms the subtraction there (LEVERS 73, and the
+ *      ovl7 entry 20), which is why the listing looks like a plain compare of
+ *      two ABSFs.
  *   2. there is no `slots[8]` array and no `dist` local.  The ROM re-reads
  *      D_801F0200_ovl16[i] for the transform call and the unk20 pokes, and
  *      re-reads D_801F0188_ovl16[i] INSIDE the last ABSF (`lwc1 $f10, 0($s1)`

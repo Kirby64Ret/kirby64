@@ -963,6 +963,19 @@ the pool allocator's real stride is 0x78.
     Naming it costs 169 words. LEVER 60's question -- which of the ROM's
     values is a temp rather than a local -- is the same question here.
 
+    **SECOND CONFIRMATION, on a function where the macro DID pay
+    (func_801E35D4_ovl16, 452/455 -> 141/455).** Its limb deltas are
+    `dx = ABSF(ABSF(gEntitiesNextPosXArray[t]) - ABSF(srt.x));`, and the
+    listing shows exactly what this entry predicts: the outer macro's test is
+    a bare `c.lt.s $f14, $f2` of the two inner ABSF results with no zero of
+    its own, and each arm recomputes BOTH inner ABSFs and the subtraction.
+    So `ABSF(a - b)` is not always a false positive -- what makes it real
+    there is that the difference is never named, exactly as this entry says.
+    Note the two inner ABSFs DO each materialise a compare against the
+    hoisted `$f20` zero, which is why the sweep saw the function at all: an
+    `ABSF(ABSF(..) - ABSF(..))` is invisible to the zero filter at the top
+    level and visible one level down.
+
     Three more measurements from the same sweep, so nobody re-spends them:
       - `ABSF(ABSF(x))` is a real shape (func_801BB3D4_ovl7): the outer macro
         names its operand three times and its operand is a macro, so the
