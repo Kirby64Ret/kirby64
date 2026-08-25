@@ -3856,6 +3856,35 @@ void func_8017EA0C_ovl3(s32 arg0) {
  * dropped; gEntityGObjProcessArray/assign_new_process_entry/
  * func_8016C510_ovl3 are declared locally because the file's own externs
  * for them only appear further down. */
+/* FACTORY: 208/248, and the useful facts are about WHERE it goes wrong, not
+ * about registers. The note that used to sit here called it a callee-saved
+ * permutation; LEVER 65b's opcode test says otherwise -- 38 of the 208 diffs
+ * are register renames at aligned positions and 127 have a DIFFERENT OPCODE.
+ *
+ * What is established (2026-08-25):
+ *   - THE DRAFT IS 43 WORDS SHORT. verify.py reports `current=<none>` for
+ *     indices 205-247, which is the alignment tail of being short, not a
+ *     missing tail: the source's last block is correct and matches the ROM's
+ *     epilogue statement for statement.
+ *   - The streams agree at 14-17, 37-42 and 61-67 and diverge from ~68 on.
+ *     Index 68 is the start of the `gKirbyController.buttonHeld & 0x300`
+ *     block.
+ *   - The ROM emits SIX branch-likely instructions in that region (`bnel` at
+ *     0xEF7C, 0xEFC4, 0xF02C, 0xF07C, 0xF0C4 and a `beql` at 0xEE9C). Each
+ *     duplicates a store into its delay slot, which is very close to the 43
+ *     missing words -- so the shortfall is most likely the ROM's dead copies
+ *     that our source shape does not produce. A lane found the same thing on
+ *     func_80227D4C_ovl19 today: one word short, and the missing word was the
+ *     ROM's dead copy of a store.
+ *
+ * MEASURED AND INERT: flipping all ten `if (!(D_800E8AE0[id] & 6)) A else B`
+ * ladders in this function to `if (D_800E8AE0[id] & 6) B else A`, on the
+ * theory that the polarity is what selects branch-likely. Byte-identical at
+ * 208/248 -- IDO canonicalises it. Whatever produces `bnel` here, it is not
+ * the test polarity.
+ *
+ * Next step for whoever picks this up: work out what source shape makes IDO
+ * emit branch-likely for these ladders. That is the whole remaining gap. */
 void func_8017EDDC_ovl3(s32 arg0) {
     extern struct GObjProcess *gEntityGObjProcessArray[];
     s32 id;
