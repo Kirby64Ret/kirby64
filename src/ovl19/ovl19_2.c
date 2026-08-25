@@ -3069,29 +3069,24 @@ void func_80227C88_ovl19(void) {
     }
 }
 
-#ifdef NON_MATCHING
-/* 1 diff, and it grows this TU by 16 bytes. Guarded by the manager: it was
-   left un-guarded and non-matching, which shifts every segment after it. */
-/* 12/123, structurally complete; residue is the likely-branch transform on the
- * collisionParameter test (ROM bnel + duplicated store, IDO bnez + nop) and the
- * return-0 block ordering that follows.
+/* The last two words are a control-flow shape, not a value.  IDO turns the
+ * branch to the `collisionParameter != 0` block into a branch-LIKELY, inlines
+ * that block's single store `gKirbyState.unk44 = 7` into the delay slot, and
+ * retargets it past the now-orphaned block to the epilogue -- so the ROM
+ * carries a DEAD second copy of that store at 80227F24.  IDO only performs
+ * that transform when the `temp != -1` arm ends in a `return` and the
+ * fall-through reaches the same return through a `goto`, with the stores
+ * wrapped in an empty `do { } while (0)` (LEVER 61) so they are not hoisted
+ * across it.  Written as the plain structured if/else it is 12/123, and the
+ * note that used to sit here recorded that the goto form alone bought
+ * nothing -- true, because the barrier is the other half.
+ * Found by the permuter.
  *
- * The draft is ONE WORD SHORT, and the missing word is the ROM's DEAD copy of
- * 'gKirbyState.unk44 = 7' at 80227F24 -- unreachable code that only exists
- * because IDO turned the branch to the else-block into a branch-LIKELY,
- * inlined that block's single store into the delay slot, and retargeted it
- * past the (now orphaned) block to the epilogue. Everything either side of it
- * already matches: $v0=1 and $t9=7 are both hoisted above the test exactly as
- * the ROM does them. So what is missing is the transform, not a value.
- *
- * Measured this session:
- *   - testing 'collisionParameter != 0' first (store+return as the THEN arm,
- *     the temp block falling through) is 33/123 -- IDO then emits beqz, a b,
- *     and the store as a plain block, i.e. it moves further from the likely.
- *   - the 'if (== 0) {...} else {store; return 1;}' form written here and the
- *     earlier 'if (== 0) {...; goto done;} store; return 1;' form are
- *     byte-identical at 12/123, so the goto bought nothing and the structured
- *     form is kept for readability. */
+ * Also measured, and both negative:
+ *   - testing `collisionParameter != 0` first (store+return as the THEN arm):
+ *     33/123, IDO emits beqz + b + a plain block and moves further from the
+ *     likely.
+ *   - an explicit trailing `return 0;`: see the comment at the bottom. */
 s32 func_80227D4C_ovl19(void) {
     Vector sp44;
     Vector sp38;
@@ -3125,21 +3120,32 @@ s32 func_80227D4C_ovl19(void) {
         if (sp34->collisionParameter == 0) {
             temp = func_8021EE88_ovl19(NULL);
             if (temp != -1) {
-                D_800E0D50[temp] = 1;
-                D_800E0F10[temp] = 2;
-                D_800EBBE0[temp] = omCurrentObj->objId;
-                D_800E9FE0[omCurrentObj->objId].as_s32 = temp;
+                do {
+                    D_800E0D50[temp] = 1;
+                    D_800E0F10[temp] = 2;
+                    D_800EBBE0[temp] = omCurrentObj->objId;
+                    D_800E9FE0[omCurrentObj->objId].as_s32 = temp;
+                } while (0);
+            done:
+                return 0;
             }
-        } else {
-            gKirbyState.unk44 = 7;
-            return 1;
+            goto done;
         }
+        gKirbyState.unk44 = 7;
+        return 1;
     }
+#ifdef PORT
     return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_2/func_80227D4C_ovl19.s")
 #endif
+    /* No `return 0` on N64: the ROM's fall-out path is reached only from
+       `beqz $v0` on func_80104AB4's result, so $v0 already holds 0 and the
+       original spends no instruction on it.  Writing the return emits
+       `move $v0, zero` and puts the draft one word over (124 against the
+       ROM's 123); binding the call to an `s32 hit` local and returning that
+       is worse still (54/125) because the extra declaration grows the frame
+       0x50 -> 0x58 and slides every local.  The PORT arm above keeps the
+       function well-defined off-target. */
+}
 
 void func_80227F38_ovl19(void) {
     struct Ovl19F548 *temp_v0;
