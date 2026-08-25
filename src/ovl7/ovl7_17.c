@@ -97,7 +97,7 @@ extern u32 D_8012BCA0;
 /* D_801CE64C_ovl7 = -1e+04f : now emitted by this TU */
 extern FUNCLIST D_801CD904_ovl7, D_801CD948_ovl7;
 s32 func_801C0588_ovl7(void);
-void func_801C02D0_ovl7(void);
+s32 func_801C02D0_ovl7(void);
 void func_801C1BB8_ovl7(void);
 void eneTurnCommon(s32);
 /* D_801CE614_ovl7 = -0.65f : now emitted by this TU */
@@ -395,23 +395,39 @@ void func_801C010C_ovl7(GObj *arg0) {
     }
 }
 
-/* FACTORY: 14/174, whole-function callee-saved permutation.  The ROM saves
-   TWO s-registers -- $s1 = &omCurrentObj, $s0 = ent -- while our IDO saves
-   only $s0 (= &omCurrentObj) and keeps ent in a temp; that one decision
-   renames most of the body and drops the info struct from the ROM's
-   sp+0x38 to sp+0x30.  Re-adding the `u32 id` local restores the ROM's
-   frame size (0x58) but not the register split; trailing pads only grow
-   the frame (0x60).  Structure, control flow and the four-way event
-   dispatch are otherwise the ROM's.
-   N64 spellings: the switch is on (u32) D_800E83E0[omCurrentObj->objId]
-   and objId is re-read INLINE at each use after the first (the PORT arm's
-   cached `id` reload pattern is a PC artefact); the listing returns $v0=0
-   on the no-anim path, so this is an s32 function on N64 while the
-   file-scope declaration says void -- do NOT retype that declaration at
-   file scope (two call sites depend on it); the permuter should retype it
-   only inside its own copy. */
+/* FACTORY: 3 of 174, and the last three words are one register: the ROM
+   loads objId into $v0 and copies it (`or $a0, $v0, $zero`) into the
+   func_80111550 delay slot, where our IDO loads it straight into $a0 and
+   nops the slot.  Everything else -- frame 0x58, info at sp+0x38, $s0=ent,
+   $s1=&omCurrentObj, every branch offset -- is exact.
+   Got here from 167 in three edits, each worth recording:
+     - `struct Ovl7_17_AnimInfoA info;` declared FIRST, above `id` and
+       `ent`.  That is what puts info on the ROM's sp+0x38 instead of
+       sp+0x30, and it is also what stopped IDO spilling `ent`: with the
+       stack slots right, `ent` takes $s0 and the omCurrentObj base takes
+       $s1, exactly as the ROM.  (167, layout exact.)
+     - the three anim-event probes are a FOUR-ARM else-if chain, not a
+       nested if with a shared `ent->unk43 = 0` tail.  The ROM writes
+       `sb $zero, 0x43($s0)` TWICE, once at the end of each of the last two
+       arms; the shared-tail spelling emits it once and reorders the whole
+       block.  167 -> 90.
+     - the switch value is `D_800E83E0[...]` with NO `(u32)` cast (LEVER
+       45/109: the switch value's signedness).  The cast costs 87 words and
+       an extra `li` for the constant 1 -- unsigned, IDO stops CSEing the
+       case-1 constant into the `gEntityFuncListIDArray[...] = 1` store, so
+       the ROM's `addiu $a2, $zero, 1` / `beq $a0, $a2` pair becomes two
+       separate materialisations.  90 -> 3.
+   MEASURED NEGATIVES on the last three words (all still 3/174): proto
+   `s32`/`extern s32`/K&R for func_80111550, `s32 id`, `(s32) id` at the
+   call, `ent` initialised from a re-read of omCurrentObj->objId, and
+   declaring `ent` before `id`.  Dropping `id` altogether does NOT fix them
+   and costs the frame (0x58 -> 0x50, info back to sp+0x30, 15/174).
+   The listing returns $v0 -- 0 from the no-anim guard and from the switch
+   default, 1 from every handled event -- so the file-scope declaration is
+   now `s32 func_801C02D0_ovl7(void)`.  Both call sites discard it and the
+   retype is byte-inert for the matching build (gated). */
 #ifdef MIPS_TO_C
-void func_801C02D0_ovl7(void) {
+s32 func_801C02D0_ovl7(void) {
     void func_80111550(u32);
     void *func_80111C88(void *, u32);
     void func_80111ECC(void *);
@@ -428,12 +444,12 @@ void func_801C02D0_ovl7(void) {
         s32 unkC;
         u8 filler10[0x10];
     };
+    struct Ovl7_17_AnimInfoA info;
     u32 id = omCurrentObj->objId;
     struct EnemyRecord *ent = D_800E1B50[id];
-    struct Ovl7_17_AnimInfoA info;
 
     if (ent->unk8C == NULL) {
-        return;
+        return 0;
     }
     func_80111550(id);
     func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
@@ -443,20 +459,19 @@ void func_801C02D0_ovl7(void) {
     } else if (func_80110FD4(&info) != 0) {
         D_800E83E0[omCurrentObj->objId] = info.unk2;
         ent->unk43 = info.unk3;
+    } else if (func_80110150(&info) != 0) {
+        D_800E83E0[omCurrentObj->objId] = info.unk2;
+        ent->unk43 = 0;
     } else {
-        if (func_80110150(&info) != 0) {
-            D_800E83E0[omCurrentObj->objId] = info.unk2;
-        } else {
-            D_800E83E0[omCurrentObj->objId] = 0;
-        }
+        D_800E83E0[omCurrentObj->objId] = 0;
         ent->unk43 = 0;
     }
-    switch ((u32) D_800E83E0[omCurrentObj->objId]) {
+    switch (D_800E83E0[omCurrentObj->objId]) {
     case 1:
         if (info.unkC == 0) {
             gEntityFuncListIDArray[omCurrentObj->objId] = 1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801BF598_ovl7);
-            return;
+            return 1;
         }
         if (func_801A0244_ovl7(info.unkC) != -1) {
             D_800E83E0[omCurrentObj->objId] = 0x12;
@@ -464,10 +479,10 @@ void func_801C02D0_ovl7(void) {
             ent->unk94 = NULL;
             ent->unk40 = 1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
-            return;
+            return 1;
         }
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(GObj *)) func_801C0610_ovl7);
-        return;
+        return 1;
     case 3:
         D_800E8220[omCurrentObj->objId] = 0;
         if (info.unkC != -1) {
@@ -475,8 +490,9 @@ void func_801C02D0_ovl7(void) {
         }
         gKirbyState.numberInhaling += 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
-        return;
+        return 1;
     }
+    return 0;
 }
 #elif defined(PORT)
 /* Boss/miniboss anim-event pump, grabbable phase (ported from m2c): step
@@ -486,7 +502,7 @@ void func_801C02D0_ovl7(void) {
  * just the payload -- m2c's extra args were leftover registers), else
  * falls back to the idle driver func_801C0610_ovl7; event 3 is the
  * inhale handoff. */
-void func_801C02D0_ovl7(void) {
+s32 func_801C02D0_ovl7(void) {
     void func_80111550(u32);
     void *func_80111C88(void *, u32);
     void func_80111ECC(void *);
@@ -508,7 +524,7 @@ void func_801C02D0_ovl7(void) {
     struct PcAnimInfo17A info;
 
     if (ent->unk8C == NULL) {
-        return;
+        return 0;
     }
     func_80111550(id);
     func_80111ECC(func_80111C88(ent->unk8C, omCurrentObj->objId));
@@ -532,7 +548,7 @@ void func_801C02D0_ovl7(void) {
         if (info.unkC == 0) {
             gEntityFuncListIDArray[id] = 1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801BF598_ovl7);
-            return;
+            return 1;
         }
         if (func_801A0244_ovl7(info.unkC) != -1) {
             D_800E83E0[omCurrentObj->objId] = 0x12;
@@ -540,10 +556,10 @@ void func_801C02D0_ovl7(void) {
             ent->unk94 = NULL;
             ent->unk40 = 1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A3E80_ovl7);
-            return;
+            return 1;
         }
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], (void (*)(GObj *)) func_801C0610_ovl7);
-        return;
+        return 1;
     case 3:
         D_800E8220[id] = 0;
         if (info.unkC != -1) {
@@ -551,9 +567,11 @@ void func_801C02D0_ovl7(void) {
         }
         gKirbyState.numberInhaling += 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A7000_ovl7);
-        return;
+        return 1;
     }
+    return 0;
 }
+
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_17/func_801C02D0_ovl7.s")
 #endif
