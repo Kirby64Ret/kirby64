@@ -191,6 +191,37 @@ def main():
     asm = open(listing).read()
     asm = '\n'.join(l for l in asm.split('\n')
                     if not l.lstrip().startswith(('nonmatching', '.size')))
+
+    # A SWALLOWED FUNCTION IS NOT PART OF THE TARGET.
+    #
+    # When splat has no name for a tiny function it merges it into the previous
+    # symbol's .size, so 13 listings in the tree end with a whole extra
+    # `jr $ra` + `nop` that belongs to the NEXT function of the translation
+    # unit -- n_alSavePull carries the eight bytes at 0x800299F0 that separate
+    # it from alAudioFrame. verify.py already peels those (it looks for a
+    # function defined at that address in the object); the permuter did not,
+    # so its target was two words longer than anything the draft can compile
+    # to and its score could never reach 0 no matter how right the body got.
+    # A permanent floor on 13 functions, none of which look unusual in a log.
+    try:
+        import padtrap
+        kind, extra = padtrap.classify(listing, func)
+        if kind == 'swallowed' and extra:
+            keep, dropped = [], 0
+            for line in reversed(asm.split('\n')):
+                if dropped < extra and re.match(
+                        r'\s*/\* \w+ \w+ [0-9A-Fa-f]{8} \*/\s*\S', line):
+                    dropped += 1
+                    continue
+                keep.append(line)
+            asm = '\n'.join(reversed(keep))
+            print(f'{func}: dropped {extra} swallowed word(s) from the target -- '
+                  f'they belong to the next, unnamed function of the TU '
+                  f'(padtrap class "swallowed"). Write it out in C alongside '
+                  f'the conversion; see func_80160A70_ovl5 in ovl5_2.c.')
+    except Exception as e:                        # noqa: BLE001
+        print(f'WARNING: padtrap check failed ({e}); target used unmodified')
+
     open(f'{outdir}/target.s', 'w').write(
         open(f'{PERM}/prelude.inc').read() + '\n.set noreorder\n.text\n' + asm)
     r = subprocess.run(
