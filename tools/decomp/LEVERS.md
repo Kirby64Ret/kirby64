@@ -2381,6 +2381,14 @@ the pool allocator's real stride is 0x78.
     every shape a lane naturally writes uses 4-byte pads only. Read the ROM's
     offsets, subtract, and spell the gap in the right WIDTHS.
 
+    **And a reserved slot only counts where a LATER declaration sits below
+    it.** On func_8017599C_ovl3 one `s32 pad` declared between `anim` and
+    `animSpd` moves animSpd onto the ROM's 0x24 and the frame onto the ROM's
+    -0x38; the SAME pad declared last is dropped by IDO (LEVER 22) and leaves
+    the frame at -0x30. So LEVER 13's "pad locals go at the END" and LEVER
+    78's "sweep the count" are both incomplete: sweep the POSITION, and the
+    only positions that exist are the gaps between real declarations.
+
 111. **"SEALED AS A REGISTER FLOOR" IS NOT EVIDENCE, AND THREE OF THEM IN ONE
     STINT WERE LEVER 97 PLUS A FRAME.** All three notes described the ROM's
     shape accurately and none of them tried the one edit that produces it:
