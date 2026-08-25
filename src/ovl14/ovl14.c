@@ -1358,7 +1358,16 @@ extern s32 func_801DECAC_ovl14(GObj *);
        not seven unrelated offsets.
      - `head`/`body` must be declared in that order: later locals take the
        lower stack address, and the ROM has D_800DFBD0[i][10] at 0x34 and
-       [7] at 0x30. */
+       [7] at 0x30.
+     - the `GObj *arg0` head STAYS, even though its only caller
+       (func_801DE548_ovl14, line ~619) calls it bare and the PORT arm below
+       spells it `(void)`. Measured 2026-08-25: `(void)` here is 125/346 ->
+       304/346 and THREE words short, so the parameter is worth more than the
+       one home store it costs. This function screens as LEVER 67(e)'s third
+       case ("ROM does not home it and nothing consumes it -> there is no
+       parameter") and is a counter-example to reading that screen mechanically:
+       the `sw $a0` our draft emits at word 6 really is spurious, and removing
+       it loses two other words as well. */
 s32 func_801DE6C8_ovl14(GObj *arg0) {
     s32 ret;
     Vector sp60;

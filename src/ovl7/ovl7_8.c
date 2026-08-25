@@ -181,7 +181,16 @@ void func_801B0A20_ovl7(GObj *arg0) {
    func_801ABBA0_ovl7 really takes a parameter (definition `(GObj *arg0)` in
    ovl7_5.c, `sw $a0, 0x28($sp)` in its own listing, and a call with an
    argument at ovl7_5.c:2006); the declaration at the top of this file is now
-   K&R `()`, which is byte-inert for the nine matched bare call sites here. */
+   K&R `()`, which is byte-inert for the nine matched bare call sites here.
+   The remaining 21 is a scheduling interleave in words 4-25: the ROM reads
+   `arg0->data.dobj` (`lw $t6, 0x3C($a0)`) at word 4, BETWEEN the omCurrentObj
+   load and the objId load of the D_800EC660 statement, and finishes the `d`
+   store before the 40.0f store; IDO here finishes each statement in turn.
+   Swept and negative: moving `d = arg0->data.dobj->firstChild;` above the
+   D_800EC660 store costs one (22/128) and pushes the omCurrentObj
+   materialisation below the frame adjustment, which the ROM has first -- so the
+   source order is right and only the schedule is not. barrier_sweep.py
+   (LEVER 71), all 10 placements, none beats 21. Permuter food. */
 void func_801B0C20_ovl7(GObj *arg0) {
     struct EnemyRecord *ent;
     struct DObj *d;
@@ -305,6 +314,16 @@ void func_801B1130_ovl7(GObj *arg0) {
    (so $a0's last use abuts the jal) left it at index 8 unchanged.  Pure
    statement-permutation residue -- hand this to the permuter. */
 #ifdef NON_MATCHING
+/* 67/139 -> 19/139, 2026-08-25: `func_801ABBA0_ovl7(arg0)`. LEVERS 58/67 --
+   func_801ABBA0_ovl7 takes a parameter (see func_801B0C20_ovl7's note above),
+   and a draft that cannot use arg0 homes it in the prologue where the ROM
+   sinks the store to the call that consumes $a0.
+   The remaining 19 is a scheduling shuffle in words 12-31 and nothing else:
+   IDO materialises the 40.0f constant two words early and completes the
+   D_800EC660 store before the `sp2C` store, where the ROM does the sp2C store
+   first. Swept and inert: `sp2C` as a statement instead of a declaration
+   initializer (19/139 either way). barrier_sweep.py (LEVER 71), all 15
+   placements, none beats 19. Permuter food. */
 extern struct EnemyEventTable D_801CD2F4_ovl7;
 void func_801B152C_ovl7(void);
 

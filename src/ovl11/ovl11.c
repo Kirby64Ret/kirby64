@@ -904,6 +904,14 @@ f32 random_soft_f32(void);
        order cannot both be had from a source order.
      - three adjacent-instruction schedule swaps and a $t-register renaming
        cascade through the deal loop (the rest).
+   Re-measured 2026-08-25 at 32/136, note confirmed, and ONE more shape ruled
+   out: the frame excess is 8 bytes = TWO scalar slots (ROM's non-saved local
+   region is 0x58..0x97 = 0x40 for sp68[8] + sp88 + SIX scalar words; this draft
+   declares EIGHT scalars). Deleting `n` and spelling it `8 - i` / `(u8)(7 - i)`
+   -- the obvious candidate, since n is just 8 minus the outer counter -- makes
+   the frame BIGGER, 0xA0 -> 0xA8, and the score 32 -> 80: IDO buys back a
+   compiler temp for every declaration removed. That is LEVER 57's pinned n+t,
+   and it is the sign that no declaration count reaches this frame.
    Levers that DID pay, in order: hoisting the two rodata floats into locals so
    they land in $f22/$f24 (they cannot be hoisted out of the loop as globals --
    random_soft_f32() is a call and may write them) took 101 -> 85; spelling the

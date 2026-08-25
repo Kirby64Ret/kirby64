@@ -1862,7 +1862,34 @@ void *func_800A8358(s32);
 void func_80114E80(struct DObj *, s32, f32);
 
 #ifdef NON_MATCHING
-/* Left un-guarded when the container killed this lane mid-stint. */
+/* 32/174 -- and the SCORE IS MISLEADING, because diff 3 is `addiu $sp, -0x30`
+   against the ROM's -0x28 (LEVERS 69/74/79). Nothing in this body can be scored
+   until the frame is right, and the frame is arithmetic (LEVERS 54/57).
+
+   Measured 2026-08-25, and it names the shape:
+     - the ROM has FIVE declarations and `ret` is the FIRST of them: `ret` sits
+       at 0x24 = frame-4, `$a1`'s home slot is at 0x2C = frame+4, and there is
+       exactly one more slot (0x20) below `ret`. This draft has SIX, so the
+       frame rounds to 0x30 and every sp-relative offset is 8 high.
+     - deleting `e` and writing `((struct Unk80114A14Elem *) m->unk24)[j]` at
+       all three sites puts the frame on the ROM's 0x28 exactly, and moving
+       `ret` ahead of `p` in the declaration list then puts it on 0x24. So the
+       ROM's `e` is a COMPILER TEMP, not a local -- LEVER 60's question,
+       answered.
+     - that variant is ONE WORD LONG (175 against 174) because one of the three
+       inlined `m->unk24` reads is not CSE'd, and its positional score is 104.
+       So it is not a better base to hand on, only a better DIAGNOSIS: what is
+       needed is a spelling of those three uses that IDO folds into one load
+       without a declaration. Reverted to the 32/174 draft on that basis.
+     - `k` cannot be merged into `i` (the first loop's counter is dead before
+       the second loop starts, so it looks free): 112/177, three words long.
+   NEGATIVE, LEVER 77, 2026-08-25: this function is on that entry's list of
+   eight `multu`-against-a-held-size candidates (stride 0x14, one site) and the
+   lever pays NOTHING here -- `VERIFY_MAXDIFF=200` on the draft's own diff
+   contains no `multu` at all, so the stride is already matching. That is
+   exactly the screen LEVER 77's last paragraph asks for, and it costs one
+   command. Of the six that entry still lists, this was the only one whose
+   residue was small enough for the lever to show in. */
 s32 func_80114A14(struct Unk80114A14Model *m, s32 arg1, s32 arg2) {
     struct struct8011BA10_temp *p = &D_8012D948[D_8012D940];
     struct Unk80114A14Elem *e;
