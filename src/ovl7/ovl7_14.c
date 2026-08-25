@@ -23,7 +23,7 @@ extern f32 D_800E3750[];
 extern f32 D_800E3210[];
 extern f32 D_800E3C90[];
 extern f32 D_800E9020[];
-extern void *(func_801AC840_ovl7)(void);
+extern void func_801AC840_ovl7(GObj *);
 extern s32 *D_801CB4DC_ovl7;
 /* D_801CE490_ovl7 = 65535.0f : now emitted by this TU */
 

@@ -19,7 +19,7 @@ extern s32 D_801CA738_ovl7[];
 
 extern s32 D_801D0A98_ovl7;
 /* D_801CE31C_ovl7 = 6.2831855f, D_801CE320_ovl7 = 0.34906587f: literals now */
-void func_801AC840_ovl7(void);
+void func_801AC840_ovl7(GObj *);
 extern s32 D_801CB3D0_ovl7[];
 extern s32 D_801C8E64_ovl7[];
 void play_sound(s32);
@@ -37,18 +37,18 @@ extern s32 D_800E0D50[];
 void func_80198880_ovl7(void *);
 extern s32 D_801C424C_ovl7[];
 void func_800B0F28(struct DObj *, s32, f32);
-void func_801B41BC_ovl7(void);
+void func_801B41BC_ovl7(GObj *);
 extern struct EnemyEventTable D_801CB500_ovl7;
 extern f32 D_801CE330_ovl7; extern f32 D_801CE328_ovl7; /* D_801CE328 stays in asm: 2-word float, forced */
 void func_800AA864(s32, u32);
 void func_800B6FD8(GObj *);
 extern f32 D_800E9020[];
-void func_801B3C54_ovl7(void);
+void func_801B3C54_ovl7(GObj *);
 void func_800AFBB4(s32, struct GObj *);
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 void func_801A3E80_ovl7(GObj *);
 extern f32 D_800EA8A0[];
-void func_801AC840_ovl7(void);
+void func_801AC840_ovl7(GObj *);
 void func_801ACCA0_ovl7(s32, s32, f32, f32);
 void func_801A3938(void *);
 void func_801A374C_ovl7(void *);
@@ -144,18 +144,22 @@ void func_801B3ACC_ovl7(GObj *arg0) {
     func_801AC11C_ovl7(arg0);
 }
 
-#ifdef NON_MATCHING
-// 4 diffs, was 8. ovl7_10's rodata is MIGRATED now and writing the two
-// constants as LITERALS closed the whole $f0/$f2 half of the residue -- the
-// same swap that closed its idiom twin func_80159C40_ovl4 (ovl4_5.c). What is
-// left is only the omCurrentObj base landing in $a0 where the ROM has $a1.
-// Swept for that half: compare operand order, thr assigned late, an explicit
-// f32 for the angle load, declaration order of thr/d, `x = x + k` vs `x += k`,
-// and the callee-return-type lever on func_801AC840_ovl7 in all four forms --
-// the call is the LAST statement, so nothing is live across it and the lever
-// cannot reach it. A `GObj *` parameter buys the $a1 and costs the parameter
-// home store (38/40).
-void func_801B3C54_ovl7(void) {
+// Spin the first child DObj about X by 0.34906587 (2*PI/18) per tick, wrap at
+// 2*PI, then hand the object on to func_801AC840_ovl7.
+//
+// Closed by LEVER 58, and the last four diffs were the lever's own signature:
+// the omCurrentObj base landed in $a0 where the ROM has $a1. The previous note
+// had tried the `GObj *` parameter and measured it WORSE (38/40) because an
+// UNUSED parameter is homed -- and it was unused only because
+// func_801AC840_ovl7 was declared (void) here, so there was nothing to pass it
+// to. That declaration was the actual defect: func_801AC840_ovl7 is stored in
+// D_800DF150 (`void (*[])(struct GObj *)`) at nine sites across ovl7_10,
+// ovl7_12 and ovl7_14, and its own body hands $a0 straight to
+// func_801A0D74_ovl7, which is `s32 (GObj *)`. Retyping the definition in
+// ovl7_5.c and the declarations in all three files is byte-inert (objdump
+// A/B on .text for each object), and with a real argument to pass, the
+// parameter stops being homed and this function matches.
+void func_801B3C54_ovl7(GObj *arg0) {
     f32 thr = 6.2831855f;
     struct DObj *d = D_800DE350[omCurrentObj->objId]->data.dobj->firstChild;
 
@@ -164,11 +168,9 @@ void func_801B3C54_ovl7(void) {
     if (thr <= d->angle.v.x) {
         d->angle.v.x -= thr;
     }
-    func_801AC840_ovl7();
+    func_801AC840_ovl7(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3C54_ovl7.s")
-#endif
+
 void func_801B3CF4_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -233,9 +235,9 @@ void func_801B3EC8_ovl7(GObj *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_10/func_801B3EC8_ovl7.s")
 #endif
-void func_801B41BC_ovl7(void) {
+void func_801B41BC_ovl7(GObj *arg0) {
     if (D_800EC2E0[omCurrentObj->objId].as_s32 != 0) {
-        func_801AC840_ovl7();
+        func_801AC840_ovl7(arg0);
     }
 }
 

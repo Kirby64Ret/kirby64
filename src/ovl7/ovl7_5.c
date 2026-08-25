@@ -2406,7 +2406,7 @@ s32 func_801AC6D0_ovl7(struct AnimTrack *arg0) {
     return sp1C;
 }
 
-void func_801AC840_ovl7(void) {
+void func_801AC840_ovl7(GObj *gobj) {
     if (D_800E83E0[omCurrentObj->objId] != 0) {
         if (D_800E83E0[omCurrentObj->objId] == 0x12) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC33C_ovl7);
@@ -2414,7 +2414,7 @@ void func_801AC840_ovl7(void) {
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801AC11C_ovl7);
         }
     } else {
-        if (func_801A0D74_ovl7() != 0) {
+        if (func_801A0D74_ovl7(gobj) != 0) {
             func_801A3938(&D_801CB044_ovl7);
             func_801A36CC(&func_801A3864_ovl7);
         }

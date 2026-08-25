@@ -72,7 +72,7 @@ void func_800AFBB4(s32, struct GObj *);
 void func_800A7F74(s32, s32, s32, f32, f32, f32);
 void func_801A3E80_ovl7(GObj *);
 extern f32 D_800EA8A0[];
-void func_801AC840_ovl7(void);
+void func_801AC840_ovl7(GObj *);
 void play_sound(s32);
 
 void assign_new_process_entry(struct GObjProcess *, void (*)(struct GObj *));
