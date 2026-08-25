@@ -14,11 +14,18 @@ candidate line in turn, score, and report. Every measurement runs on a scratch
 copy through scratchverify, so the shared tree is never un-guarded: several
 lanes and a permuter build it concurrently.
 
-One placement per candidate line: the barrier goes BEFORE the statement, which
-stops motion up past it. Wrapping a following block is a DIFFERENT transform --
-it stops motion out of the block -- and this does not try it. Do the wrap by
-hand once the sweep names the statement; on func_800BDE0C both forms reach the
-same 2/72, but there is no reason to assume that in general.
+TWO placements per candidate line, because they are not the same transform:
+
+  BEFORE   the barrier goes above the statement and stops motion up past it.
+  WRAP     the statement's block (a `{`-opening line, or a `do {`/`if (...) {`)
+           is wrapped in `do { ... } while (0);`, which stops motion OUT of it.
+
+The wrap is not optional decoration. func_80227D4C_ovl19 closed on a wrap and
+could not be reached by any BEFORE placement -- a lane found it in a permuter
+diff and reported the gap. func_801B2DD8_ovl7 is the same story from the other
+side: LEVER 56's unbraced loop body scores 15/118, the wrap MATCHES. On
+func_800BDE0C both forms reach the same 2/72, so they coincide sometimes and
+that is exactly why the difference is easy to miss.
 
 VALIDATED against the case it was written for. Given func_800BDE0C's draft with
 its barrier taken back out, the sweep reports base 13/72 and finds 2/72 -- the
@@ -33,7 +40,7 @@ rejects any other extension.
 
 Usage:
     barrier_sweep.py <file.c> <func>            sweep every statement
-    barrier_sweep.py <file.c> <func> --limit N  stop after N placements
+    barrier_sweep.py <file.c> <func> --limit N  stop after N candidate lines
 """
 import os
 import re
@@ -86,6 +93,37 @@ def score(path, func, lines):
         shutil.rmtree(d, ignore_errors=True)
 
 
+def block_end(lines, i, fend):
+    """Index of the line closing the block that OPENS on line i, or None.
+
+    Only a line whose braces leave the nesting one deeper opens a block worth
+    wrapping -- `if (...) {`, `do {`, `for (...) {`, `while (...) {`, a bare
+    `{`. A plain statement has nothing to wrap that the BEFORE placement does
+    not already cover.
+    """
+    if lines[i].count('{') - lines[i].count('}') != 1:
+        return None
+    depth = 1
+    for j in range(i + 1, fend + 1):
+        depth += lines[j].count('{') - lines[j].count('}')
+        if depth == 0:
+            # A `do { } while (...)`/`} else {` tail belongs to the block.
+            k = j
+            while k + 1 <= fend and re.match(r'^\s*(?:while\s*\(|else\b)',
+                                             lines[k + 1]):
+                nxt = lines[k + 1]
+                depth += nxt.count('{') - nxt.count('}')
+                k += 1
+                if depth > 0:
+                    for m in range(k + 1, fend + 1):
+                        depth += lines[m].count('{') - lines[m].count('}')
+                        if depth == 0:
+                            k = m
+                            break
+            return k
+    return None
+
+
 def main():
     path, func = sys.argv[1], sys.argv[2]
     limit = None
@@ -131,25 +169,35 @@ def main():
             cands = cands[:limit]
         print(f'{len(cands)} placement(s) to try')
 
-        best = (base, None)
+        best = (base, None, None)
         for i in cands:
             indent = re.match(r'^\s*', base_lines[i]).group(0)
-            trial = base_lines[:i] + [indent + BARRIER] + base_lines[i:]
-            d, t = score(path, func, trial)
-            if d is None:
-                continue
-            mark = ''
-            if d < best[0]:
-                best = (d, i)
-                mark = '   <-- BEST SO FAR'
-            if d != base:
-                print(f'  before line {i - fstart:4d}  {d:4d}/{t}  '
-                      f'{base_lines[i].strip()[:60]}{mark}')
+            trials = [('before',
+                       base_lines[:i] + [indent + BARRIER] + base_lines[i:])]
+            end = block_end(base_lines, i, fend)
+            if end is not None:
+                trials.append(('wrap',
+                               base_lines[:i] + [indent + 'do {']
+                               + base_lines[i:end + 1]
+                               + [indent + '} while (0);']
+                               + base_lines[end + 1:]))
+            for kind, trial in trials:
+                d, t = score(path, func, trial)
+                if d is None:
+                    continue
+                mark = ''
+                if d < best[0]:
+                    best = (d, i, kind)
+                    mark = '   <-- BEST SO FAR'
+                if d != base:
+                    print(f'  {kind:6s} line {i - fstart:4d}  {d:4d}/{t}  '
+                          f'{base_lines[i].strip()[:55]}{mark}')
         if best[1] is None:
             print(f'no placement beats the base {base}/{total}')
         else:
-            print(f'BEST {best[0]}/{total} with a barrier before draft line '
-                  f'{best[1] - fstart}: {base_lines[best[1]].strip()[:70]}')
+            print(f'BEST {best[0]}/{total} with a {best[2]} barrier at draft '
+                  f'line {best[1] - fstart}: '
+                  f'{base_lines[best[1]].strip()[:70]}')
         return 0
 
     print(f'{func}: no guarded draft found in {path}')

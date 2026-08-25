@@ -951,6 +951,16 @@ the pool allocator's real stride is 0x78.
     Swept and negative, do not re-run: func_800B9FE0 4/169, func_800BB24C
     8/70, func_800BA90C 13/62, func_800A238C 17/45, func_800A52F0 40/69.
 
+    **Know the hit rate before you budget for it.** Across four lanes on
+    2026-08-25 the sweep was run on roughly 100 drafts -- 34 in ovl2/ovl7/ovl13,
+    ~30 in ovl9/ovl15/ovl16, 18 more in the same scope, 15 in
+    ovl17/ovl4/ovl10/ovl19, 17 in ovl3/ovl5, and a handful in ovl1/main -- for
+    THREE wins: func_800BDE0C 13/72 to 2/72, func_800F64B0 23/224 to 13, and
+    func_801EEC28_ovl9 45/277 to 7/277. About one in thirty. That is a cheap
+    lottery ticket worth buying on a near miss you were going to read anyway,
+    and it is NOT a plan step you can schedule work around. Both of one lane's
+    wins that day came from reading listings; the sweep found neither.
+
     ovl2/ovl7, swept 2026-08-25, ALL NEGATIVE (8 sweeps, 0 wins) --
     func_801173F4 8/95, func_8011C4E8 8/142, func_801B6F18_ovl7 11/165,
     func_800F8078 16/75, func_80109504 19/123, func_800FC03C 20/74,
