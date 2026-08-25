@@ -2097,13 +2097,24 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
 }
 
 /* FACTORY: 245/250, STRUCTURAL -- measured 2026-08-23, correcting a
- * stale note (previously read "5/250"; the note's own body already said
- * "residue high (245/250)", this just fixes the header to match). The
- * `idx*6+1` ovl5_pers_ index math matches the ROM exactly (sll,2 / subu
- * / sll,1 / addiu,1), but everything else diverges from word 0: ROM
- * frame -0x30, no saved regs at all beyond $ra; this draft's frame is
- * -0x38 with $s0 held and a different instruction order. Needs a fresh
- * m2c derivation off the listing, not a register sweep.
+ * stale note. Re-derived 2026-08-25 against the matched sibling
+ * func_8016050C_ovl5 below (LEVERS lever 1) and two real defects fixed:
+ * the draft CALLED ovl5_pers_, a PORT-only static, so in the N64 arm every
+ * roll was an implicit `int f()` to a symbol that does not exist there
+ * (LEVERS lever 55); it now reads D_80186918_ovl5[idx*6+1] directly the
+ * way the matched sibling does, and the `RacerAI *rec` pointer is written
+ * out as D_8018E228_ovl5[arg0] which brings the FRAME to the ROM's -0x30.
+ * What remains is one register-allocation floor and it shifts every word:
+ * the ROM spends NO saved register -- it keeps `idx` in its home slot at
+ * 0x2C($sp), the row pointer at 0x20($sp) and &D_8018E228_ovl5[arg0] at
+ * 0x1C($sp), spilling and reloading both around each of the five calls --
+ * where IDO here holds `idx` in $s0 and rematerialises. That costs the
+ * draft 14 words and puts `lui %hi(D_8018E224_ovl5)` after the stack
+ * adjust instead of in word 0, so the raw count (248/250) is a shift, not
+ * 248 independent diffs. Swept and inert: an explicit `u8 *row =
+ * &D_80186918_ovl5[idx*6]` (frame grows to 0x38), an explicit `rec`
+ * pointer, `u8 idx`, `(&D_80186918_ovl5[idx*6])[1]`, splitting idx's
+ * declaration from its assignment, and hoisting `dir`'s initialiser.
  * The listing also swallows the next, unnamed function of the TU inside its
  * own `.size` (`jr $ra; nop` at 0x80160504 -- padtrap.py class 'swallowed'),
  * which a conversion writes out as `void func_80160504_ovl5(void) {}` after
@@ -2111,71 +2122,71 @@ s32 func_801600A8_ovl5(s32 arg0, s32 arg1) {
  * what blocks this site: measured with the stub, still 245 of 250. */
 #ifdef MIPS_TO_C
 void func_80160120_ovl5(s32 arg0) {
+    extern u8 D_80186918_ovl5[];
     s32 idx = D_8018E224_ovl5[arg0];
-    RacerAI *rec = &D_8018E228_ovl5[arg0];
 
-    if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
+    if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
         s32 dir = 0;
 
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
+            gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
             dir = 1;
         }
         if (func_801600A8_ovl5(arg0, dir) != 0) {
-            if (gEntitiesNextPosYArray[D_8018E050_ovl5[rec->target]] < 400.0f) {
-                rec->action = 8;
+            if (gEntitiesNextPosYArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]] < 400.0f) {
+                D_8018E228_ovl5[arg0].action = 8;
                 if (func_8015FE00_ovl5(arg0) != 0) {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
-                        rec->side = 1;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                        D_8018E228_ovl5[arg0].side = 1;
                     } else {
-                        rec->side = 0;
+                        D_8018E228_ovl5[arg0].side = 0;
                     }
                 } else {
                     if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                        gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
-                        rec->side = 0;
+                        gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                        D_8018E228_ovl5[arg0].side = 0;
                     } else {
-                        rec->side = 1;
+                        D_8018E228_ovl5[arg0].side = 1;
                     }
                 }
                 return;
             }
-            rec->action = 3;
+            D_8018E228_ovl5[arg0].action = 3;
             return;
         }
     }
-    if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec->action = 8;
+    if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
+        D_8018E228_ovl5[arg0].action = 8;
         if (func_8015FE00_ovl5(arg0) != 0) {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
-                rec->side = 1;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                D_8018E228_ovl5[arg0].side = 1;
             } else {
-                rec->side = 0;
+                D_8018E228_ovl5[arg0].side = 0;
             }
         } else {
             if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-                gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
-                rec->side = 0;
+                gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+                D_8018E228_ovl5[arg0].side = 0;
             } else {
-                rec->side = 1;
+                D_8018E228_ovl5[arg0].side = 1;
             }
         }
         return;
     }
-    if (random_soft_s32_range(0x10) < ovl5_pers_(idx * 6 + 1)) {
-        rec->action = 6;
+    if (random_soft_s32_range(0x10) < D_80186918_ovl5[idx * 6 + 1]) {
+        D_8018E228_ovl5[arg0].action = 6;
         if (gEntitiesNextPosXArray[omCurrentObj->objId] <
-            gEntitiesNextPosXArray[D_8018E050_ovl5[rec->target]]) {
-            rec->side = 1;
+            gEntitiesNextPosXArray[D_8018E050_ovl5[D_8018E228_ovl5[arg0].target]]) {
+            D_8018E228_ovl5[arg0].side = 1;
         } else {
-            rec->side = 0;
+            D_8018E228_ovl5[arg0].side = 0;
         }
         return;
     }
-    rec->action = 3;
-    rec->timer = random_soft_s32_range(6) + 5;
+    D_8018E228_ovl5[arg0].action = 3;
+    D_8018E228_ovl5[arg0].timer = random_soft_s32_range(6) + 5;
 }
 #elif defined(PORT)
 /* Sibling of func_8016050C_ovl5 below (same personality-roll ladder, byte

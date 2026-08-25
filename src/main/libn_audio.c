@@ -1248,6 +1248,20 @@ u8 func_80025758(ALCSeq *seq, u32 track) {
  * the 3-word excess is o32 saving $s0/$s1/$s2 (6 words) less the four
  * `or $aN, $tN` argument moves the ROM needs and an o32 build does not.
  *
+ * READY TO SEAL, measured 2026-08-25: the cause is NOT the missing ujoin.
+ * `uopt -O3` -- which tools/decomp/cc_o3.py already runs -- hands a `static`
+ * callee a custom convention on its own, and the only thing wrong here was
+ * that the definition is not spelled `static`.  Spell BOTH this function and
+ * its own callee func_80025758 `static`, un-guard alCSeqNew alongside them,
+ * and write the swallowed stub out as `void func_80025874(void) {}` after this
+ * one: verify.py then reports MATCH for all three (func_8002581C 22 insns,
+ * func_80025758 49, alCSeqNew 66) with the DEFAULT compiler.  alCSeqNextEvent
+ * does not have to be un-guarded for that, and drops 209 -> 87 if it is.
+ * Settle one thing first: a `static` callee has no global symbol, while
+ * alCSeqNextEvent's surviving `#pragma GLOBAL_ASM` still carries
+ * `jal func_8002581C`.  Confirm that reloc resolves in the merged object
+ * before trusting the ROM sha1.
+ *
  * The body is plain ANSI C, so the port takes it too. */
 #if defined(MIPS_TO_C) || defined(PORT)
 u8 func_80025758(ALCSeq *seq, u32 track);
@@ -1708,6 +1722,18 @@ void func_800263F0(KCSeqp *seqp) {
  * gives static callees a custom convention; ujoin is missing from
  * tools/ido-7.1recomp, which is the same blocker as func_8002581C/__readVarLen
  * (args in $t2/$t3).  No source spelling reaches it.
+ *
+ * MEASURED 2026-08-25 AND THE ABOVE IS WRONG ABOUT THE CAUSE.  ujoin is not
+ * what assigns the convention -- `uopt -O3`, which cc_o3.py already runs,
+ * assigns it to any `static` callee whose call sites it can all see.  The
+ * blocker was only that this definition is not spelled `static`.  Spell it
+ * `static`, un-guard the CALLER func_8002649C in the same TU (uopt needs every
+ * call site as C -- with the caller left as a pragma this measures 12/12), and
+ * write the swallowed 0x80026494 stub out as `void func_80026494(void) {}`
+ * BEFORE this function: verify.py then reports MATCH (13 insns), with today's
+ * default compiler and no ujoin at all.
+ * NOT SEALABLE YET: func_8002649C must be live C for that, and it is still
+ * 137/138.  This site is now blocked on its CALLER, not on the toolchain.
  * Its listing also swallows the next, unnamed function of the TU inside its own
  * `.size` (`jr $ra; nop` at 0x80026494 -- padtrap.py class 'swallowed').  That
  * is not a padding trap: a conversion writes it out as
@@ -1885,6 +1911,14 @@ void func_8002649C(void *seqpArg, N_ALEvent *event) {
  * tools/ido-7.1recomp, so no source spelling reaches it.  Every remaining diff
  * is the $a2/$a3-for-$a0/$a1 substitution and the register renaming it drags
  * behind it.
+ *
+ * The convention is reachable and ujoin is not needed -- measured 2026-08-25.
+ * Spell this `static` and un-guard its caller func_8002714C (and
+ * n_alEnvmixerPull above it): `uopt -O3`, which cc_o3.py already runs, then
+ * gives it $a0/$a1 + $f12/$f14 and the first 42 words come out byte-exact.
+ * 57 -> 51, and the residue is no longer the ABI: the ROM has two extra words
+ * around the `65535.0f` literal (`lwc1 %lo(D_800414C4)` / `lui $at,0x4F00`)
+ * that this spelling does not emit.  That is a literal-pool question now.
  *
  * The body is plain ANSI C, so the port takes it too. */
 #if defined(MIPS_TO_C) || defined(PORT)
@@ -2201,6 +2235,15 @@ Acmd *func_80026FA8(N_PVoice *e, s16 *outp, Acmd *p) {
  * callee func_80026898 and its caller n_alEnvmixerPull.  An o32 definition has
  * to save $s0/$s1, home $a1, and reload both around the two calls, which is
  * the whole 9-word excess.
+ *
+ * 133 -> 16, measured 2026-08-25, with the DEFAULT compiler: spell this
+ * function and its callee func_80026898 `static` and un-guard n_alEnvmixerPull
+ * with them.  ujoin is not needed -- `uopt -O3` gives a static callee its own
+ * convention.  What is left is a register-naming cascade only ($t6/$t7 and
+ * $f4/$f6 role swaps), i.e. a permuter seed rather than an ABI wall.
+ * func_80026898 goes 57 -> 51 in the same shape, and its first 42 words become
+ * byte-exact -- the convention is fixed and the residue moves to a two-word
+ * shift around the 65535.0f literal load.
  *
  * The body is plain ANSI C, so the port takes it too. */
 #if defined(MIPS_TO_C) || defined(PORT)

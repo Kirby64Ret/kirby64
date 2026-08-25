@@ -611,7 +611,13 @@ void func_8002C9F4(void) {
    with no improvement: `(c & 0x7f) + (value << 7)` (5/19 -- it also moves the
    `sll`), `value <<= 7; value += c & 0x7f;` (5/19), and hoisting the
    continuation test into a shared `s32 more` local so both `c & 0x80` sites
-   are one variable (4/19, byte-identical to this). Allocator floor. */
+   are one variable (4/19, byte-identical to this). Allocator floor.
+
+   NOT AN ALLOCATOR FLOOR -- measured 2026-08-25.  Spell this definition
+   `static` and it is 0/19, byte-exact, with the default compiler.  Both of its
+   ROM callers (__alSeqNextDelta, alSeqNextEvent) live in this TU, so `uopt -O3`
+   can see every call site and picks its own register numbering -- the ROM's.
+   The $t6/$t7-vs-$t0/$t1 residue was the o32 convention, not the free list. */
 s32 func_8002C9FC(ALSeq *seq) {
     s32 value;
     s32 c;
@@ -744,7 +750,21 @@ void alSeqNewMarker(ALSeq *seq, ALSeqMarker *m, u32 ticks) {
  * pDeltaTicks and savePtr in $a2/$t0/$a3 -- all caller-saved -- ACROSS the call
  * to func_8002C9FC, so an o32 build has to home all three on the stack, which
  * is the whole 3-word excess and renames the rest.  tools/decomp/cc_o3.py has
- * no ujoin, so no source spelling reaches this.  Its listing also carries two
+ * no ujoin, so no source spelling reaches this.
+ *
+ * A SOURCE SPELLING DOES REACH IT -- measured 2026-08-25, and ujoin is not
+ * involved.  What lets the ROM keep seq/pDeltaTicks/savePtr in caller-saved
+ * registers across the `jal` is that `uopt -O3` knows func_8002C9FC's clobber
+ * set, and it only knows that for a `static` callee whose call sites are all in
+ * the TU.  Both of func_8002C9FC's callers are in this file, so: spell
+ * func_8002C9FC `static` (it goes 4/19 -> byte-exact at the same time) and
+ * write the two swallowed stubs out as `void func_8002CD44(void) {}` /
+ * `void func_8002CD4C(void) {}` BEFORE this function.  verify.py then reports
+ * MATCH (22 insns), with the DEFAULT compiler.  alSeqNextEvent drops 97 -> 87
+ * in the same shape.
+ * Before sealing, screen the tail: this is the LAST function of the TU and its
+ * listing carries three nops AFTER `.size`, so check_tu_size is the gate, not
+ * verify.py.  Its listing also carries two
  * unnamed empty functions (8002CD44/8002CD4C) inside its own `.size`.  That is
  * NOT a padding trap and does NOT block an un-guard -- padtrap.py now calls the
  * class 'swallowed': they are simply the next two functions of the TU, which

@@ -2438,10 +2438,26 @@ void func_80174328_ovl5(GObj *arg0) {
  * otherwise), doubles its scale for character kind 1, waits the animation
  * out and frees its own track.
  *
- * FACTORY: 4/176, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
- * found; compiles as-is. Word count matches (176/176), residue extreme
- * (172/176) -- broad register/frame relabeling from word 0. Worth a
- * fresh m2c pass before feeding to the permuter.
+ * FACTORY: 18 of 176 words DIFFER (was 172; re-derived from the listing
+ * 2026-08-25). Two source bugs were the cause and both are fixed here:
+ * the three D_80187CE8/CEC/CF0 symbols are scalars, not arrays, and the
+ * SECOND func_8016FF60_ovl5 result is dispatched by a `switch` on cases
+ * 0/1/2/3 (only case 1 has a body) -- the ROM lays out beqz/beq 1/beq 2/
+ * beq 3/b, which no `if (== 1)` can produce. Shape is the clone of
+ * func_80174044_ovl5 above (LEVERS lever 1).
+ * The 18 that remain are the two floors that note already names:
+ * (a) the value reloaded from the Vector2 at 0x28($sp) lands in $v1, not
+ *     the ROM's $v0, which lets IDO hoist `lui $v0, %hi(omCurrentObj)`
+ *     out of the branch body and past the `bne`/`beq` chain instead of
+ *     leaving it in the delay slot;
+ * (b) one one-slot rotation of `lui $at, %hi(gEntitiesNextPosYArray)`
+ *     against the D_8018E458_ovl5 index chain.
+ * Swept and rejected for (a): branch polarity (66/177), reading through a
+ * named `s32 *`, `s32 sp28[2]` with a cast at the call, `((s32*)&sp28)[0]`,
+ * `&sp28.x`, `(void)` on the call, a switch in place of the first `if`,
+ * and an extra pad local -- all 18/176 except polarity. Using the call's
+ * RETURN value instead of reloading the stack slot is 39/176. For (b),
+ * swapping the Y and Z stores is 38/176.
  * The listing also swallows the next, unnamed function of the TU inside its
  * own `.size` (`jr $ra; nop` at 0x80174624 -- padtrap.py class 'swallowed'),
  * which a conversion writes out as `void func_80174624_ovl5(void) {}` after
@@ -2449,18 +2465,18 @@ void func_80174328_ovl5(GObj *arg0) {
  * and not what blocks this site: measured with the stub, still 172 of 176. */
 #ifdef MIPS_TO_C
 void func_80174368_ovl5(GObj *arg0, s32 arg1) {
-    extern u32 D_80187CE8_ovl5[];
-    extern u32 D_80187CEC_ovl5[];
-    extern u32 D_80187CF0_ovl5[];
-    Vector2 kf;
+    extern s32 D_80187CE8_ovl5;
+    extern s32 D_80187CEC_ovl5;
+    extern s32 D_80187CF0_ovl5;
+    Vector2 sp28;
 
     D_800E98E0[omCurrentObj->objId] = arg1;
     D_800DF150[omCurrentObj->objId] = func_80174328_ovl5;
     setProcessMain(gEntityGObjProcessArray5[omCurrentObj->objId], func_801773C4_ovl5);
-    func_800A9864(D_80187CE8_ovl5[0], 0x1869F, 0x10);
-    func_800AA018(D_80187CEC_ovl5[0]);
-    if (D_80187CF0_ovl5[0] != 0) {
-        func_800AA018(D_80187CF0_ovl5[0]);
+    func_800A9864(D_80187CE8_ovl5, 0x1869F, 0x10);
+    func_800AA018(D_80187CEC_ovl5);
+    if (D_80187CF0_ovl5 != 0) {
+        func_800AA018(D_80187CF0_ovl5);
     }
     if (D_8018ECD8_ovl5 == 3) {
         gEntitiesNextPosXArray[omCurrentObj->objId] = D_80187C94_ovl5[arg1];
@@ -2471,17 +2487,25 @@ void func_80174368_ovl5(GObj *arg0, s32 arg1) {
         gEntitiesNextPosYArray[omCurrentObj->objId] = 75.0f;
         gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[D_8018E458_ovl5[arg1]];
     }
-    func_8016FF60_ovl5(&kf, arg1);
-    if (*(s32 *) &kf.x == 1) {
+    func_8016FF60_ovl5(&sp28, arg1);
+    if (*(s32 *) &sp28 == 1) {
         gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
         gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
         gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
     }
-    func_8016FF60_ovl5(&kf, arg1);
-    if (*(s32 *) &kf.x == 1) {
-        gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
-        gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
-        gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+    func_8016FF60_ovl5(&sp28, arg1);
+    switch (*(s32 *) &sp28) {
+        case 0:
+            break;
+        case 1:
+            gEntitiesScaleXArray[omCurrentObj->objId] = 1.5f;
+            gEntitiesScaleYArray[omCurrentObj->objId] = 1.5f;
+            gEntitiesScaleZArray[omCurrentObj->objId] = 1.5f;
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
     }
     func_800AF27C();
     func_800B1900((u16) omCurrentObj->objId);
