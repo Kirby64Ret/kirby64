@@ -350,85 +350,84 @@ void func_8016A144_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 392/395, residue.  Compiles now; see func_80169C10_ovl3's note
- * for why the recorded "redeclaration of func_800B33F4" blocker was a
- * misdiagnosis and what the in-body prototypes below are doing.
+/* FACTORY: 269/395, whole-function register permutation (was 392/395).
+ * Instruction count, save set, frame (0x78) and every stack offset are now
+ * the ROM's; what is left is a colouring cascade -- the ROM holds
+ * `objId * 4` in $a2 across long stretches where this draft uses $v0, and
+ * everything downstream renames with it. That is the permuter's job.
  *
- * Length is close (395 against the ROM's 395) and the GPR save set is the
- * ROM's (s0-s7), but this draft saves THREE FP registers ($f20/$f22/$f24)
- * where the ROM saves two, and the frame is 0x88 against 0x78 -- the extra
- * sdc1 pair plus its alignment is exactly that 0x10.  One float too many is
- * being kept live across a call; find it and the frame and the colouring
- * should follow together. */
+ * Three real defects were fixed to get here:
+ *   - `s32 id = omCurrentObj->objId;` re-assigned at six points. The ROM
+ *     holds &omCurrentObj in $s6 and re-derives the field at every use.
+ *   - the old note's "one float too many kept live across a call" is
+ *     `mult`. The ROM does NOT keep it: it hoists the ADDRESS
+ *     &D_8019696C_ovl3[tier] out of the last loop (spilled at 0x5C) and
+ *     re-loads the VALUE with `lwc1 $f2, 0($a1)` on every iteration. Written
+ *     inline the third sdc1 pair disappears and the frame drops 0x88 -> 0x80.
+ *   - the tier clamp is `(s32) ABS(...)`, not a ternary through an `f32 t`
+ *     local. ABS's integer zero is what gives `mtc1 $zero, $f4` its own
+ *     register (LEVER 3), and dropping the declaration is the last frame
+ *     word: 0x80 -> the ROM's 0x78.
+ * Declaration ORDER among the remaining f32s is inert here -- they are all
+ * register-allocated and none of them owns a slot (measured). */
 void func_8016A308_ovl3(s32 arg0) {
     extern f32 D_80196954_ovl3[];
     extern u32 D_8019696C_ovl3[];
     struct Port34ColRec { s32 type; struct CollisionTriangle *tri; void *norm; };
     struct Port34ColBlock { u32 flagsw; u32 pad_; struct Port34ColRec rec[5]; };
 
-    s32 id = omCurrentObj->objId;
-    s32 tier;
-    s32 i;
-    f32 t;
     f32 frames;
     f32 dAngle;
     f32 dScale;
-    f32 mult;
+    s32 tier;
+    s32 i;
 
-    if (!(D_800EA520[id] & 0xFF)) {
+    if (!(D_800EA520[omCurrentObj->objId] & 0xFF)) {
         func_800A9760(0x20007);
     }
-    id = omCurrentObj->objId;
-    D_800DF150[id] = (void (*)(struct GObj *)) func_8016A934_ovl3;
-    D_800DEF90[id] = func_800B4954;
-    D_800E8920[id] = 1;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8016A934_ovl3;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800E8920[omCurrentObj->objId] = 1;
     func_801A32EC(&D_801CA980);
-    id = omCurrentObj->objId;
-    t = D_800E64D0[D_800E0D50[id]];
-    tier = (t < 0.0f) ? (s32) -t : (s32) t;
+    tier = (s32) ABS(D_800E64D0[D_800E0D50[omCurrentObj->objId]]);
     if (tier >= 6) {
         tier = 5;
     }
-    D_800E98E0[id] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
     func_8016BBD0_ovl3();
     func_800B33F4();
     func_800FBE1C();
     func_800FA414(5);
-    id = omCurrentObj->objId;
-    D_800EA6E0[id] = D_800EAA60[id] = gEntitiesAngleXArray[id];
-    id = omCurrentObj->objId;
-    D_800EA8A0[id] = D_800EAC20[id] = gEntitiesScaleYArray[id];
+    D_800EA6E0[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId] = gEntitiesAngleXArray[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId] = gEntitiesScaleYArray[omCurrentObj->objId];
     func_800BB468(0, 0);
     D_800E8920[omCurrentObj->objId] = 1;
     func_80153A18_ovl3();
-    id = omCurrentObj->objId;
     {
         extern u32 D_8012BCA0;
         struct Port34ColBlock *cb = (struct Port34ColBlock *) &D_8012BCA0;
 
-        D_800EB160[id] = -func_800F8824((Vector *) cb->rec[0].norm, D_800E17D0[id]);
+        D_800EB160[omCurrentObj->objId] = -func_800F8824((Vector *) cb->rec[0].norm, D_800E17D0[omCurrentObj->objId]);
     }
-    while (D_800EB160[id] > 3.1415927f) {
-        D_800EB160[id] -= 6.2831855f;
+    while (D_800EB160[omCurrentObj->objId] > 3.1415927f) {
+        D_800EB160[omCurrentObj->objId] -= 6.2831855f;
     }
-    while (D_800EB160[id] < -3.1415927f) {
-        D_800EB160[id] += 6.2831855f;
+    while (D_800EB160[omCurrentObj->objId] < -3.1415927f) {
+        D_800EB160[omCurrentObj->objId] += 6.2831855f;
     }
     frames = D_80196954_ovl3[tier];
-    dAngle = D_800EB160[id] / frames;
-    dScale = D_800EA8A0[id] / frames;
+    dAngle = D_800EB160[omCurrentObj->objId] / frames;
+    dScale = D_800EA8A0[omCurrentObj->objId] / frames;
     for (i = 0; i < (s32) (frames - 1.0f); i++) {
-        id = omCurrentObj->objId;
-        D_800EAA60[id] += dAngle;
-        gEntitiesAngleXArray[id] = D_800EAA60[id];
-        D_800EAC20[id] -= dScale;
-        gEntitiesScaleYArray[id] = D_800EAC20[id];
+        D_800EAA60[omCurrentObj->objId] += dAngle;
+        gEntitiesAngleXArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        D_800EAC20[omCurrentObj->objId] -= dScale;
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId];
         ohSleep(1);
         D_800E98E0[omCurrentObj->objId] = 1;
     }
-    id = omCurrentObj->objId;
-    D_800EAA60[id] += dAngle;
-    gEntitiesAngleXArray[id] = D_800EAA60[id];
+    D_800EAA60[omCurrentObj->objId] += dAngle;
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
     func_800FA414(3);
     D_800E98E0[omCurrentObj->objId] = 2;
     change_kirby_hp(-1.0f);
@@ -436,27 +435,22 @@ void func_8016A308_ovl3(s32 arg0) {
         play_sound(0xD9);
     }
     for (i = 0; i < 0x1E; i++) {
-        id = omCurrentObj->objId;
-        gEntitiesAngleXArray[id] = D_800EAA60[id];
-        gEntitiesScaleYArray[id] = D_800EAC20[id];
+        gEntitiesAngleXArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        gEntitiesScaleYArray[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId];
         ohSleep(1);
     }
     D_800E98E0[omCurrentObj->objId] = 3;
-    mult = *(f32 *) &D_8019696C_ovl3[tier];
     for (i = 0; i != 4; i++) {
-        id = omCurrentObj->objId;
-        D_800EAA60[id] -= dAngle;
-        gEntitiesAngleXArray[id] = mult * D_800EAA60[id];
-        D_800EAC20[id] += dScale;
-        gEntitiesScaleYArray[id] = mult * D_800EAC20[id];
+        D_800EAA60[omCurrentObj->objId] -= dAngle;
+        gEntitiesAngleXArray[omCurrentObj->objId] = *(f32 *) &D_8019696C_ovl3[tier] * D_800EAA60[omCurrentObj->objId];
+        D_800EAC20[omCurrentObj->objId] += dScale;
+        gEntitiesScaleYArray[omCurrentObj->objId] = *(f32 *) &D_8019696C_ovl3[tier] * D_800EAC20[omCurrentObj->objId];
         ohSleep(1);
     }
-    id = omCurrentObj->objId;
-    D_800DEF90[id] = func_800B531C;
+    D_800DEF90[omCurrentObj->objId] = func_800B531C;
     func_800B33F4();
-    id = omCurrentObj->objId;
-    gEntitiesAngleXArray[id] = D_800EA6E0[id];
-    gEntitiesScaleYArray[id] = D_800EA8A0[id];
+    gEntitiesAngleXArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+    gEntitiesScaleYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
     ohSleep(1);
     D_800E98E0[omCurrentObj->objId] = 4;
     curObjSleepForever();
