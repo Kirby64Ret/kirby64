@@ -1432,7 +1432,22 @@ extern f32 func_8019B608_ovl7(s32);
  * reversing the `== 9999.0f` compare operand order is inert. All 21
  * remaining diffs are register renames in the ABSF(var_f12)/ABSF(dy) and
  * final `(b<=a) ? .. : ..` compare chain -- reads as a float-register
- * permutation floor (LEVERS "second variant" class). */
+ * permutation floor (LEVERS "second variant" class).
+ *
+ * HARVESTED PERMUTER ZERO, RE-MEASURED AND FALSE (2026-08-25).
+ * tools/decomp/perm/func_801D56D0_ovl9/output-0-1 scores 0 by dropping the
+ * `b` local and inlining `ABSF(dy)` into the return.  In the real TU that is
+ * 27/96, not 0: deleting the declaration takes the frame from the ROM's 0x38
+ * to 0x30 and every sp offset with it (0x2C -> 0x24), which is exactly the
+ * class asm-differ normalises away when it is run without --stack-diffs.
+ * Keeping the declaration count at 7 (an unused `f32 b`) and inlining
+ * ABSF(dy) anyway is 21/96 -- identical to this spelling -- so the inline
+ * buys nothing and the readable form is kept.
+ * What the residue actually is: the ROM keeps `var_f12` in $f12, the FP
+ * ARGUMENT register, from `mov.s $f12, $f0` after func_800F9828 all the way
+ * to the final compare; IDO puts it in $f2.  There is no home store, so it is
+ * not a parameter -- it is an allocation choice, and it is what every one of
+ * the 21 diffs is downstream of. */
 s32 func_801D56D0_ovl9(void) {
     f32 dx;
     f32 dz;

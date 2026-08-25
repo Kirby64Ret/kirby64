@@ -1073,7 +1073,6 @@ void func_801F57C8_ovl9(GObj *arg0) {
     }
 }
 
-extern f32 D_8021D914_ovl9;
 void func_800AA864(s32, s32);
 void func_800A9EA4(s32);
 
@@ -1084,33 +1083,34 @@ void func_800A9EA4(s32);
    (u32) cast on the call argument, `struct GObj *obj = omCurrentObj;` hoist,
    an explicit f32 temp for the read-back (11/70), dropping the parameter
    (65/69 -- the parameter and its home slot are required). */
-#ifdef NON_MATCHING
-/* 7/70: pure $a2/$a3 swap. The ROM parks the shared u32 `1` in $a3 and the
-   hoisted D_800E6690 base in $a2; IDO assigns them the other way round. Every
-   other instruction matches. This is the named argument-register rotation.
-   Re-measured this session, still exactly 7. Tried dropping the u32 cast on
-   the D_800E9C60 store to type-split the shared constant 1 (lever 45): badly
-   regressed (broke the jal relocations entirely, many more diffs) --
-   reverted. Reads as the LEVERS "CSE'd load landing in the neighbouring
-   register ($a2/$a3)" floor verbatim, not a source-spelling residue. */
+/* The `do { } while (0)` is load-bearing (LEVERS 61): it is a scheduling
+ * barrier, not m2c noise.  Without it IDO parks the hoisted D_800E6690 base in
+ * $a3 and the shared constant 1 in $a2, where the ROM does the reverse, and
+ * the function reads 7/70 -- a residue three lanes had sealed as the
+ * "$a2/$a3 neighbouring-register floor".  Found by the permuter (as `if (1)`,
+ * which is byte-identical to this spelling) and confirmed in the real TU.
+ * The 65535.0f is a literal, not `D_8021D914_ovl9`: that symbol is defined
+ * ONLY by this function's own listing .late_rodata (LEVERS 20/64), so the
+ * extern spelling links fine while the pragma is live and fails at link the
+ * moment the function becomes C.  This TU has a dotted `.rodata, ovl9/ovl9_7_2`
+ * subsegment, so the literal is free. */
 void func_801F58A0_ovl9(struct GObj *arg0) {
     *(u32 *) &D_800E9C60[omCurrentObj->objId] = 1;
-    D_800E9E20[omCurrentObj->objId] = 0;
-    *(u32 *) &D_800DDFD0[omCurrentObj->objId] = 1;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = D_8021D914_ovl9;
-    func_800AA864(0x10050, 1);
-    func_800AECC0(0.0f);
-    func_800A9EA4(0x10053);
-    ohSleep(0x3C);
-    func_800AECC0(gameTicksPerDraw);
-    D_800E9E20[omCurrentObj->objId] = 1;
-    curObjSleepForever();
+    do {
+        D_800E9E20[omCurrentObj->objId] = 0;
+        *(u32 *) &D_800DDFD0[omCurrentObj->objId] = 1;
+        D_800E6690[omCurrentObj->objId] = 0.0f;
+        D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+        D_800E6850[omCurrentObj->objId] = 65535.0f;
+        func_800AA864(0x10050, 1);
+        func_800AECC0(0.0f);
+        func_800A9EA4(0x10053);
+        ohSleep(0x3C);
+        func_800AECC0(gameTicksPerDraw);
+        D_800E9E20[omCurrentObj->objId] = 1;
+        curObjSleepForever();
+    } while (0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F58A0_ovl9.s")
-#endif
 void func_801F52D4_ovl9(struct GObj *);
 
 void func_801F59B8_ovl9(struct GObj *arg0) {

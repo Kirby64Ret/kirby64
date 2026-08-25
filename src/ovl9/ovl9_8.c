@@ -1079,9 +1079,25 @@ void func_801FB8B8_ovl9(struct GObj *arg0) {
     }
 }
 
-/* PADDING TRAP -- padtrap.classify() = ('trap', 7). Converting this shortens
- * ovl9_8.c's .text by 32 bytes (check_tu_size: 0x3350 vs 0x3370) and breaks
- * the ROM link. The body below is correct; it can never be C. */
+/* PADDING TRAP -- padtrap.classify() = ('trap', 7), so verify.py refuses to
+ * score it and it must stay guarded.  "It can never be C" as this note used to
+ * say is now out of date: LEVERS.md's PADDING TRAPS section documents the
+ * kirby64.yaml `pad` subsegment remedy, which is done six times in ovl5 and
+ * once failed in ovl17 -- it needs its own sha1-gated build on a quiet tree,
+ * so it is a COORDINATOR TASK, not a lane's.
+ *
+ * THE BODY IS NOW BYTE-EXACT.  Measured with padtrap.classify patched to
+ * 'clean' (measurement only; that is not permission to un-guard): the spelling
+ * below is MATCH at 42 insns, where `if (temp - rand - 3 >= 0)` is 32/41.
+ * The `^ 0` is a CSE BARRIER and it is load-bearing.  The ROM recomputes
+ * `subu / addiu -3` INSIDE the then-arm (801FBA34) after having already
+ * computed it for the `bltz` at 801FBA20; with the plain spelling IDO computes
+ * it once in the dominator and reuses it, which is one word short and rotates
+ * every register after it.  Found by the permuter.  Swept and inert, all 32/41:
+ * `0 <= temp - rand - 3`, `!(temp - rand - 3 < 0)`, and inverting the test so
+ * the `+ 5` arm comes first.  If someone finds a spelling of this barrier that
+ * is not a hack, it belongs here -- and if the pad remedy lands, this function
+ * closes with it. */
 #ifdef NON_MATCHING
 void func_801FB9DC_ovl9(struct GObj *arg0) {
     s32 temp;
@@ -1089,7 +1105,7 @@ void func_801FB9DC_ovl9(struct GObj *arg0) {
 
     temp = D_800E9AA0[omCurrentObj->objId].as_s32;
     rand = random_soft_s32_range(3);
-    if (temp - rand - 3 >= 0) {
+    if ((temp ^ 0) - rand - 3 >= 0) {
         D_800E9AA0[omCurrentObj->objId].as_s32 = temp - rand - 3;
     } else {
         D_800E9AA0[omCurrentObj->objId].as_s32 = temp - rand + 5;
