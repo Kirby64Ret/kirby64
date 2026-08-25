@@ -179,6 +179,27 @@ def run_one(cf, fn, seconds, jobs):
         except (OSError, ValueError):
             return None
 
+    def _whitespace_only(h):
+        # A mutation that only moves newlines cannot change codegen, and
+        # publishing it under a MATCH banner costs the next reader a compile
+        # to rediscover that. See harvest_zero_scores.whitespace_only.
+        try:
+            d = open(os.path.join(h, 'diff.txt'), errors='replace').read()
+        except OSError:
+            return False
+        before, after = [], []
+        for line in d.split('\n'):
+            if line[:3] in ('---', '+++', '@@ ') or line.startswith('@@'):
+                continue
+            if line.startswith('-'):
+                before.append(line[1:])
+            elif line.startswith('+'):
+                after.append(line[1:])
+        if not before and not after:
+            return False
+        sq = lambda ps: ''.join(''.join(ps).split())
+        return sq(before) == sq(after)
+
     zeros = [h for h in hits if _score_of(h) == 0]
     scores = [int(s) for s in re.findall(r'score = (\d+)', out.replace('\r', '\n'))]
     best = min(scores) if scores else None
@@ -198,7 +219,11 @@ def run_one(cf, fn, seconds, jobs):
             log(f'*** MATCH {fn} ({cf}) -- log says score 0 but NO output dir '
                 f'has score.txt 0; copied the whole permuter dir to {dst}')
             return True
-        log(f'*** MATCH {fn} ({cf}) -- source in {dst}')
+        if _whitespace_only(zeros[-1] if zeros else dst):
+            log(f'*** MATCH {fn} ({cf}) -- WHITESPACE ONLY, cannot transfer to '
+                f'the real TU; source in {dst}')
+        else:
+            log(f'*** MATCH {fn} ({cf}) -- source in {dst}')
         return True
 
     # Elapsed time is logged because it is the only way to tell "permuted for

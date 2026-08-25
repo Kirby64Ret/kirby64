@@ -1059,8 +1059,19 @@ the pool allocator's real stride is 0x78.
     going back sessions. Run it before starting a permuter -- the answer may
     already be sitting in tools/decomp/perm/.
 
-    Second, re-measure every candidate in the tree with scratchverify before
-    believing it. asm-differ normalises stack offsets unless `--stack-diffs` is
+    Second -- and cheapest to check -- the mutation may be WHITESPACE ONLY.
+    decomp-permuter reflows source as it works, and a candidate whose only
+    change is where the newlines fall cannot alter codegen at all, yet it still
+    scores 0 in the permuter's own preprocessed file. func_800BDE0C's published
+    win collapses eleven lines of an already barrier-wrapped loop onto one and
+    the tree scores 2/72 either way; a lane independently reported
+    func_801668E0_ovl5's as the same thing. Both `harvest_zero_scores.py` and
+    `permute_queue.py` now detect and label this class, so a MATCH line that
+    does NOT carry the whitespace warning is worth a compile and one that does
+    is not.
+
+    Third, re-measure every remaining candidate in the tree with scratchverify
+    before believing it. asm-differ normalises stack offsets unless `--stack-diffs` is
     passed and that flag went into the queue partway through, so an older run
     can score 0 on a pure frame-size residue. And the permuter compiles a
     PREPROCESSED STANDALONE file whose struct layouts and prototypes are its

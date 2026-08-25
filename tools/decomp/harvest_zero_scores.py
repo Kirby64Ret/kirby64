@@ -16,7 +16,7 @@ including runs from previous sessions. It reports only functions that are
 STILL GUARDED -- a zero on a function someone has since closed by hand is not
 work.
 
-A zero here is a CANDIDATE, not a closure, for two reasons:
+A zero here is a CANDIDATE, not a closure, for three reasons:
 
   - asm-differ normalises stack offsets unless --stack-diffs is passed, and
     that flag was added to permute_queue.py partway through. A run from before
@@ -25,6 +25,13 @@ A zero here is a CANDIDATE, not a closure, for two reasons:
     and prototypes are its own. A change that scores 0 there can score worse
     in the real translation unit; func_801E14B0_ovl17's published win did
     exactly that (3/61 in the tree either way, 12/61 with the whole diff).
+  - the mutation may be WHITESPACE ONLY. decomp-permuter reflows source as it
+    works, and a candidate whose only change is where the newlines fall cannot
+    alter codegen at all -- yet it still scores 0 in the permuter's own file.
+    func_800BDE0C's published win collapses eleven lines of an already
+    barrier-wrapped loop onto one; the tree scores 2/72 either way. The listing
+    flags these, and a lane independently reported func_801668E0_ovl5's as the
+    same thing before the flag existed.
 
 So every candidate must be re-measured in the tree with
 
@@ -54,6 +61,38 @@ def score_of(outdir):
         return int(open(os.path.join(outdir, 'score.txt')).read().strip())
     except (OSError, ValueError):
         return None
+
+
+def whitespace_only(outdir):
+    """True if diff.txt changes nothing but line breaks and indentation.
+
+    decomp-permuter reflows source as it mutates, and a candidate whose only
+    change is where the newlines fall CANNOT alter codegen -- yet it can still
+    score 0, because the permuter compiles its own preprocessed standalone file
+    and that file's scheduling is not the real TU's. func_800BDE0C is the
+    worked example: its published win collapses eleven lines of an already
+    barrier-wrapped loop onto one, and the tree scores it 2/72 either way, the
+    residue being two `addiu` %lo addends emitted in the opposite order.
+
+    Flagging these is worth a few lines because the alternative is a lane
+    spending a compile to rediscover that whitespace does not matter.
+    """
+    try:
+        d = open(os.path.join(outdir, 'diff.txt'), errors='replace').read()
+    except OSError:
+        return False
+    before, after = [], []
+    for line in d.split('\n'):
+        if line.startswith('---') or line.startswith('+++') or line.startswith('@@'):
+            continue
+        if line.startswith('-'):
+            before.append(line[1:])
+        elif line.startswith('+'):
+            after.append(line[1:])
+    if not before and not after:
+        return False
+    squash = lambda parts: ''.join(''.join(parts).split())
+    return squash(before) == squash(after)
 
 
 def zero_dirs():
@@ -113,7 +152,10 @@ def main():
     print('Re-measure every one in the tree before believing it -- see the '
           'module docstring for why a zero here is not a closure.')
     for cf, func, dirs in sorted(rows):
-        print(f'  {func:28s} {cf:34s} {len(dirs)} candidate(s)')
+        ws = all(whitespace_only(d) for d in dirs)
+        flag = ('   <-- WHITESPACE ONLY: cannot transfer, the permuter scored '
+                'its own preprocessed file' if ws else '')
+        print(f'  {func:28s} {cf:34s} {len(dirs)} candidate(s){flag}')
     return 0
 
 
