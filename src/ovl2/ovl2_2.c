@@ -596,6 +596,15 @@ void func_800F7258(s32 arg0) {
  * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
  * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
  * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad.
+ * LEVER 55 CHECKED AND DISPROVED, 2026-08-25. The residue reads exactly like
+ * lever 55 -- a load right after `jal func_800A9864` that refuses $v0 -- but
+ * it is not one. Every callee this function reaches is declared (a gcc
+ * -Wimplicit-function-declaration pass over the un-guarded TU reports only
+ * `request_track_general`, in an unrelated function at line 1705), and both
+ * halves of the experiment are inert: retyping the file-scope
+ * `void func_800A9864(u32, u32, u32)` to `void *` scores 2/85, and DELETING
+ * that declaration outright so the call really is an implicit `int f()` also
+ * scores 2/85. IDO does not gate $v0 on the callee's return type here.
  * Re-measured 2026-08-24, true residue 2/85. New datum: DROPPING `idx` and
  * writing `omCurrentObj->objId` inline at both uses does produce the ROM's
  * in-place shift (`lw $vN` / `sll $vN,$vN,2`), but IDO then picks $v0 for the

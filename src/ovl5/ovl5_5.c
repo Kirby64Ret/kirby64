@@ -1289,41 +1289,48 @@ u16 func_80171E6C_ovl5(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_5/func_80171E6C_ovl5.s")
 #endif
 
-// Draft, 2/61: with THESE three locals every spill slot is exact (0x1C/20/24)
-// and only the frame differs, 0x30 vs 0x28. Re-measured 2026-08-12 and again
-// this pass: dropping the pad local (2 locals instead of 3) keeps the frame
-// wrong AND breaks the spill slots (6/61 -- sw/lw offsets all off by 4 twice).
-// The states never meet; frame anomaly not closable by pad sweeping here.
-//
 /* FACTORY: 2/61, frame only (0x30 vs the ROM's 0x28) -- every stack offset,
-   register and operand order below is already the ROM's. */
-// FRAME MODEL, derived by measurement this pass (supersedes the sweep notes
-// above; it is decidable, not sweepable). IDO lays the region above `ra`
-// (which sits at 0x14) top-down as
-//     [declared locals, FIRST declaration highest] [compiler temps, first
-//      created highest] [slack]
-// and sizes the frame as align8(0x18 + 4*ndeclared + 4*ntemps). Measured
-// points, all consistent with it:
-//     decls              frame  temp   a2     a3     ntemps
-//     pad,p,temp (below)  0x30  0x24   0x20   0x1C   2     <- 2/61
-//     temp,q,p            0x30  0x2C   0x20   0x1C   2
-//     temp,p              0x28  0x24   0x1C   0x18   2
-//     p,temp              0x28  0x20   0x1C   0x18   2
-//     temp only           0x28  0x24   0x1C   0x18   3
-//     temp,pad            0x30  0x2C   0x20   0x1C   3
-// The ROM is frame 0x28 with 0x24/0x20/0x1C used and 0x18 slack, i.e.
-// ONE declared local and TWO compiler temps. Every shape that gets the two
-// temps right (0x20/0x1C) needs three declared words, which is exactly the
-// +8 frame; every shape with one declared word grows a THIRD compiler temp
-// that takes 0x20 and pushes both spills 4 low. The third temp appears
-// whenever `p` is not a home-slot local -- inlining it, `register`-qualifying
-// it and scoping it to an inner block all produce it (4/61 each, verified).
-// Also rejected this pass: no locals at all (the D_8018ECA8_ovl5 load is NOT
-// hoisted above play_sound, 62/63); a declared `s32 i = arg0` index local
-// (homes arg0 and costs an insn, 58/62); `temp` assigned rather than
-// initialised, and `register s32 temp` (both 5/61).
-// So the residue is one compiler temp too many, which no declaration reaches.
-/* FACTORY: 2/61, frame only. */
+   register and operand order below is already the ROM's.
+   RE-DERIVED 2026-08-25 WITH LEVERS LEVER 54, which is what this note was
+   asked for. The lever's `frame = align8(0x1C + 4n + 4)` is the n=1,t=2 case
+   of the general law this function obeys:
+
+       frame = align8(0x18 + 4*ndecl + 4*ntemp)
+       declared locals top-down from frame-4 in DECLARATION order,
+       compiler temps immediately below them in CREATION order,
+       align8 slack at the BOTTOM.
+
+   The ROM is frame 0x28 with temp@0x24, a2(arg0<<2)@0x20, a3(&record)@0x1C
+   and 0x18 slack: n=1, t=2, total 0x18+4+8 = 0x24 -> 0x28. Lever 54's
+   `spill slot = frame - 4n - 8` = 0x1C names the a3 slot exactly.
+
+   Measured n-vs-frame table (freshly re-run this pass, not the old sweep):
+
+       decls                 n  t  frame  temp   a2     a3    score
+       pad,p,temp            3  2  0x30   0x24   0x20   0x1C   2/61  <- kept
+       temp,p                2  2  0x28   0x24   0x1C   0x18   4/61
+       temp + p in a block   2  2  0x28   0x24   0x1C   0x18   4/61
+       temp + register p     2  2  0x28   0x24   0x1C   0x18   4/61
+       temp, p inlined       1  3  0x28   0x24   0x1C   0x18   5/61
+       temp, p initialised   1  3  0x28   0x24   0x1C   0x18  12/61
+       p only (initialised)  1  2  0x20    --     --     --   57/61
+       ROM                   1  2  0x28   0x24   0x20   0x1C
+
+   So lever 54's advice ("delete a declaration") IS the right direction and
+   the target shape IS n=1 -- but every n=1 spelling grows a THIRD compiler
+   temp which takes 0x20 and pushes both real spills one word low, keeping the
+   total at 4 words. n+t is pinned at 4 for n<=2 and at 5 for n=3; the ROM
+   needs 3. The residue is one compiler temp too many, not a missing pad, and
+   no declaration count reaches it -- this is now arithmetic rather than a
+   sweep, and the permuter owns the last word.
+   Note for whoever tries again: an initialised-at-declaration pointer gets NO
+   home slot (the `p only` row above has frame 0x20 with n counted as 1), so
+   home-slot-ness is not what n counts. Also rejected this pass: lever 55 does
+   not apply -- play_sound and random_soft_s32_range are both prototyped at the
+   top of this TU. Previously rejected and still true: no locals at all (the
+   D_8018ECA8_ovl5 load is not hoisted above play_sound, 62/63), a declared
+   `s32 i = arg0` index local (58/62), `temp` assigned rather than initialised
+   and `register s32 temp` (5/61 each). */
 #ifdef NON_MATCHING
 void func_801720D8_ovl5(s32 arg0) {
     s32 pad;
@@ -1348,20 +1355,38 @@ void func_801720D8_ovl5(s32 arg0) {
    `p->unk4`/`p->unk0` spelling is what fixes the addu operand order, and
    declaring `temp` LAST is what puts it at the ROM's 0x1C (later declarations
    take lower addresses).
-   The frame is DECIDABLE and this is the decision. Measured law for this
-   function: frame = align8(0x18 + 4*ndeclared + 4*ncompiler_temps), declared
-   locals at the top in declaration order, temps below, slack at the bottom.
-   Measured points: 4 decls -> 0x30; 3 decls + 1 temp -> 0x28; 2 decls + 2
-   temps -> 0x28; 1 decl + 3 temps -> 0x28. The ROM is 0x20, i.e. TWO words:
-   `temp` at 0x1C and ONE compiler temp at 0x18 that the ROM reuses for the
-   counter pointer AND, after the join, for the record pointer. Our IDO always
-   spends four words on the same three values: each pointer costs a word
-   whether it is declared (a dead home slot) or inlined (an extra temp), and
-   collapsing both pointers into one variable with a cast does not help
-   (5/88, and it loses the addu). Also rejected: `register` on both pointers
-   (2/88, frame unchanged), inlining either pointer (10-11/88), and no locals
-   at all (92/94 -- the D_8018ECA8_ovl5 load is not hoisted above play_sound).
-   Register-allocation floor; the permuter owns the remaining 8 bytes. */
+   RE-DERIVED 2026-08-25 WITH LEVERS LEVER 54 (this note's old sweep predates
+   it). Same law as its sibling func_801720D8_ovl5 above:
+
+       frame = align8(0x18 + 4*ndecl + 4*ntemp)
+
+   The ROM is frame 0x20 with temp@0x1C and ONE compiler temp at 0x18 that it
+   reuses for BOTH pointers -- the counter pointer across play_sound in each
+   arm, then the record pointer across random_soft_s32_range. So the ROM is
+   n=1, t=1: 0x18+4+4 = 0x20 exactly, no slack.
+
+   Measured n-vs-frame table, freshly re-run this pass:
+
+       decls         n  t  frame  temp   spill  score
+       q,p,temp      3  1  0x28   0x1C   0x18    2/88  <- kept
+       q,temp        2  2  0x28   0x20   0x18    5/88
+       temp only     1  3  0x28   0x24   0x1C   11/88
+       ROM           1  1  0x20   0x1C   0x18
+
+   Read the n+t column: it is pinned at 4 for EVERY spelling. Declaring a
+   pointer buys a dead home slot; inlining it buys an extra compiler temp;
+   either way the total is four words where the ROM spends two. That is a
+   sharper statement than the old "frame only after ten permutations" -- the
+   knob lever 54 identifies (n) is fully swept here and t moves to cancel it.
+   Still true from the earlier pass: the `p->unk4`/`p->unk0` spelling is what
+   fixes the `addu $t7, $v0, $t0` operand order, and declaring `temp` LAST is
+   what puts it at the ROM's 0x1C. Also rejected: collapsing both pointers into
+   one variable with a cast (5/88, and it loses the addu), `register` on both
+   pointers (2/88, frame unchanged), and no locals at all (92/94 -- the
+   D_8018ECA8_ovl5 load is not hoisted above play_sound).
+   Lever 55 checked and does not apply: play_sound and random_soft_s32_range
+   are both prototyped at the top of this TU.
+   The permuter owns the remaining 8 bytes. */
 /* FACTORY: 2/88, frame only. */
 #ifdef NON_MATCHING
 void func_801721CC_ovl5(s32 arg0) {
@@ -2515,7 +2540,13 @@ void func_80174368_ovl5(GObj *arg0, s32 arg1) {
    effect: `+ 0.0f` on the Z load (folded away, identical output),
    swapping the Y/Z statement order (37/140, much worse) and writing the
    130.0f store as a double literal (lever 7 -- 4/140, byte-identical).
-   One-slot temp rotation -- floor (LEVERS "guard on the second variant"). */
+   One-slot temp rotation -- floor (LEVERS "guard on the second variant").
+   2026-08-25: also rejected, unbracing the two single-statement `if` bodies
+   (`if (D_80187CD0_ovl5 != 0) func_800AA018(...)` and the loop's
+   `if (D_8018E478_ovl5[arg1][arg2] == 0) func_800B1900(...)`) -- 4/140,
+   byte-identical. The no-braces lever that closed func_800B8E00 in
+   save_file.c this pass acts on a LOOP body's schedule, not on `if`s, and
+   this residue is in straight-line code before the `while (1)` anyway. */
 extern s32 D_80187CC8_ovl5;
 extern s32 D_80187CCC_ovl5;
 extern s32 D_80187CD0_ovl5;

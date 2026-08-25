@@ -403,3 +403,60 @@ the pool allocator's real stride is 0x78.
     guarded arms with -DNON_MATCHING. func_8019E9F0_ovl7 needed its signature
     corrected to (GObj *) in the same change -- justified independently, as
     the ROM jals func_8019E128_ovl7 twice with $a0 untouched.
+
+    **SCOPE CORRECTION, measured 2026-08-25 on three separate $v0/$v1 residues
+    (func_800A8CE0 and func_800A84F0 in ovl1_3.c, func_800F72B0 in ovl2_2.c).**
+    A $v0/$v1 rotation next to a call is NOT sufficient evidence for lever 55,
+    and two of the three cases had a genuinely missing prototype yet did not
+    move. In ovl1_3.c both `dma_read` and `func_800A8358` really are implicit
+    `int f()` in the matching build (dma_read is declared only in
+    src/main/dma.h, which no TU includes; func_800A8358's only declarations sit
+    inside its own guarded arms) -- and adding both at file scope is BYTE-INERT
+    for the whole TU (.text identical, 12752 bytes) and leaves the residue at
+    2/33. In ovl2_2.c the opposite experiment is equally inert: retyping
+    `void func_800A9864(...)` to `void *`, and then deleting the declaration
+    so the call really is implicit, both score 2/85. So IDO does not gate $v0
+    on the callee's return type in these shapes.
+    Audit the prototypes anyway -- it is cheap and it is a real type fix -- but
+    A/B it with the objdump .text diff and expect nothing from the score. When
+    the file is all-pragma, that diff is the ONLY gate (lever 52).
+
+56. **An UNBRACED loop body schedules differently from the braced one, and it
+    can be the whole residue.** IDO's 4x loop unroller picks the delay-slot
+    store differently: `while (p != end) { *p = M; p++; }` and the braced
+    `for (; p != end; p++) { *p = M; }` and `while (p != end) { *p++ = M; }`
+    are all byte-identical and all emit the stores rotated
+    (-0xC/-0x8/-0x4 then -0x10 in the delay slot), where the ROM emits
+    -0x10/-0xC/-0x8 then -0x4. Dropping the braces --
+    `for (; p != end; p++) *p = SAVE_INIT_MAGIC;` -- took func_800B8E00
+    (save_file.c) from 4/77 straight to MATCH and un-guarded byte-exact.
+    Scope, measured: it is the LOOP BODY's braces that matter. Unbracing
+    single-statement `if` bodies is inert (func_8017462C_ovl5, 4/140 either
+    way), and unbracing a `do { ohSleep(1); } while (...)` did not move a
+    residue that lives in straight-line code after the loop
+    (func_801E05A8_ovl15, 2/615 either way). Reach for this whenever the
+    residue is a rotation INSIDE an unrolled or scheduled loop body.
+
+57. **The frame law behind lever 54, in the form that lets you predict a
+    shape you cannot reach.** Re-derived on func_801720D8_ovl5 and
+    func_801721CC_ovl5 (both of which had been sealed as "frame only" after
+    ten declaration permutations made BEFORE lever 54 existed):
+
+        frame = align8(0x18 + 4*ndecl + 4*ntemp)
+        declared locals top-down from frame-4 in DECLARATION order,
+        compiler temps immediately below them in CREATION order,
+        align8 slack at the BOTTOM.
+
+    Lever 54's `align8(0x1C + 4n + 4)` is the n-declared/two-temp case of this,
+    and its `spill slot = frame - 4n - 8` names the SECOND compiler temp.
+    Tabulating n against the frame is still the right first move -- but also
+    tabulate t, because on these two functions **t moves to cancel n**: every
+    declared pointer buys a dead home slot, every inlined one buys an extra
+    compiler temp, and n+t stayed pinned at 4 across every spelling while the
+    ROM spends 3 and 2 respectively. When n+t is pinned, the residue is one
+    compiler temp too many and no declaration count reaches it -- stop sweeping
+    and seal it with the table.
+    Useful corollary measured on the way: an initialised-at-declaration pointer
+    gets NO home slot (`Unk801875F0 *p = &arr[i];` as the only local gave frame
+    0x20, two words), so "declared" and "homed" are different things and n
+    counts the former.

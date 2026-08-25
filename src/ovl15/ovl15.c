@@ -1722,6 +1722,14 @@ void func_801E0380_ovl15(struct GObj *arg0) {
    the argument before the 1.0f constant, IDO does it the other way round.
    Everything else -- all 615 words, both wait loops, all four ABS blocks, the
    frame 0x40 and the sp+0x38 spill -- is the ROM's.
+   Swept 2026-08-25 against that tie-break, all byte-identical at 2/615:
+   folding the `if (0.0f < d) ... else ...` at that site into a ternary
+   (LEVERS lever 39 -- IDO canonicalises it back), and unbracing the
+   single-statement `do { ohSleep(1); } while (...)` in the else arm into
+   `do ohSleep(1); while (...);`. The no-braces lever is real (it closed
+   func_800B8E00 in save_file.c this pass) but it acts on the loop BODY's own
+   schedule, and this residue is in a straight-line block after the loop, so
+   it does not reach here.
    Three levers carried this one and are worth keeping:
    - `ABS()` not `ABSF()` (LEVERS lever 3).  The ROM materialises a FRESH
      `mtc1 $zero` for each of the three absolute values while keeping one

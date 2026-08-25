@@ -300,6 +300,13 @@ struct CacheLine *func_800A840C(u32 arg0, s32 arg1) {
 // addiu/and/addu/sw chain (t6/t7/t8 vs ROM's t7/t8/t9), a whole-body temp
 // rotation -- LEVERS.md "GUARD ON THE SECOND VARIANT" floor class. Left
 // guarded.
+// Re-confirmed 2026-08-25. The ROM burns $t6 before this chain starts and
+// nothing in the body does; six more spellings all reproduce t6/t7/t8 exactly:
+// a `u32 *heap = &D_800D7C10` pointer local, the size folded inline into the
+// store, computing `size` before the load, a `void *` return with casts on
+// both sides, and mutating `arg0` as the scratch (5/10, worse -- it moves the
+// `ori $at` too). A second unused parameter does not even compile: the call at
+// func_800A89E0 passes one argument and IDO rejects the arity mismatch.
 u32 func_800A84F0(s32 arg0) {
     u32 temp_v0;
     u32 size;
@@ -720,6 +727,29 @@ struct BGHeader *func_800A8C40(u32 arg0) {
 // Re-confirmed 2026-08-23 (measure_seeds.py + verify.py): residue is exactly
 // this $v0/$v1 CSE floor (LEVERS.md "GUARD ON THE SECOND VARIANT" class), not
 // source-reachable. Left guarded.
+// 2026-08-25, LEVER 55 CHECKED AND DISPROVED HERE. This TU really does call
+// `dma_read` and `func_800A8358` with NO declaration in scope (dma_read is
+// declared only in src/main/dma.h, which nothing includes; func_800A8358's
+// only declarations are its two guarded definitions), so both are implicit
+// `int f()` in the matching build -- textbook lever 55. Adding
+// `void dma_read(u32, void *, u32);` and `void *func_800A8358(s32);` at file
+// scope is completely INERT: build/src/ovl1/ovl1_3.o's .text comes back
+// byte-identical (12752 bytes, cmp clean), and this function still scores
+// 2/33. In-body copies cannot be used at all -- the implicit declarations at
+// lines 589/637 come first and IDO rejects the later real one (lever 49).
+// The base-local family was also re-swept and the best is 3/33, worse:
+//     decls                       frame  size  buf   entry  score
+//     size,pad0,pad1,buf,entry    0x30   0x2C  0x20  0x1C    2/33 <- kept
+//     size,pad0,base,buf,entry    0x30   0x2C  0x20  0x18    3/33
+//     size,base,buf,entry         0x30   0x2C  0x24  0x1C    3/33
+//     size,pad0,buf,base,entry    0x30   0x2C  0x24  0x18    5/33
+//     size,pad0,pad1,buf,base,en  0x38    --    --    --     7/33
+// An explicit `base` DOES fix the ROM's `lw $v0` (the whole point of the
+// residue) but always costs a dead word between `buf` and `entry`, which moves
+// one spill; `entry = base + arg0` and `arg0 + base` are byte-identical
+// (pointer arithmetic is canonicalised), and folding the whole address into
+// one expression collapses the ROM's two `sll`s into one `sll 3` (25/32).
+// Reusing `buf` as the base scratch is 9/33.
 void *func_800A8CE0(u32 arg0, s32 arg1) {
     s32 size;
     s32 pad0;

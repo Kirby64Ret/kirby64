@@ -1695,7 +1695,16 @@ s32 func_801DF01C_ovl14(f32 arg0) {
    the trailing `s32 pad` below: later declarations take the lower addresses,
    so a dead word declared LAST is what lifts the compiler's own temp onto the
    ROM's slot. Remaining 4 are a one-slot FP temp rotation ($f0/$f8 on the
-   func_800F9888 argument, $f8/$f10 on the copy pair) -- permuter food. */
+   func_800F9888 argument, $f8/$f10 on the copy pair) -- permuter food.
+   2026-08-25, one more rejection worth recording because it looked strong:
+   func_801DF01C_ovl14 just above is a MATCHED clone (LEVERS lever 1) whose
+   same call is spelled `(f32) temp * 40.0f * arg0` with the scale factor a
+   PARAMETER rather than an array load, so replacing the trailing `s32 pad`
+   with an `f32 scale = D_800E6A10[omCurrentObj->objId];` local and writing
+   `(f32) (temp - 1) * 40.0f * scale` should have matched the sibling's
+   operand KINDS (lever 21). It costs 66/161 -- the local reorders the whole
+   omCurrentObj/cvt block ahead of the multiply. The clone's shape does not
+   transfer here; the pad must stay a pad. */
 s32 func_801DF290_ovl14(void) {
     s32 track;
     s32 temp;

@@ -240,17 +240,18 @@ void init_save_file_maybe(s32 fileNum) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/init_save_file_maybe.s")
 #endif
 
-// Draft, 4/77: only the 4x-unrolled fill body's store order is left -- the ROM
-// emits -0x10/-0xC/-0x8 then -0x4 in the delay slot, IDO rotates it to
-// -0xC/-0x8/-0x4 then -0x10. vu32 on the store (the wave-9 lever) does not move
-// it; do/while and `<` cost the whole loop (64-66 diffs). Re-measured
-// 2026-08-24 (true residue 4/77): `*p++ = M` and `for (; p != end; p++)` are
-// both byte-for-byte identical to the `*p = M; p++;` form here, so the
-// rotation lives inside IDO's unroller, not in the loop's source shape.
-// Load-bearing: the single leading `s32 pad0;` (frame 0x40, spill at 0x2C -- 0
-// pads gives 0x30 and 2 gives the spill at 0x28), and assigning `p` BEFORE `end`
-// so the ROM's start-then-end pointer order is reproduced.
-#ifdef NON_MATCHING
+// MATCHED. The last residue was the 4x-unrolled fill body's store order: the
+// ROM emits -0x10/-0xC/-0x8 then -0x4 in the delay slot and the braced loop
+// rotated it to -0xC/-0x8/-0x4 then -0x10. That is NOT inside IDO's unroller,
+// as the note here used to say -- it is the braces. An UNBRACED `for` body
+// schedules differently from the braced one (LEVERS: the no-braces lever), and
+// writing this fill as a one-line `for` took 4/77 straight to MATCH. The
+// previously swept `*p++ = M` and braced `for (; p != end; p++) { ... }` forms
+// are byte-identical to each other and to the old `while` -- only dropping the
+// braces moves it.
+// Still load-bearing: the single leading `s32 pad0;` (frame 0x40, spill at
+// 0x2C -- 0 pads gives 0x30 and 2 gives the spill at 0x28), and assigning `p`
+// BEFORE `end` so the ROM's start-then-end pointer order is reproduced.
 void func_800B8E00(s32 fileNum) {
     s32 pad0;
     u32 *p;
@@ -258,18 +259,12 @@ void func_800B8E00(s32 fileNum) {
 
     p = (u32 *) &gSaveBuffer1.files[fileNum];
     end = (u32 *) &gSaveBuffer1.files[fileNum].checksum;
-    while (p != end) {
-        *p = SAVE_INIT_MAGIC;
-        p++;
-    }
+    for (; p != end; p++) *p = SAVE_INIT_MAGIC;
     saveSetFileChecksum(fileNum);
     func_80004D34(D_800D5150[fileNum * 2 + 1], &gSaveBuffer1.files[fileNum], 0x58);
     func_80004D34(D_800D5150[fileNum * 2 + 7], &gSaveBuffer1.files[fileNum], 0x58);
     gSaveBuffer2.files[fileNum] = gSaveBuffer1.files[fileNum];
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/save_file/func_800B8E00.s")
-#endif
 
 s32 saveCalcFileChecksum(u32 fileNum) {
     u32 *i = (u32 *)&gSaveBuffer1.files[fileNum];
@@ -757,16 +752,29 @@ s32 saveSetCutsceneWatched(s32 scene, s32 fileNum) {
     return saveCutscenesWatched;
 }
 
-// Draft, 6/169: structurally complete and byte-exact except (a) the constants
-// 1 and 81 land in $a3/$a2 where the ROM has $a2/$a3 (loop-bound materialisation
-// order; `i < 81` and `i != 81` behave identically), and (b) two FP operand
-// orders -- `c.eq.s $f2,$f4` vs the ROM's `$f4,$f2` and `add.s $f16,$f10,$f0`
-// vs `$f0,$f10`. Both FP orders are INVARIANT to source operand order (all four
-// spellings tried); the `fx` local is what fixed the `mul.s` order, and the
-// frame (0xA8, buffer at 0x3C) needs `f32 fx` declared AFTER the array.
-// Re-measured 2026-08-24, true residue 6/169: writing `fc + fc * fx` and
-// `fx != 0.0f` (both the ROM's own operand order) is byte-for-byte identical
-// to the current text, so lever 2 does not reach either of those two words.
+/* FACTORY: 4/169, hoisted-constant register pair only.
+ * Was 6/169. Both FP operand-order words are CLOSED, and the note that used to
+ * stand here ("invariant to source operand order, lever 2 does not reach
+ * either") was right about ORDER and wrong about the conclusion: both moved on
+ * operand KIND, which is LEVERS lever 21 applied to c.eq.s and add.s.
+ *   - `c.eq.s`: comparing the NAMED LOCAL (`0.0f != fx` / `fx != 0.0f`) emits
+ *     `$f2,$f4` either way; comparing the DIRECT ARRAY LOAD (`p[1] != 0.0f`)
+ *     emits the ROM's `$f4,$f2`. That is lever 14's memory-load rule, and `fx`
+ *     is still needed -- IDO CSEs the second `p[1]` onto the same `lwc1`.
+ *   - `add.s`: with one operand a named local (`fc`) and the other the mul
+ *     temp, IDO emits (temp, local) whichever way the sum is spelled. Writing
+ *     BOTH addends as inline conversions -- `(f32) count + (f32) count * fx`
+ *     -- makes them the same kind and IDO honours source order, giving the
+ *     ROM's `$f0,$f10`.
+ * `fc = count;` and `fx = p[1];` are LOAD-BEARING even though `fc` is now dead:
+ * they fix the $f0/$f2 assignment. Dropping either costs 3-4 words (measured).
+ * Remaining residue: the constants 81 and 1 are hoisted into $a3/$a2 in the
+ * opposite order from the ROM (2 materialisations + the 2 branches that read
+ * them). Registers are handed out descending -- $t1=3, $t0=2, then $a3, $a2 --
+ * so this is purely which of {81, 1} IDO encounters first; the loop-bound test
+ * is emitted at the back edge and comes last for us, first for the ROM.
+ * Swept without moving it: `i < 81`, `i != 81`, `i < 0x51` (byte-identical),
+ * and the `i = 0; while (i != 81)` form (168/169, a different loop shape). */
 #ifdef NON_MATCHING
 extern f32 D_800D515C[];
 extern s32 random_soft_s32_range(s32);
@@ -839,8 +847,8 @@ s32 func_800B9FE0(s32 fileNum) {
     }
     fc = count;
     fx = p[1];
-    count = (s32) (fc * fx + fc);
-    if (0.0f != fx) {
+    count = (s32) ((f32) count + (f32) count * fx);
+    if (p[1] != 0.0f) {
         count++;
     }
     for (i = 0; i != 22; i++) {

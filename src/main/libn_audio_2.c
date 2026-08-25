@@ -598,6 +598,14 @@ void func_8002C9F4(void) {
  * block, pointer local, explicit increments, early return, and a volatile
  * pointer read. */
 #ifdef NON_MATCHING
+/* FACTORY: 4/19, temp-register numbering only. This is upstream libnaudio's
+   __readVarLen verbatim and every instruction is the ROM's; the residue is
+   that the ROM REUSES $t6/$t7 inside the do-while (its four temps are
+   t6,t7,t8,t9) where IDO wraps on to $t0/$t1 (six temps). Swept 2026-08-25
+   with no improvement: `(c & 0x7f) + (value << 7)` (5/19 -- it also moves the
+   `sll`), `value <<= 7; value += c & 0x7f;` (5/19), and hoisting the
+   continuation test into a shared `s32 more` local so both `c & 0x80` sites
+   are one variable (4/19, byte-identical to this). Allocator floor. */
 s32 func_8002C9FC(ALSeq *seq) {
     s32 value;
     s32 c;

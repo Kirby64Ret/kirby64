@@ -3695,7 +3695,21 @@ Acmd *n_alMainBusPull(s32 sampleOffset, Acmd *p) {
  * emits them swapped with the registers rotated. So this is a scheduling
  * floor, not a padding trap: writing out func_800299F0 is necessary but not
  * sufficient. Do not re-attempt the un-guard without closing those two
- * first. */
+ * first.
+ *
+ * RE-MEASURED 2026-08-25, still 3/18, and the store-order half is now swept:
+ * `n_aInterleave(ptr); ptr++; n_aSaveBuffer(ptr, ...); ptr++;`, the index form
+ * `n_aInterleave(&ptr[0]); n_aSaveBuffer(&ptr[1], ...); return ptr + 2;` and
+ * the original `ptr++` form are all BYTE-IDENTICAL, and calling the two macros
+ * in reverse order costs 10/18 (it swaps the two `lui`s as the old note said).
+ * So the two stores are an IDO delay-slot pick -- the ROM fills the branchless
+ * pair by hoisting the SECOND command's w0 first -- and no spelling of the
+ * pointer arithmetic reaches it.
+ * Note also that tools/decomp/padtrap.py reports this listing 'clean': the
+ * trailing `jr $ra; nop` at 0x800299F0 sits INSIDE n_alSavePull's `.size` but
+ * is not trailing NOPs, so the classifier does not see it. alAudioFrame starts
+ * at 0x800299F8, i.e. there really are 8 bytes of a separate empty function
+ * folded in here. Treat this as a padding trap the tool cannot detect. */
 #ifdef NON_MATCHING
 Acmd *n_alSavePull(s32 sampleOffset, Acmd *p) {
     Acmd *ptr = p;
