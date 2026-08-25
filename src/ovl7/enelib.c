@@ -2082,58 +2082,85 @@ block_22:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CE28_ovl7.s")
 #endif
-// m2c draft, measured 137/144 diffs
+/* FACTORY: 104/144, from a raw m2c draft at 135/144 (the note here said 137;
+   measure_seeds says 135). INSTRUCTION COUNT and FRAME (0x38) are now EXACT
+   and the first 12 words match. Same family as func_8019C844_ovl7 above,
+   which closed outright on the same two levers:
+     - LEVER 4: m2c cached `omCurrentObj->objId` in `temp_v1`/`var_v1` and
+       three more temps; spelled inline at every site IDO produces the ROM's
+       folded `lui $v0,%hi(omCurrentObj)` / `lw $v0,%lo(...)($v0)` and the
+       per-statement `lw $x, 0x0($v0)` re-reads. This also gets the ROM's
+       SECOND materialisation inside the `ent->unk3C = 0` arm for free -- that
+       store may alias the global, so IDO cannot carry the load across it.
+     - LEVER 90: the three zeros (`D_800E9020[id]`, `v.x`, `v.y`) share one
+       `mtc1 $zero` in the ROM and the two `t < 0.0f` compares fork off it.
+       Spelling the three STORES as integer `0` and leaving the compares
+       `0.0f` is 107 -> 104 and puts 1.0f in the ROM's $f2 instead of $f0.
+     - The Vector is `v` at sp+0x28 with the ROM's own store order
+       (v.z = 1.0f first, then v.x, then v.y), and all three of the first
+       product group multiply by v.x -- not v.x/v.y/v.z. Read off the listing:
+       three separate `lwc1 0x28($sp)`.
+
+   WHAT IS LEFT is ONE INSTRUCTION IN THE WRONG PLACE, and it is worth
+   describing precisely because the positional score makes it look like 104
+   separate problems. IDO hoists the shared `mtc1 $zero,$f0` to word 13, in
+   the entry block; the ROM creates it at word 44, in the merge block after
+   the if/else. Everything between those two points is therefore one slot out
+   of phase, which is the whole 104. Confirmed by reading the two streams side
+   by side: at word 44 the ROM has the `mtc1` and we are already on the
+   D_800E9020 `lui`, and by word 49 the registers ($f2 = 1.0f, $f0 = zero) are
+   the ROM's.
+   Tried and rejected against that hoist, all measured 2026-08-25:
+     - `do { } while (0);` immediately before the D_800E9020 store: 104,
+       unchanged. The hoist is not a scheduling decision a LEVER 61 barrier
+       can reach.
+     - barrier_sweep.py over all 13 statement boundaries: the only placement
+       that beats the base is BEFORE the `-=` in the else arm, 47/145 -- and
+       that is ONE WORD LONG, so it is buying the ROM's `bc1fl` + delay-slot
+       load shape at the price of an extra instruction. Worth understanding,
+       not worth keeping.
+     - the m2c shape that produces the same `bc1fl` honestly -- an `f32 *q =
+       &D_800E17D0[id]` computed before the if and dereferenced in the else
+       only -- is 77/145 with the declaration first and 77/145 with it last.
+       Also one word long.
+   So the next move is whatever stops IDO hoisting an FP zero out of a
+   successor block, and no lever in LEVERS.md currently names one. */
 #ifdef NON_MATCHING
 void func_8019CFD0_ovl7(Vector *arg0) {
-    f32 sp30;
-    f32 sp2C;
-    f32 sp28;
-    EnemyRecord *temp_a1;
-    f32 *temp_a0;
-    f32 *temp_a0_2;
-    f32 *temp_v1_2;
-    f32 temp_f0;
-    f32 temp_f0_2;
-    s32 var_v1;
-    u32 temp_v1;
+    EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
+    Vector v;
+    f32 t;
 
-    temp_v1 = omCurrentObj->objId;
-    var_v1 = temp_v1;
-    temp_a1 = D_800E1B50[temp_v1];
-    if (temp_a1->unk3C != 0) {
-        temp_a1->unk3C = 0;
-        var_v1 = omCurrentObj->objId;
+    if (ent->unk3C != 0) {
+        ent->unk3C = 0;
     }
-    temp_a0 = D_800E17D0 + var_v1;
-    if (*(D_800E6A10 + var_v1) == 1.0f) {
-        temp_a0_2 = D_800E17D0 + var_v1;
-        *temp_a0_2 += 3.1415927f;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        D_800E17D0[omCurrentObj->objId] += 3.141592741f;
     } else {
-        *temp_a0 -= 3.1415927f;
+        D_800E17D0[omCurrentObj->objId] -= 3.141592741f;
     }
-    D_800E9020[omCurrentObj->objId] = 0.0f;
-    sp30 = 1.0f;
-    sp28 = 0.0f;
-    temp_v1_2 = &D_800E6A10[omCurrentObj->objId];
-    sp2C = 0.0f;
-    *temp_v1_2 = -*temp_v1_2;
-    lbvector_Rotate(&sp28, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
-    D_800E3050[omCurrentObj->objId] = arg0->x * sp28;
-    D_800E3590[omCurrentObj->objId] = arg0->y * sp28;
-    temp_f0 = arg0->z * sp28;
-    if (temp_f0 < 0.0f) {
-        D_800E3AD0[omCurrentObj->objId] = -temp_f0;
+    D_800E9020[omCurrentObj->objId] = 0;
+    v.z = 1.0f;
+    v.x = 0;
+    v.y = 0;
+    D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
+    lbvector_Rotate(&v, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
+    D_800E3050[omCurrentObj->objId] = arg0->x * v.x;
+    D_800E3590[omCurrentObj->objId] = arg0->y * v.x;
+    t = arg0->z * v.x;
+    if (t < 0.0f) {
+        D_800E3AD0[omCurrentObj->objId] = -t;
     } else {
-        D_800E3AD0[omCurrentObj->objId] = temp_f0;
+        D_800E3AD0[omCurrentObj->objId] = t;
     }
-    D_800E33D0[omCurrentObj->objId] = arg0->x * sp30;
-    D_800E3910[omCurrentObj->objId] = arg0->y * sp30;
-    temp_f0_2 = arg0->z * sp30;
-    if (temp_f0_2 < 0.0f) {
-        D_800E3E50[omCurrentObj->objId] = -temp_f0_2;
-        return;
+    D_800E33D0[omCurrentObj->objId] = arg0->x * v.z;
+    D_800E3910[omCurrentObj->objId] = arg0->y * v.z;
+    t = arg0->z * v.z;
+    if (t < 0.0f) {
+        D_800E3E50[omCurrentObj->objId] = -t;
+    } else {
+        D_800E3E50[omCurrentObj->objId] = t;
     }
-    D_800E3E50[omCurrentObj->objId] = temp_f0_2;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019CFD0_ovl7.s")
