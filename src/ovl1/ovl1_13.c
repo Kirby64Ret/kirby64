@@ -292,9 +292,30 @@ void draw_pause_bg(GObj *gobj) {
  * fourth argument), the child track's mode is `D_800E9E20[cur] * 3` and must
  * be SPELLED as (x * 4) - x -- written `* 3` IDO hoists the constant into a
  * saved register and emits multu, costing 57 extra diffs -- and the tail call
- * is func_800B1900((u16) omCurrentObj->objId), the low half of objId. */
-void func_800BCA5C(void) {
-    extern void (*D_800D55BC[])(void);
+ * is func_800B1900((u16) omCurrentObj->objId), the low half of objId.
+ *
+ * LEVER 58: the head really does take a parameter, and declaring it is
+ * MEASURED INERT here -- 236/293 before and after, not one instruction moved.
+ * Recorded so nobody re-costs it. The evidence for the parameter is real: the
+ * `jalr $t9` at 800BCAAC is the first call in the function, nothing has
+ * written $a0 on the way to it, its delay slot is a nop, there is no home
+ * store anywhere in the 292 words, and all four entries of the table it
+ * dispatches through (func_800BC328 / 4C0 / 664 / 800, all matched) are
+ * defined as taking an argument. So the parameter is declared and passed,
+ * because it is true, not because it pays.
+ * The reason it does not pay is that this function's residue is not an
+ * argument-register rotation at all: it is the two EXTRA CALLEE-SAVED
+ * registers described above, and $a0 was never the contended register. That
+ * is the discriminator to check before reaching for 58 -- the lever moves a
+ * value out of $a0 and lets everything below fall one slot; where the residue
+ * starts in the prologue with a frame-size difference, there is nothing for
+ * it to move.
+ * (The table's entries type their argument `s32` and then hand it to
+ * func_800ACBDC / func_800A5B14 as an object, so `s32` here is copied from
+ * the file's existing spelling, not endorsed. Retyping that cluster to
+ * GObj * is its own job.) */
+void func_800BCA5C(s32 arg0) {
+    extern void (*D_800D55BC[])(s32);
     extern u16 gPlayerControllers[];
     extern f32 gameTicksPerDrawInv;
     extern s32 D_800D6B6C;
@@ -314,7 +335,7 @@ void func_800BCA5C(void) {
 
     kind = D_800EC2E0[omCurrentObj->objId].as_u32;
     if (kind != 0) {
-        D_800D55BC[kind]();
+        D_800D55BC[kind](arg0);
     }
     if (gGameState == 0x21) {
         D_800E9E20[omCurrentObj->objId] = 2;
