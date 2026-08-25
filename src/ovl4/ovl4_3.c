@@ -995,6 +995,7 @@ extern s32 D_8015C6F8_ovl4[];
  * Permuter food, and it is in priority_queue.py's TARGETS. Note it has not
  * had a real run yet: its first scheduled slot was cut to 17 seconds by a
  * stray kill while the queue was being restarted for the --stack-diffs fix. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 24 statement placements tried, none beats the base 1/138. */
 void func_80157028_ovl4(GObj *arg0, s32 arg1) {
     Unk2Floats *p;
     SPObj *sp;

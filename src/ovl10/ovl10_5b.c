@@ -865,6 +865,7 @@ s32 func_801F111C_ovl10(void) {
  * apparent load-before-store order literally) is much WORSE (125/171) --
  * this is IDO's own scheduler decision, not a source-order lever. Good
  * permuter seed. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 26 statement placements tried, none beats the base 21/171. */
 void func_801F11A8_ovl10(GObj *arg0) {
     extern u32 D_801F4670_ovl10[];
     extern f32 D_801F4C94_ovl10;

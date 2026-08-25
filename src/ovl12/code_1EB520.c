@@ -1006,6 +1006,7 @@ void func_801DE790_ovl12(GObj *arg0) {
 #ifdef NON_MATCHING
 /* 11/48: structurally exact and the load order is now right; the residue is a
  * pure one-slot rotation, ROM val/sum in $t0/$a2 against our $a2/$t0. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 3 statement placements tried, none beats the base 11/48. */
 void func_801DE7E8_ovl12(GObj *arg0) {
     s32 temp;
     s32 val;

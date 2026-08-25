@@ -190,6 +190,7 @@ void func_801DF650_ovl11(struct GObj *arg0) {
    neighbouring-register $v0/$v1 pair that LEVERS lists as a floor; it is a
    better permuter seed than the old 5 because the head is now the right one
    and the permuter cannot change a signature. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 8 statement placements tried, none beats the base 6/28. */
 void func_801DF728_ovl11(struct GObj *arg0) {
     s32 *temp_v1;
     s32 temp_a1;

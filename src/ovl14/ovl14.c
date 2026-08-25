@@ -1029,6 +1029,7 @@ s32 func_801DF01C_ovl14(f32);
    parenthesising `(-n) * rate`. This function's late_rodata pool is only two
    words (0.05f, 65535.0f) with no repeated value, so it is NOT the shared
    float-literal CSE that closed func_801E8F74_ovl9 either. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 32 statement placements tried, none beats the base 15/236. */
 void func_801DDE60_ovl14(GObj *arg0) {
     s32 i;
     s32 n;
@@ -1705,6 +1706,7 @@ s32 func_801DF01C_ovl14(f32 arg0) {
    operand KINDS (lever 21). It costs 66/161 -- the local reorders the whole
    omCurrentObj/cvt block ahead of the multiply. The clone's shape does not
    transfer here; the pad must stay a pad. */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 9 statement placements tried, none beats the base 4/161. */
 s32 func_801DF290_ovl14(void) {
     s32 track;
     s32 temp;

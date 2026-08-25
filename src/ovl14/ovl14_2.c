@@ -755,6 +755,7 @@ extern void func_801ABBA0_ovl7(void);
 extern void func_80199F58_ovl7(void *);
 extern f32 D_801E312C_ovl14;
 extern struct EnemyEventTable D_801CB470_ovl7;
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 12 statement placements tried, none beats the base 9/137. */
 void func_801E2610_ovl14(GObj *arg0) {
     extern void func_801A3E80_ovl7(GObj *);
     extern void func_800AA018(s32);
@@ -810,6 +811,7 @@ extern s32 D_801CA738_ovl7;
 extern s32 func_801117BC(s32 *, u32);
 extern void func_80111C4C(s32);
 
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 11 statement placements tried, none beats the base 10/103. */
 void func_801E2834_ovl14(GObj *arg0) {
     u32 temp;
 

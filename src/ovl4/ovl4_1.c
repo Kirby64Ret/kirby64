@@ -379,6 +379,7 @@ extern void func_800BB3F0(void);
 #ifdef NON_MATCHING
 // The (u32) cast on D_8012EB00 and the vu16 casts in the clear loop are both
 // load-bearing; see src/ovl5/ovl5_7.c func_8017CC3C_ovl5.
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 14 statement placements tried, none beats the base 13/59. */
 s32 func_80151CEC_ovl4(s32 arg0) {
     s32 i;
 

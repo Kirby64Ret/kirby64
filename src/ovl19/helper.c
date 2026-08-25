@@ -151,6 +151,7 @@ void func_8021F0A4_ovl19(GObj *arg0) {
    lui/addiu emission order is identical either way, so it is a priority-list
    difference and not a scheduling one. */
 #ifdef NON_MATCHING
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 33 statement placements tried, none beats the base 20/144. */
 void func_8021F174_ovl19(GObj *arg0) {
     func_8021DFD0_ovl19();
     D_800DF150[omCurrentObj->objId] = NULL;
@@ -494,6 +495,7 @@ void func_8022023C_ovl19(GObj *arg0) {
  * local vs three, `*(vs32 *) &D_800D71F8` vs plain assignment (identical
  * here), and a `for (i = 0; i < 3; i++)` loop for the three groups (IDO does
  * NOT unroll -- worse, 113/118). */
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 27 statement placements tried, none beats the base 22/119. */
 void func_80220280_ovl19(GObj *arg0) {
     extern s32 D_8022FAB8_ovl19[];
     extern s32 D_800D6F18;
@@ -768,6 +770,7 @@ void func_802209A0_ovl19(GObj *arg0) {
  * `void` prototypes for the three implicitly-declared callees -- 10 in every
  * case. */
 #ifdef NON_MATCHING
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 24 statement placements tried, none beats the base 10/87. */
 void func_802209E4_ovl19(GObj *arg0) {
     extern s32 D_800D6F10;
     extern u32 D_800D71F8;
@@ -922,6 +925,7 @@ extern u32 D_800D71F8;
  * struct-base and array spellings, && vs nested ifs, s32 vs GObj* first
  * parameter, one and two pad locals, a pointer local for D_800E98E0. */
 #ifdef NON_MATCHING
+/* barrier_sweep.py (LEVER 71) 2026-08-25: all 4 statement placements tried, none beats the base 11/38. */
 void func_80221108_ovl19(struct GObj *arg0, s32 arg1, f32 arg2) {
     s32 temp;
 
