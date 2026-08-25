@@ -805,25 +805,57 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
 // `slot` (&D_800D00C4[arg0>>16]) in $s0 across the func_800A8578 call and
 // reuses $s0 for `p` afterwards, where IDO leaves it in $v1 and spills it.
 // Swept: idx as a variable vs inline, block-scoped inner locals.
-/* FACTORY: 60/62 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 60/62 -- MEASURED 2026-08-25. No change to the number; the body was
+   re-derived from the listing anyway, because the previous shape was a guess
+   that happened to score the same and the listing is unambiguous about three
+   things it got wrong.
+
+   READ OFF asm/nonmatchings/ovl1/ovl1_3/func_800A8D64.s:
+     - the loop advances with `id = p[1]; p++`, not `while ((id = *p) != 0)`.
+       The ROM proves it: `lw $v1, 0x4($s0)` appears in BOTH branch-likely
+       delay slots (800A8DF8 and 800A8E08) and again at the join (800A8E30),
+       with `addiu $s0, $s0, 0x4` after -- that triple is what the p[1]
+       spelling costs and what a `*p` spelling cannot produce.
+     - `(arg0 & 0xFFFF)` is a LIVE VARIABLE, not a re-computed subscript: the
+       ROM computes `$v1 = idx * 4` once, SPILLS it to 0x20($sp) in the call's
+       delay slot, and reloads it afterwards to store the NULL.
+     - the second call's argument is `entry | 3` (`ori $a0, $a1, 0x3`), and the
+       first is `obj | arg1` (`or $a0, $s1, $a1`).
+   The frame already matches at 0x48.
+
+   THE RESIDUE IS REGISTER CLASS, and it starts at instruction 0. The ROM keeps
+   `&D_800D00C4[arg0 >> 16]` in $s0 -- a SAVED register, assigned before the
+   frame setup, which is why `addiu $sp, -0x48` is the ROM's first word and the
+   draft's seventh -- and later REUSES $s0 for `p` and $s1 for D_800D0104's
+   base once their first ranges die. The draft puts the slot pointer in $v1 and
+   never claims a saved register that early. Everything after index 0 follows
+   from that, which is why 60 of 62 differ over an otherwise faithful body.
+
+   Measured and byte-identical at 60/62: the early-return form (`if (obj ==
+   NULL) return;` plus a flat `if` instead of the nested pair), matching the
+   ROM's two `beqz`/`bnez` jumps to the epilogue.
+   Per LEVERS 69 -- diff 0 is the prologue, so no body-level lever can be
+   scored through it. The next attempt has to start from the saved-register
+   claim, not from the loop. */
 #ifdef NON_MATCHING
 void func_800A8D64(u32 arg0, s32 arg1) {
     u32 ***slot;
+    s32 idx;
     u32 *obj;
+    u32 *p;
+    u32 id;
+    u32 id2;
+    struct BGHeader *entry;
 
     slot = &D_800D00C4[arg0 >> 16];
-    obj = (*slot)[arg0 & 0xFFFF];
+    idx = arg0 & 0xFFFF;
+    obj = (*slot)[idx];
     if (obj != NULL) {
         if (func_800A8578((s32)obj | arg1) == 0) {
-            u32 *p;
-            u32 id;
-            u32 id2;
-            struct BGHeader *entry;
-
-            (*slot)[arg0 & 0xFFFF] = NULL;
+            (*slot)[idx] = NULL;
             p = (u32 *)obj[3];
-            while ((id = *p) != 0) {
+            id = *p;
+            while (id != 0) {
                 entry = D_800D0104[id >> 16][id & 0xFFFF];
                 if (entry != NULL) {
                     if (func_800A8578((s32)entry | 3) == 0) {
@@ -831,6 +863,7 @@ void func_800A8D64(u32 arg0, s32 arg1) {
                         D_800D0104[id2 >> 16][id2 & 0xFFFF] = NULL;
                     }
                 }
+                id = p[1];
                 p++;
             }
         }
