@@ -121,7 +121,7 @@ extern Unk16Bytes D_80185FB0_ovl5;
  *     D_8018676C/D_80186770, D_8018678C/D_80186790).
  *   - ovl5_pers_ reads byte i of the AI-personality table that splat split
  *     2/3/19 (D_80186918/D_8018691A/D_8018691D). */
-void func_8015CE74_ovl5(void);
+void func_8015CE74_ovl5(GObj *);
 void func_8015DFC8_ovl5(GObj *gobj, u32 arg1);
 void func_80161B4C_ovl5(GObj *gobj, s32 arg1);
 void func_80163CC0_ovl5(GObj *gobj, u32 arg1);
@@ -192,7 +192,7 @@ static u8 ovl5_pers_(s32 i) {
 /* Dispatcher for the mini-game object procs. The proc's GObj stays in $a0
  * across every call, so each of these entry points takes it as its first
  * argument and the payload word as the second. */
-void func_8015CE74_ovl5(void);
+void func_8015CE74_ovl5(GObj *);
 void func_8015DFC8_ovl5(GObj *, u32);
 void func_80160AF8_ovl5(GObj *, s32);
 void func_80160E6C_ovl5(GObj *, s32);
@@ -209,7 +209,7 @@ void func_80164A34_ovl5(void);
 void func_8015CD00_ovl5(GObj *arg0) {
     switch (D_800E98E0[omCurrentObj->objId]) {
     case 1:
-        func_8015CE74_ovl5();
+        func_8015CE74_ovl5(arg0);
         return;
     case 11:
         func_80162C68_ovl5(arg0);
@@ -268,15 +268,28 @@ void func_8015CE6C_ovl5(void) {
  * local prototype for func_800AD1A0 (its PORT-only file-scope prototype
  * is invisible to the N64 build). Needs a fresh m2c derivation off the
  * listing (the tbl[] unroll and the infinite wobble loop especially),
- * not a register sweep. */
+ * not a register sweep.
+ * Second real defect fixed 2026-08-25: the head is (GObj *), not (void).
+ * `or $s0, $a0, $zero` at 8015CEB8 saves the INCOMING $a0 into the saved
+ * register the rest of the function uses as its object, and every sibling
+ * entry point in the dispatcher above already takes it -- the comment on
+ * that dispatcher says so in as many words. The draft had it as
+ * `GObj *arg0 = omCurrentObj;`, a local read of the global, which is a
+ * different instruction sequence.
+ * Note what this did to the SCORE: 270 -> 272, two words WORSE. That is not
+ * a reason to revert it and it is not a counter-example to LEVER 58 either.
+ * The lever pays when the draft is otherwise the right shape and the only
+ * residue is the argument rotation; on a draft that already diverges at word
+ * 0 with the wrong frame and the wrong number of array bases, correcting the
+ * head just moves the wreckage around. Keep the truthful head; the score
+ * here will only mean something after the fresh derivation. */
 #ifdef MIPS_TO_C
-void func_8015CE74_ovl5(void) {
+void func_8015CE74_ovl5(GObj *arg0) {
     extern void *D_80185FA0_ovl5[];
     extern struct UnkStruct8015C740 D_80186220_ovl5;
     extern struct UnkStruct8015C740 D_801862E4_ovl5;
     extern u16 D_80186240_ovl5[];
     void func_800AD1A0(void);
-    GObj *arg0 = omCurrentObj;
     struct UnkStruct8015C740 *tbl[4];
     SPObj *sp1 = NULL;
     SPObj *sp2 = NULL;
@@ -337,12 +350,11 @@ void func_8015CE74_ovl5(void) {
  * D_8018E258_ovl5 (index 3 gets a two-part banner at y=10, the others a
  * single banner at y=60 recolored from D_80186240_ovl5), then wobbles the
  * banner x offset forever while D_8018E220_ovl5 (round running) is set. */
-void func_8015CE74_ovl5(void) {
+void func_8015CE74_ovl5(GObj *arg0) {
     extern void *D_80185FA0_ovl5[];
     extern struct UnkStruct8015C740 D_80186220_ovl5;
     extern struct UnkStruct8015C740 D_801862E4_ovl5;
     extern u16 D_80186240_ovl5[];
-    GObj *arg0 = omCurrentObj;
     struct UnkStruct8015C740 *tbl[4];
     SPObj *sp1 = NULL;
     SPObj *sp2 = NULL;
