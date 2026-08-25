@@ -2304,14 +2304,15 @@ void func_80105238(struct PositionState *arg0, struct CollisionResult *arg1) {
     func_801050E0(arg0);
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 6/171, one-slot temp rotation in the final flags write only. Solved and
- * kept: temp_t0 = arg0->scale held as a real pointer and indexed PAST its end
- * (temp_t0[0..2] are scale[0..2]) -- giving it three uses is what stops IDO
- * folding it back into $s0 displacements, and that one change took the score from
- * 117/171 to 10/171 because ROM $t0 holds it and every &local address then lands
- * in $t1-$t4. Also: sp50 is the flag local (not a spilled temp), and both BD00
- * adds are written BD00-first. Residue: the last 6 words rotate t2/t4/t5 -> t3/t5/t6. */
+/* Forward wall probe: three verified segment casts (func_80104D2C) along the
+ * BD00 forward basis at the head-height, foot and mid columns, keeping the best
+ * hit in rec[COL_WALL_FRONT] / D_8012BD34 and OR-ing the winning class
+ * (COLF_WALL_F / _FOOT / _HEAD) into the contact bits.
+ *
+ * temp_t0 = arg0->scale is held as a real pointer: giving it three uses is what
+ * stops IDO folding it back into $s0 displacements, and ROM $t0 holds it so
+ * every &local address then lands in $t1-$t4. sp50 is the flag local (not a
+ * spilled temp), and both BD00 adds are written BD00-first. */
 s32 func_80105284(struct PositionState *arg0, struct CollisionResult *arg1) {
     f32 *temp_t0;
     f32 sp78;
@@ -2365,69 +2366,11 @@ s32 func_80105284(struct PositionState *arg0, struct CollisionResult *arg1) {
         }
     }
     if (sp50 != 0) {
-        arg1->flags.f.hits = (arg1->flags.w >> 0x13) | sp50;
+        arg1->flags.f.hits |= sp50;
         return 1;
     }
     return 0;
 }
-#elif defined(PORT)
-/* Forward wall probe (draft above, completed): three verified segment casts
- * (func_80104D2C) along the BD00 forward basis at ground-path, upper and
- * mid heights, keeping the best hit in rec[COL_WALL_FRONT] / D_8012BD34 and folding the
- * winning class (1 / 4 / 2) into the flags word. */
-s32 func_80105284(struct PositionState *arg0, struct CollisionResult *arg1) {
-    Vector start, end, hit;
-    struct Normal dir;
-    struct Normal *n;
-    struct CollisionTriangle *tri;
-    s32 type;
-    f32 best = 1.1f;
-    f32 t;
-    s32 cls = 0;
-
-    dir.x = BD00.fwdX;
-    dir.y = 0.0f;
-    dir.z = BD00.fwdZ;
-    start.x = arg0->kirbyGroundPath[0];
-    start.y = arg0->kirbyHeadPos[1];
-    start.z = arg0->kirbyGroundPath[1];
-    end.x = arg0->kirbyFootPos[0] + BD00.footOffX;
-    end.y = arg0->kirbyFootPos[1] + arg0->scale[0];
-    end.z = arg0->kirbyFootPos[2] + BD00.footOffZ;
-    if (func_80104D2C(&start, &end, (Vector *) &dir, &best, &D_8012BD34,
-                      &arg1->rec[COL_WALL_FRONT].norm, &arg1->rec[COL_WALL_FRONT].tri, &arg1->rec[COL_WALL_FRONT].type) != 0) {
-        cls = COLF_WALL_F;
-    }
-    start.y = arg0->kirbyHeight[1];
-    end.y = arg0->kirbyFootPos[1] + arg0->scale[2];
-    if (func_80104D2C(&start, &end, (Vector *) &dir, &t, &hit, &n, &tri, &type) != 0 &&
-        (cls == 0 || (n != arg1->rec[COL_WALL_FRONT].norm && t < best))) {
-        D_8012BD34 = hit;
-        cls = COLF_WALL_F_FOOT;
-        arg1->rec[COL_WALL_FRONT].norm = n;
-        arg1->rec[COL_WALL_FRONT].tri = tri;
-        arg1->rec[COL_WALL_FRONT].type = type;
-        best = t;
-    }
-    start.y = arg0->kirbyHeight[0];
-    end.y = arg0->kirbyFootPos[1] + arg0->scale[1];
-    if (func_80104D2C(&start, &end, (Vector *) &dir, &t, &hit, &n, &tri, &type) != 0 &&
-        (cls == 0 || (n != arg1->rec[COL_WALL_FRONT].norm && t < best))) {
-        D_8012BD34 = hit;
-        cls = COLF_WALL_F_HEAD;
-        arg1->rec[COL_WALL_FRONT].norm = n;
-        arg1->rec[COL_WALL_FRONT].tri = tri;
-        arg1->rec[COL_WALL_FRONT].type = type;
-    }
-    if (cls != 0) {
-        arg1->flags.hw = (((arg1->flags.w >> 0x13) | cls) * 8) | (arg1->flags.hw & 7);
-        return 1;
-    }
-    return 0;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_80105284.s")
-#endif
 
 s32 func_80105530(struct PositionState *arg0, struct CollisionResult *arg1) {
     Vector sp54;

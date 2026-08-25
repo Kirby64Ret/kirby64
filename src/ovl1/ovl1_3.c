@@ -755,15 +755,14 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     s32 pad0;
     s32 pad1;
     void *buf;
-    u32 *entry;
+    u32 *base;
 
-    entry = D_800D0184[arg0 >> 16]->geoBlockTable;
+    base = D_800D0184[arg0 >> 16]->geoBlockTable;
     arg0 &= 0xFFFF;
     arg0 *= 2;
-    entry += arg0;
-    size = (entry[1] - entry[0]) | arg1;
+    size = (base[arg0 + 1] - base[arg0]) | arg1;
     buf = (void *)func_800A8358(size);
-    dma_read(entry[0], buf, size & 0xFFFFFC);
+    dma_read(base[arg0], buf, size & 0xFFFFFC);
     return buf;
 }
 #else
