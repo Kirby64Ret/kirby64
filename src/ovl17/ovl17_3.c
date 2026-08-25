@@ -234,7 +234,21 @@ void func_801E1424_ovl17(struct GObj *arg0) {
  * parameter, on the theory that the conversion would have to be materialised
  * as the `or $a0, $v0, $zero` the ROM has -- byte-identical at 3/61, IDO emits
  * nothing for a same-width signedness change. Whatever puts this value in $v0
- * is not reachable from the local's type or from the donor's shape. */
+ * is not reachable from the local's type or from the donor's shape.
+ *
+ * 2026-08-25, two more searches closed, both negative:
+ *   - the PERMUTER's zero-score candidate for this function
+ *     (perm/func_801E14B0_ovl17) is `objId = omCurrentObj->objId` folded into
+ *     the argument list plus a redundant `temp_s0` copy.  Three forms measured
+ *     by the coordinator: clean pre-assignment 3/61, the exact in-argument
+ *     form 3/61, the full diff including the copy 12/61.  A permuter zero is
+ *     a candidate, not a closure (LEVER 72) -- this one is a stack-offset
+ *     artefact of the standalone file.
+ *   - `barrier_sweep.py` (LEVER 71) over all 19 statement boundaries: no
+ *     placement beats the base 3/61.  So it is not a scheduling barrier
+ *     either, and there is now nothing left in the source-shape search space.
+ *     This one is genuinely register allocation; leave it to the permuter with
+ *     --stack-diffs. */
 s32 func_801E14B0_ovl17(void) {
     u32 objId;
     struct Ovl17AnimInfo sp2C;
