@@ -44,10 +44,39 @@ struct Ovl7AnimHdr {
 };
 #endif
 
+/* THIS IS src/ovl2/ovl2_9.c's `struct CollSlot`, seen from the other side of
+ * func_80111C88 (which ovl2_9.c declares as returning one and this file
+ * declares as returning an Ovl7AnimObj). The filler view names the field by
+ * its N64 byte offset, and that only works while every offset is the N64's.
+ *
+ * CollSlot is not such a struct: it leads with `void *unk0` and carries
+ * `struct Shape28 *unk1C`, so on LP64 everything after the first pointer
+ * slides. Measured with `gdb -ex "ptype /o struct CollSlot"` on the port
+ * binary: CollSlot is 56 bytes with unk24 at offset 48, while the filler
+ * view below puts its pointer at 40 -- which is CollSlot's `s32 unk20`, the
+ * shape count. Instrumented at src/ovl7/ovl7_2.c:112, all 480 calls in a
+ * world 1-1 run read `anim->unk24 == 0x1`, and the first one to take the
+ * `hdr->unk4 == 0 && arg0 != 0` branch stored through 0x1 and SIGSEGVd:
+ *
+ *   [f410] id=33 ent=0x12f2e48 unk8C=0x11ff340 anim=0x12e9f80 hdr=0x11ff300
+ *          hdr4=0 arg0=0x17296d8 unk24=0x1
+ *
+ * reproduced 3/3 runs, crash frames func_8019F410_ovl7 (ovl7_2.c:112) <-
+ * func_80218248_ovl9 (ovl9_15.c:1230).
+ *
+ * Shape28 itself has no pointers, so ITS offsets are the N64's on both
+ * targets and Ovl7AnimCmd above needs no such arm. */
+#ifdef PORT
+struct Ovl7AnimObj {
+    u8 filler0[48];   /* = offsetof(struct CollSlot, unk24) at LP64 */
+    struct Ovl7AnimCmd *unk24;
+};
+#else
 struct Ovl7AnimObj {
     u8 filler0[0x24];
     struct Ovl7AnimCmd *unk24;
 };
+#endif
 
 /* Defined `void func_80111550(s32)` in ovl2_9.c:1525 and it takes an entity
  * id, not a pointer -- both call sites below pass omCurrentObj->objId. The
