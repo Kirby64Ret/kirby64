@@ -218,18 +218,36 @@ void func_800F62A4(UNUSED s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 201/224 instructions match (23 diffs); exact instruction
- * count, frame (0x28), every branch, call, offset and stack slot.
- * Residue is three register-name swaps with no source spelling behind
- * them: the D_800D6B18+8 address temp lands in $t7 where the ROM uses
- * $v1, and that rotates $v0/$v1 (D_800BE500 vs the constant 3) and
- * $a0/$a1 (D_800D799C base vs the loop index) for the rest of the
- * body.
- * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 23/224.
- * Tried hoisting the `*(u8**)(u32)(D_800D6B18+8) = var_v0;` write (lever 35
- * form, already applied and responsible for the earlier 187-diff win) into
- * a separate named `slot` local -- identical, zero change. The $t7/$v1
- * seed is not source-reachable. */
+/* FACTORY: 3/224 words DIFFER (was 23/224), measured 2026-08-25.
+ * Two independent causes were found, neither of them the "three register-name
+ * swaps with no source spelling behind them" the old note claimed:
+ *
+ * 1. LEVER 61 barrier, found by tools/decomp/barrier_sweep.py, not by reading.
+ *    An empty `do { } while (0);` immediately before the big
+ *    D_800BE500/D_800BE504/D_800BE534 dispatch is worth 23 -> 13. It emits
+ *    nothing; it stops IDO hoisting the dispatch's constant materialisations
+ *    up past the func_800A78D0 call, which is what rotated $v0/$v1 for the
+ *    rest of the body. The sweep tried 49 placements and this is the only one
+ *    that pays; a second sweep over the improved draft found none.
+ *
+ * 2. LEVER 62, worth 13 -> 3. The do-loop's `var_a0` is NOT a byte offset in
+ *    the source. Written as `var_a0 += 4` against `!= 8` it is a declared
+ *    local and takes $a0 before the loop-invariant `&D_800D799C` hoist, so
+ *    base and index land in each other's registers for all ten words of the
+ *    loop. Written as a COUNTER -- `var_a0 * 4` in the subscript, `+= 1`,
+ *    `!= 2` -- the byte offset becomes IDO's own strength-reduced induction
+ *    variable, it is created after the hoist, and the ROM's
+ *    $a1 = &D_800D799C / $a0 = offset assignment falls out. The ROM still
+ *    compares against 8, which is what makes the counter form invisible in
+ *    the listing.
+ *
+ * Remaining 3, and the spellings that do NOT move them: the
+ * `*(u8 **)(u32)(D_800D6B18 + 8)` address temp lands in $t7 where the ROM
+ * uses $v1 (the register next to the ohCreateCameraWrapper result it is
+ * about to store). Measured: `&D_800D6B18[8]` inside the cast, and
+ * `((u32)D_800D6B18 + 8)`, are both byte-identical at 3/224; storing the call
+ * expression directly instead of through var_v0 is 216/232, far worse. The
+ * LEVER 35 (u32) cast is load-bearing and must stay. */
 void func_800F64B0(void) {
     extern u16 D_800D6B30;
     extern u8 D_800D6B18[];
@@ -254,6 +272,7 @@ void func_800F64B0(void) {
     func_800AE0F0();
     func_800A6E64();
     func_800A78D0(0);
+    do { } while (0);
     if (((D_800BE500 == 6) && (D_800BE504 == 0) && (D_800BE534 == 2))
         || ((D_800BE500 == 5) && (D_800BE504 == 3))) {
         func_800A8724(2);
@@ -274,16 +293,16 @@ void func_800F64B0(void) {
     func_800A6BC0(5);
     var_a0 = 0;
     do {
-        var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 + 0x64);
+        var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 * 4 + 0x64);
         if (var_v0[4] == 6) {
             var_v0[4] = 0xC;
-            var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 + 0x64);
+            var_v0 = *(u8 **) ((u8 *) D_800D799C->data.ptr + var_a0 * 4 + 0x64);
         }
-        var_a0 += 4;
+        var_a0 += 1;
         if (var_v0[4] == 7) {
             var_v0[4] = 0xD;
         }
-    } while (var_a0 != 8);
+    } while (var_a0 != 2);
     var_a0 = *(s32 *) ((u8 *) D_801290D8 + 0xC);
     switch (var_a0) {
         case 0x27:
