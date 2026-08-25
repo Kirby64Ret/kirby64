@@ -1373,14 +1373,6 @@ void func_801D50E4_ovl9(struct GObj *arg0) {
     } while (gEntityFuncListIDArray[omCurrentObj->objId] == 0);
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 238/247 [was noted 9/247], frame 0x40 vs the ROM's 0x38 -- 8 bytes of locals we
-   reserve and the ROM does not, so arg0 homes at 0x40 instead of 0x38 and the
-   first branch displacement already differs.  Body order matches. */
-extern u32 D_8012BCA0;
-u32 eneCheckNearPlayer(f32);
-extern f32 func_800F9828(s32, s32);
-extern f32 func_8019B608_ovl7(s32);
 /* Flier steering watchdog (state-machine slot 1): while the player is
  * out of range, request despawn (func 4) once the D_800E98E0 cooldown
  * has drained.  In range, D_800E9AA0 holds the travel axis/direction
@@ -1393,170 +1385,79 @@ extern f32 func_8019B608_ovl7(s32);
  * (floor 0x1C0 / ceiling 0xE00 / right wall 0x38 / left wall 7).
  * Always drains the cooldown and runs the shared per-frame mover. */
 void func_801D52F0_ovl9(struct GObj *arg0) {
-    u32 id;
+    extern u32 D_8012BCA0;
+    u32 eneCheckNearPlayer(f32);
+    extern f32 func_800F9828(s32, s32);
+    extern f32 func_8019B608_ovl7(s32);
 
     if (eneCheckNearPlayer(25600.0f) != 0) {
-        id = omCurrentObj->objId;
-        if (D_800E98E0[id] <= 0) {
-            gEntityFuncListIDArray[id] = 4;
+        if (D_800E98E0[omCurrentObj->objId] <= 0) {
+            gEntityFuncListIDArray[omCurrentObj->objId] = 4;
         }
     } else {
+        f32 dx;
+        f32 dz;
+        f32 dy;
         f32 rel;
-        u32 st;
+        f32 dist;
 
-        id = omCurrentObj->objId;
-        st = D_800E9AA0[id].as_u32;
-        switch (st) {
+        switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
             case 0:
-                if ((gEntitiesNextPosYArray[0] + 20.0f) < gEntitiesNextPosYArray[id]) {
-                    gEntityFuncListIDArray[id] = 2;
+                if ((gEntitiesNextPosYArray[0] + 20.0f) < gEntitiesNextPosYArray[omCurrentObj->objId]) {
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
                 }
                 break;
             case 1:
-                if (gEntitiesNextPosYArray[id] < (gEntitiesNextPosYArray[0] + 20.0f)) {
-                    gEntityFuncListIDArray[id] = 2;
+                if (gEntitiesNextPosYArray[omCurrentObj->objId] < (gEntitiesNextPosYArray[0] + 20.0f)) {
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
                 }
                 break;
             case 2:
             case 3:
-                if (func_800F9828(id, 0) == 9999.0f) {
-                    f32 dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[id];
-                    f32 dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[id];
-
-                    rel = func_8019B608_ovl7(0) * sqrtf((dx * dx) + (dz * dz));
+                if (func_800F9828(omCurrentObj->objId, 0) == 9999.0f) {
+                    dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+                    dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
+                    rel = sqrtf((dx * dx) + (dz * dz)) * func_8019B608_ovl7(0);
                 } else {
                     rel = 0.0f;
                 }
-                if (st == 2) {
+                if (D_800E9AA0[omCurrentObj->objId].as_s32 == 2) {
                     if (rel > 0.0f) {
-                        gEntityFuncListIDArray[id] = 2;
+                        gEntityFuncListIDArray[omCurrentObj->objId] = 2;
                     }
                 } else if (rel < 0.0f) {
-                    gEntityFuncListIDArray[id] = 2;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 2;
                 }
                 break;
         }
-        switch (st) {
+        switch (D_800E9AA0[omCurrentObj->objId].as_s32) {
             case 0:
                 if ((D_8012BCA0 >> 0x13) & 0x1C0) {
-                    gEntityFuncListIDArray[id] = 1;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
                 }
                 break;
             case 1:
                 if ((D_8012BCA0 >> 0x13) & 0xE00) {
-                    gEntityFuncListIDArray[id] = 1;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
                 }
                 break;
             case 2:
                 if ((D_8012BCA0 >> 0x13) & 0x38) {
-                    gEntityFuncListIDArray[id] = 1;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
                 }
                 break;
             case 3:
                 if ((D_8012BCA0 >> 0x13) & 7) {
-                    gEntityFuncListIDArray[id] = 1;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 1;
                 }
                 break;
         }
     }
-    id = omCurrentObj->objId;
-    if (D_800E98E0[id] > 0) {
-        D_800E98E0[id]--;
-    }
-    func_8019F3B0_ovl7();
-}
-#elif defined(PORT)
-extern u32 D_8012BCA0;
-u32 eneCheckNearPlayer(f32);
-extern f32 func_800F9828(s32, s32);
-extern f32 func_8019B608_ovl7(s32);
-/* Flier steering watchdog (state-machine slot 1): while the player is
- * out of range, request despawn (func 4) once the D_800E98E0 cooldown
- * has drained.  In range, D_800E9AA0 holds the travel axis/direction
- * (0 up / 1 down / 2-3 horizontal): flip into the turn state (func 2)
- * when Kirby's foot point (+20 units) crosses to the other side of the
- * entity -- horizontally judged by the rail direction func_800F9828,
- * falling back to camera-heading (func_8019B608) times XZ distance when
- * the rail reports the 9999 sentinel -- then request landing (func 1)
- * when the collision contact matching the travel direction is present
- * (floor 0x1C0 / ceiling 0xE00 / right wall 0x38 / left wall 7).
- * Always drains the cooldown and runs the shared per-frame mover. */
-void func_801D52F0_ovl9(struct GObj *arg0) {
-    u32 id;
-
-    if (eneCheckNearPlayer(25600.0f) != 0) {
-        id = omCurrentObj->objId;
-        if (D_800E98E0[id] <= 0) {
-            gEntityFuncListIDArray[id] = 4;
-        }
-    } else {
-        f32 rel;
-        u32 st;
-
-        id = omCurrentObj->objId;
-        st = D_800E9AA0[id].as_u32;
-        switch (st) {
-            case 0:
-                if ((gEntitiesNextPosYArray[0] + 20.0f) < gEntitiesNextPosYArray[id]) {
-                    gEntityFuncListIDArray[id] = 2;
-                }
-                break;
-            case 1:
-                if (gEntitiesNextPosYArray[id] < (gEntitiesNextPosYArray[0] + 20.0f)) {
-                    gEntityFuncListIDArray[id] = 2;
-                }
-                break;
-            case 2:
-            case 3:
-                if (func_800F9828(id, 0) == 9999.0f) {
-                    f32 dx = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[id];
-                    f32 dz = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[id];
-
-                    rel = func_8019B608_ovl7(0) * sqrtf((dx * dx) + (dz * dz));
-                } else {
-                    rel = 0.0f;
-                }
-                if (st == 2) {
-                    if (rel > 0.0f) {
-                        gEntityFuncListIDArray[id] = 2;
-                    }
-                } else if (rel < 0.0f) {
-                    gEntityFuncListIDArray[id] = 2;
-                }
-                break;
-        }
-        switch (st) {
-            case 0:
-                if ((D_8012BCA0 >> 0x13) & 0x1C0) {
-                    gEntityFuncListIDArray[id] = 1;
-                }
-                break;
-            case 1:
-                if ((D_8012BCA0 >> 0x13) & 0xE00) {
-                    gEntityFuncListIDArray[id] = 1;
-                }
-                break;
-            case 2:
-                if ((D_8012BCA0 >> 0x13) & 0x38) {
-                    gEntityFuncListIDArray[id] = 1;
-                }
-                break;
-            case 3:
-                if ((D_8012BCA0 >> 0x13) & 7) {
-                    gEntityFuncListIDArray[id] = 1;
-                }
-                break;
-        }
-    }
-    id = omCurrentObj->objId;
-    if (D_800E98E0[id] > 0) {
-        D_800E98E0[id]--;
+    if (D_800E98E0[omCurrentObj->objId] > 0) {
+        D_800E98E0[omCurrentObj->objId]--;
     }
     func_8019F3B0_ovl7();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D52F0_ovl9.s")
-#endif
 
 /* D_8021CEAC_ovl9: literal, this TU owns its .rodata */
 extern f32 func_800F9828(s32, s32);
