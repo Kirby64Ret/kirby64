@@ -67,6 +67,11 @@ import re
 WORD = re.compile(r'^\s*/\* \w+ \w+ ([0-9A-Fa-f]{8}) \*/\s*\S', re.M)
 
 
+# (vram, word) for each instruction line -- the swallowed-function test needs
+# the address, not just the encoding.
+ADDRWORD = re.compile(r'/\*\s*[0-9A-Fa-f]+\s+([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{8})\s*\*/')
+
+
 def classify(listing_path, func):
     try:
         txt = open(listing_path).read()
@@ -79,6 +84,35 @@ def classify(listing_path, func):
         pass
     if m is None:
         return 'clean', 0
+    # FIFTH CLASS: a whole function SWALLOWED INSIDE this .size. When splat
+    # has no name for a tiny function it merges it into the previous symbol,
+    # so the listing contains a `jr $ra` + `nop` that is NOT the last pair
+    # before .size -- there is code after a return. Those bytes are real
+    # instructions, not padding, so nothing after .size looks wrong and every
+    # check below reports 'clean'. n_alSavePull is the example: its .size
+    # swallows eight bytes at 0x800299F0 and alAudioFrame starts at
+    # 0x800299F8. It is CONVERTIBLE -- write the swallowed function out in C,
+    # as ovl5_2.c does for func_80160A70_ovl5 -- but not by un-guarding alone.
+    #
+    # A `jr $ra` in the MIDDLE of a function is an ordinary early return, so
+    # the tell is not the return itself: it is that only a SMALL remnant
+    # follows (a whole extra function of a few words) and that the remnant
+    # starts on a 16-byte boundary, which is where the linker would have put
+    # a separate object's function. Without the size and alignment tests this
+    # fires on every early return -- 14 listings instead of 12, including two
+    # with 126 and 101 words of ordinary code after the first return.
+    body = txt[:m.start()]
+    bpairs = ADDRWORD.findall(body)
+    for i in range(len(bpairs) - 2):
+        if int(bpairs[i][1], 16) == 0x03E00008 and int(bpairs[i + 1][1], 16) == 0:
+            rest = bpairs[i + 2:]
+            if not rest or not any(int(w, 16) != 0 for _, w in rest):
+                continue
+            # Size is the discriminator, NOT alignment: func_80161424_ovl5
+            # sits at +4, so an alignment test drops real instances.
+            if len(rest) <= 4:
+                return 'swallowed', len(rest)
+
     tail = txt[m.end():]
     tail = tail[tail.find('\n') + 1:]
     words = WORD.findall(tail)
