@@ -56,7 +56,7 @@ extern MultiType D_800DFBD0_as_multitype[];
 
 extern s32 D_800E0110[];
 extern s32 D_800DFF50[];
-extern s32 D_800E02D0[];
+extern s32 gEntityGeoFileNameArray[];
 
 extern f32 D_800E2410[];
 extern f32 D_800E2250[];

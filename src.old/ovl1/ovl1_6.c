@@ -50,7 +50,7 @@ void initTrack(s32 track) {
 
     gEntityGeoDataArray[track] = (void *) (D_800DF690[track] = D_800DF850[track] = -1);
 
-    D_800E02D0[track] = D_800DFF50[track] = D_800E0110[track] = -1 + 1 - 1;
+    gEntityGeoFileNameArray[track] = D_800DFF50[track] = D_800E0110[track] = -1 + 1 - 1;
 
     D_800DFBD0[track] = (void *)-1;
 

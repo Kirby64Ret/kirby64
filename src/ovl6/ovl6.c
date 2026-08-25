@@ -1378,7 +1378,7 @@ void func_80153228_ovl6(s32 arg0) {
 
     temp_v0 = arg0 * 4;
     temp_v1 = *(&D_800DE350 + temp_v0);
-    sp18 = *(&D_800E02D0 + temp_v0);
+    sp18 = *(&gEntityGeoFileNameArray + temp_v0);
     temp_a1 = temp_v1->unk2C;
     if ((&func_800AD1A0 == temp_a1) || (&func_801548F8_ovl6 == temp_a1)) {
         temp_a0 = temp_v1->unk4C;
@@ -1962,7 +1962,7 @@ void *func_80153F2C_ovl6(void) {
     sp24 = temp_v0_3;
     omEndProcess(*(&gEntityGObjProcessArray2 + temp_v0_3));
     omEndProcess(*(&gEntityGObjProcessArray5 + sp24));
-    *(&D_800E02D0 + sp24) = D_8015A560_ovl6->unk4;
+    *(&gEntityGeoFileNameArray + sp24) = D_8015A560_ovl6->unk4;
     temp_v0 = func_800AC954(omCurrentObj, 1, func_800A8C40(D_8015A560_ovl6->unk4));
     sp30 = temp_v0;
     temp_v0->unk13 = temp_v0->unk13 | 4;
@@ -2377,7 +2377,7 @@ void func_80154938_ovl6(void) {
     } else {
         var_a0 = 0x40001;
     }
-    *(&D_800E02D0 + sp20) = var_a0;
+    *(&gEntityGeoFileNameArray + sp20) = var_a0;
     sp30 = func_800AC954(sp34, 0, func_800A8C40(var_a0));
     omLinkGObjDL(sp34, &func_801548F8_ovl6, 0x12, 0x10, 0x12);
     sp30->unk20 = 10.0f;

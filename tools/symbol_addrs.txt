@@ -158,6 +158,7 @@ gEntityGObjProcessArray3=0x800DE890;
 gEntityGObjProcessArray4=0x800DEA50;
 gEntityGObjProcessArray5=0x800DEC10;
 gEntityGeoDataArray=0x800df4d0;
+gEntityGeoFileNameArray=0x800E02D0;
 gEntitiesNextPosXArray=0x800e25d0;
 gEntitiesNextPosYArray=0x800e2790;
 gEntitiesNextPosZArray=0x800e2950;

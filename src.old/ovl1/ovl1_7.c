@@ -228,7 +228,7 @@ u32 func_800AF7EC(u32 arg0, u8 arg1, u8 flags, u8 mode) {
     if (sprite == NULL) {
         return 0;
     }
-    D_800E02D0[omCurrentObj->objId] = arg0;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = arg0;
     sprite->renderFlags |= flags;
     func_8000A5FC(omCurrentObj, func_800AD1A0, arg1, 0x80000000, arg1);
     return 1;

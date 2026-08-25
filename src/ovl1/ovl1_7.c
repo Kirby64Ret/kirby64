@@ -403,7 +403,7 @@ s32 func_800AF7EC(GObj *gobj, u8 link, u8 flags, u8 arg3) {
     if (sprite == NULL) {
         return 0;
     }
-    D_800E02D0[omCurrentObj->objId] = gobj;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = gobj;
     sprite->renderFlags |= flags;
     omLinkGObjDL(omCurrentObj, &func_800AD1A0, link, 0x80000000, link);
     return 1;

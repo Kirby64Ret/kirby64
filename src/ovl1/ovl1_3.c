@@ -11,11 +11,14 @@
 #include "ovl1/ovl1_7.h"
 
 // All the filesystem loading magic happens here
-extern u32 **D_800D00C4[];
+extern struct GeometryBlockHeader **D_800D00C4[];
 
 // not in this file?
 extern u32 *D_800DFA10[];
 extern u32 *D_800DFD90[];
+
+extern u32 D_800D6E68[];
+extern u32 D_800D6E6C[];
 
 extern struct BankHeader *gFileTable[8];
 
@@ -24,9 +27,11 @@ s32 func_800A9B48(s32 arg0);
 s32 func_800A9C78(s32 arg0, s32 arg1);
 
 #define FILE_ALIGN4(x) (((x) + 3) & 0xFFFFFC)
+#define FILE_MASK4(x) ((x) & 0xFFFFFC)
 
 // In this file
 void func_800B1FD0(DObj *, u32, f32, u32, f32);
+struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header);
 
 #ifdef MIPS_TO_C
 
@@ -472,30 +477,17 @@ s32 func_800A8A7C(u32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8A7C.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+void *func_800A8B0C(u32 file, s32 arg1) {
+    struct BankHeader *bank = gFileTable[file >> 0x10];
+    s32 fileIndex = file & 0xFFFF;
+    u32 *offsets = &bank->imageBlockTable[fileIndex];
+    s32 size = FILE_ALIGN4(offsets[1] - offsets[0]);
+    void *vram = func_800A8358(size | arg1, fileIndex);
 
-void *func_800A8B0C(u32 arg0, s32 arg1) {
-    s32 sp24;
-    void *sp20;
-    u32 *sp1C;
-    u32 *sp18;
-    s32 temp_a2;
-    s32 temp_a3;
-    struct BankHeader *temp_v0_2;
-    u32 *temp_v1;
-    void *temp_v0;
+    dma_read(bank->imageROMOffset + offsets[0], vram, FILE_MASK4(size));
 
-    temp_v0_2 = gFileTable[arg0 >> 0x10];
-    temp_a2 = arg0 & 0xFFFF;
-    temp_v1 = &temp_v0_2->imageBlockTable[temp_a2];
-    sp18 = temp_v0_2->imageROMOffset;
-    temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
-    sp24 = temp_a3;
-    sp1C = temp_v1;
-    temp_v0 = func_800A8358(temp_a3 | arg1, temp_a2, temp_a3);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC);
-    return temp_v0;
+    return vram;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8B0C.s")
@@ -557,25 +549,17 @@ s32 func_800A8C40(u32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
+void *func_800A8CE0(u32 file, s32 arg1) {
+    s32 size;
+    s32 index = (file & 0xFFFF) * 2;
+    u32 *offsets = &gFileTable[file >> 0x10]->geoBlockTable[index];
+    void *vram;
 
-void *func_800A8CE0(u32 arg0, s32 arg1) {
-    s32 sp2C;
-    void *sp20;
-    u32 *sp1C;
-    s32 temp_a0;
-    s32 temp_a2;
-    u32 *temp_v1;
-    void *temp_v0;
+    size = (offsets[1] - offsets[0]) | arg1;
+    vram = func_800A8358(size, index);
+    dma_read(offsets[0], vram, size & 0xFFFFFC);
 
-    temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_v1 = &gFileTable[arg0 >> 0x10]->geoBlockTable[temp_a2];
-    sp1C = temp_v1;
-    temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | arg1;
-    sp2C = temp_a0;
-    temp_v0 = func_800A8358(temp_a0, temp_a2);
-    sp20 = temp_v0;
-    dma_read(temp_v1->unk0, temp_v0, sp2C & 0xFFFFFC);
-    return temp_v0;
+    return vram;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
@@ -587,8 +571,8 @@ void func_800A8D64(u32 arg0, s32 arg1) {
     s32 sp20;
     s32 temp_a1;
     s32 temp_v1;
-    u32 ***temp_s0;
-    u32 *temp_s1;
+    struct GeometryBlockHeader ***temp_s0;
+    struct GeometryBlockHeader *temp_s1;
     u32 *var_s0;
     u32 temp_v0;
     u32 var_v1;
@@ -600,7 +584,7 @@ void func_800A8D64(u32 arg0, s32 arg1) {
         sp20 = temp_v1 * 4;
         if (func_800A8578(temp_s1 | arg1) == 0) {
             (*temp_s0)[temp_v1] = NULL;
-            var_s0 = temp_s1->unkC;
+            var_s0 = temp_s1->imgRefs;
             var_v1 = *var_s0;
             if (var_v1 != 0) {
                 do {
@@ -644,70 +628,50 @@ void func_800A8E54(u32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8E54.s")
 #endif
 
-#ifdef MIPS_TO_C
+// https://decomp.me/scratch/Bfi6t
+#ifdef NON_MATCHING
+void func_800A8EC0(u32 file) {
+    struct GeometryBlockHeader **sp18;
+    s32 foundIndex;
+    s32 i;
+    struct GeometryBlockHeader **modelPtr;
 
-void func_800A8EC0(u32 arg0) {
-    u32 **sp18;
-    GObj *temp_v1;
-    s32 *var_v0_3;
-    s32 temp_t2;
-    s32 var_a1;
-    s32 var_v0_2;
-    s32 var_v1;
-    s32 var_v1_2;
-    u32 **temp_a2;
-    u32 **var_at;
-    u32 *temp_t1;
-    u32 *var_v0;
-    u32 *var_v0_4;
-
-    var_a1 = -1;
-    var_v0 = &D_800D6E68;
-    var_v1 = 0;
-    do {
-        if (arg0 == *var_v0) {
-            var_a1 = var_v1;
+    foundIndex = -1;
+    for (i = 0; i < 3; i++) {
+        if (file == D_800D6E68[i]) {
+            foundIndex = i;
         }
-        var_v1 += 1;
-        var_v0 += 4;
-    } while (var_v1 < 3);
-    if (var_a1 != -1) {
-        var_v0_2 = 2;
-        var_v1_2 = 2;
-        do {
-            if (var_a1 != var_v1_2) {
-                temp_t1 = &(&D_800D6E68)[var_v0_2];
-                var_v0_2 -= 1;
-                *temp_t1 = (&D_800D6E68)[var_v1_2];
+    }
+    if (foundIndex != -1) {
+        s32 val2;
+
+        for (i = 2, val2 = 2; i >= 0; i--) {
+            if (foundIndex != i) {
+                D_800D6E68[val2] = D_800D6E68[i];
+                val2 -= 1;
             }
-            var_v1_2 -= 1;
-        } while (var_v1_2 >= 0);
-    } else {
-        if (D_800D6E68.unk8 != 0) {
-            func_800A8D64(D_800D6E68.unk8, 3, &D_800D6E68, arg0);
         }
-        var_v0_3 = &D_800D6E6C;
-        do {
-            temp_t2 = *var_v0_3;
-            var_v0_3 -= 4;
-            var_v0_3->unk8 = temp_t2;
-        } while (var_v0_3 >= &D_800D6E68);
-    }
-    D_800D6E68.unk0 = arg0;
-    temp_v1 = omCurrentObj;
-    D_800E02D0[temp_v1->objId] = arg0;
-    temp_a2 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
-    var_v0_4 = *temp_a2;
-    if (var_v0_4 != NULL) {
-        var_at = &gEntityGeoDataArray[temp_v1->objId];
     } else {
-        sp18 = temp_a2;
-        var_v0_4 = func_800A9250(arg0, 3, temp_a2, arg0);
-        *temp_a2 = var_v0_4;
-        var_at = &gEntityGeoDataArray[omCurrentObj->objId];
+        if (D_800D6E68[2] != 0) {
+            func_800A8D64(D_800D6E68[2], 3);
+        }
+
+        i = 0;
+        while (i < 1) {
+            D_800D6E68[2] = D_800D6E6C[i];
+            i++;
+        }
     }
-    *var_at = var_v0_4;
-    func_800A9D64(temp_v1->objId);
+    D_800D6E68[0] = file;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = file;
+    modelPtr = &D_800D00C4[file >> 0x10][file & 0xFFFF];
+    if (*modelPtr != NULL) {
+        gEntityGeoDataArray[omCurrentObj->objId] = *modelPtr;
+    } else {
+        *modelPtr = func_800A9250(file, 3);
+    }
+    gEntityGeoDataArray[omCurrentObj->objId] = *modelPtr;
+    func_800A9D64(omCurrentObj->objId);
     func_800A99E4(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
@@ -719,8 +683,8 @@ void func_800A8EC0(u32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_800A9088(u32 arg0) {
-    u32 **sp20;
-    u32 *sp1C;
+    struct GeometryBlockHeader **sp20;
+    struct GeometryBlockHeader *sp1C;
     GObj *temp_v1;
     s32 *var_v0_3;
     s32 temp_t2;
@@ -728,10 +692,10 @@ void func_800A9088(u32 arg0) {
     s32 var_v0_2;
     s32 var_v1;
     s32 var_v1_2;
-    u32 **temp_a2;
-    u32 *temp_a0;
+    struct GeometryBlockHeader **temp_a2;
+    struct GeometryBlockHeader *temp_a0;
+    struct GeometryBlockHeader *temp_v0;
     u32 *temp_t1;
-    u32 *temp_v0;
     u32 *var_v0;
 
     var_a1 = -1;
@@ -768,7 +732,7 @@ void func_800A9088(u32 arg0) {
     }
     D_800D6E78.unk0 = arg0;
     temp_v1 = omCurrentObj;
-    D_800E02D0[temp_v1->objId] = arg0;
+    gEntityGeoFileNameArray[temp_v1->objId] = arg0;
     temp_a2 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
     temp_a0 = *temp_a2;
     if (temp_a0 != NULL) {
@@ -1062,14 +1026,13 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
 }
 
 #ifdef MIPS_TO_C
-
 void func_800A9760(u32 arg0) {
-    u32 **sp1C;
-    u32 **temp_a2;
-    u32 *temp_v0;
-    u32 *temp_v0_2;
+    struct GeometryBlockHeader **sp1C;
+    struct GeometryBlockHeader **temp_a2;
+    struct GeometryBlockHeader *temp_v0;
+    struct GeometryBlockHeader *temp_v0_2;
 
-    D_800E02D0[omCurrentObj->objId] = arg0;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = arg0;
     temp_a2 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
     temp_v0 = *temp_a2;
     if (temp_v0 != NULL) {
@@ -1093,15 +1056,15 @@ void func_800A9760(u32 arg0) {
 #ifdef MIPS_TO_C
 
 void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
-    u32 *sp1C;
-    u32 **sp18;
+    struct GeometryBlockHeader *sp1C;
+    struct GeometryBlockHeader **sp18;
     f32 var_f16;
     f32 var_f6;
-    u32 **temp_a3;
-    u32 *temp_t0;
-    u32 *temp_v0;
+    struct GeometryBlockHeader **temp_a3;
+    struct GeometryBlockHeader *temp_t0;
+    struct GeometryBlockHeader *temp_v0;
 
-    D_800E02D0[omCurrentObj->objId] = arg0;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = arg0;
     temp_a3 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
     temp_t0 = *temp_a3;
     if (temp_t0 != NULL) {
@@ -1121,7 +1084,7 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
         var_f6 += 4294967296.0f;
     }
     if (var_f6 == 99999.0f) {
-        arg1 = sp1C->unk8;
+        arg1 = sp1C->layoutMode;
     }
     var_f16 = arg2;
     if (arg2 < 0) {
@@ -1146,17 +1109,15 @@ void func_800A99E4(s32 track) {
     D_800DFBD0[track] = (struct DObj**)-1;
 }
 
-#ifdef MIPS_TO_C
+#ifdef NON_MATCHING
+void func_800A9A2C(s32 track) {
+    u32 lenLayout = gEntityGeoDataArray[track]->lenLayout;
 
-void func_800A9A2C(s32 arg0) {
-    s32 temp_v1;
-
-    temp_v1 = gEntityGeoDataArray[arg0]->unk1C;
-    if (temp_v1 == 0) {
+    if (lenLayout == 0) {
         D_800DFBD0[omCurrentObj->objId] = -1;
-        return;
+    } else {
+        D_800DFBD0[omCurrentObj->objId] = func_800A8358((lenLayout * 4) | 1);
     }
-    D_800DFBD0[omCurrentObj->objId] = func_800A8358((temp_v1 * 4) | 1);
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9A2C.s")
@@ -1474,13 +1435,13 @@ loop_1:
 #ifdef MIPS_TO_C
 
 void func_800AA49C(u32 *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
-    u32 **sp24;
-    u32 **temp_v1;
-    u32 *temp_a2;
-    u32 *temp_v0;
+    struct GeometryBlockHeader **sp24;
+    struct GeometryBlockHeader **temp_v1;
+    struct GeometryBlockHeader *temp_a2;
+    struct GeometryBlockHeader *temp_v0;
     u32 temp_v1_2;
 
-    D_800E02D0[omCurrentObj->objId] = arg3;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = arg3;
     D_800DFD90[omCurrentObj->objId] = arg0;
     temp_v1 = &D_800D00C4[arg3 >> 0x10][arg3 & 0xFFFF];
     temp_a2 = *temp_v1;
@@ -1512,24 +1473,24 @@ void func_800AA5C4(s32 arg0, ? arg1, f32 arg2) {
 
 // https://decomp.me/scratch/fS0Iu
 void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
-    u32 *tmpPtr;
+    struct GeometryBlockHeader *tmpPtr;
     u32 **modelPtr = &D_800D00C4[model >> 16][model & 0xFFFF];
     u32 **new_var = modelPtr;
 
-    D_800E02D0[omCurrentObj->objId] = model;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = model;
     if (*modelPtr != NULL) {
-        u32 *tmp = *modelPtr;
+        struct GeometryBlockHeader *tmp = *modelPtr;
         gEntityGeoDataArray[omCurrentObj->objId] = tmp;
         tmpPtr = tmp;
         func_800A8564(*new_var, 1);
     } else {
-        u32 *result = func_800A9250(model, 3);
+        struct GeometryBlockHeader *result = func_800A9250(model, 3);
         *modelPtr = result;
         gEntityGeoDataArray[omCurrentObj->objId] = result;
         tmpPtr = result;
     }
-    D_800DFA10[omCurrentObj->objId] = tmpPtr[0];
-    D_800DFD90[omCurrentObj->objId] = tmpPtr[1];
+    D_800DFA10[omCurrentObj->objId] = tmpPtr->layout;
+    D_800DFD90[omCurrentObj->objId] = tmpPtr->texScroll;
     func_800A9B48(arg1);
     func_800B1FD0(
         dobj,
@@ -1614,13 +1575,13 @@ void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, ? arg3, f32 arg4) {
     s32 *var_s1;
     s32 temp_s2;
     s32 var_s0;
-    u32 **temp_s0;
-    u32 *temp_v0;
-    u32 *temp_v1;
+    struct GeometryBlockHeader **temp_s0;
+    struct GeometryBlockHeader *temp_v0;
+    struct GeometryBlockHeader *temp_v1;
     u32 temp_s3;
     u32 temp_v1_2;
 
-    D_800E02D0[omCurrentObj->objId] = arg1;
+    gEntityGeoFileNameArray[omCurrentObj->objId] = arg1;
     temp_s0 = &D_800D00C4[arg1 >> 0x10][arg1 & 0xFFFF];
     temp_v1 = *temp_s0;
     if (temp_v1 != NULL) {
