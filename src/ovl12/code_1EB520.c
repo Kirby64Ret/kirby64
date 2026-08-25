@@ -657,31 +657,33 @@ void func_801DD3A8_ovl12(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* FACTORY: 28/66, register-shaped: ROM holds the literal 1 in $a0 and the
-   D_800D7098 base in $a1; IDO gives the base $a0 and re-materialises the 1
-   into $at at each compare.  Structure, lengths and all three branches are
-   the ROM's.  Yoda compare order and addend swap tried. */
-#ifdef NON_MATCHING
+/* `s32 one; one = 1;` is load-bearing.  The ROM holds the literal 1 in an
+   ALLOCATABLE register ($a0) shared by both `== 1` compares and the `+= 1`;
+   spelled as three literals IDO re-materialises it into $at, which is not
+   allocatable, so it has one more free temp and every temp in the function
+   rotates one slot.  That is the 28/66 the old note called register-shaped.
+   The distinction the note missed: an INITIALISER (`s32 one = 1;`) is folded
+   back to the literal -- it has to be a separate assignment STATEMENT.
+   Found by the permuter. */
 void func_801DD400_ovl12(GObj *arg0) {
     s32 temp = gEntityFuncListIDArray[omCurrentObj->objId] + D_800E9560[omCurrentObj->objId];
+    s32 one;
 
-    if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
-        D_800E9560[omCurrentObj->objId] += 1;
+    one = 1;
+    if ((D_800D7098.unk8 == one) || (D_800D7098.unk10 == 0)) {
+        D_800E9560[omCurrentObj->objId] += one;
         gEntityFuncListIDArray[omCurrentObj->objId] = temp;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCFE4_ovl12);
     } else {
         if (D_800D7098.unk10 == 0) {
             func_801DCDFC_ovl12();
         }
-        if ((D_800D7098.unkC == 1) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
+        if ((D_800D7098.unkC == one) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
             func_801DCCC4_ovl12();
             func_801DCD70_ovl12();
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl12/code_1EB520/func_801DD400_ovl12.s")
-#endif
 
 void func_801DD508_ovl12(GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 3;
@@ -824,19 +826,25 @@ void func_801DDCDC_ovl12(GObj *arg0) {
     curObjSleepForever();
 }
 
-/* FACTORY: 54/100, and it is ONE cause -- the same one that blocks its twin
-   func_801DD400_ovl12.  The ROM materialises the literal 1 into an allocatable
-   temp ($t2 here, $a0 in the twin) and compares constant-first; IDO puts it in
-   $at, which is not allocatable, so IDO has one more free temp and every
-   temp register in the function rotates one slot.  Structure, length (100),
-   all block boundaries and all branch shapes are the ROM's.  Levers already
-   spent: Yoda compare order, and binding the 1 to an s32 local (IDO folds it).
-   Whatever moves this moves BOTH functions. */
+/* FACTORY: 47/100 (was 54).  The twin's cause -- `s32 one; one = 1;` as a
+   separate assignment STATEMENT feeding both `== 1` compares -- is real here
+   too and is worth 7 words, but unlike func_801DD400_ovl12 it does not close
+   this one.  The old note's "binding the 1 to an s32 local (IDO folds it)"
+   was an INITIALISER; a statement is not folded, which is the distinction.
+   Measured 2026-08-25 and negative: extending `one` to the `+= 1` and the
+   `temp - 1` as well scores 47 too, identical -- IDO folds both into addiu
+   immediates either way (the ROM has `addiu $t4, $t0, 1` and
+   `addiu $v0, $v0, -1`), so the literal spelling is kept for those two.
+   What is left is a genuine temp rotation: the ROM computes `temp` into $v0
+   and decrements it IN PLACE ($v0 -> $v0), where IDO keeps temp in $t0 and
+   puts temp-1 in $t5, renaming every temp downstream. */
 #ifdef NON_MATCHING
 void func_801DDDA8_ovl12(GObj *arg0) {
     s32 temp = gEntityFuncListIDArray[omCurrentObj->objId] + D_800E9560[omCurrentObj->objId];
+    s32 one;
 
-    if ((D_800D7098.unk8 == 1) || (D_800D7098.unk10 == 0)) {
+    one = 1;
+    if ((D_800D7098.unk8 == one) || (D_800D7098.unk10 == 0)) {
         D_800E9560[omCurrentObj->objId] += 1;
         gEntityFuncListIDArray[omCurrentObj->objId] = temp - 1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DD924_ovl12);
@@ -850,7 +858,7 @@ void func_801DDDA8_ovl12(GObj *arg0) {
         if (D_800D7098.unk10 == 0) {
             func_801DCDFC_ovl12();
         }
-        if ((D_800D7098.unkC == 1) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
+        if ((D_800D7098.unkC == one) && ((s32) D_800E9AA0[omCurrentObj->objId] == 1)) {
             func_801DCCC4_ovl12();
             func_801DCD70_ovl12();
         }
