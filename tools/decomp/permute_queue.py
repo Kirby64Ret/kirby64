@@ -45,8 +45,28 @@ LOG = os.path.join(PERM, '_queue.log')
 
 os.chdir(REPO)
 
+# THREE GUARD FORMS ARE IN USE AND THE FIRST VERSION OF THIS SAW ONE.
+#
+#   #ifdef NON_MATCHING                        the common case
+#   #ifdef MIPS_TO_C                           same, other spelling
+#   #if defined(MIPS_TO_C) || defined(PORT)    "one arm serves both", used
+#                                              where nothing in the draft is
+#                                              N64-only so the port shares it
+#   #ifdef NON_MATCHING // complex math ...     a trailing comment
+#
+# `#ifdef X\s*$` matches only the first two and only without a comment, so 24
+# guarded drafts out of 755 were invisible to the queue -- 21 of them the
+# `defined(A) || defined(B)` form. That included func_801E05A8_ovl15, 615
+# words at a residue of 2, which is the largest near-miss in the tree; the
+# runner reported "does not contain any function!" and moved on, which reads
+# like a broken function rather than a guard this regex cannot parse.
+#
+# Deliberately NOT matched: `#if !defined(MIPS_TO_C) && !defined(PORT)`. That
+# arm is taken when neither is defined, which is the ROM build -- a draft
+# there is LIVE, not guarded, and check_live_pragmas.py owns that case.
 GUARD = re.compile(
-    r'#ifdef (?:NON_MATCHING|MIPS_TO_C)\s*$.*?^#pragma GLOBAL_ASM\("([^"]+)"\)',
+    r'#if(?:def)?[ \t]+(?![!\s]*!)(?=[^\n]*(?:NON_MATCHING|MIPS_TO_C))'
+    r'[^\n]*$.*?^#pragma GLOBAL_ASM\("([^"]+)"\)',
     re.M | re.S)
 
 
