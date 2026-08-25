@@ -182,12 +182,20 @@ not a mystery. Round the address UP to the next multiple of 16 and let the
 object's own alignment fill supply the words below it; alignment fill is zero
 and `nop` encodes as zero, which is why the two halves are interchangeable.
 
-STILL OPEN on that function: with the green pad in AND the draft un-guarded,
-the coordinator measured 29 real defects. My own build of that combination was
-contaminated by another lane's -512 in ovl5_5.c, so there is no clean
-measurement of it yet, and 29 is far too FEW defects for a 12-byte shift of
-everything after ovl9_8 -- get the defect LIST before theorising. Gate the pad
-guarded first; only then un-guard.
+SETTLED, and the coordinator's 29 defects were NOT this pad. I measured them
+while func_800B2340's third parameter was retyped tree-wide in my working
+copy; the retype reaches src/ovl5/ovl5_4.c through ovl1/ovl1_7.h and all 29 are
+in ovl5, func_8016C410_ovl5 through func_8016F3C4_ovl5 (see commit a05830ba and
+func_801D6534_ovl8's note). The lane that owned ovl9 refuted the attribution the
+right way -- it reverted both the pad and the un-guard, rebuilt, got the SAME
+sha1 a6c1a859 and the SAME 29, and byte-diffed ovl9, ovl9_8, ovl15 and ovl16 at
+zero. Two configurations differing by a pad cannot share a 160-bit hash unless
+the difference is zero bytes.
+
+So the pad at 0x1A9AE0 is byte-inert and func_801FB9DC_ovl9's closure is real.
+The general lesson is the one that cost the time: **isolate before attributing.
+A red tree with four lanes in it tells you nothing about whose change made it
+red until you have reverted one thing at a time.**
 
 **TWO BUILD-SYSTEM TRAPS THAT MAKE A CORRECT YAML EDIT PRODUCE A WRONG ROM,**
 and either of them alone reproduces the "it broke and I don't know why" report:
