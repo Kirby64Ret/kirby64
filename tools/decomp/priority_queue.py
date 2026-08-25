@@ -59,10 +59,14 @@ TARGETS = [
     # A stale queue is worse than a short one. Re-derive it after any
     # measure_seeds run; never from the FACTORY notes (124 of them currently
     # disagree with the measurement, in both directions).
-    (  1, 'src/ovl5/ovl5_3.c', 'func_80165440_ovl5'),
+    # func_80165440_ovl5 REMOVED 2026-08-25: closed by the ovl5 rodata split.
     (  1, 'src/ovl4/ovl4_3.c', 'func_80157028_ovl4'),
-    (  1, 'src/ovl3/kirby.c', 'func_8016DA14_ovl3'),
-    (  2, 'src/ovl1/ovl1_3.c', 'func_800A8CE0'),
+    # func_8016DA14_ovl3 REMOVED 2026-08-25: the permuter reaches score 0 on
+    # it only by retyping func_801230E8's third parameter, which contradicts
+    # the matched definition in plylib.c and fails the ROM gate every time.
+    # Left in, it re-finds the same illegal answer on every pass. See the
+    # note over the draft in src/ovl3/kirby.c.
+    # func_800A8CE0 REMOVED 2026-08-25: closed by hand, see LEVER 60.
     (  2, 'src/ovl11/ovl11_2.c', 'func_801E00B8_ovl11'),
     (  2, 'src/ovl5/ovl5_5.c', 'func_801720D8_ovl5'),
     (  2, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),

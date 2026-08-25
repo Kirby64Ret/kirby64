@@ -1502,8 +1502,23 @@ extern void func_8012307C(s32, s32, f32, s32);
  * the assignment those two swap and the whole saved-register file rotates.
  * Do not "simplify" it again.
  *
- * A one-word constant-materialisation choice is what mutation reaches and
- * source spelling does not, so this sits in priority_queue.py's TARGETS. */
+ * THE PERMUTER HAS ANSWERED AND THE ANSWER IS NOT USABLE, 2026-08-25. It
+ * reaches score 0 by retyping the callee:
+ *     void func_801230E8(s32, s32, volatile unsigned short);
+ * which stops IDO folding the argument to the register already holding 1 and
+ * produces the ROM's `addiu $a2, $zero, 0x1`. It is byte-exact in the
+ * permuter's preprocessed blob and it fails the linked-ROM gate, because
+ * func_801230E8 is DEFINED and matched in src/ovl2/plylib.c:4881 as
+ * `void func_801230E8(s32 arg0, s32 arg1, s32 arg2)` -- it hands arg2
+ * straight to func_8012307C -- so the retype contradicts the definition and
+ * is a matching crutch rather than a type clarification.
+ *
+ * The legal version of the same idea does not work: `(u16) 1`, `(s16) 1` and
+ * `1U` at the call site are each byte-identical at 1/190, because IDO folds a
+ * constant conversion before value numbering. There is no source spelling
+ * left, so this is REMOVED from priority_queue.py's TARGETS -- left in, the
+ * permuter re-finds the same illegal answer every pass and factory rejects it
+ * every pass. */
 void func_8016DA14_ovl3(GObj *arg0) {
     f32 temp;
     f32 temp2;
