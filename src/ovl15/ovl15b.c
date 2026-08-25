@@ -190,7 +190,7 @@ void func_801E0380_ovl15(struct GObj *);
 void func_801E05A8_ovl15(struct GObj *);
 void func_801E0F44_ovl15(struct GObj *);
 void func_801E1230_ovl15(s32);
-void func_801E1F34_ovl15(void);
+void func_801E1F34_ovl15(struct GObj *);
 void func_801E27BC_ovl15(struct GObj *);
 void func_801E30F8_ovl15(struct GObj *);
 void func_801E3678_ovl15(struct GObj *);

@@ -183,7 +183,7 @@ void func_801E0380_ovl15(struct GObj *);
 void func_801E05A8_ovl15(struct GObj *);
 void func_801E0F44_ovl15(struct GObj *);
 void func_801E1230_ovl15(s32);
-void func_801E1F34_ovl15(void);
+void func_801E1F34_ovl15(struct GObj *);
 void func_801E27BC_ovl15(struct GObj *);
 void func_801E30F8_ovl15(struct GObj *);
 void func_801E3678_ovl15(struct GObj *);
@@ -2215,8 +2215,25 @@ void func_801E1E88_ovl15(struct GObj *arg0) {
    the literal 1 loaded once at 801E21A8 -- which is where m2c's `!= 1`
    came from. The value is consumed by the test it feeds and never lives
    across another call, so one local serves all six sites.
-   Same defect and same fix as the note in src/ovl5/ovl5_7.c. */
-void func_801E1F34_ovl15(void) {
+   Same defect and same fix as the note in src/ovl5/ovl5_7.c.
+
+   LEVER 58 applies and is worth 2 words, 463/554 -> 461/554. The head really
+   is (GObj *): `jal func_800F8E6C` at 801E2064 is 100 instructions in with
+   $a0 still untouched and its delay slot a swc1, func_800F8E6C is
+   `void (GObj *)`, and there is no home store anywhere in the 551 words. The
+   ROM holds omCurrentObj in $a1 and &omCurrentObj in $s4 (lever 4); the draft
+   had omCurrentObj in $a0, and declaring the parameter moves it onto $a1 and
+   removes the four diffs at the top of the function.
+   That is all it is worth here, because the rest of the residue is not a
+   register rotation -- this is still raw m2c with 30 u32 temps and a
+   different loop shape, and the draft is 3 words longer than the ROM, so
+   read 461 against lever 48's warning about the denominator. The lever is
+   NOT the way in to this function; the 30-temp declaration list is.
+   The file-scope declaration at the top of this file (and the identical one
+   in ovl15b.c) was corrected to (GObj *) in the same change. Both were
+   inert: .text byte-identical in both objects, objdump A/B against the
+   known-good build. */
+void func_801E1F34_ovl15(struct GObj *arg0) {
     GObj *temp_a1;
     f32 *var_v0;
     f32 temp_f2;
@@ -2271,7 +2288,7 @@ void func_801E1F34_ovl15(void) {
     D_800EB160[temp_v1_5] = gEntitiesNextPosZArray[temp_v1_5];
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800E64D0[omCurrentObj->objId] = 0.001f;
-    func_800F8E6C(omCurrentObj);
+    func_800F8E6C(arg0);
     func_800B33F4();
     temp_v1_6 = omCurrentObj->objId;
     var_v1 = temp_v1_6 * 4;
