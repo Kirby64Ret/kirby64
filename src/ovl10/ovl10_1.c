@@ -694,7 +694,24 @@ extern s32 D_801F42F0_ovl10[];
 extern s32 random_soft_s32_range(s32);
 
 #ifdef NON_MATCHING
-/* structurally exact, 27 pure regalloc diffs (ROM keeps `temp` in $a1) */
+/* structurally exact, 27 pure regalloc diffs (ROM keeps `temp` in $a1).
+ * shapescan.py 2026-08-25: shape distance 0 -- aligndiff finds no
+ * insert/delete/replace run that is not a register name, so the 27 is the
+ * positional score lying about a whole-body rotation and not 27 defects.
+ *
+ * The rotation is in the three hoisted base addresses. ROM: $s0 =
+ * D_800E9AA0, $s1 = &omCurrentObj, $s2 = D_801F42F0_ovl10. Here: $s0 =
+ * D_801F42F0_ovl10, $s1 = D_800E9AA0, $s2 = &omCurrentObj -- which is
+ * LAST-USE order (the array only the loop reads dies first and takes $s0),
+ * while the ROM's is neither last-use nor first-use order. Every scratch
+ * temp and both compare operand orders follow from it.
+ *
+ * Swept 2026-08-25, all 27 or worse: `temp == D_800E9AA0[...]` instead of
+ * `D_800E9AA0[...] == temp` (27, the compare still comes out reversed, so
+ * IDO is choosing the operand order and the source is not), and the
+ * assignment-in-condition form `while (D_800E9AA0[...] == (temp = ...))`
+ * (27). Both do/while forms are 47/48 -- the ROM's loop is a peeled `while`
+ * and that half of the shape is settled. Permuter target. */
 void func_801DDAC8_ovl10(s32 arg0) {
     s32 temp;
 
