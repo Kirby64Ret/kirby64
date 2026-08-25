@@ -304,8 +304,23 @@ void func_802271A8_ovl18(void) {
  * in turn.  Everything stays at 14 or gets worse.  The remaining lever has to
  * be whatever forces IDO to pick $v0 for a loop-induction pointer over a
  * loop-invariant constant. */
-/* FACTORY: 13/54 -- MEASURED 2026-08-25 by the annotate pass. The number is all this line claims; no
-   listing was read for it and no cause is diagnosed. */
+/* FACTORY: 13/54 -- MEASURED 2026-08-25. The note above predates this and says
+   "everything stays at 14"; the number is 13 now, and the residue is exactly
+   what that note predicted it would be: a two-register EXCHANGE. The ROM keeps
+   the walking pointer in $v0 and the constant 1 in $v1; the draft has them the
+   other way round, and all thirteen words are that swap. Every opcode, offset
+   and unroll step matches.
+
+   Four more spellings measured today, ALL byte-identical at 13/54, so the
+   assignment-order lever that works elsewhere in the tree does not reach here:
+     - assigning `i` before `zp` (the save_file lever, where assignment order
+       rather than declaration order decides which value lands in $v0);
+     - adding an `s32 one` local for the constant;
+     - swapping the two stores inside the loop body.
+   Measured and far WORSE: rewriting the loop as a pointer walk with its own
+   `fb` and `end` locals, to imitate the ROM's `addiu $v0, 8` / `bne $v0, $a1`
+   shape directly -- 44/63. The index form is correct and the ROM's pointer
+   walk is IDO's strength reduction of it, not the source. */
 #ifdef NON_MATCHING
 u32 func_80227308_ovl18(s32 arg0) {
     vu16 *zp;
