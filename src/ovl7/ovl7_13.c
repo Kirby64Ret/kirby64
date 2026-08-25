@@ -415,7 +415,7 @@ void func_801B9D40_ovl7(GObj *arg0) {
 void func_801B9E78_ovl7(GObj *arg0) {
 }
 
-/* FACTORY: 195/219, $f12/$f14 transposition only.  Structure, schedule,
+/* FACTORY: 24/219 [was noted 195/219], $f12/$f14 transposition only.  Structure, schedule,
    branch shape and every store are the ROM's.  The lever that got it here
    (97/219 -> 24/219) is the abs: the ROM does NOT test the difference
    against zero, it compares the two ARRAY ELEMENTS (c.lt.s cur,target) and

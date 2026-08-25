@@ -1343,10 +1343,38 @@ void func_801E0A74_ovl17(void) {
 }
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* FACTORY: MATCH (108/108), padding-trapped TU -- MEASURED 2026-08-25, and the
+   first measurement this draft has ever had. The note this replaces said "not
+   byte-exact and not claimed to be"; nobody had a number because verify.py
+   REFUSES to score a padding-trapped listing at all, so this draft has been
+   invisible to measure_seeds since it was written. Scoring it needed
+   padtrap.classify neutralised for the measurement only -- the trap is about
+   the TU's trailing fill, not about this function's own words.
+
+   Two edits took it from 3/108 to byte-exact:
+     * m2c's `s32 sp1C`, assigned and never read, is IDO's own spill slot and
+       not a declaration (LEVERS 31). Deleting it put the spill on the ROM's
+       0x1C instead of 0x18 -- with it, ndecl=2 lays locals at 0x1C/0x18 and
+       the spilled temp_v0 takes the lower one (LEVERS 57).
+     * NOTHING this TU includes declares func_800B1900, so the call was an
+       implicit `int f()` and the draft masked by hand (`temp_v0 & 0xFFFF`),
+       which lets IDO fold the mask into the reload (`lw $a0` / `andi a0,a0`).
+       ovl11.c and ovl11_2.c both spell it `void func_800B1900(u16)`; with that
+       prototype in scope IDO emits the argument conversion itself, which is
+       the ROM's `lw $a1, 0x1C($sp)` / `andi $a0, $a1, 0xFFFF`. LEVERS 55's
+       family, and here the return type was never the point -- the PARAMETER
+       type was.
+
+   It must stay guarded: this is the last function in ovl17_2.o and its listing
+   carries 6 words of linker fill past its own .size, so un-guarding shortens
+   the TU by 0x18 under kirby.ld's SUBALIGN(16). Un-guarding needs a `pad`
+   subsegment in kirby64.yaml in the SAME commit -- a coordinator task. */
 s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
-    s32 sp1C;
+    /* Spelled u16, like ovl11.c and ovl11_2.c do. Nothing this TU includes
+       declares it at all, so the call was an implicit `int f()` and the mask
+       had to be written by hand; with the real prototype IDO emits the
+       conversion itself. */
+    extern void func_800B1900(u16);
     s32 temp_v0;
 
     temp_v0 = request_track_general(0x1A, 0x1E, 0x3C);
@@ -1355,9 +1383,8 @@ s32 func_801E0B38_ovl17(s32 arg0, s32 arg1) {
         return 0;
     }
     if (temp_v0 >= 0x3C) {
-        sp1C = temp_v0;
         utilPrintf("Akuma Joint Track Over!\n", temp_v0);
-        func_800B1900(temp_v0 & 0xFFFF);
+        func_800B1900(temp_v0);
         return 0;
     }
     gEntityFuncListIDArray[temp_v0] = arg0;

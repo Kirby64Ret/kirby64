@@ -245,7 +245,7 @@ void func_80020F40(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 76/107, callee-saved role permutation (arg0/const-10 in s4/s2
+/* FACTORY: 31/107 [was noted 76/107], callee-saved role permutation (arg0/const-10 in s4/s2
  * swapped vs ROM) plus its branch-offset cascade; structure verified. */
 
 void func_80021444(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {

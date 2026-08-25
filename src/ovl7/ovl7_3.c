@@ -1135,7 +1135,7 @@ void func_801A2ADC_ovl7(struct Ovl7TrackParams *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2ADC_ovl7.s")
 #endif
-/* FACTORY: 96/123, whole-frame +0x10 base residue.  Every instruction,
+/* FACTORY: 27/123 [was noted 96/123], whole-frame +0x10 base residue.  Every instruction,
    register and RELATIVE stack slot matches the ROM except: (a) our IDO
    places the locals block 0x10 higher (frame 0x78 vs 0x68; every sp offset
    is ROM+0x10; relative layout newp/oldp/hit/norm/rec/pads/water/dx/dz is
@@ -1284,7 +1284,7 @@ void func_801A2E64_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_3/func_801A2E64_ovl7.s")
 #endif
-/* FACTORY: 50/102.  Twin of func_801A2E64_ovl7 above -- same residue, same
+/* FACTORY: 49/102 [was noted 50/102].  Twin of func_801A2E64_ovl7 above -- same residue, same
    fix; see that note. */
 #ifdef NON_MATCHING
 s32 func_801A2C78_ovl7(f32);

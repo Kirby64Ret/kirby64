@@ -889,7 +889,7 @@ void func_801EA344_ovl16(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 458/482, but 99 instructions SHORT -- too short to be the CSE gap alone.
+/* FACTORY: 456/482 [was noted 458/482], but 99 instructions SHORT -- too short to be the CSE gap alone.
  * The host arm this draft came from very likely factors work into a helper that the
  * N64 has inline; diff the listing's jal set against the draft's calls before
  * spending anything on registers. */
@@ -2010,7 +2010,7 @@ void func_801ED634_ovl16(struct GObj *arg0) {
  *            back to 10 frames. Otherwise just tick the cooldown down.
  */
 #ifdef MIPS_TO_C
-/* FACTORY: 189/450, register-naming cascade ONLY.
+/* FACTORY: 187/450 [was noted 189/450], register-naming cascade ONLY.
  *
  * Instruction count, schedule, every branch and every branch-likely, the whole
  * frame (0x68) and EVERY stack slot are the ROM's: sp30/sp3C at 0x30/0x3C,

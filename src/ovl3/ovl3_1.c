@@ -136,7 +136,7 @@ s32 func_8015229C_ovl3(f32 (*arg0)[4], f32 (*arg1)[4], u8 arg2, f32 arg3) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 311/312, RE-MEASURED -- the prior "1/312" note was stale/wrong;
+/* FACTORY: 309/312 [was noted 311/312], RE-MEASURED -- the prior "1/312" note was stale/wrong;
  * verify.py shows total mismatch from insn [0], not a 1-word residue.
  * Real findings from the listing, for whoever attempts a rewrite:
  *   (1) gKirbyState.unk134/unk138/unk13C are written with swc1 (float
@@ -401,7 +401,7 @@ s32 func_80152828_ovl3(f32 *arg0, f32 *arg1) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 13/446, whole-function callee-saved permutation (same floor
+/* FACTORY: 435/446 [was noted 13/446], whole-function callee-saved permutation (same floor
  * class as func_80152348_ovl3/func_801530BC_ovl3 in this TU -- correct
  * instruction count and control flow, near-total register-naming/frame
  * mismatch, -0xA0 vs -0x70 frame). Queued for the permuter. */
@@ -1424,7 +1424,7 @@ s32 func_80153B98_ovl3(void) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 7/260, whole-function callee-saved permutation. The ROM caches
+/* FACTORY: 253/260 [was noted 7/260], whole-function callee-saved permutation. The ROM caches
  * &D_8012BCA0 early into a saved reg ($s0, -0x40 frame) for the
  * func_80105238 call; this draft lets IDO compute it lazily (-0x30 frame,
  * no s0 save) and otherwise picks the neighbouring temp registers
@@ -1920,7 +1920,7 @@ void func_801548DC_ovl3(arg0)
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 17/226, whole-function callee-saved permutation. The ROM holds
+/* FACTORY: 209/226 [was noted 17/226], whole-function callee-saved permutation. The ROM holds
  * &omCurrentObj in a caller-saved reg ($a3) that it recomputes (lui+addiu)
  * after each call rather than spilling it to a saved register; this draft's
  * repeated omCurrentObj->objId gets IDO to allocate a callee-saved $s0
@@ -2284,7 +2284,7 @@ s32 func_801556D8_ovl3(f32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 9/268, whole-function callee-saved permutation plus a frame
+/* FACTORY: 259/268 [was noted 9/268], whole-function callee-saved permutation plus a frame
  * delta (-0x68 vs -0x58, 4-word over-allocation) through the trig probe.
  * Queued for the permuter. */
 s32 func_8010423C(Vector *, Vector *, void *, void *, void *, void *, void *, void *);

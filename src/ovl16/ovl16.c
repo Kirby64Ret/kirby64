@@ -3252,7 +3252,7 @@ void func_801E4148_ovl16(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 173/210, only 6 instructions short -- the smallest count gap of the
+/* FACTORY: 172/210 [was noted 173/210], only 6 instructions short -- the smallest count gap of the
  * shortfall group, so the cheapest place to identify the repeated load IDO is
  * merging (see func_801E538C's note). Sibling of func_801E3CF0; the host helper
  * pc_ovl16_anim_stretch is func_801DC990_ovl16(a, b) on N64. */

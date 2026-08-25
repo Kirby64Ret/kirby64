@@ -279,7 +279,7 @@ struct PcPlyshotFx {
 };
 #endif
 #ifdef MIPS_TO_C
-/* FACTORY: 5/370, whole-function callee-saved permutation (same floor class documented across this cluster). Replaces pc_sndpair_start with the real N64 call func_800A77E8, same pattern as func_80161058_ovl3. Queued for the permuter. */
+/* FACTORY: 365/370 [was noted 5/370], whole-function callee-saved permutation (same floor class documented across this cluster). Replaces pc_sndpair_start with the real N64 call func_800A77E8, same pattern as func_80161058_ovl3. Queued for the permuter. */
 /* PORT: the throw/carry rock init coroutine, from asm/nonmatchings/ovl3/
  * plyshot/func_8015B190_ovl3.s. Parks the shot on effect anim 0xC and waits
  * for the release signal at D_8012E7FC[0]; then classes the rock by the
@@ -460,7 +460,7 @@ void func_8015B190_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 13/289, whole-function callee-saved permutation (same floor class documented across this cluster). Gives the carry-effect block a local RockFx view instead of the PORT arm's guarded struct PcPlyshotFx, and inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, same pattern as func_80161058_ovl3. Queued for the permuter. */
+/* FACTORY: 276/289 [was noted 13/289], whole-function callee-saved permutation (same floor class documented across this cluster). Gives the carry-effect block a local RockFx view instead of the PORT arm's guarded struct PcPlyshotFx, and inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, same pattern as func_80161058_ovl3. Queued for the permuter. */
 /* PORT: service routine for the thrown rock installed by func_8015B190_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015B75C_ovl3.s. While the
  * rock is still carried (gKirbyState.unk3C==0 and the launch latch
@@ -729,7 +729,7 @@ void func_8015BBE4_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 5/505, whole-function callee-saved permutation (same floor class documented across this cluster). Replaces the PORT arm's pc_sndpair_release/pc_sndpair_start calls with real N64 calls through two local static helpers (plyshotSndpairRelease/plyshotSndpairStart, wrapping func_800A7870/func_800A77E8), and gives the carry-effect blocks a local BoomerangFx view instead of the guarded struct PcPlyshotFx. Adds an ANSI prototype for func_800A7F74 (declared unguarded elsewhere in this TU) to avoid an implicit-int conflict. Queued for the permuter. */
+/* FACTORY: 500/505 [was noted 5/505], whole-function callee-saved permutation (same floor class documented across this cluster). Replaces the PORT arm's pc_sndpair_release/pc_sndpair_start calls with real N64 calls through two local static helpers (plyshotSndpairRelease/plyshotSndpairStart, wrapping func_800A7870/func_800A77E8), and gives the carry-effect blocks a local BoomerangFx view instead of the guarded struct PcPlyshotFx. Adds an ANSI prototype for func_800A7F74 (declared unguarded elsewhere in this TU) to avoid an implicit-int conflict. Queued for the permuter. */
 /* PORT: the boomerang-shot service routine installed by func_8015BBE4_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_8015C00C_ovl3.s. Bursts
  * when the ability ends (fgm 0x159, particle 2/1/0x10) and pops silently on
@@ -1003,7 +1003,7 @@ void func_8015C00C_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 5/291, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* FACTORY: 286/291 [was noted 5/291], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
 /* PORT: spread-fragment init coroutine, from asm/nonmatchings/ovl3/plyshot/
  * func_8015C7F4_ovl3.s. Spawned at the carry target (D_800E1ED0[id-112]),
  * inherits the parent's heading, builds a launch vector {per-kind lateral
@@ -1177,7 +1177,7 @@ void func_8015CC84_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 5/267, whole-function callee-saved permutation (same floor
+/* FACTORY: 262/267 [was noted 5/267], whole-function callee-saved permutation (same floor
  * class as the rest of this cluster). The N64 draft calls func_800A77E8 /
  * func_800A7870 inline, which is what the asm's jal targets show; the PORT
  * arm's pc_sndpair_start/pc_sndpair_release are static helpers defined at
@@ -1289,7 +1289,7 @@ void func_8015CF9C_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/245, whole-function callee-saved permutation (same floor
+/* FACTORY: 242/245 [was noted 3/245], whole-function callee-saved permutation (same floor
  * class as the rest of this cluster -- correct instruction count and
  * control flow, near-total register/frame mismatch). Also gives the
  * PcPlyshotFx view a local-scope equivalent (LocalPlyshotFx) since the
@@ -1510,7 +1510,7 @@ void func_8015D7A0_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/533, whole-function callee-saved permutation (same floor class documented across this cluster). Gives the effect blocks a local NeedleFx view instead of the guarded struct PcPlyshotFx. Queued for the permuter. */
+/* FACTORY: 531/533 [was noted 2/533], whole-function callee-saved permutation (same floor class documented across this cluster). Gives the effect blocks a local NeedleFx view instead of the guarded struct PcPlyshotFx. Queued for the permuter. */
 /* PORT: service routine for func_8015D7A0_ovl3's shot above (anim 0x20032,
  * the needle/spike burst -- kind 1 travels flat, kind 0 drops straight
  * down), from asm/nonmatchings/ovl3/plyshot/func_8015DBE4_ovl3.s. Kills
@@ -1903,7 +1903,7 @@ void func_8015E8E0_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 6/776, whole-function callee-saved permutation (same floor class documented across this cluster). Inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, and adds an ANSI prototype for func_800A7F74. Queued for the permuter. */
+/* FACTORY: 770/776 [was noted 6/776], whole-function callee-saved permutation (same floor class documented across this cluster). Inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper, and adds an ANSI prototype for func_800A7F74. Queued for the permuter. */
 /* PORT: the guided-missile service routine installed by func_8015E8E0_ovl3
  * above (anim 0x2003B), from asm/nonmatchings/ovl3/plyshot/
  * func_8015ED2C_ovl3.s. Death phase: 8 frames of burst anim (D_80191A84 /
@@ -2436,7 +2436,7 @@ void func_8015F950_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 3/391, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* FACTORY: 388/391 [was noted 3/391], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
 /* PORT: service routine for func_8015F950_ovl3's shot above (anim 0x2003D),
  * from asm/nonmatchings/ovl3/plyshot/func_8015FD58_ovl3.s. Kind 0 first
  * runs its own hit record (D_80193728) and detonates on contact, then arms
@@ -3117,7 +3117,7 @@ void func_80161058_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/513, whole-function callee-saved permutation (same floor class documented across this cluster). Same fixes as its sibling func_8015C00C_ovl3: real N64 sound-pair calls through local helpers instead of pc_sndpair_*, a local SpreadFx view instead of the guarded PcPlyshotFx, and an ANSI prototype for func_800A7F74. Queued for the permuter. */
+/* FACTORY: 509/513 [was noted 4/513], whole-function callee-saved permutation (same floor class documented across this cluster). Same fixes as its sibling func_8015C00C_ovl3: real N64 sound-pair calls through local helpers instead of pc_sndpair_*, a local SpreadFx view instead of the guarded PcPlyshotFx, and an ANSI prototype for func_800A7F74. Queued for the permuter. */
 /* PORT: service routine for the forward shot installed by func_80161058_ovl3
  * above, from asm/nonmatchings/ovl3/plyshot/func_801614D8_ovl3.s. Same shape
  * as the decompiled boomerang service func_8015C00C_ovl3 in this TU: bursts
@@ -3513,7 +3513,7 @@ s32 func_80162000_ovl3(char *arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 1/281 (280/281 diff; note the near-matching TOTAL count -- target has 281 insns, this draft 281 too but only 1 word agrees), whole-function callee-saved permutation plus a real defect: the ROM strength-reduces a multiply by 0x58 (id*3, *4, *8 via shift/subtract) to index D_80197BF0_ovl3, meaning each cell is 0x58 bytes -- this draft's struct PcShotColSnap is only 32 bytes (the PORT arm's reduced snapshot, not the full memcpy'd N64 cell the header comment describes). Residual work for whoever continues: widen the cell to 0x58 bytes and memcpy the whole D_8012BCA0 block per the comment. Adds an ANSI prototype for func_801625B8_ovl3 (defined later in this TU) to avoid an implicit-int redeclaration conflict. Queued for the permuter. */
+/* FACTORY: 280/281 [was noted 1/281] (280/281 diff; note the near-matching TOTAL count -- target has 281 insns, this draft 281 too but only 1 word agrees), whole-function callee-saved permutation plus a real defect: the ROM strength-reduces a multiply by 0x58 (id*3, *4, *8 via shift/subtract) to index D_80197BF0_ovl3, meaning each cell is 0x58 bytes -- this draft's struct PcShotColSnap is only 32 bytes (the PORT arm's reduced snapshot, not the full memcpy'd N64 cell the header comment describes). Residual work for whoever continues: widen the cell to 0x58 bytes and memcpy the whole D_8012BCA0 block per the comment. Adds an ANSI prototype for func_801625B8_ovl3 (defined later in this TU) to avoid an implicit-int redeclaration conflict. Queued for the permuter. */
 /* PORT: the shot water-surface tracker, from asm/nonmatchings/ovl3/plyshot/
  * func_80162150_ovl3.s. On N64 this memcpy's the whole 0x58-byte collision
  * result block D_8012BCA0 into the shot's cell of D_80197BF0_ovl3 each call

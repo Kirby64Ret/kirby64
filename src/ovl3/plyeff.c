@@ -344,7 +344,7 @@ void func_801634D4_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/262, whole-function callee-saved permutation (same floor
+/* FACTORY: 258/262 [was noted 4/262], whole-function callee-saved permutation (same floor
  * class as the rest of this cluster). Replaces the PORT arm's unresolved
  * pc_sndpair_start/pc_sndpair_release wrappers with inline equivalents
  * (myPcSndpairRelease/myPcSndpairStart, mirroring the PORT-guarded
@@ -890,7 +890,7 @@ void func_80164914_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/329, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* FACTORY: 327/329 [was noted 2/329], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
 /* PORT: the ability-star init coroutine (dropped-ability star), from
  * asm/nonmatchings/ovl3/plyeff/func_80164980_ovl3.s. Parks a 16x4-float
  * bg-break line buffer from this sleeping frame in D_800E9AA0 for
@@ -1397,7 +1397,7 @@ void func_80166588_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/275, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* FACTORY: 271/275 [was noted 4/275], whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
 /* PORT: service routine for func_80166588_ovl3's charge-shot above, from
  * asm/nonmatchings/ovl3/plyeff/func_80166768_ovl3.s. Idles until the
  * charge state gKirbyState.unk44 reaches -1 (release); then scans enemy
@@ -1944,7 +1944,7 @@ void func_80167D04_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 10/300, whole-function callee-saved permutation (same floor class documented across this cluster). Two real fixes over the PORT arm: (1) the kind-1 prim-color write is a raw offset chain (D_800DFBD0[id][k]+0xC -> +0x80 -> +0x58, ONE u32 sw) matched straight off the asm rather than the PORT arm's ColorPack/MObj field-path guess, since struct DObj's own field at 0xC is ->prev, not this chain -- flagged unverified rather than given wrong names; (2) inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper. Queued for the permuter. */
+/* FACTORY: 290/300 [was noted 10/300], whole-function callee-saved permutation (same floor class documented across this cluster). Two real fixes over the PORT arm: (1) the kind-1 prim-color write is a raw offset chain (D_800DFBD0[id][k]+0xC -> +0x80 -> +0x58, ONE u32 sw) matched straight off the asm rather than the PORT arm's ColorPack/MObj field-path guess, since struct DObj's own field at 0xC is ->prev, not this chain -- flagged unverified rather than given wrong names; (2) inlines the real N64 sound-pair release (func_800A7870) instead of the PC-only pc_sndpair_release wrapper. Queued for the permuter. */
 /* PORT: service routine for func_80167D04_ovl3's shot above, from
  * asm/nonmatchings/ovl3/plyeff/func_80167F54_ovl3.s. Three kinds: kind 0
  * tracks the parent and runs hit record D_8019570C while the charge state
@@ -2204,7 +2204,7 @@ s32 func_8016854C_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 2/910, whole-function callee-saved permutation plus a real structural gap: the ROM's frame (-0x168) is far larger than this draft's (-0x20), meaning the ROM inlines the light pre/post setup at each of the 8 switch cases rather than calling shared helpers -- pc_shot_draw_lights_pre/post would need to be inlined by hand at each case for a tighter match. Queued for the permuter. */
+/* FACTORY: 908/910 [was noted 2/910], whole-function callee-saved permutation plus a real structural gap: the ROM's frame (-0x168) is far larger than this draft's (-0x20), meaning the ROM inlines the light pre/post setup at each of the 8 switch cases rather than calling shared helpers -- pc_shot_draw_lights_pre/post would need to be inlined by hand at each case for a tighter match. Queued for the permuter. */
 /* PORT: the second shot render dispatcher, from asm/nonmatchings/ovl3/
  * plyshot/func_8016858C_ovl3.s (jump table jtbl_801971BC_ovl3). Identical in
  * shape to func_8016264C_ovl3 above -- same render-kind cases 19..30, same

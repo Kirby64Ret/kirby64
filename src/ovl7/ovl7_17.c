@@ -958,7 +958,7 @@ void func_801C1A90_ovl7(GObj *arg0) {
     }
 }
 
-/* FACTORY: 4/147 structurally, one register transposition.  Frame (0x50),
+/* FACTORY: 143/147 [was noted 4/147] structurally, one register transposition.  Frame (0x50),
    info struct at 0x30, ent spill at 0x28, all four event arms, the u32
    switch and both dispatch tails are the ROM's -- `u32 id` must be a real
    local here (the ROM materialises objId in $v0 and copies `or $a0,$v0`

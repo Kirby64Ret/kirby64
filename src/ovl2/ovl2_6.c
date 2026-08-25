@@ -606,7 +606,7 @@ u32 func_80100E7C(f32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 78/278 (78 words differ; measure_seeds convention), FP temp rotation.
+/* FACTORY: 74/278 [was noted 78/278] (78 words differ; measure_seeds convention), FP temp rotation.
  * Exact instruction count, frame (0x48) and stack-slot layout; every
  * branch and every load/store
  * offset matches. The residue is one $f4/$f6 rotation seeded by the

@@ -1776,7 +1776,7 @@ void func_8015A31C_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 265/312 and 30 instructions short. Register naming ($v0 vs $v1 on the held
+/* FACTORY: 267/312 [was noted 265/312] and 30 instructions short. Register naming ($v0 vs $v1 on the held
  * object pointer) plus a count gap; close the count first. */
 
 void func_8015A44C_ovl3(s32 arg0) {

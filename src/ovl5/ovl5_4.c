@@ -595,7 +595,7 @@ static u8 ovl5_4_molepers_(s32 i) {
  * (spawns the per-player whack cursor track), 2 fell down a hole (drop,
  * respawn or park forever when out of stock), 3 dizzy.
  *
- * FACTORY: 20/983, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 963/983 [was noted 20/983], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: `D_8018E3D0_ovl5`'s access used the GCC-only
  * `__asm__("D_8018E3D0_ovl5")` symbol-alias extension, which IDO's cc
  * rejects outright -- rewritten as a local 0x14-byte struct view of the
@@ -1399,7 +1399,7 @@ void func_80168E84_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80168E84_ovl5.s")
 #endif
 
-/* FACTORY: 0/309, UNCERTAIN -- PORT-seeded, time-boxed. Fixed the
+/* FACTORY: 309/309 [was noted 0/309], UNCERTAIN -- PORT-seeded, time-boxed. Fixed the
  * `__asm__("...")` alias (same as this file's other mole-brain
  * functions). Compiles, word count matches (309/309), residue total
  * (309/309): the ROM appears to read d1 via a small dispatch on
@@ -1769,7 +1769,7 @@ s32 func_80169D90_ovl5(s32 arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_80169D90_ovl5.s")
 #endif
 
-/* FACTORY: 228/232, STRUCTURAL -- measured 2026-08-23, correcting a stale
+/* FACTORY: 226/230 [was noted 228/232], STRUCTURAL -- measured 2026-08-23, correcting a stale
  * note (previously read "4/232"; the note's own body already said
  * "residue extreme (228/232)", this just fixes the header to match).
  * Diverges from word 0: ROM frame -0x58 with $s0-$s2/$s1 held live
@@ -2275,7 +2275,7 @@ void func_8016A774_ovl5(GObj *arg0, s32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_4/func_8016A774_ovl5.s")
 #endif
 
-/* FACTORY: 23/471, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+/* FACTORY: 448/471 [was noted 23/471], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: `func_80165B84_ovl5` was called through a fake
  * `(s32(*)(s32,s32))` cast to feed it a phantom second argument (`dir`)
  * -- its real signature (declared elsewhere in this file) is
@@ -2706,7 +2706,7 @@ void func_8016C410_ovl5(GObj *arg0) {
         gEntitiesAngleYArray[D_8018E268_ovl5[D_800E98E0[omCurrentObj->objId]]];
 }
 
-/* FACTORY: 81/238, UNCERTAIN -- PORT-seeded, time-boxed. Two real fixes:
+/* FACTORY: 157/238 [was noted 81/238], UNCERTAIN -- PORT-seeded, time-boxed. Two real fixes:
  * (1) `func_800A9F98`'s file-scope prototype is PORT-only, so its (f32)
  * arg was defaulting to double-promotion (`cvt.d.s`, two arg regs) --
  * added a local ANSI prototype; (2) `func_800B1900` kills read objId as
@@ -3016,7 +3016,7 @@ void func_8016CC88_ovl5(GObj *arg0) {
  * alternates the tint while the player's racer is fallen (state 2), and
  * greys the tag out for good when the player runs out of stock.
  *
- * FACTORY: 75/1448, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 1373/1448 [was noted 75/1448], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: `D_80186C88_ovl5`'s access used the GCC-only
  * `__asm__("D_80186C88_ovl5")` symbol-alias extension, which IDO's cc
  * rejects outright -- rewritten as the real typed extern declared later
@@ -3551,7 +3551,7 @@ s32 func_8016F3E8_ovl5(s32 arg0) {
     return (arg0 / 30) / 60;
 }
 
-/* FACTORY: 189/201, near-miss, verify.py-confirmed. PORT-seeded; added
+/* FACTORY: 12/201 [was noted 189/201], near-miss, verify.py-confirmed. PORT-seeded; added
  * the missing local `extern s32 D_8018E264_ovl5;` (PORT-only at file
  * scope). Residue is a $v0/$v1 register-name floor on three of the
  * five digit-position base pointers (D_8018711C_ovl5, D_80187124_ovl5,

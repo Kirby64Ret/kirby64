@@ -382,7 +382,7 @@ s32 func_8019FA68_ovl7(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_2/func_8019FA68_ovl7.s")
 #endif
 
-/* FACTORY: 277/278, one-instruction entry shear -- the ROM materialises
+/* FACTORY: 278/278 [was noted 277/278], one-instruction entry shear -- the ROM materialises
    &omCurrentObj (lui+addiu into $a2, then lw 0($a2)) before the frame setup,
    IDO folds it to lui+lw %lo.  IDENTICAL single residue to the
    func_8019F650_ovl7/func_8019FA68_ovl7 twins above (their guard lists the

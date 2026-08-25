@@ -253,7 +253,7 @@ void func_800ACBDC(GObj *);
  * lane (via func_8016FFE8_ovl5) once the bias saturates, clamping against
  * the last tile (row entry 0x51) so the far end never scrolls past 1350.
  *
- * FACTORY: 10/246, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
+ * FACTORY: 236/246 [was noted 10/246], UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
  * found; compiles as-is once split out of the shared PORT-prototype
  * block above. Word count matches (246/246), residue extreme
  * (236/246) -- broad register/frame relabeling from word 0. Worth a
@@ -515,7 +515,7 @@ s32 func_80170820_ovl5(s32 arg0) {
  * hop arc, resolves what the racer lands on (rapids push a raft chain via
  * func_80173804_ovl5, holes cost a stock), and restores the idle anims.
  *
- * FACTORY: 63/558, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 498/558 [was noted 63/558], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: the call to `func_80170098_ovl5` (whose real ANSI
  * prototype -- `void func_80170098_ovl5(s32, f32)` -- lives in the
  * shared PORT-prototype block, invisible outside a PORT/MIPS_TO_C
@@ -805,7 +805,7 @@ void func_80170884_ovl5(s32 arg0, s32 arg1, s32 arg2) {
  * on, sinks the racer, rewinds the camera to the last consumed tile over 15
  * frames and reseats the racer on it.
  *
- * FACTORY: 84/256, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 172/256 [was noted 84/256], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: the call to `func_80170098_ovl5` (real ANSI prototype
  * `void func_80170098_ovl5(s32, f32)`, only visible inside the shared
  * PORT-prototype block) had no prototype in scope, silently promoting
@@ -1180,7 +1180,7 @@ void func_80171950_ovl5(GObj *arg0, s32 arg1) {
  * to a 2-tile hop (1 tile on the final step), bumping the consumed-tile
  * counter D_8018E998_ovl5.
  *
- * FACTORY: 0/168, UNCERTAIN -- PORT-seeded, time-boxed. Added a missing
+ * FACTORY: 167/167 [was noted 0/168], UNCERTAIN -- PORT-seeded, time-boxed. Added a missing
  * local `extern Controller_800D6FE8 gPlayerControllers[4]` (its real
  * declaration in main/contpad.h is only reached through the shared
  * PORT-prototype include at the top of this file, invisible here).
@@ -1439,7 +1439,7 @@ void func_801721CC_ovl5(s32 arg0) {
  * to a one/two square hop, 3 = blocked-retry, 4/5 = waiting on an item square.
  * A racer with D_800E9C60 set (already moving) does nothing.
  *
- * FACTORY: 332/508 words differ and the draft is 3 words long (ROM 505). All
+ * FACTORY: 328/508 [was noted 332/508] words differ and the draft is 3 words long (ROM 505). All
  * five jump tables reproduce with the right bias and bounds, and every case
  * body lands in the ROM's order. The residue is dominated by ONE fact: the
  * frame comes out 0x48 against the ROM's 0x40, so every `NN($sp)` and every
@@ -1750,7 +1750,7 @@ s32 func_80172C50_ovl5(s32 arg0) {
  * promote (13/14), melt (20), crack (21); despawns once the racer is 7
  * (obstacles) or 11 (rafts) tiles past it.
  *
- * FACTORY: 11/571, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 560/571 [was noted 11/571], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: `D_8018ECA0_ovl5`'s access used the GCC-only
  * `__asm__("D_8018ECA0_ovl5")` symbol-alias extension on a distinct
  * u8[] view (same bug as func_80171950_ovl5) -- rewritten as
@@ -2181,7 +2181,7 @@ s32 func_80173778_ovl5(s32 arg0) {
  * apart), attaching raft-pair (13/14), rapids and whirlpool companion
  * tracks as the sampled tile kind demands.
  *
- * FACTORY: 7/144, UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
+ * FACTORY: 137/144 [was noted 7/144], UNCERTAIN -- PORT-seeded, time-boxed. No source bugs
  * found; compiles as-is. Word count matches (144/144), residue extreme
  * (137/144) -- broad register/frame relabeling from word 0. Worth a
  * fresh m2c pass before feeding to the permuter. */
@@ -2677,7 +2677,7 @@ void func_80174900_ovl5(s32 arg0, s32 arg1) {
  * forward one tile per hop; a knock mid-hop bounces it back, and hopping
  * onto a hole/crumbled tile (0x18/0x16) drowns it.
  *
- * FACTORY: 26/662, UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
+ * FACTORY: 633/662 [was noted 26/662], UNCERTAIN -- PORT-seeded, time-boxed. Real fix over
  * the PORT: `D_8018ECA0_ovl5`'s access used the GCC-only
  * `__asm__("D_8018ECA0_ovl5")` symbol-alias extension (same bug as
  * func_80171950_ovl5 and func_80172C7C_ovl5) -- rewritten as

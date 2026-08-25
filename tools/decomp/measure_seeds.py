@@ -47,7 +47,21 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 os.chdir(REPO)
 VERIFY = 'tools/decomp/verify.py'
 
+# TWO CONVENTIONS ARE IN USE IN THE TREE AND THEY MEAN OPPOSITE THINGS.
+#
+#   `FACTORY: 3/61, ...`                        3 words WRONG out of 61
+#   `FACTORY: 201/224 instructions match (23 diffs)`   201 words RIGHT
+#
+# Reading every note the first way flags all seven of the second kind as
+# disagreeing when they are exactly correct -- and the --fix pass then
+# rewrote them into nonsense ("23/224 instructions match (23 diffs)").
+# `MATCHFORM` recognises the second convention so the number can be flipped
+# rather than mis-read. Nothing normalises the notes to one convention: the
+# second one carries the diff count in its own parentheses and is perfectly
+# readable, and rewriting a lane's prose to satisfy a regex is the wrong way
+# round.
 FACTORY = re.compile(r'FACTORY:\s*(\d+)\s*/\s*(\d+)')
+MATCHFORM = re.compile(r'FACTORY:\s*\d+\s*/\s*\d+\s+instructions?\s+match')
 PRAGMA = re.compile(r'^\s*#pragma\s+GLOBAL_ASM\("([^"]+)"\)\s*$')
 DIFFLINE = re.compile(r'(\w+):\s*DIFF\s+(\d+)/(\d+)\s+insns')
 MATCHLINE = re.compile(r'(\w+):\s*MATCH')
@@ -109,10 +123,17 @@ def measure_file(path):
     for st, en, prag_i, listing in guard_blocks(lines):
         func = os.path.basename(listing)[:-2]
         note = None
-        for l in lines[max(0, st - 12):en]:
+        note_line = None
+        note_isform = False
+        for k, l in enumerate(lines[max(0, st - 12):en]):
             m = FACTORY.search(l)
             if m:
-                note = (int(m.group(1)), int(m.group(2)))
+                a, tot = int(m.group(1)), int(m.group(2))
+                # See MATCHFORM above: `N/total instructions match` counts the
+                # words that are RIGHT, so the residue is the complement.
+                note_isform = bool(MATCHFORM.search(l))
+                note = (tot - a if note_isform else a, tot)
+                note_line = max(0, st - 12) + k
                 break
         # scratch copy: this one draft un-guarded, its pragma removed
         body = lines[st + 1:en]
@@ -145,8 +166,56 @@ def measure_file(path):
         finally:
             shutil.rmtree(d, ignore_errors=True)
         results.append({'file': path, 'func': func, 'note': note,
+                        'note_line': note_line, 'note_isform': note_isform,
                         'diff': got, 'total': tot})
     return results
+
+
+def rewrite_notes(rows):
+    """Replace every disagreeing `FACTORY: n/total` with the measured number.
+
+    WHY THIS IS A MODE AND NOT A REPORT. The report has said "N note(s)
+    disagree with the measurement" for weeks and N kept growing, because a
+    number in a comment is nobody's job to fix and there is no gate that can
+    catch it -- it is a comment. Meanwhile the notes are what lanes and
+    priority_queue.py pick targets from, so a wrong one costs real compiles.
+
+    Measured 2026-08-25 on 600 drafts: 124 notes disagreed, and 102 of them
+    claimed to be CLOSER than the truth -- the dangerous direction. The worst
+    said 46/1674 where the real residue is 1628/1674. Two were checked by hand
+    against the listing before writing this: the measurements were right and
+    the notes were fiction, in one file because the draft had never compiled
+    at all so no number could ever have been produced for it.
+
+    ONLY THE NUMBERS ARE TOUCHED. The prose around them is a lane's reasoning
+    about what was ruled out and is often the most valuable thing in the file;
+    it is left exactly as written, with the corrected figure and a marker so
+    the disagreement is visible rather than silently papered over.
+    """
+    by_file = {}
+    for r in rows:
+        if (r.get('note') and r.get('note_line') is not None
+                and isinstance(r.get('diff'), int)
+                and r['note'][0] != r['diff']):
+            by_file.setdefault(r['file'], []).append(r)
+    n = 0
+    for path, rs in sorted(by_file.items()):
+        lines = open(path, errors='replace').read().split('\n')
+        for r in rs:
+            i = r['note_line']
+            if r.get('note_isform'):
+                # `N/total instructions match (M diffs)` -- rewriting the
+                # number in place makes it contradict its own parenthesis.
+                # These are rare and read fine; leave them to a human.
+                continue
+            old = f"{r['note'][0]}/{r['note'][1]}"
+            new = f"{r['diff']}/{r['total']} [was noted {old}]"
+            if old not in lines[i]:
+                continue
+            lines[i] = lines[i].replace(old, new, 1)
+            n += 1
+        open(path, 'w').write('\n'.join(lines))
+    return n
 
 
 def main():
@@ -207,6 +276,13 @@ def main():
     print(f'-- {len(wrong)} note(s) disagree with the measurement')
     print(f'-- genuinely within 6 words: '
           f'{len([r for r in ok if r["diff"] <= 6])}')
+    if '--fix' in argv:
+        n = rewrite_notes(all_r)
+        print(f'-- rewrote {n} FACTORY number(s) to the measured value')
+    elif wrong:
+        print('-- run with --fix to rewrite those numbers in place. A note is '
+              'worth\n   the compile that produced it; lanes and '
+              'priority_queue.py pick targets\n   from these.')
     if jsonout:
         json.dump(all_r, open(jsonout, 'w'), indent=1)
         print(f'-- wrote {jsonout}')

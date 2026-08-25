@@ -40,10 +40,12 @@ void func_80224320_ovl18(UNUSED s32 arg0) {
 
 #ifdef NON_MATCHING
 void func_802244FC_ovl18(void) {
-    if (D_800E98E0[omCurrentObj->objId] == 0) {
+    s32 count = D_800E98E0[omCurrentObj->objId];
+
+    if (count == 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801ACF84_ovl7);
     } else {
-        D_800E98E0[omCurrentObj->objId] -= 1;
+        D_800E98E0[omCurrentObj->objId] = count - 1;
         func_801ACF5C_ovl7();
     }
 }

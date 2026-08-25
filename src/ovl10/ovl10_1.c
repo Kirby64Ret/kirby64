@@ -566,7 +566,7 @@ void func_801DD674_ovl10(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 202/207 with the instruction count EXACT -- register naming only.
+/* FACTORY: 198/207 [was noted 202/207] with the instruction count EXACT -- register naming only.
  * Note the prototype this needs: func_800F951C takes FOUR arguments
  * (f32,f32,f32,f32), not two; ovl2_3.c spells it `f32 func_800F951C(s32, f32, s32,
  * f32)`. It is declared in-body because this draft is the TU's first use and a
@@ -992,7 +992,7 @@ void func_801DEA98_ovl10(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 377/434 and 10 instructions LONG (the only over-long draft in this bloc --
+/* FACTORY: 363/424 [was noted 377/434] and 10 instructions LONG (the only over-long draft in this bloc --
  * everything else runs short). Something here is evaluated more than the ROM does;
  * that is the first thing to chase. */
 

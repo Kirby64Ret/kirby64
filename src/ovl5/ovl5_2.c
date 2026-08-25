@@ -731,7 +731,7 @@ done:
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015DA24_ovl5.s")
 #endif
 
-/* FACTORY: 11/594, UNCERTAIN -- PORT-seeded, time-boxed. Added the
+/* FACTORY: 586/602 [was noted 11/594], UNCERTAIN -- PORT-seeded, time-boxed. Added the
  * missing local `extern u8 D_8018E224_ovl5[];`. Compiles, word count
  * matches (594/594), residue extreme (583/594) -- broad register/frame
  * relabeling from word 0 (ROM keeps 2 saved regs at this point, $s1/$s2;
@@ -1360,7 +1360,7 @@ s32 func_8015EAB4_ovl5(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_8015EAB4_ovl5.s")
 #endif
 
-/* FACTORY: 71/345, UNCERTAIN -- PORT-seeded, time-boxed. Added the
+/* FACTORY: 274/345 [was noted 71/345], UNCERTAIN -- PORT-seeded, time-boxed. Added the
  * missing local prototype for func_8015F67C_ovl5 (implicit-int trap
  * against its real later definition). Compiles, word count matches
  * (345/345), residue high (274/345). Broad register/frame relabeling.
@@ -1737,7 +1737,7 @@ void func_8015F67C_ovl5(s32 arg0)
   }
 }
 
-/* FACTORY: 13/221, UNCERTAIN -- cross-checked against a fresh m2c pass
+/* FACTORY: 208/221 [was noted 13/221], UNCERTAIN -- cross-checked against a fresh m2c pass
  * (matches the PORT arm's shape closely: same side==0/1/2 arms and
  * random_soft_s32_range offsets). Compiles, word count matches (221/221),
  * residue high (208/221). Register/frame allocation diverges broadly
@@ -1985,7 +1985,7 @@ s32 func_8015FB78_ovl5(s32 arg0) {
 #endif
 
 
-/* FACTORY: 10/166, register-pressure floor. Derived from the ASM (not the
+/* FACTORY: 156/166 [was noted 10/166], register-pressure floor. Derived from the ASM (not the
  * PORT arm): the PORT's `for` loops were wrong shape -- the ROM builds
  * the flag array with a `do { } while` (a single conditional branch to
  * a shared "false" fallthrough, not a rolled-loop-of-4 for the second
@@ -2832,7 +2832,7 @@ s32 func_80161A54_ovl5(s32 arg0) {
     return 0xFF;
 }
 
-/* FACTORY: 162/643, UNCERTAIN -- PORT-seeded, time-boxed. Added two
+/* FACTORY: 631/644 [was noted 162/643], UNCERTAIN -- PORT-seeded, time-boxed. Added two
  * missing local decls (`func_80162A44_ovl5` prototype, `D_8018E21C_ovl5`
  * extern -- both PORT-only/NON_MATCHING-only at file scope) and fixed
  * all five func_800B1900 kills to read objId as a HALF-WORD off the
@@ -3374,7 +3374,7 @@ void func_80162CCC_ovl5(GObj *arg0) {
     }
 }
 
-/* FACTORY: 19/932, UNCERTAIN -- PORT-seeded, time-boxed. Compiles, word
+/* FACTORY: 913/932 [was noted 19/932], UNCERTAIN -- PORT-seeded, time-boxed. Compiles, word
  * count matches (932/932), residue extreme (913/932) -- broad register/
  * frame relabeling from word 0 (ROM: 8 saved slots incl. $f20/$f22,
  * frame 0xD0; this draft's IDO allocation differs). The largest
@@ -4323,7 +4323,7 @@ void func_801649CC_ovl5(void)
     }
   }
 }
-/* FACTORY: 88/223, UNCERTAIN -- PORT-seeded, time-boxed. Fixed two real
+/* FACTORY: 135/223 [was noted 88/223], UNCERTAIN -- PORT-seeded, time-boxed. Fixed two real
  * defects: (1) `D_800D7178_words_[] __asm__("D_800D7178")` used a GCC
  * asm-label alias IDO's cc rejects (Syntax Error) -- rewritten using the
  * file's own existing typed decl, `D_800D7178[7].unk8`, which lands on
