@@ -1938,6 +1938,62 @@ the pool allocator's real stride is 0x78.
     and the rest is a permutation; confirm with LEVER 65b's opcode test and
     queue it for the permuter instead of sweeping it by hand.
 
+    104b. **THE SAME THING OVER A WHOLE DIRECTORY: `tools/decomp/shapescan.py`.**
+    aligndiff fixes the ordering for ONE function; shapescan runs it over every
+    guarded draft in the paths given and ranks by RUN COUNT, discarding runs
+    whose every disagreement is an assembler alias (`li`/`addiu`, `move`/`or`,
+    `beqz`/`beq`, `nop`/`sll`, `b`/`beq`, `negu`/`subu`). Read the two numbers
+    together. Large positional with SMALL shape is the case the old ordering
+    hid: func_800BA7A0 reads 27/91 and its shape distance is 0 (nothing but
+    $s3/$s4 exchanged and a one-slot temp rotation), while func_800A09AC reads
+    1010/1022 with a shape distance of 126 and really is a re-derivation.
+
+    One reading trap, and shapescan flags it: a draft measured ALONE that
+    compiled to `jr $ra / nop` was DELETED, not written badly -- a `static`
+    whose callers are still GLOBAL_ASM pragmas is dead to uopt (LEVER 75).
+    difflib scores that two-word stream as shape 1 and it lands at the top of
+    the ranking. func_80023B34 is the worked example: 68/68 positional, shape
+    1, and its own note already says it cannot be measured alone.
+
+107. **A PERMUTER PLATEAU CAN BE A SETUP BUG. CHECK THE THREE BEFORE SEALING A
+    "REGISTER-ALLOCATION FLOOR".** All three were live on 2026-08-25, all three
+    are silent, and all three look exactly like the permuter having tried and
+    failed.
+
+    a. **The guard shape.** `setup_permuter.unguard()` found a draft's opening
+       `#if` by taking the NEAREST `#ifdef`/`#ifndef` above the `#else`. That
+       misses a guard opened `#if defined(MIPS_TO_C) || defined(PORT)`, and it
+       misses ANY draft with a complete guard block sitting between its opening
+       and its `#else` -- the nearest opener is then that inner block's. When
+       it misses, setup falls through to "already plain C in file (using
+       as-is)", cpp drops the guarded body, and permuter.py exits in one second
+       with "does not contain any function!". 22 of the tree's 739 pragmas were
+       unreachable this way, including a 2-diff entry sitting at position 3 of
+       the priority queue. Fixed with a depth-balanced backward walk; setup now
+       also checks the function survived preprocessing and says so if not.
+
+    b. **The compiler.** setup_permuter hardcoded -O2. The 13 files in
+       `N_AUDIO_O_FILES` are built at -O3 through `tools/decomp/cc_o3.py`
+       (LEVER 75), so every libn_audio draft ever handed to the permuter was
+       optimised against a compiler the ROM does not use: a zero meant nothing
+       and a plateau meant nothing. It reads the Makefile through verify.py's
+       parse now. verify.py had the identical bug once and it cost months.
+
+    c. **The target length.** When splat has no name for a tiny function it
+       merges it into the previous symbol's `.size`, so 13 listings carry a
+       whole extra `jr $ra` + `nop` belonging to the NEXT function of the TU
+       (`padtrap.py` class `swallowed`). verify.py peels those; setup_permuter
+       assembled the whole listing, so its target was two words longer than
+       anything the draft could compile to and the score could never reach 0.
+       A permanent floor on 13 functions that reads as an ordinary plateau.
+
+    The corollary is about evidence, not tools: a plateau is only a floor once
+    you know the permuter was pointed at the right source, with the right
+    compiler, at the right target. n_alSavePull is what a real one looks like
+    -- 2070 iterations at 20, plus a source-side sweep that shows the two
+    remaining words are not independently reachable (its own FACTORY note),
+    plus a CC_O3_UJOIN=1 score confirming ujoin is not the explanation.
+
 97. **THE objId LEVER, WITH THE SCREEN CORRECTED AND THE COST MEASURED.**
     (Written as "80" and renumbered to 97 on 2026-08-25: several lanes
     numbered concurrently and 80 was already taken. Content unchanged.)
