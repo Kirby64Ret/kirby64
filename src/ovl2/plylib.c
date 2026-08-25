@@ -634,65 +634,105 @@ s32 func_8011C344(Mtx *arg0, Vector *arg1, Vector *arg2) {
 #endif
 
 #ifdef MIPS_TO_C
+/* File scope within the guard, so the parameter can be typed and so the tags
+   are file-scope tags (a struct first named inside a body is a BLOCK-scope
+   tag, which then collides with any file-scope declaration of the same name).
+   Read off asm/nonmatchings/ovl2/plylib/func_8011C4E8.s: $s5 = arg1 with two
+   Vectors at 0x0 and 0xC, an angle at 0x18 and the ribbon at 0x1C; $a3 = that
+   ribbon, `lbu 0x0` the point count, `lbu 0x6 & 2` the space flag, `lw 0x8`
+   the point array; $s0 walks that array at stride 0x10 with four floats. */
+struct PlyRibbonPoint {
+    /* 0x00 */ f32 unk0;
+    /* 0x04 */ f32 unk4;
+    /* 0x08 */ f32 unk8;
+    /* 0x0C */ f32 unkC;
+};
 
-void func_8011C4E8(s32 arg0, void *arg1) {
-    u8 *sp9C;
-    f32 sp80;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
-    f32 temp_f20;
-    f32 temp_f22;
-    u32 temp_s1;
-    u32 var_s4;
-    u8 *temp_a3;
-    u8 *var_a3;
-    void *temp_v0;
-    void *temp_v0_2;
-    void *temp_v0_3;
-    void *temp_v0_4;
-    void *var_s0;
+struct PlyRibbon {
+    /* 0x00 */ u8 count;
+    /* 0x01 */ u8 pad1[5];
+    /* 0x06 */ u8 flags;      /* bit 1: take the second Vector as the base */
+    /* 0x07 */ u8 pad7;
+    /* 0x08 */ struct PlyRibbonPoint *points;
+};
 
-    temp_a3 = arg1->unk1C;
-    if (temp_a3 != NULL) {
+struct PlyRibbonHolder {
+    /* 0x00 */ Vector unk0;
+    /* 0x0C */ Vector unkC;
+    /* 0x18 */ f32 angle;
+    /* 0x1C */ struct PlyRibbon *ribbon;
+};
+
+/* Three display lists in asm/data/ovl2/after_spawn.data.s: the ribbon's
+   pipeline setup (E7 pipesync / E2 othermode / FC combiner / D9 geometrymode),
+   the per-segment tail that draws D_80126E48's vertices, and the teardown. */
+extern Gfx D_80126E68[];
+extern Gfx D_80126E90[];
+extern Gfx D_80126EB0[];
+
+/* FACTORY: 8/142 -- MEASURED 2026-08-25, and the first measurement this draft
+   has ever had. It carried no note and could not have: what stood here was
+   raw m2c with `void *arg1` dereferenced as a struct, `f32 sp80` assigned
+   `.unk0`/`.unk4`/`.unk8`, three undeclared display-list symbols, and a
+   four-argument call to func_8011C344 -- which takes three. It had never
+   compiled, so measure_seeds reported it UNSCORABLE and there was nothing to
+   read. Re-derived from the listing with real types (above) it lands at
+   8/142 on the first compile, exact instruction count.
+
+   All 8 remaining words are ONE stack-offset delta: `pos` and `prev` sit 4
+   bytes above the ROM's 0x6C and 0x60. Everything else -- frame 0xA0, the
+   ribbon spill at 0x9C, `base` at 0x80, the whole schedule -- is exact.
+
+   The table, in LEVERS 57 terms, because the search space is not what it
+   looks like. The ROM's local block is 0x60..0x9F, 64 bytes: five 4-byte
+   scalars above `base`, `base` (12) at 0x80, EIGHT bytes at 0x78, `pos` (12)
+   at 0x6C, `prev` (12) at 0x60. This draft declares 60 bytes and gets
+   0x64..0x9F. Adding the missing 4 bytes -- as a trailing `s32 pad`
+   (20/142), as a leading one (20/142), as a `Gfx *` local (20/142), or by
+   making `base` a 16-byte aggregate (20/142) -- always grows the frame to
+   0xA8 and moves everything again, because this compile leaves 20 bytes of
+   compiler temps below the locals where the ROM leaves 16. So n is not the
+   knob: it is ONE COMPILER TEMP TOO MANY, and the question for the next pass
+   is which of this body's values the ROM keeps as a temp that this spelling
+   makes a local (or the reverse). Inlining `mtx` is the negative control --
+   it removes a local and costs 73 words (81/142). */
+void func_8011C4E8(s32 arg0, struct PlyRibbonHolder *arg1) {
+    struct PlyRibbon *ribbon;
+    struct PlyRibbonPoint *pt;
+    Mtx *mtx;
+    f32 c;
+    f32 s;
+    Vector base;
+    u32 i;
+    Vector pos;
+    Vector prev;
+
+    ribbon = arg1->ribbon;
+    if (ribbon != NULL) {
         gSPDisplayList(gDisplayListHeads[2]++, &D_80126E68);
-        sp9C = temp_a3;
-        temp_f22 = cosf(arg1->unk18);
-        var_a3 = temp_a3;
-        temp_f20 = sinf(arg1->unk18);
-        var_s0 = var_a3->unk8;
-        if (var_a3->unk6 & 2) {
-            sp80.unk0 = arg1->unkC;
-            sp80.unk4 = arg1->unk10;
-            sp80.unk8 = arg1->unk14;
+        c = cosf(arg1->angle);
+        s = sinf(arg1->angle);
+        pt = ribbon->points;
+        if (ribbon->flags & 2) {
+            base = arg1->unkC;
         } else {
-            sp80.unk0 = arg1->unk0;
-            sp80.unk4 = arg1->unk4;
-            sp80.unk8 = arg1->unk8;
+            base = arg1->unk0;
         }
-        
-        for (var_s4 = 0; var_s4 < var_a3->unk0; var_s4 += 1) {
-            temp_s1 = gDynamicBuffer1.top;
-            sp6C = (var_s0->unk4 * temp_f20) + sp80;
-            sp70 = var_s0->unk0 + sp84;
-            sp74 = (var_s0->unk4 * temp_f22) + sp88;
-            sp60 = (var_s0->unkC * temp_f20) + arg1->unk0;
-            sp64 = var_s0->unk8 + arg1->unk4;
-            sp9C = var_a3;
-            sp68 = (var_s0->unkC * temp_f22) + arg1->unk8;
-            var_a3 = sp9C;
-            if (func_8011C344(temp_s1, &sp6C, &sp60, var_a3) != 0) {
-                temp_v0_2 = gDisplayListHeads[2];
-                gDisplayListHeads[2] = temp_v0_2 + 8;
-                temp_v0_2->unk4 = temp_s1;
-                temp_v0_2->unk0 = 0xDA380000;
+        for (i = 0; i < ribbon->count; i++) {
+            mtx = (Mtx *) gDynamicBuffer1.top;
+            pos.x = (pt->unk4 * s) + base.x;
+            pos.y = pt->unk0 + base.y;
+            pos.z = (pt->unk4 * c) + base.z;
+            prev.x = (pt->unkC * s) + arg1->unk0.x;
+            prev.y = pt->unk8 + arg1->unk0.y;
+            prev.z = (pt->unkC * c) + arg1->unk0.z;
+            if (func_8011C344(mtx, &pos, &prev) != 0) {
+                gSPMatrix(gDisplayListHeads[2]++, mtx,
+                          G_MTX_PUSH | G_MTX_MUL | G_MTX_MODELVIEW);
                 gSPDisplayList(gDisplayListHeads[2]++, &D_80126E90);
                 gDynamicBuffer1.top += sizeof(Mtx);
             }
-            var_s0 += 0x10;
+            pt++;
         }
         gSPDisplayList(gDisplayListHeads[2]++, &D_80126EB0);
     }
