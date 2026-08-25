@@ -363,29 +363,24 @@ void func_800F6E0C(void *arg0, UNUSED void *_1, UNUSED void *_2) {
     func_8011C2A0(arg0);
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 2/207 words differ. Frame, save set, every call, every branch and
- * the whole loop are exact. The residue is ONE adjacent-instruction schedule
- * swap in the loop preheader: the ROM emits `addiu $fp, %lo(D_800BE504)` then
- * `or $s4,$zero,$zero`, IDO emits them the other way round. Swept and
- * rejected: moving `var_s4 = 0` up next to `var_s3 = 0` is WORSE (12/207 --
- * it also pulls `or $s3,$zero` out of the second beqz's delay slot and shifts
- * the gSegment4StartArray index block); retyping var_s4 u32 is inert. Both
- * instructions are loop PREHEADER material -- one a hoisted invariant
- * address, one a real source statement -- so this is a scheduler tie-break,
- * not a source shape. Permuter fuel.
- * Lever that DID land: the three-way dispatch
- * must be a `switch`, not an if/else chain -- as if/else IDO emits
- * sequential tests instead of the ROM's beqz/beq $s5/beq $s7 dispatch
- * and loses the hoisted constants (137 diffs -> 2). */
+#ifndef PORT
+/* The menu/level scene setup process. Walks the layout blob's animation-ref
+ * table and files each block into the model / texture / camera bank.
+ *
+ * The `$s4` byte offset the ROM steps by 4 alongside the `$s3` counter is
+ * IDO's OWN strength-reduced induction variable, not a source local: writing
+ * it out as a second variable put its `or $s4,$zero,$zero` init one slot too
+ * early in the loop preheader, ahead of the `addiu $fp,%lo(D_800BE504)`
+ * invariant hoist (2/207). Indexing with the counter -- `((s32 *)seg[6])[i]`
+ * -- lets the strength reducer emit that init where the ROM has it, after
+ * the hoists, and the function is byte-exact. */
 void func_800F6E30(s32 arg0) {
-    /* These three stay in-body because this draft's calls do not yet agree
-     * with the tree's definitions: func_800A2550 is `void (void *)` in
-     * ovl1.c and func_800AEE20/func_800AEEB4 are `void (GObj *, f32)` in
-     * ovl1_7.c, but m2c gave them an extra leftover register argument.
-     * Resolve the arity from the listing before sealing this draft; a
-     * file-scope prototype would make the TU disagree with itself. */
-    void func_800A2550(u32);
+    /* These three stay in-body: func_800A2550 is `void (void *)` in ovl1.c
+     * and func_800AEE20/func_800AEEB4 are `void (GObj *, f32)` in ovl1_7.c,
+     * so a file-scope prototype here would make the TU disagree with itself.
+     * The trailing argument in each is the IDO argument-register device
+     * described above func_800F72B0. */
+    void func_800A2550(void *);
     void func_800AEE20(u32, f32, u32 *);
     void func_800AEEB4(u32, f32, u32 *);
     extern f32 gameTicksPerDraw;
@@ -399,7 +394,6 @@ void func_800F6E30(s32 arg0) {
     s32 temp_v1;
     s32 var_s1;
     s32 var_s2;
-    s32 var_s4;
     s32 var_v1;
     u32 var_s3;
     u32 *temp_v0;
@@ -410,7 +404,7 @@ void func_800F6E30(s32 arg0) {
     func_800AF980(0x18);
     D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_800F7258;
     func_800A9864(*(u32 *) D_801290D8, 0x26, 0x10);
-    func_800A2550(D_800DFA10[D_801290D0]);
+    func_800A2550((void *) D_800DFA10[D_801290D0]);
     func_800B3070(0x10, gameTicksPerDraw);
     var_s1 = 0;
     var_s2 = 0;
@@ -420,9 +414,8 @@ void func_800F6E30(s32 arg0) {
     if (temp_a0 != 0) {
         var_s3 = 0;
         if (temp_a0 != 0) {
-            var_s4 = 0;
             do {
-                temp_s0 = *(s32 *) ((u8 *) var_v0[6] + var_s4);
+                temp_s0 = ((s32 *) var_v0[6])[var_s3];
                 temp_v0 = func_800A94F4(temp_s0);
                 temp_v1 = temp_v0[1];
                 switch (temp_v1) {
@@ -464,7 +457,6 @@ void func_800F6E30(s32 arg0) {
                     break;
                 }
                 var_s3 += 1;
-                var_s4 += 4;
                 var_v1 = omCurrentObj->objId * 4;
                 var_v0 = *(u32 **) ((u8 *) gSegment4StartArray + var_v1);
             } while (var_s3 < var_v0[5]);
@@ -474,9 +466,10 @@ void func_800F6E30(s32 arg0) {
         (void (*)(s32, s32, f32)) func_800F6E0C;
     curObjSleepForever();
 }
-#elif defined(PORT)
-/* PORT: still assembly on the matching build; the m2c sketch above is not
- * compilable. Behavioral port from
+#else
+/* PORT: the matched N64 C above is not LP64-clean (widened anim cells, host
+ * pointers through u32 fields), so the port keeps its own body. Behavioral
+ * port from
  * asm/nonmatchings/ovl2/ovl2_2/func_800F6E30.s -- the menu/level scene
  * setup process: parks the track's process-5 slot, loads the scene's geo
  * blob (func_800A9864, already ported), places the scene's particle
@@ -566,8 +559,6 @@ void func_800F6E30(UNUSED s32 arg0) {
     D_800DF310[omCurrentObj->objId] = (void (*)(s32, s32, f32))func_800F6E0C;
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_2/func_800F6E30.s")
 #endif
 
 void func_800F716C(GObj *gobj) {
@@ -590,9 +581,20 @@ void func_800F7258(s32 arg0) {
 /* 2/85 diffs, structurally exact.  Residue: the ROM loads objId straight into
  * $v1 and shifts in place (lw $v1,0($t4); sll $v1,$v1,2); IDO loads into $v0 and
  * shifts into $v1, i.e. `idx` and the scaled-index temp fail to coalesce.
- * Measured: `seg` lands in $a1 only when it is passed as a SECOND argument to
- * func_800A2550/func_800AA018 (IDO argument-register targeting) -- that alone
- * took 16 diffs to 4.  A named `idx` then took 4 to 2.  Swept without moving it:
+ * `seg` lands in $a1 on its own as long as a named `idx` exists; inlining
+ * objId at both uses puts the whole chain in $v0/$v1 and costs 14 more words.
+ * WITHDRAWN 2026-08-25: this note used to say `seg` reached $a1 only when it
+ * was passed as a fabricated SECOND argument to func_800A2550/func_800AA018.
+ * Those prototypes were wrong -- ovl1.c defines `void func_800A2550(void *)`
+ * and ovl14.c declares `void func_800AA018(s32)`, and neither ROM call site
+ * sets $a1 as an argument -- and dropping the extra arguments is byte-inert
+ * here (2/85 either way). The lie was also blocking func_800F6E30, which
+ * needs the honest one-argument declaration in the same TU.  Swept without
+ * moving the residue:
+ * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
+ * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
+ * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad,
+ * priming all three locals in the ROM's register order (temp, idx, seg).
  * decl order (all 6), u32 vs s32 for idx/temp, switch-through-temp, second
  * dispatch as a switch, seg inlined, byte-offset idx, GObj* local for
  * omCurrentObj, capturing func_800A9864's return into temp, `temp = 0` pad.
@@ -614,8 +616,8 @@ void func_800F7258(s32 arg0) {
 #ifdef NON_MATCHING
 extern u32 D_800DFA10[];
 void func_800B491C(GObj *);
-void func_800A2550(void *, void *);
-void func_800AA018(s32, void *);
+void func_800A2550(void *);
+void func_800AA018(s32);
 
 /* MEASURED 2026-08-24, an experiment worth not repeating: the two words are
    `lw $v1,0($t4)` / `sll $v1,$v1,2` where IDO emits `lw $v0` / `sll $v1,$v0`.
@@ -645,7 +647,7 @@ void func_800F72B0(UNUSED s32 arg0) {
         case 22:
             break;
         default:
-            func_800A2550((void *)D_800DFA10[idx], seg);
+            func_800A2550((void *)D_800DFA10[idx]);
             seg = gSegment4StartArray[omCurrentObj->objId];
             break;
     }
@@ -653,13 +655,13 @@ void func_800F72B0(UNUSED s32 arg0) {
     if (temp != 0) {
         if (temp != 1) {
             if (temp == 2) {
-                func_800AA018(((u32 *)seg[6])[1], seg);
+                func_800AA018(((u32 *)seg[6])[1]);
                 seg = gSegment4StartArray[omCurrentObj->objId];
             } else {
                 goto end;
             }
         }
-        func_800AA018(((u32 *)seg[6])[0], seg);
+        func_800AA018(((u32 *)seg[6])[0]);
     }
 end:
     curObjSleepForever();
