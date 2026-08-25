@@ -123,10 +123,32 @@ Whole-function callee-saved permutation; one-slot temp rotation; a CSE'd load la
 The `$f0`/`$f2` split between a `mtc1 $zero` and a neighbouring float was also sealed here as a floor three times, and is not one either — see lever 20.
 
 ## PADDING TRAPS — screen the .s tail BEFORE spending anything
-Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a leading `.late_rodata` block and gives a FALSE trap). Three unclosable classes, all of which produce a verify.py MATCH while the TU still shrinks:
+Anchor on the **LAST** `.size` in the listing (anchoring on the first matches a leading `.late_rodata` block and gives a FALSE trap). Three classes, all of which produce a verify.py MATCH while the TU still shrinks:
   a) last function in its TU with trailing nops;
   b) ex-archive SUBALIGN(16) member (nops round to 16 bytes);
   c) a trailing UNNAMED function (`jr $ra; nop`) inside the target's own `.size`.
+
+**CLASS (a) IS NOT UNCLOSABLE, and this file said it was until 2026-08-25.**
+A `pad` subsegment in kirby64.yaml supplies the fill bytes explicitly, so the
+object may shrink without moving anything after it. It is already done six
+times in ovl5 alone -- `- [0x1261C0, pad]` and `- [0x126AC0, pad]` bracket
+ovl5_9, and the same pattern closes ovl5_2, ovl5_4, ovl5_5, ovl5_6 and
+ovl5_8. Every one of those six functions is now byte-exact with no pragma and
+no listing, while its in-file note still read "converting this would shorten
+the TU and shift the segment, so the pragma must stay". The remedy worked and
+nobody went back to say so, so the notes went on warning lanes off code that
+was already finished.
+
+Pad bytes are zeros and `nop` encodes as zero, which is why this works at all
+for trailing nops. Class (c) is the same shape seen from the other side --
+write the unnamed function out rather than padding over it (func_801555AC_ovl4
+and func_80160A70_ovl5 both closed that way).
+
+The related move for a `.rodata` blob that the C file needs to own is to split
+the subsegment rather than pad it: see the ovl5_3 jump-table split at
+0x134AC8, which also needed `subalign: 8` on the segment because IDO gives an
+object's .rodata 16-byte alignment and 0x8018D658 is only 8-aligned. The
+linked sha1 is what decides; it took two builds.
 
 ## RULES — violating these breaks the ROM for every lane
 - Un-guard ONLY when `verify.py` prints MATCH **and** the tail screen is clean.

@@ -874,8 +874,16 @@ void func_80179D24_ovl5(Gfx **g) {
     gSPDisplayList((*g)++, D_80188218_ovl5);
 }
 
-// PADDING TRAP (padtrap: trap, 5 words after .size) -- converting this would
-// shorten the TU and shift the segment, so the pragma must stay. The body below
+// RESOLVED. This was a padding trap -- 5 words of fill sat after the
+// listing's .size, so decompiling the function shortened the object and shifted
+// everything after it in the segment. It is CLOSED now: a `pad` subsegment (kirby64.yaml)
+// supplies those bytes explicitly, the function is byte-exact, and there is no
+// pragma or listing for it any more.
+//
+// The old text here said "the pragma must stay", which stopped being true when
+// the pad landed and was never updated. All six of ovl5's trap notes said it.
+// A `pad` subsegment is the remedy for the last-function-in-TU class; see the
+// PADDING TRAPS section of tools/decomp/LEVERS.md.
 // is the framebuffer-clear form proved byte-exact on func_8017CC3C_ovl5 (the
 // vu16 casts are what stop IDO hoisting the D_803D6900 induction bump); it is
 // kept live for the PC port, which builds with NON_MATCHING.
