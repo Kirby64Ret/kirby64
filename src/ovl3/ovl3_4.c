@@ -225,47 +225,45 @@ void func_80169A98_ovl3(s32 arg0) {
     func_801696F0_ovl3(arg0);
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 317/333, residue.  Compiles now -- the "NOT MEASURABLE" note this
- * replaces was a misdiagnosis.  Nothing in ovl3_4.c permits only one
- * block-scope prototype: curObjSleepForever / ohSleep / func_8016BBD0_ovl3
- * live in the NON_MATCHING block at the top (lines 103-120), so the N64
- * build saw NOTHING for them, the bare calls in this draft created implicit
- * int declarations, and THOSE collided with the file's real unguarded
- * copies further down -- which is what the compiler was reporting.
- * Declaring them in-body, spelled exactly as the later copies, fixes it,
- * and unlimited duplicate copies are fine (measured: three drafts in this
- * file now carry the same three prototypes at once).
- *
- * Remaining residue is one promoted local, not shape: the saved set is
- * already the ROM's exactly (s0-s5) but the frame is 0x30 against 0x38.
- * The ROM has two more 4-byte slots above the saves, 0x30 (used) and 0x34
- * (reserved and never written), and puts `lw $s0, 0x0($v0)` where this
- * draft keeps the value in $a2 -- so one local that the ROM spills is
- * still living in a temp here.  Adding dead `s32 pad` locals does NOT
- * reproduce it; IDO drops unused scalars in this function, so the 0x30
- * slot has to come from a real value. */
+/* MATCHED 2026-08-25, re-derived from the listing (was 317/333). Three
+ * defects, and the previous note's diagnosis -- "one promoted local, not
+ * shape" -- was the last of them, not the first:
+ *   - `s32 id = omCurrentObj->objId;`, re-assigned at nine points. The ROM
+ *     holds &omCurrentObj in $s1 for the whole function and re-derives
+ *     `lw $v0, 0($s1); lw $x, 0($v0)` at EVERY use, because the stores in
+ *     between may alias the global. Spelling the field inline throughout
+ *     was worth 241 words. (Same fix and same evidence as
+ *     func_8015D3C8_ovl3 in plyshot.c; `%hi(omCurrentObj)` appearing more
+ *     than once in a listing, or held in a saved register with many
+ *     `lw $x, 0x0(...)`, is the screen for it.)
+ *   - the gravity store is `-ABS(grav)`, not `(grav < 0.0f) ? grav : -grav`.
+ *     The ROM negates TWICE on the grav < 0 path (`neg.s $f8,$f2` then
+ *     `neg.s $f10,$f8`), which is the macro expanding under an outer minus;
+ *     and ABS's INTEGER zero is what forks `mtc1 $zero, $f6` off the $f0
+ *     the loop compares share (LEVER 3).
+ *   - `f32 grav` declared BEFORE `s32 i`. That is the whole of the old
+ *     note's "0x34 reserved and never written" slot: grav lives in $f2 and
+ *     never touches its home, but declaring it first still claims frame-4,
+ *     which pushes `i`'s spill onto the ROM's 0x30. The note had tried dead
+ *     `s32 pad` locals, which IDO drops here (re-confirmed); declaration
+ *     ORDER of a real local does it for free. */
 void func_80169C10_ovl3(GObj *arg0) {
 
-    s32 id = omCurrentObj->objId;
-    s32 i;
     f32 grav;
+    s32 i;
 
-    if (!(D_800EA520[id] & 0xFF)) {
+    if (!(D_800EA520[omCurrentObj->objId] & 0xFF)) {
         func_800A9760(0x20007);
     }
-    id = omCurrentObj->objId;
-    D_800DF150[id] = (void (*)(struct GObj *)) func_8016A144_ovl3;
-    D_800DEF90[id] = func_800B4954;
-    D_800E8920[id] = 0;
-    D_800EA1A0[id] = 0;
-    D_800E98E0[id] = 0;
+    D_800DF150[omCurrentObj->objId] = (void (*)(struct GObj *)) func_8016A144_ovl3;
+    D_800DEF90[omCurrentObj->objId] = func_800B4954;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800EA1A0[omCurrentObj->objId] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
     func_8016BBD0_ovl3();
     func_800B33F4();
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = func_800F9828(id, D_800E0D50[id]) * 0.25f;
-    id = omCurrentObj->objId;
-    D_800E3210[id] = ((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[D_800E0D50[id]]) * -0.25f;
+    D_800E64D0[omCurrentObj->objId] = func_800F9828(omCurrentObj->objId, D_800E0D50[omCurrentObj->objId]) * 0.25f;
+    D_800E3210[omCurrentObj->objId] = ((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]]) * -0.25f;
     ohSleep(3);
     func_800B33F4();
     func_800BB468(0, 0);
@@ -280,131 +278,38 @@ void func_80169C10_ovl3(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 2;
     arg0->flags ^= 1;
     func_800FA414(3);
-    id = omCurrentObj->objId;
-    D_800E5F90[id] = D_800E6150[id] = D_800E5F90[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    D_800E6BD0[id] = D_800E6D90[id] = D_800E6BD0[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[D_800E0D50[id]];
+    D_800E5F90[omCurrentObj->objId] = D_800E6150[omCurrentObj->objId] = D_800E5F90[D_800E0D50[omCurrentObj->objId]];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6D90[omCurrentObj->objId] = D_800E6BD0[D_800E0D50[omCurrentObj->objId]];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[D_800E0D50[omCurrentObj->objId]];
     func_801A32EC(&D_801CA980);
-    id = omCurrentObj->objId;
-    if (D_800E7880[D_800E0D50[id]] & 1) {
-        D_800E3210[id] = 8.0f;
+    if (D_800E7880[D_800E0D50[omCurrentObj->objId]] & 1) {
+        D_800E3210[omCurrentObj->objId] = 8.0f;
     } else {
-        D_800E3210[id] = -8.0f;
+        D_800E3210[omCurrentObj->objId] = -8.0f;
     }
     for (i = 0; i != 0xA; i++) {
         D_800E8920[omCurrentObj->objId] = 0;
         ohSleep(1);
     }
-    id = omCurrentObj->objId;
-    if (D_800EA1A0[id] == 0) {
+    if (D_800EA1A0[omCurrentObj->objId] == 0) {
         play_sound(0xDB);
         D_800EA1A0[omCurrentObj->objId] = 1;
     }
-    id = omCurrentObj->objId;
-    if (D_800E3210[id] > 0.0f) {
-        grav = D_800E3210[id] * 0.0625f;
-        D_800E3750[id] = (grav < 0.0f) ? grav : -grav;
+    if (D_800E3210[omCurrentObj->objId] > 0.0f) {
+        grav = D_800E3210[omCurrentObj->objId] * 0.0625f;
+        D_800E3750[omCurrentObj->objId] = -ABS(grav);
         while ((D_800E3210[omCurrentObj->objId] > 0.0f) &&
                (D_800E98E0[omCurrentObj->objId] < 3)) {
             D_800E8920[omCurrentObj->objId] = 0;
             ohSleep(1);
         }
     }
-    id = omCurrentObj->objId;
-    D_800E8920[id] = 0;
-    D_800DEF90[id] = func_800B531C;
+    D_800E8920[omCurrentObj->objId] = 0;
+    D_800DEF90[omCurrentObj->objId] = func_800B531C;
     func_800B33F4();
     D_800E98E0[omCurrentObj->objId] = 3;
     curObjSleepForever();
 }
-#elif defined(PORT)
-/* PORT: swallowed-by-enemy coroutine (via m2c). Drifts the player toward
- * the swallower (quarter of the track gap per tick, aiming 20 units above
- * the PLAYER entity 0's height -- the [0] index is the ROM's), then rides
- * inside it: waits for the swallower's grab word (D_800E9FE0), adopts its
- * track state, gets pushed along at +-8 by its facing (D_800E7880 bit 0),
- * decays that push with gravity -|v|/16 until it stops or the state
- * advances, and hands motion back to the normal track callback. The
- * chewed-damage handler installed here is func_8016A144_ovl3. */
-
-void func_80169C10_ovl3(GObj *arg0) {
-    s32 id = omCurrentObj->objId;
-    s32 i;
-    f32 grav;
-
-    if (!(D_800EA520[id] & 0xFF)) {
-        func_800A9760(0x20007);
-    }
-    id = omCurrentObj->objId;
-    D_800DF150[id] = (void (*)(struct GObj *)) func_8016A144_ovl3;
-    D_800DEF90[id] = func_800B4954;
-    D_800E8920[id] = 0;
-    D_800EA1A0[id] = 0;
-    D_800E98E0[id] = 0;
-    func_8016BBD0_ovl3();
-    func_800B33F4();
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = func_800F9828(id, D_800E0D50[id]) * 0.25f;
-    id = omCurrentObj->objId;
-    D_800E3210[id] = ((gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[D_800E0D50[id]]) * -0.25f;
-    ohSleep(3);
-    func_800B33F4();
-    func_800BB468(0, 0);
-    D_800E98E0[omCurrentObj->objId] = 1;
-    arg0->flags |= 1;
-    func_800B33F4();
-    func_800FBE1C();
-    func_800FA414(5);
-    while (D_800E9FE0[D_800E0D50[omCurrentObj->objId]].as_u32 == 0) {
-        ohSleep(1);
-    }
-    D_800E98E0[omCurrentObj->objId] = 2;
-    arg0->flags ^= 1;
-    func_800FA414(3);
-    id = omCurrentObj->objId;
-    D_800E5F90[id] = D_800E6150[id] = D_800E5F90[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    D_800E6BD0[id] = D_800E6D90[id] = D_800E6BD0[D_800E0D50[id]];
-    id = omCurrentObj->objId;
-    gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[D_800E0D50[id]];
-    func_801A32EC(&D_801CA980);
-    id = omCurrentObj->objId;
-    if (D_800E7880[D_800E0D50[id]] & 1) {
-        D_800E3210[id] = 8.0f;
-    } else {
-        D_800E3210[id] = -8.0f;
-    }
-    for (i = 0; i != 0xA; i++) {
-        D_800E8920[omCurrentObj->objId] = 0;
-        ohSleep(1);
-    }
-    id = omCurrentObj->objId;
-    if (D_800EA1A0[id] == 0) {
-        play_sound(0xDB);
-        D_800EA1A0[omCurrentObj->objId] = 1;
-    }
-    id = omCurrentObj->objId;
-    if (D_800E3210[id] > 0.0f) {
-        grav = D_800E3210[id] * 0.0625f;
-        D_800E3750[id] = (grav < 0.0f) ? grav : -grav;
-        while ((D_800E3210[omCurrentObj->objId] > 0.0f) &&
-               (D_800E98E0[omCurrentObj->objId] < 3)) {
-            D_800E8920[omCurrentObj->objId] = 0;
-            ohSleep(1);
-        }
-    }
-    id = omCurrentObj->objId;
-    D_800E8920[id] = 0;
-    D_800DEF90[id] = func_800B531C;
-    func_800B33F4();
-    D_800E98E0[omCurrentObj->objId] = 3;
-    curObjSleepForever();
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_80169C10_ovl3.s")
-#endif
 
 extern u32 D_8012BCA0;
 /* D_80197200_ovl3 now emitted by this TU */
