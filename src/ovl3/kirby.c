@@ -157,23 +157,49 @@ extern s32 func_801BC580_ovl7(s32);
 
 #ifdef MIPS_TO_C
 /* FACTORY: 353/363 [was noted 10/363], whole-function callee-saved permutation (same floor class documented across this cluster). Renames the shadow-particle record to struct Ovl2Particle (matching the real N64 type in src/ovl2/ovl2_5.c, a plain 4-byte-pointer struct on this 32-bit target) instead of the PORT arm's host-only PcOvl2Particle mirror, dropping the now-unneeded uintptr_t round-trip. Queued for the permuter. */
-/* DIAGNOSIS CONTRADICTED BY THE MEASUREMENT, 2026-08-25. The line above calls
-   this a register/permutation floor; 353 of 363 words differ (97%). A
-   permutation RENAMES registers -- it does not change what the function
-   computes -- so if the claim really is a permutation it cannot account for
-   this, the draft is simply not this function yet, and it should be
-   re-derived from the listing rather than swept for register spellings.
+/* FACTORY: 260/363 positional (was 353/363, i.e. total mismatch), and the
+   frame is now the ROM's -0x18.  The annotation this replaces was right that
+   353/363 could not be a permutation and that the draft had to be re-derived,
+   and three readings off the listing did most of it:
 
-   BUT CHECK THE CLAIM FIRST, and this qualification was added on the same
-   day by a lane that found the counter-example. Ask: DOES THE STATED CAUSE
-   CHANGE THE INSTRUCTION COUNT OR THE FRAME? A permutation does not. An
-   INSERTION does -- func_801DF768_ovl17 has one extra `sw $s0` at diff [2]
-   and every diff after it is the same instruction one slot late, so a note
-   reading 3/213 from an ALIGNING differ and a positional score of 210/213
-   are both true and both useful. Where the cause shifts the stream,
-   near-total positional disagreement is EXPECTED and the note should be
-   believed. Only where the claim is a pure rename does this annotation
-   stand. */
+     353 -> 273  the cached `s32 objId = omCurrentObj->objId` spelled inline
+                 (LEVER 97).  The ROM materialises `&omCurrentObj` into $t0
+                 with a lui+addiu at EIGHT separate points and re-reads
+                 `lw $v0, 0x0($t0)` at every use; the cache is what stops that.
+                 It is also the whole frame: -0x20 -> -0x18, and the ROM's
+                 0x18 is bare (0x10 of outgoing args plus $ra at 0x14), so
+                 this function has NO stack locals at all.
+     273 -> 323  `u16 mode` -> `s32 mode` and `(s16) mode >> 8` -> `mode >> 8`.
+                 The positional score got worse and the function got better:
+                 the ROM reads the entry-mode word with `lhu` and shifts it
+                 with `sra`, so it is a u16 GLOBAL read into an s32 LOCAL --
+                 a `u16` local needs `sll 16; sra 8` to sign-extend and those
+                 two extra words moved every later word (LEVER 48/104).
+                 aligndiff.py confirmed the two words were the only change.
+     323 -> 260  the `hi == 1 / hi == 2` chain is a SWITCH, not if/else-if.
+                 The ROM tests `beq $v0, $at` twice with both arm bodies
+                 placed AFTER the tests and a `b` over them (LEVERS 21/24);
+                 the if/else form inlines the first body and inverts the
+                 first test.
+
+   WHAT IS LEFT, two causes, both read off the aligned diff:
+     a) every `gEntityFuncListIDArray[objId] = N` -- nine sites across the
+        switch arms -- has the ROM materialising the base with
+        `lui $v1,%hi; addiu $v1,$v1,%lo; addu $t2,$v1,$idx; sw $x, 0x0($t2)`
+        where this C folds `%lo` into the store's displacement.  One word per
+        site.  NEGATIVE, measured: LEVER 4's mirror says an initialised
+        pointer local is what produces the two-words-per-block form, and it
+        is NOT true here -- `s32 *fl = gEntityFuncListIDArray;` used at all
+        nine sites is folded away by IDO and emits the identical %lo-folded
+        stores (261 against 260, and the same aligned-diff runs).
+     b) each `(s32) raw < 0` arm has the ROM doing `sll $tN, $v0, 0` (a
+        register copy) before `bgez`, filling the delay slot with the next
+        arm's `lui`, where this C emits a bare `bgezl $v0`.  That is a
+        scheduling/allocation artefact, not a spelling: writing the cast
+        against the global instead of the local (`(s32) D_800BE514 < 0` at
+        all six sites) is 264, worse.
+   Everything else the aligned diff prints is an addiu/li alias or a register
+   name.  Leaving guarded. */
 
 /* PORT: the ovl3 player init -- the function that actually creates Kirby,
  * from asm/nonmatchings/ovl3/kirby/func_8016BF60_ovl3.s. Reached through
@@ -229,8 +255,7 @@ s32 func_8011CCB8(void);
 void func_80177000_ovl3(s32);
 
 void func_8016BF60_ovl3(GObj *arg0) {
-    s32 objId;
-    u16 mode;
+    s32 mode;
     u32 raw;
     u32 num;
 
@@ -248,15 +273,18 @@ void func_8016BF60_ovl3(GObj *arg0) {
     gKirbyState.unk154 = 2;
     mode = D_800D6FB0;
     if (mode != 0) {
-        s32 hi = (s16) mode >> 8;
+        s32 hi = mode >> 8;
 
         gKirbyState.inhaledEntityData = 0;
         gKirbyState.isHoldingEntity = 0;
         gKirbyState.unk4 = 0;
-        if (hi == 1) {
-            func_80227F38_ovl19();
-        } else if (hi == 2) {
-            gKirbyState.abilityState = 0x4B;
+        switch (hi) {
+            case 1:
+                func_80227F38_ovl19();
+                break;
+            case 2:
+                gKirbyState.abilityState = 0x4B;
+                break;
         }
     }
     if (gKirbyState.unk4 == 1) {
@@ -279,47 +307,46 @@ void func_8016BF60_ovl3(GObj *arg0) {
     gKirbyState.floatTimer = 0xF0;
     *(s16 *) &D_80198830_ovl3[0] = 0;
     *(s16 *) &D_80198830_ovl3[2] = 2;
-    objId = omCurrentObj->objId;
     if (D_800BE4FC == 2) {
         raw = D_800BE514;
         num = raw & 0x7FFFFFFF;
         if (num < 12) {
             switch (num) {
                 case 1:
-                    gEntityFuncListIDArray[objId] = 0;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0;
                     break;
                 case 0:
                 case 9:
                     if ((s32) raw < 0) {
-                        D_800E6A10[objId] = -1.0f;
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
                         gKirbyState.unkB = 4;
                     } else {
-                        D_800E6A10[objId] = 1.0f;
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
                         gKirbyState.unkB = 3;
                     }
-                    gEntityFuncListIDArray[objId] = 0x47;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0x47;
                     break;
                 case 4:
                 case 11:
                     if ((s32) raw < 0) {
-                        D_800E6A10[objId] = -1.0f;
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
                     } else {
-                        D_800E6A10[objId] = 1.0f;
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
                     }
                     gKirbyState.unkB = 1;
-                    gEntityFuncListIDArray[objId] = 0x47;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0x47;
                     break;
                 case 2:
                 case 3:
                 case 10:
                     gKirbyState.unk3C = num;
                     if ((s32) raw < 0) {
-                        D_800E6A10[objId] = -1.0f;
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
                     } else {
-                        D_800E6A10[objId] = 1.0f;
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
                     }
                     gKirbyState.unkB = 2;
-                    gEntityFuncListIDArray[objId] = 0x47;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0x47;
                     break;
                 case 5:
                 case 6:
@@ -331,11 +358,11 @@ void func_8016BF60_ovl3(GObj *arg0) {
                         gKirbyState.unkB = (num == 5) ? 2 : 1;
                     }
                     if ((s32) raw < 0) {
-                        D_800E6A10[objId] = -1.0f;
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
                     } else {
-                        D_800E6A10[objId] = 1.0f;
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
                     }
-                    gEntityFuncListIDArray[objId] = 0x47;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0x47;
                     break;
                 case 7:
                 case 8:
@@ -347,19 +374,19 @@ void func_8016BF60_ovl3(GObj *arg0) {
                         gKirbyState.unkB = 1;
                     }
                     if ((s32) raw < 0) {
-                        D_800E6A10[objId] = -1.0f;
+                        D_800E6A10[omCurrentObj->objId] = -1.0f;
                     } else {
-                        D_800E6A10[objId] = 1.0f;
+                        D_800E6A10[omCurrentObj->objId] = 1.0f;
                     }
-                    gEntityFuncListIDArray[objId] = 0x47;
+                    gEntityFuncListIDArray[omCurrentObj->objId] = 0x47;
                     break;
             }
         } else {
             utilPrintf("No MapIn Action Number[kirby.cc]:%d\n", num);
-            gEntityFuncListIDArray[objId] = 0;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 0;
         }
     } else {
-        gEntityFuncListIDArray[objId] = 0;
+        gEntityFuncListIDArray[omCurrentObj->objId] = 0;
     }
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 0x56,
                       &D_80196990_ovl3);
