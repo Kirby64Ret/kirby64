@@ -1747,6 +1747,13 @@ the pool allocator's real stride is 0x78.
     When a draft is one or two words SHORT around a materialised zero, look at
     how the zero is spelled before looking at anything else.
 
+    **See also LEVER 99, written by another lane the same day from the ovl3
+    side. 90 and 99 are the same knob and neither subsumes the other: 90 has
+    the store-vs-compare direction and the two-word-short symptom, 99 has the
+    PAIRING rule -- the unit is whichever pair currently shares one
+    `mtc1 $zero`, so one of the two spellings alone is often worth nothing, and
+    a pair that already forks does not move at all.**
+
 91. **A `.float` in a listing is a decimal you must COPY, not read.** verify.py
     scores `.text` only, so a draft can be byte-exact, check_tu_size can be
     clean, and the linked ROM can still be wrong because a migrated
@@ -1933,6 +1940,7 @@ the pool allocator's real stride is 0x78.
     a data symbol instead of assuming a register allocation floor.
 
 99. **INTEGER ZEROS COME IN PAIRS, AND THE PAIR CAN BE TWO COMPARES.**
+    (Same knob as LEVER 90, found from the other side the same day; read both.)
     (Written as "82" and renumbered to 99 on 2026-08-25: several lanes
     numbered concurrently and 82 was already taken. Content unchanged.)
     func_801712F8_ovl3 recorded that two zero STORES must be written as the

@@ -292,7 +292,7 @@ struct PcPlyshotFx {
       D_800D7244 -- the listing's `%hi(D_800D71E8 + 0x50 / +0x54 / +0x58 /
       +0x5C)`, spimdisasm naming the nearest preceding symbol. The ROM holds
       all four addresses in registers, stores each once and re-reads it at
-      each use. See LEVERS 81; D_800D7238 alone appears in three other
+      each use. See LEVER 98; D_800D7238 alone appears in three other
       functions in this TU. This is why the frame is 0x30 with nothing on the
       stack but the sound pair.
    3. `static const f32 pc_rock_tbl[3][4]` is the ROM's data table
@@ -307,7 +307,8 @@ struct PcPlyshotFx {
       arm) while speed, vert and cap are `((flags & 4) == 0) ? dry : wet`
       (their `bnez`/`bnel` goes to the wet arm). One `s32 wet` local held for
       all four is worth 128 words.
-   6. Two constant-kind edits, both LEVERS 45/82:
+   6. Two constant-kind edits, LEVERS 45 and 99 (and 90, which another
+      lane wrote for the same integer-zero knob the same day):
         `D_800E9AA0[objId].as_s32 = 1` rather than `.as_u32` -- the ROM
         materialises the 1 ONCE and reuses it for `D_800E98E0[objId] = 1`
         three statements later, and it will only do that when both stores have
@@ -1157,13 +1158,13 @@ void func_8015C00C_ovl3(s32 arg0) {
        0x28        the first compiler temp
    and the pads are standing in for whatever those two really are. `kind` and
    `r` are candidates but neither is spilled in the ROM, so at least one of
-   them is not a local. Read LEVERS 57 and 85 before sweeping.
+   them is not a local. Read LEVERS 57 and 102 before sweeping.
 
    Also measured and left out on purpose: writing `D_800E6690[objId] = 0` OR
    `D_800E3750[objId] = 0` with the integer literal scores 229 but takes the
    word count to 292 (one OVER the ROM's 291), and writing BOTH scores 245 at
    291. The ROM is short two `mtc1 $zero` against this C at 0x8015C9A8 and
-   0x8015C9EC, so the zero pair is real (LEVERS 82) -- but it cannot be read
+   0x8015C9EC, so the zero pair is real (LEVERS 90/99) -- but it cannot be read
    until the two missing declarations are found, because the spill offsets
    move every store around it. */
 
