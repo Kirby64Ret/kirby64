@@ -1133,6 +1133,26 @@ void func_80221928_ovl19(GObj *arg0) {
     }
 }
 
+/* FACTORY: 7/85, down from 48/84, and the count now matches the ROM's 85.
+ * Two findings, one of them a live bug rather than a matching one:
+ *
+ *   - `sp28.y` HELD THE Z DELTA. The ROM stores 0.0f to 0x2C($sp) -- sp28.y --
+ *     and the second subtraction to 0x30($sp) -- sp28.z. The draft had the two
+ *     swapped, which puts the world Z delta in the Y component of a vector
+ *     that is then handed to vec3_abs_angle_diff against a +Z forward vector.
+ *     That is a wrong angle on the port, not only a wrong register.
+ *   - the zero stored to D_800E4C50 is an INTEGER 0, not 0.0f. LEVER 90: an
+ *     integer 0 FORKS the FP constant and 0.0f SHARES it, and the ROM
+ *     materialises a second `mtc1 $zero, $f8` here rather than reusing the
+ *     zero already live from sp28.y. Spelling it 0.0f was the whole 29-word
+ *     length difference (48/84 -> 19/85 on its own).
+ *
+ * What is left is one FP register pair exchanged: the ROM keeps the mtc1-built
+ * zero in $f12 and the 0.06981317f in $f14, and IDO picks them the other way
+ * round; the four c.lt.s/c.le.s and the final mul.s follow. Swept and inert:
+ * `angleDiff < 0` with an integer zero (26/86, worse), `0.0f > angleDiff`,
+ * dropping the ternary for two signed literals (71/89, much worse), and
+ * inverting the `if`. */
 #ifdef NON_MATCHING
 void func_80221A74_ovl19() {
     Vector sp34;
@@ -1142,11 +1162,11 @@ void func_80221A74_ovl19() {
     sp34.y = 0.0f; sp34.x = 0.0f; sp34.z = 2.0f;
     lbvector_Rotate(&sp34, AXIS_Y, gEntitiesAngleYArray[omCurrentObj->objId]);
     sp28.x = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
-    sp28.y = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
-    sp28.z = 0.0f;
+    sp28.y = 0.0f;
+    sp28.z = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
     angleDiff = vec3_abs_angle_diff(&sp34, &sp28);
     if (ABSF(angleDiff) <= 0.06981317f) {
-        D_800E4C50[omCurrentObj->objId] = 0.0f;
+        D_800E4C50[omCurrentObj->objId] = 0;
     } else {
         D_800E4C50[omCurrentObj->objId] = ((angleDiff < 0.0f) ? -1 : 1) * 0.06981317f;
     }
