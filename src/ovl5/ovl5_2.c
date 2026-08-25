@@ -125,7 +125,7 @@ void func_8015CE74_ovl5(GObj *);
 void func_8015DFC8_ovl5(GObj *gobj, u32 arg1);
 void func_80161B4C_ovl5(GObj *gobj, s32 arg1);
 void func_80163CC0_ovl5(GObj *gobj, u32 arg1);
-void func_80164A34_ovl5(void);
+void func_80164A34_ovl5(GObj *);
 void func_8015DA24_ovl5(GObj *arg0, u32 arg1);
 s32 func_8015EAB4_ovl5(s32 arg0);
 void func_8015F804_ovl5(s32 arg0);
@@ -204,7 +204,7 @@ void func_80162C68_ovl5(GObj *arg0);
 void func_80162CCC_ovl5(GObj *arg0);
 void func_80163CC0_ovl5(GObj *, u32);
 void func_80164490_ovl5(GObj *);
-void func_80164A34_ovl5(void);
+void func_80164A34_ovl5(GObj *);
 
 void func_8015CD00_ovl5(GObj *arg0) {
     switch (D_800E98E0[omCurrentObj->objId]) {
@@ -245,7 +245,7 @@ void func_8015CD00_ovl5(GObj *arg0) {
         func_80162B1C_ovl5(arg0, D_800EA6E0[omCurrentObj->objId], D_800EA8A0[omCurrentObj->objId], D_800EAA60[omCurrentObj->objId]);
         return;
     case 0:
-        func_80164A34_ovl5();
+        func_80164A34_ovl5(arg0);
         /* fallthrough */
     default:
         return;
@@ -4343,11 +4343,23 @@ void func_801649CC_ovl5(void)
  * the 16-byte Unk10Bytes layout); (2) the func_800B1900 kill reads objId
  * as a HALF-WORD off the pointer (`*(u16*)((u8*)omCurrentObj+2)`, `lhu`
  * in the listing), not a `(u16)` cast on the full read. Compiles, word
- * count matches (223/223), residue high (135/223) -- broad register/
- * frame relabeling, same shape as the ovl19 state-machine functions.
- * Worth a fresh m2c pass before feeding to the permuter. */
+ * count matches (223/223), residue now 123/223 (was 135) -- broad
+ * saved-register relabeling, same shape as the ovl19 state-machine functions.
+ * Worth a fresh m2c pass before feeding to the permuter.
+ * The 12 words came from LEVER 58 in its HOMED form, and this is the case
+ * that shows why a home store is not a veto. The ROM does
+ * `sw $a0, 0x48($sp)` at 80164A68 and then RELOADS $a0 from that slot twelve
+ * times over the rest of the function: the parameter is homed AND used, and
+ * the draft was rebuilding the same value as `GObj *arg0 = omCurrentObj;`.
+ * Making it the parameter instead removed a declaration, which put the frame
+ * on the ROM's 0x48 (it had been 0x50) and made the home store appear where
+ * the ROM has it.
+ * NOTE the order matters: adding the parameter while KEEPING the local scores
+ * 194, far worse than the 135 it started at, because the frame then grows to
+ * 0x50 and IDO spills an extra word at 0x4C. Declare it and delete the local
+ * in the same edit or not at all. */
 #ifdef MIPS_TO_C
-void func_80164A34_ovl5(void) {
+void func_80164A34_ovl5(GObj *arg0) {
     extern struct UnkStruct8015C740 D_801864C4_ovl5;
     extern struct UnkStruct8015C740 D_801864E4_ovl5;
     extern struct UnkStruct8015C740 D_80186504_ovl5;
@@ -4359,7 +4371,6 @@ void func_80164A34_ovl5(void) {
     extern f32 D_801865C4_ovl5[];
     extern u8 D_8018E259_ovl5;
     void func_80164DB0_ovl5(void);
-    GObj *arg0 = omCurrentObj;
     SPObj *panel;
     SPObj *cursor;
     s32 counter;
@@ -4445,7 +4456,7 @@ void func_80164A34_ovl5(void) {
  * entries, moves the cursor sprite along D_801865C4_ovl5 with C-up/C-down,
  * and on A/Start resumes (0), quits to 0x1F (1), the option screen 0x1B (2)
  * or the sound room 0xA (3). */
-void func_80164A34_ovl5(void) {
+void func_80164A34_ovl5(GObj *arg0) {
     extern struct UnkStruct8015C740 D_801864C4_ovl5;
     extern struct UnkStruct8015C740 D_801864E4_ovl5;
     extern struct UnkStruct8015C740 D_80186504_ovl5;
@@ -4457,7 +4468,6 @@ void func_80164A34_ovl5(void) {
     extern f32 D_801865C4_ovl5[];
     extern u8 D_8018E259_ovl5;
     void func_80164DB0_ovl5(void);
-    GObj *arg0 = omCurrentObj;
     SPObj *panel;
     SPObj *cursor;
     s32 counter;
