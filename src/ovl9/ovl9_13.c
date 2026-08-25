@@ -270,106 +270,85 @@ void func_80209918_ovl9(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
-void func_8020998C_ovl9(GObj *arg0) {
-    f32 *var_a1;
-    f32 temp_f2;
-    f32 var_f0;
-    f32 var_f12;
-    f32 var_f14;
-    u32 temp_v1;
+/* FACTORY: 2/216, was 212/221 as an untouched m2c dump ("m2c draft, for the
+   PORT only. Not byte-exact and not claimed to be" -- LEVER 88's shape).
+   Turn the drum towards D_800EB320 in 8/4/1-degree steps, taking the short way
+   round, then wrap the result into [0, 2pi) and write it to the child DObj.
 
-    temp_v1 = omCurrentObj->objId;
-    var_a1 = &D_800EA6E0[temp_v1];
-    temp_f2 = D_800EB320[temp_v1];
-    var_f0 = *var_a1;
-    if (var_f0 < temp_f2) {
-        var_f14 = var_f0 - temp_f2;
-        var_f12 = -var_f14;
+   IT IS AN `ABSF` (LEVERS 70/73), AND THIS IS THE CLEANEST EXAMPLE OF LEVER 73
+   IN THE TREE.  m2c printed the macro out longhand --
+   `if (var_f0 < temp_f2) { var_f14 = var_f0 - temp_f2; var_f12 = -var_f14; }
+   else { var_f14 = var_f0 - temp_f2; var_f12 = var_f14; }` -- which is exactly
+   what LEVER 73 predicts: an `ABSF(a - b)` has NO materialised zero, because
+   IDO folds `(a - b) < 0.0f` into a direct `c.lt.s a, b`, and the subtraction
+   appears once per arm.  And LEVER 73's second half decides the rest: the
+   DIFFERENCE MUST NOT BE NAMED.  Writing `ABSF(cur - tgt) < 3.141592741f` and
+   then spelling `cur - tgt` at every one of the twelve step tests -- rather
+   than testing m2c's `var_f14` -- is 212 -> 2 on one compile, with the twelve
+   `goto block_28` arms collapsed to a plain else-if chain and one re-read of
+   D_800EA6E0 at the merge.
+   The float literals are copied from the listing's own `.late_rodata`
+   decimals, not rounded (LEVER 91); IDO does not merge late_rodata, which is
+   why the six step constants appear TWICE in that pool, once per branch.
+
+   THE LAST 2 are a load/address scheduling tie that no source order reaches.
+   The ROM emits `addu $a1, $a2, $v1` (D_800EA6E0's index) BEFORE
+   `addu $at, $at, $v1` (D_800EB320's), and then `lwc1 $f2` (D_800EB320)
+   BEFORE `lwc1 $f0` (D_800EA6E0) -- the addresses in one order and the loads
+   in the other.  Source order gives you both or neither:
+     tgt read first  -> loads right, the two addu swapped   2/216 (this draft)
+     cur read first  -> addu right, the two loads swapped   2/216
+     tgt inlined at all 13 sites                            2/216
+     declaration order swapped, either way                  2/216
+     both operands inlined at all 13 sites                  35/217
+     m2c's held `f32 *p = &D_800EA6E0[objId]`               188/216
+     barrier_sweep, 95 placements                           NEGATIVE
+   Permuter. */
+void func_8020998C_ovl9(GObj *arg0) {
+    f32 cur;
+    f32 tgt;
+
+    tgt = D_800EB320[omCurrentObj->objId];
+    cur = D_800EA6E0[omCurrentObj->objId];
+    if (ABSF(cur - tgt) < 3.141592741f) {
+        if (cur - tgt > 0.1396263391f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.1396263391f;
+        } else if (cur - tgt > 0.06981316954f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.06981316954f;
+        } else if (cur - tgt >= 0.01745329238f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.01745329238f;
+        } else if (cur - tgt < -0.1396263391f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.1396263391f;
+        } else if (cur - tgt < -0.06981316954f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.06981316954f;
+        } else if (cur - tgt <= -0.01745329238f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.01745329238f;
+        }
     } else {
-        var_f14 = var_f0 - temp_f2;
-        var_f12 = var_f14;
-    }
-    if (var_f12 < 3.1415927f) {
-        if (var_f14 > 0.13962634f) {
-            *var_a1 = var_f0 - 0.13962634f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 > 0.06981317f) {
-            *var_a1 = var_f0 - 0.06981317f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 >= 0.017453292f) {
-            *var_a1 = var_f0 - 0.017453292f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 < -0.13962634f) {
-            *var_a1 = var_f0 + 0.13962634f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 < -0.06981317f) {
-            *var_a1 = var_f0 + 0.06981317f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 <= -0.017453292f) {
-            *var_a1 = var_f0 + 0.017453292f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-    } else {
-        if (var_f14 > 0.13962634f) {
-            *var_a1 = var_f0 + 0.13962634f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 > 0.06981317f) {
-            *var_a1 = var_f0 + 0.06981317f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 >= 0.017453292f) {
-            *var_a1 = var_f0 + 0.017453292f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 < -0.13962634f) {
-            *var_a1 = var_f0 - 0.13962634f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 < -0.06981317f) {
-            *var_a1 = var_f0 - 0.06981317f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            goto block_28;
-        }
-        if (var_f14 <= -0.017453292f) {
-            *var_a1 = var_f0 - 0.017453292f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-block_28:
-            var_f0 = *var_a1;
+        if (cur - tgt > 0.1396263391f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.1396263391f;
+        } else if (cur - tgt > 0.06981316954f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.06981316954f;
+        } else if (cur - tgt >= 0.01745329238f) {
+            D_800EA6E0[omCurrentObj->objId] = cur + 0.01745329238f;
+        } else if (cur - tgt < -0.1396263391f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.1396263391f;
+        } else if (cur - tgt < -0.06981316954f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.06981316954f;
+        } else if (cur - tgt <= -0.01745329238f) {
+            D_800EA6E0[omCurrentObj->objId] = cur - 0.01745329238f;
         }
     }
-    if (var_f0 > 6.2831855f) {
-        do {
-            *var_a1 = var_f0 - 6.2831855f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            var_f0 = *var_a1;
-        } while (var_f0 > 6.2831855f);
+    cur = D_800EA6E0[omCurrentObj->objId];
+    while (cur > 6.283185482f) {
+        D_800EA6E0[omCurrentObj->objId] = cur - 6.283185482f;
+        cur = D_800EA6E0[omCurrentObj->objId];
     }
-    if (var_f0 < 0.0f) {
-        do {
-            *var_a1 = var_f0 + 6.2831855f;
-            var_a1 = &D_800EA6E0[omCurrentObj->objId];
-            var_f0 = *var_a1;
-        } while (var_f0 < 0.0f);
+    while (cur < 0.0f) {
+        D_800EA6E0[omCurrentObj->objId] = cur + 6.283185482f;
+        cur = D_800EA6E0[omCurrentObj->objId];
     }
-    arg0->data.dobj->firstChild->angle.v.x = var_f0;
+    arg0->data.dobj->firstChild->angle.v.x = cur;
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
