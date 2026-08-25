@@ -768,7 +768,19 @@ void func_802209A0_ovl19(GObj *arg0) {
  * rest of the body. Swept: `*(vs32 *) &SYM`, `vs32 *p` in both declaration
  * positions, plain `s32 *p` (68), a read-back second use (66), and file-scope
  * `void` prototypes for the three implicitly-declared callees -- 10 in every
- * case. */
+ * case.
+ * The ROM's relocation is `D_800D71E8 + 0x10`, not a symbol of its own, so the
+ * four INDEXED spellings were swept too on 2026-08-25 -- `extern vs32
+ * D_800D71E8[]` with `D_800D71E8[4] = temp`, `*(vs32 *) &D_800D71E8[4]`,
+ * `((vs32 *) D_800D71E8)[4]` and `*(vs32 *) (D_800D71E8 + 4)`. All four are
+ * 10/87, byte-identical to the `&D_800D71F8` form: verify.py masks the low
+ * half of a relocated field, so which symbol the assembler names costs
+ * nothing and only the register differs. The one non-volatile spelling,
+ * `extern s32 D_800D71E8[]; D_800D71E8[4] = temp;`, is 68/86 -- it folds the
+ * address into a single `lui $at`/`sw %lo()` pair and the function comes out a
+ * word short, which is the evidence that the volatile IS in the ROM's source.
+ * So the residue is purely which register IDO hands the materialised address,
+ * and no spelling of the address reaches it. */
 #ifdef NON_MATCHING
 /* barrier_sweep.py (LEVER 71) 2026-08-25: all 24 statement placements tried, none beats the base 10/87. */
 void func_802209E4_ovl19(GObj *arg0) {
