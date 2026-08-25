@@ -848,34 +848,49 @@ void func_8019A580_ovl7(Unused GObj *gobj) {
     D_800E3C90[omCurrentObj->objId] = 65535.0f;
 }
 
-// m2c draft, measured 69/70 diffs
-#ifdef NON_MATCHING
-void func_8019A62C_ovl7(s32 arg0) {
-    f32 *temp_a0;
-    f32 *temp_v0_2;
-    f32 *temp_v1;
-    f32 temp_f2;
-    f32 var_f0;
-    u32 temp_v0;
+/* MATCHED 2026-08-25, from a raw m2c draft at 69/70 -- i.e. one word right out
+ * of seventy -- in three edits, and every one of them is a LEVER already in
+ * the file:
+ *   1. NAME THE GObj. The ROM opens `lui $a1,%hi(omCurrentObj)` /
+ *      `lw $a1,%lo(omCurrentObj)($a1)` -- the folded TWO-word single-use form
+ *      -- and then re-reads `lw $t, 0x0($a1)` twice more for the two negations
+ *      at the end. m2c's draft cached `omCurrentObj->objId` in an s32 and
+ *      spelled `omCurrentObj` inline twice besides, which is three references
+ *      to the SYMBOL, so IDO built a full lui+addiu ADDRESS base and read
+ *      through it: three words where the ROM has two, and every register after
+ *      it renamed. LEVERS 85's rule read forwards -- one reference gets the
+ *      folded form, more than one gets a base register. Worth 69 -> 27.
+ *   2. INLINE THE objId (LEVERS 4). With `cur` named, `cur->objId` written out
+ *      at all six sites gives the ROM's in-place `lw $v0` / `sll $v0,$v0,2`;
+ *      the cached `s32 id` keeps the raw value live in $v1 and pushes the
+ *      whole $t file one slot up. 27 -> 21, all 21 being that one-slot
+ *      rotation. NOTE this is the opposite of what a read-count screen
+ *      suggests: IDO CSEs the omCurrentObj LOAD into $a1 but NOT the
+ *      `->objId` load, which is why the ROM has three `lw 0x0($a1)`.
+ *   3. NAME THE RECORD (LEVERS 86). `D_800E1B50[cur->objId]` written inline
+ *      puts its base and its result in $t6; the ROM holds them in $v1 across
+ *      two unrelated instructions. `struct EnemyRecord *ent = ...` is the
+ *      whole remaining 21 words -- MATCH.
+ * Measured INERT on the final shape, so do not re-spend them: an `f32 v`
+ * naming the compared D_800E64D0 element (21 either way at step 2), declaring
+ * it before `cur`, assigning `cur` in the body instead of at its declaration,
+ * and a trailing `s32 pad` (21 at step 2). */
+void func_8019A62C_ovl7(Unused GObj *arg0) {
+    GObj *cur = omCurrentObj;
+    struct EnemyRecord *ent = D_800E1B50[cur->objId];
 
-    temp_v0 = omCurrentObj->objId;
-    if (D_800E1B50[temp_v0]->unk3C == 0) {
-        temp_f2 = D_800E6A10[temp_v0];
-        if (((temp_f2 == 1.0f) && (var_f0 = D_800E64D0[temp_v0], (var_f0 > 0.0f))) || ((temp_a0 = &D_800E64D0[temp_v0], (temp_f2 == -1.0f)) && (var_f0 = *temp_a0, (var_f0 < 0.0f)))) {
-            D_800E64D0[temp_v0] = -var_f0;
-            temp_v1 = &D_800E6690[omCurrentObj->objId];
-            *temp_v1 = -*temp_v1;
-            temp_v0_2 = &D_800E6A10[omCurrentObj->objId];
-            *temp_v0_2 = -*temp_v0_2;
+    if (ent->unk3C == 0) {
+        if (((D_800E6A10[cur->objId] == 1.0f) && (D_800E64D0[cur->objId] > 0.0f)) ||
+            ((D_800E6A10[cur->objId] == -1.0f) && (D_800E64D0[cur->objId] < 0.0f))) {
+            D_800E64D0[cur->objId] = -D_800E64D0[cur->objId];
+            D_800E6690[cur->objId] = -D_800E6690[cur->objId];
+            D_800E6A10[cur->objId] = -D_800E6A10[cur->objId];
             func_8019BC94_ovl7();
             return;
         }
-        *temp_a0 = 0.0f;
+        D_800E64D0[cur->objId] = 0.0f;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019A62C_ovl7.s")
-#endif
 void func_8019A740_ovl7(Unused GObj *gobj) {
     gKirbyState.unkD = -2;
     gEntityFuncListIDArray[omCurrentObj->objId] = -1;
