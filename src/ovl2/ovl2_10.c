@@ -627,29 +627,65 @@ void func_80113300(struct GObj *arg0, s32 arg1) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 15/720 instructions match (705 diffs), and the score is
- * almost entirely one frame delta: IDO gives this 0xC8 where the ROM
- * has 0x138, so every $sp displacement and every register that falls
- * out of the allocation differs. The BODY is solved -- both record
- * paths, the three unrolled vertex updates each, the vertex-seen
- * bitmap clear, the plane retransform and the bounds accumulation all
- * read straight off the listing.
- * What the frame needs, measured: the ROM keeps its two bound pairs at
- * $sp+0x118/+0x10C (full-transform path) and +0xBC/+0xB0
- * (translation path) and takes their ADDRESSES (four `addiu $tX, $sp,`
- * materialisations), i.e. they are 12-byte Vectors copied wholesale
- * into rec->unkA0/unkAC -- that much is reproduced here. The
- * remaining 0x70 of its frame (0x50..0xAF and 0xC4..0x10B) is NEVER
- * referenced by any instruction in the listing, so it belongs to
- * locals IDO register-allocated and their identity is not recoverable
- * from the asm alone. Measured inert: adding eighteen per-component
- * f32 temps (one per bounds compare, which is what the ROM's reload
- * pattern suggests) does not grow the frame at all -- IDO forwards
- * them. This one wants a stack-shape search, which is exactly what the
- * permuter is for. */
+/* FACTORY: 16/720 instructions match (704 diffs), was 15/720.
+ * The FRAME IS NOW EXACT at 0x138 and diff 0 is gone; what remains is
+ * the interior layout. The BODY is solved -- both record paths, the
+ * three unrolled vertex updates each, the vertex-seen bitmap clear,
+ * the plane retransform and the bounds accumulation all read straight
+ * off the listing.
+ *
+ * THE PREVIOUS NOTE'S "measured inert" CONCLUSION WAS WRONG, AND THE
+ * REASON IS WORTH KEEPING (it is a scope correction to LEVERS 13/30).
+ * It had tried eighteen per-component `f32` temps and reported that
+ * IDO grew the frame not at all. It does not, because those temps are
+ * USED and IDO forwards them. A pad only reserves its words when it is
+ * (a) unreferenced AND (b) sits BETWEEN two locals that themselves own
+ * stack slots. Measured here, all three cases in one function:
+ *     u8 pad[88] declared LAST (LEVER 13's position)  -> frame 0xC8,
+ *         dropped whole, not one byte reserved
+ *     f32 pad[1] declared FIRST                        -> dropped
+ *     f32 pad0[3] between `world` and `mn`, plus
+ *     f32 pad1[25] between `mx` and `tmn`              -> frame 0xC8
+ *         -> 0x138, EXACTLY the ROM's, first compile
+ * So LEVER 13 ("pad locals go at the END, not the start") is about
+ * which direction a KEPT pad pushes; it is not a placement rule, and
+ * in a function with this many register-allocated locals the end is
+ * the one place a pad is guaranteed to evaporate.
+ *
+ * What the ROM's 0x138 is made of, read off the listing and now
+ * reproduced: saved regs $ra/$fp/$s7-$s0/$f22/$f20 at 0x18..0x4F;
+ * 0x50..0xAF (96 bytes = 24 words) the register-allocated declared
+ * locals that reserve slots and are never referenced; tmx/tmn at
+ * 0xB0/0xBC; 0xC8..0x10B (68 bytes) unreferenced; mx/mn at 0x10C/0x118;
+ * 0x124..0x12F unreferenced; recIndex's spill at 0x130 and a $t3 spill
+ * at 0x134; arg0's home at 0x138.
+ * The 0x130/0x134 pair is the part that took a second arrangement.
+ * Those two spills sit ABOVE every declared local, so `rec` and
+ * `recIndex` have to be the FIRST two declarations; moving them there
+ * collapses the pads (frame 0xD8) and the pad count has to be re-tuned
+ * against the new arrangement, not carried over -- pad1[17] -> pad1[41]
+ * for the same 0x138. With that, recIndex lands on the ROM's 0x130 and
+ * all four Vectors on 0xB0/0xBC/0x10C/0x118. 705 -> 697, and then
+ * 697 -> 685 with the struct-array vertex index that won 136 words on
+ * func_80113F08 below -- read its note for that one, it is the more
+ * transferable of the two findings.
+ * STILL OPEN, and it is the same one thing in both this function and
+ * func_80113F08 below: the ROM holds `rec` in the CALLER-saved $t3 and
+ * spills it round each call to 0x134, where we hold it in $s5 and never
+ * spill. That is why our prologue saves $s5 one instruction early and
+ * every save below it is rotated by one. No declaration count reaches
+ * it; it is a question of what makes IDO decline a callee-saved
+ * register for a pointer live across calls. */
 void func_801133C8(struct GObj *arg0) {
     void func_8010DD8C(void);
     struct struct8011BA10_temp *rec;
+    u32 recIndex;
+    f32 pad0[3];
+    f32 mn[3];
+    f32 mx[3];
+    f32 pad1[41];
+    f32 tmn[3];
+    f32 tmx[3];
     struct vCollisionHeader *mesh;
     struct CollisionTriangle *tri;
     struct Normal *dstNormal;
@@ -659,17 +695,12 @@ void func_801133C8(struct GObj *arg0) {
     s16 *modelVtx;
     f32 *worldVtx;
     f32 *world;
-    f32 mn[3];
-    f32 mx[3];
-    f32 tmn[3];
-    f32 tmx[3];
     f32 nx;
     f32 ny;
     f32 nz;
     f32 posX;
     f32 posY;
     f32 posZ;
-    u32 recIndex;
     u32 triIndex;
     u32 normalIndex;
     u32 vtxIndex;
@@ -714,7 +745,7 @@ void func_801133C8(struct GObj *arg0) {
                     do {
                         vi = tri->vertex[0];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[0]] = 1;
                             if (worldVtx[0] < mn[0]) {
@@ -738,7 +769,7 @@ void func_801133C8(struct GObj *arg0) {
                         }
                         vi = tri->vertex[1];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[1]] = 1;
                             if (worldVtx[0] < mn[0]) {
@@ -762,7 +793,7 @@ void func_801133C8(struct GObj *arg0) {
                         }
                         vi = tri->vertex[2];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[2]] = 1;
                             if (worldVtx[0] < mn[0]) {
@@ -845,7 +876,7 @@ void func_801133C8(struct GObj *arg0) {
                     do {
                         vi = tri->vertex[0];
                         if (((u8 *) rec->unk10)[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
@@ -871,7 +902,7 @@ void func_801133C8(struct GObj *arg0) {
                         }
                         vi = tri->vertex[1];
                         if (((u8 *) rec->unk10)[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
@@ -897,7 +928,7 @@ void func_801133C8(struct GObj *arg0) {
                         }
                         vi = tri->vertex[2];
                         if (((u8 *) rec->unk10)[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
@@ -1292,29 +1323,68 @@ void func_801133C8(struct GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 29/667 instructions match (638 diffs), and as with
- * func_801133C8 above the score is one frame delta doing all the
- * damage: IDO gives this 0xD0 where the ROM has 0x118, so every $sp
- * displacement and the register allocation that hangs off it differ.
- * The body is solved -- the unconditional vertex-seen clear and bounds
- * init, both record paths, the three unrolled vertex updates each, the
- * plane retransform, the bounds written into rec->unkA0/unkAC as
- * 12-byte Vector copies after the record pointer is bumped, and the
- * self-retarget onto func_801133C8 all read straight off the listing.
- * Missing frame is 0x48 (18 words) here and 0x70 in func_801133C8; in
- * both cases the extra stack is NEVER referenced by any instruction,
- * so it is locals IDO register-allocated and their identity is not
- * recoverable from the asm. Measured inert on the sibling: adding one
- * f32 temp per bounds compare (IDO forwards them) and spelling the
- * vertex/plane strides as byte offsets (vi * 0xC / vi * 6) rather than
- * element indices. Sealed as permuter fuel: the shape is right and
- * only the stack shape is open. */
+/* FACTORY: 174/667 instructions match (493 diffs), was 29/667.
+ * THE FRAME AND THE WHOLE STACK LAYOUT ARE NOW EXACT -- 0x118, both
+ * Vectors on the ROM's 0xF0/0xFC, recIndex's spill on its 0x110 -- and
+ * the first eighteen instructions are byte-identical. The previous note
+ * sealed this as "only the stack shape is open ... permuter fuel"; the
+ * stack shape is reachable by hand and this is how.
+ *
+ * Read the ROM's local area straight off the listing and then declare
+ * it, top-down, remembering that later declarations take LOWER
+ * addresses (LEVER 13) and that a pad only reserves words when it is
+ * unreferenced AND sits between two locals that own slots -- see
+ * func_801133C8's note above for the three placements measured:
+ *     rec        0x114   (ROM spills it here round every call)
+ *     recIndex   0x110   (`sw $zero, 0x110($sp)` in the prologue)
+ *     pad0[2]    0x108   unreferenced
+ *     mn         0xFC    (`addiu $sp, 0xFC`, initialised from $f20)
+ *     mx         0xF0    (`addiu $sp, 0xF0`, initialised from $f22)
+ *     pad1[16]   0x50    unreferenced, plus the register-allocated
+ *                        declared locals that reserve slots down here
+ * Tune pad1's count LAST and against the arrangement you actually have:
+ * moving rec/recIndex to the front dropped two words elsewhere and
+ * pad1 had to go 14 -> 16 to hold 0x118.
+ *
+ * TWO THINGS LEFT, both real and neither a stack question:
+ *  - the ROM holds `rec` in the CALLER-saved $t3 and spills it to
+ *    0x114 round each call; we hold it in $s5 and never spill, which
+ *    rotates every prologue save by one. Same open question as the
+ *    sibling above.
+ *  - the two loop counters. The ROM materialises `1` FOUR times (into
+ *    $t1/$t2 before the flags test and again into the callee-saved
+ *    $s6/$s7 inside the transform arm, which is why our body runs two
+ *    instructions short of it from there on); we hold one `1` in $a3
+ *    and copy it. Moving `triIndex = 1; normalIndex = 1;` into the arm
+ *    is NOT the answer -- measured, 493 -> 647 and the count goes to
+ *    669, because the else arm needs them too. It is allocation, not
+ *    source order.
+ *
+ * WHAT WON THE 136 WORDS, and it generalises (see LEVERS): the ROM's
+ * `addiu $fp, $zero, 0xC` held across the whole function and used as
+ * `multu $v0, $fp` at six sites is IDO indexing a STRUCT ARRAY whose
+ * element is 12 bytes -- not a scaled scalar index. The draft wrote
+ * `&mesh->header.vertices.VerticesF[vi * 3]` (an f32 array), and IDO
+ * strength-reduces that to `li 3` + `sll`, which is exactly what it
+ * ALSO does two instructions later for the model-vertex `vi * 6`. That
+ * asymmetry in the ROM -- multu-by-register for one stride, sll/subu/
+ * sll for the other, in the same basic block -- is the tell, and it
+ * cannot be produced by respelling an integer multiply. Writing
+ * `(f32 *) &((Vector *) ...VerticesF)[vi]` produces it on the first
+ * compile: 629 -> 493 here, 697 -> 685 on the sibling.
+ * The previous note recorded byte-offset strides (`vi * 0xC`) as
+ * "measured inert" -- correctly, because a byte offset is still an
+ * integer multiply and IDO reduces it the same way. The type of the
+ * thing being indexed is what moves it. */
 void func_80113F08(struct GObj *arg0) {
     void func_8010DD8C(void);
     void func_801133C8(struct GObj *gobj);
+    struct struct8011BA10_temp *rec;
+    u32 recIndex;
+    f32 pad0[2];
     Vector mn;
     Vector mx;
-    struct struct8011BA10_temp *rec;
+    f32 pad1[16];
     struct vCollisionHeader *mesh;
     struct CollisionTriangle *tri;
     struct Normal *dstNormal;
@@ -1330,7 +1400,6 @@ void func_80113F08(struct GObj *arg0) {
     f32 posX;
     f32 posY;
     f32 posZ;
-    u32 recIndex;
     u32 triIndex;
     u32 normalIndex;
     u32 vtxIndex;
@@ -1374,7 +1443,7 @@ void func_80113F08(struct GObj *arg0) {
                     do {
                         vi = tri->vertex[0];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[0]] = 1;
                             if (worldVtx[0] < mn.x) {
@@ -1398,7 +1467,7 @@ void func_80113F08(struct GObj *arg0) {
                         }
                         vi = tri->vertex[1];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[1]] = 1;
                             if (worldVtx[0] < mn.x) {
@@ -1422,7 +1491,7 @@ void func_80113F08(struct GObj *arg0) {
                         }
                         vi = tri->vertex[2];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             func_80112F70((f32 (*)[4]) world, worldVtx, &modelVtx[vi * 3]);
                             seen[tri->vertex[2]] = 1;
                             if (worldVtx[0] < mn.x) {
@@ -1481,7 +1550,7 @@ void func_80113F08(struct GObj *arg0) {
                     do {
                         vi = tri->vertex[0];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
@@ -1507,7 +1576,7 @@ void func_80113F08(struct GObj *arg0) {
                         }
                         vi = tri->vertex[1];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
@@ -1533,7 +1602,7 @@ void func_80113F08(struct GObj *arg0) {
                         }
                         vi = tri->vertex[2];
                         if (seen[vi] == 0) {
-                            worldVtx = &mesh->header.vertices.VerticesF[vi * 3];
+                            worldVtx = (f32 *) &((Vector *) mesh->header.vertices.VerticesF)[vi];
                             worldVtx[0] = modelVtx[vi * 3] + posX;
                             worldVtx[1] = modelVtx[(vi * 3) + 1] + posY;
                             worldVtx[2] = modelVtx[(vi * 3) + 2] + posZ;
