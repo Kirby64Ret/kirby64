@@ -1056,9 +1056,21 @@ void func_8020C2EC_ovl9(struct GObj *arg0) {
 // $a0/$a1/$a2/$a3 register-naming cascade starting from the very first
 // instruction (omCurrentObj held in $a1 by the ROM, $a0 here). Re-measured
 // this session (old note said 24, corrected to 22). Swapping declaration
-// order of `tmp`/`sp1C` made it WORSE (24, reverted). Same shape as this
-// overlay's func_801D4594_ovl9 -- LEVERS "second variant" whole-function
-// register permutation floor, not a source-spelling residue.
+// order of `tmp`/`sp1C` made it WORSE (24, reverted).
+//
+// LEVER 58 RULED OUT HERE, and this is the negative control for it. The
+// signature is present: `jal func_801A0D74_ovl7` at 8020C3DC has $a0 untouched
+// by everything above it, and func_801A0D74_ovl7 really is `s32 (GObj *)`.
+// But declaring `struct GObj *arg0` and passing it scores 54/55, because IDO
+// then HOMES the parameter (`sw $a0, 0x20($sp)`) and the ROM has no such
+// store -- one extra instruction at the top and the whole body shifts.
+// func_801D4594_ovl9 (ovl9_1.c), func_80211B1C_ovl9 (ovl9_14.c) and
+// func_80207374_ovl9 (ovl9_11.c) all closed on exactly that change today, and
+// all three have frame 0x18: an argument-save area and no stack locals. This
+// one has `f32 sp1C` living at 0x1C($sp) and a 0x20 frame. So the jal alone is
+// not evidence for lever 58; the prologue is. Do not re-cost this without a
+// theory for why the ROM can hold a live parameter in $a0 through a frame
+// that has stack locals.
 void func_8020C378_ovl9(void) {
     f32 sp1C;
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];

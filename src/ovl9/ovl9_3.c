@@ -872,7 +872,13 @@ void func_801DDF9C_ovl9(GObj *arg0) {
    /32.0f is strength-reduced to a reciprocal multiply and loses the div.s;
    (2) the five zero-stores are one reverse-order chained assignment
    (D_800E3050 = ... = D_800E3910), which is what shares the single load.
-   Reordering the product to put the multiplies in ROM order measures 38. */
+   Reordering the product to put the multiplies in ROM order measures 38.
+   The rotation itself is not local to this function: the same one-position
+   shift of IDO's hoisted-address priority list appears in func_801ED9AC_ovl9
+   and func_801EEC28_ovl9 (ovl9_6.c) and func_8021F174_ovl19 (ovl19/helper.c),
+   always demoting the symbol the ROM ranks first -- the one first materialised
+   outside the loop. func_801ED9AC_ovl9's note carries the four-function table;
+   attack it there, at 7/144, not here. */
 #ifdef NON_MATCHING
 void func_801DE280_ovl9(struct GObj *arg0) {
     s32 i;

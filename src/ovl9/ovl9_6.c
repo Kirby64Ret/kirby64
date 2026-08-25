@@ -898,8 +898,36 @@ s32 random_soft_s32_range(s32);
  * same D_800E9C60/D_800E77A0 skeleton but an extra setProcessMain() call and
  * a richer switch body, so it is not a byte-for-byte clone to copy from; its
  * matching first-compile does not by itself explain this draft's register
- * choice. Whole-function $s5/$s6 saved-register permutation -- LEVERS
- * "second variant" floor, not a source-spelling residue. */
+ * choice.
+ *
+ * THE SAVED-REGISTER PRIORITY FAMILY (measured 2026-08-25 across four drafts
+ * in three files; this is the cheapest instance, so start any attack here).
+ * IDO hoists each global's ADDRESS into a saved register and assigns those
+ * registers by a priority order. The ROM's order and this compiler's order
+ * differ by one position, and only that:
+ *
+ *   func_801ED9AC_ovl9  (here, 7/144)   ROM s6=D_800E9C60 s5=D_800E77A0
+ *                                       IDO s5=D_800E9C60 s6=D_800E77A0
+ *   func_801EEC28_ovl9  (45/277)        ROM s2=omCurrentObj, IDO s1
+ *   func_801DE280_ovl9  (ovl9_3, 27/227) ROM s1/s2/s3 = D_8021BDB8 /
+ *                                       D_800E7880 / D_800E64D0; IDO rotates
+ *                                       the ROM's TOP symbol to the bottom
+ *   func_8021F174_ovl19 (helper.c, 20/144) same rotation: ROM s3=omCurrentObj
+ *                                       s2=D_800E0D50 s1=D_800E8060, IDO puts
+ *                                       omCurrentObj at s1 and shifts the two
+ *                                       loop-only symbols up
+ *
+ * In every case the ROM ranks HIGHEST the symbol that is materialised FIRST --
+ * the one whose first reference is OUTSIDE the loop -- and this compiler ranks
+ * the loop-only symbols above it. The emission ORDER of the lui/addiu pairs is
+ * identical in both; only the register numbers are permuted, and the prologue's
+ * sw order follows (func_801EEC28_ovl9 saves $s2 before $s1 because it defines
+ * $s2 first). So this is a priority-list difference, not scheduling.
+ * Ruled out here: if/continue polarity, an inner do-while around the ohSleep
+ * wait, a local for the switch operand (both strictly worse), and the fact that
+ * D_800E9C60 has more uses than D_800E77A0 -- which should already rank it
+ * higher and does in the ROM. Nothing in the body reorders the list. Anyone
+ * attacking this should attack it once, here, and fix four drafts at a time. */
 void func_801ED9AC_ovl9(struct GObj *arg0) {
     if (func_801ED018_ovl9(4)) {
         func_8019D958_ovl7((u16) omCurrentObj->objId);

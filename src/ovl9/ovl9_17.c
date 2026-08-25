@@ -85,7 +85,12 @@ s32 func_80219CE8_ovl9(void) {
     }
     return 0;
 }
-#ifdef NON_MATCHING
+/* The zero test picks which arm runs, and the draft had the two arms the wrong
+   way round: the ROM's `c.eq.s $f4,$f12 / bc1f` sends the NOT-equal case to the
+   sinf/cosf block and falls through to the plain `D_800E3210 = phi_f2` store,
+   which it hoists into the `b` delay slot. Written this way round it is
+   byte-exact (was 30/89); written the other way it is not just a layout
+   difference, it drives the wrong arm. */
 void func_80219E0C_ovl9(s32 arg0, u32 halve) {
     f32 phi_f2;
 
@@ -94,11 +99,10 @@ void func_80219E0C_ovl9(s32 arg0, u32 halve) {
     switch (arg0) {
         case 1:
             if (D_800EC660[omCurrentObj->objId] == 0.0f) {
+                D_800E3210[omCurrentObj->objId] = phi_f2;
+            } else {
                 D_800E64D0[omCurrentObj->objId] = -sinf(D_800EC660[omCurrentObj->objId]) * phi_f2;
                 D_800E3210[omCurrentObj->objId] = cosf(D_800EC660[omCurrentObj->objId]) * phi_f2;
-            }
-            else {
-                D_800E3210[omCurrentObj->objId] = phi_f2;
             }
             break;
         case 2:
@@ -110,9 +114,7 @@ void func_80219E0C_ovl9(s32 arg0, u32 halve) {
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_17/func_80219E0C_ovl9.s")
-#endif
+
 void func_80219F70_ovl9(s32 this) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
 

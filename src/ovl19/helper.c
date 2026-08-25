@@ -142,7 +142,14 @@ void func_8021F0A4_ovl19(GObj *arg0) {
    0.2f literal referencing this TU's own .late_rodata where the ROM names
    D_8022F750_ovl19, which is expected for a migrated TU and is checked by
    check_rodata_bytes.py, not here.  WAVE8 floor class "whole-function
-   callee-saved permutation" -- no variants spent, none are worth spending. */
+   callee-saved permutation" -- no variants spent, none are worth spending.
+   The "descending in order of first materialisation" reading above is
+   confirmed on three more drafts in ovl9 (func_801ED9AC_ovl9 7/144,
+   func_801EEC28_ovl9 45/277, func_801DE280_ovl9 27/227); ovl9_6.c's note on
+   func_801ED9AC_ovl9 tabulates all four. In each of them the symbol IDO
+   demotes is the one whose first reference is OUTSIDE the loop, and the
+   lui/addiu emission order is identical either way, so it is a priority-list
+   difference and not a scheduling one. */
 #ifdef NON_MATCHING
 void func_8021F174_ovl19(GObj *arg0) {
     func_8021DFD0_ovl19();
