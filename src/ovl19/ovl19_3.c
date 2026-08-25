@@ -1155,7 +1155,6 @@ void func_8022CD00_ovl19(GObj *g) {
     }
 }
 
-#ifdef MIPS_TO_C
 /* FACTORY: 191/201, near-miss. Derived from the ASM (not the PORT arm);
  * everything up to the D_800D6B54 pair matches exactly, including using
  * `0.0` (not `0.0f`) for the gEntitiesAngleXArray store to fork IDO's
@@ -1166,55 +1165,6 @@ void func_8022CD00_ovl19(GObj *g) {
  * matter the C spelling -- tried array index, byte-offset cast, and
  * volatile byte-offset cast, all three compile identically. 10 raw insn
  * diffs, all in that one four-store cluster. */
-void func_8022CE18_ovl19(GObj *arg0) {
-    extern s32 D_8012E90C;
-    extern u32 *D_800DFD90[];
-    extern f32 gKirbyHp;
-
-    D_8012E7E8[2] = 1;
-    D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
-    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    *(s32 *)((u8 *)&D_8012E90C + 0x10) = 0;
-    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
-    func_800B20E0(omCurrentObj, (void ***) D_800DFD90[omCurrentObj->objId]);
-    D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
-    gKirbyState.unk7 = 0;
-    D_800E8060[omCurrentObj->objId] = -1;
-    if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
-        gKirbyState.unk30 = 0;
-    }
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-    D_800E3750[omCurrentObj->objId] = 0.0f;
-    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0;
-    auFunc80020C88();
-    func_800A7EB4();
-    if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f)) {
-        play_sound(0xDC);
-    } else {
-        play_sound(0x46);
-    }
-    func_8011DA34();
-    play_music(0, 5);
-    func_80176398_ovl3();
-    func_800BB498();
-    func_800BB468(2, 0);
-    (&D_800D6B54)[1] = 0xA0;
-    D_800D6B54 = 1;
-    D_800BE4F8 = 6;
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        func_801230E8(0x20378, 0x20379, 1);
-    } else {
-        func_801230E8(0x20376, 0x20377, 1);
-    }
-    curObjSleepForever();
-}
-#elif defined(PORT)
 /* PORT: behavioral port of the MIPS_TO_C sketch above, re-verified
  * against asm/nonmatchings/ovl19/ovl19_3/func_8022CE18_ovl19.s -- the
  * helper's "level complete" coroutine (funclist 22 in D_8022F5B0).
@@ -1226,57 +1176,63 @@ void func_8022CE18_ovl19(GObj *arg0) {
  * stops the voice, victory dance music cue and the score fanfare
  * name-call pair picked by facing. D_8012E90C+0x10 is cleared via the
  * byte-offset idiom ovl3_6.c already uses for that block. */
-void func_8022CE18_ovl19(GObj *arg0) {
-    extern s32 D_8012E90C;
-    extern u32 *D_800DFD90[];
-    extern f32 gKirbyHp;
-
-    D_8012E7E8[2] = 1;
-    D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
-    setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
-    func_800AECC0(gameTicksPerDraw);
-    func_800AED20(gameTicksPerDraw);
-    *(s32 *)((u8 *)&D_8012E90C + 0x10) = 0;
-    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
-    func_800B20E0(omCurrentObj, (void ***) D_800DFD90[omCurrentObj->objId]);
-    D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
-    gKirbyState.unk7 = 0;
-    D_800E8060[omCurrentObj->objId] = -1;
-    if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0)) {
-        gKirbyState.unk30 = 0;
-    }
-    D_800E6690[omCurrentObj->objId] = 0.0f;
-    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
-    D_800E6850[omCurrentObj->objId] = 65535.0f;
-    D_800E3750[omCurrentObj->objId] = 0.0f;
-    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = 65535.0f;
-    gEntitiesAngleXArray[omCurrentObj->objId] = 0.0f;
-    auFunc80020C88();
-    func_800A7EB4();
-    if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f)) {
-        play_sound(0xDC);
-    } else {
-        play_sound(0x46);
-    }
-    func_8011DA34();
-    play_music(0, 5);
-    func_80176398_ovl3();
-    func_800BB498();
-    func_800BB468(2, 0);
-    (&D_800D6B54)[1] = 0xA0;
-    D_800D6B54 = 1;
-    D_800BE4F8 = 6;
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        func_801230E8(0x20378, 0x20379, 1);
-    } else {
-        func_801230E8(0x20376, 0x20377, 1);
-    }
-    curObjSleepForever();
+void func_8022CE18_ovl19(GObj *arg0)
+{
+  extern s32 D_8012E90C;
+  extern u32 *D_800DFD90[];
+  int new_var;
+  extern f32 gKirbyHp;
+  D_8012E7E8[2] = 1;
+  D_800DF150[omCurrentObj->objId] = func_8022D13C_ovl19;
+  setProcessMain(gEntityGObjProcessArray4[omCurrentObj->objId], func_800B1870);
+  func_800AECC0(gameTicksPerDraw);
+  func_800AED20(gameTicksPerDraw);
+  *((s32 *) (((u8 *) (&D_8012E90C)) + 0x10)) = 0;
+  func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+  func_800B20E0(omCurrentObj, (void ***) D_800DFD90[omCurrentObj->objId]);
+  D_800DFBD0[omCurrentObj->objId][23]->flags = 2;
+  new_var = 1;
+  gKirbyState.unk7 = 0;
+  D_800E8060[omCurrentObj->objId] = -new_var;
+  if ((gKirbyState.floorCollisionNext != 0) && (gKirbyState.ceilingCollisionNext != 0))
+  {
+    gKirbyState.unk30 = 0;
+  }
+  D_800E6690[omCurrentObj->objId] = 0.0f;
+  D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+  D_800E6850[omCurrentObj->objId] = 65535.0f;
+  D_800E3750[omCurrentObj->objId] = 0.0f;
+  D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+  D_800E3C90[omCurrentObj->objId] = 65535.0f;
+  gEntitiesAngleXArray[omCurrentObj->objId] = 0.0;
+  auFunc80020C88();
+  func_800A7EB4();
+  if ((gKirbyHp == 0.0f) && (D_800E7B20[omCurrentObj->objId] != 0.0f))
+  {
+    play_sound(0xDC);
+  }
+  else
+  {
+    play_sound(0x46);
+  }
+  func_8011DA34();
+  play_music(0, 5);
+  func_80176398_ovl3();
+  func_800BB498();
+  func_800BB468(2, 0);
+  (&D_800D6B54)[new_var] = 0xA0;
+  D_800D6B54 = 1;
+  D_800BE4F8 = 6;
+  if (D_800E6A10[omCurrentObj->objId] == 1.0f)
+  {
+    func_801230E8(0x20378, 0x20379, new_var);
+  }
+  else
+  {
+    func_801230E8(0x20376, 0x20377, 1);
+  }
+  curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022CE18_ovl19.s")
-#endif
 
 void func_8022D13C_ovl19(GObj *g) {
     if (gKirbyState.unk30 != 0) {
