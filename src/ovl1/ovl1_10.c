@@ -622,7 +622,17 @@ void func_800BB198(s32 arg0, s32 arg1) {
  *     The pair $t4/$t5 says the ROM's type IS 64-bit; what no spelling reaches
  *     is IDO building both halves before the address.
  * The interleaved head (node/item pointer assignments BETWEEN the stores) is
- * load-bearing -- grouping them before or after costs 5-12 diffs. */
+ * load-bearing -- grouping them before or after costs 5-12 diffs.
+ *
+ * Residue (a) swept 2026-08-25 and NOT reachable from statement order. The ROM
+ * bumps item (0x24) before node (8); the draft's inner loop writes
+ * `node++; prev->next = node; item++; node->item = item;`. Reordering it to
+ * put item++ first costs 2 more (10/70), and also moving `node->item = item;`
+ * ahead of `prev->next = node;` costs 4 more (12/70). Both are worse than
+ * leaving it, so the bump order is IDO's scheduling of two independent
+ * inductions and not a source-order fact.
+ * barrier_sweep.py (LEVER 71) run over the whole draft: no placement beats
+ * 8/70 either. */
 /* FACTORY: 8/70 */
 #ifdef NON_MATCHING
 extern RumbleItem D_800ED320[][3];
