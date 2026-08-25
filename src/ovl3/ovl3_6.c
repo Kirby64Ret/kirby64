@@ -135,7 +135,32 @@ typedef struct Unk80198830 {
 extern Unk80198830 D_80198830_ovl3;
 
 #ifdef MIPS_TO_C
-/* FACTORY: 4/303, whole-function callee-saved permutation (same floor class documented across this cluster). Also gives D_80198830_ovl3 a local extern (its file-scope declaration sits inside an earlier #ifdef PORT block). Queued for the permuter. */
+/* FACTORY: 299/303 -- MEASURED 2026-08-25, and the first measurement this
+ * draft has ever had. The note this replaces said "4/303, whole-function
+ * callee-saved permutation ... queued for the permuter". It could not have
+ * been measured: with the draft un-guarded the file did not compile, on two
+ * errors that had been there the whole time.
+ *
+ *   * `extern u8 D_80198830_ovl3[];` in the body contradicted the file-scope
+ *     `extern Unk80198830 D_80198830_ovl3;`. (The old note's excuse -- "its
+ *     file-scope declaration sits inside an earlier #ifdef PORT block" -- was
+ *     true once and is not now.) Replaced by the `(u8 *) &D_80198830_ovl3`
+ *     spelling the neighbouring functions in this file already use.
+ *   * `k = &gKirbyState;` with no `k` declared.
+ *
+ * FIVE notes in this file were written this way and all five claimed
+ * near-misses; the real numbers are 299/303, 386/422, 793/821, 226/242 and
+ * 228/283. They were all "queued for the permuter", so the permuter was being
+ * fed functions that are not close to matching. A FACTORY note is only worth
+ * the compile that produced it -- if the file does not build, there is no
+ * number, and writing one down is worse than leaving it blank.
+ *
+ * The `k` pointer is RIGHT and is kept: the ROM holds &gKirbyState in $s0 for
+ * the whole function (`sw $zero, 0x30($s0)`), which a direct `gKirbyState.x`
+ * spelling does not produce. What is still wrong is one saved register too
+ * many -- the ROM has $s0 and $s1 in a 0x20 frame, this has $s0/$s1/$s2 in
+ * 0x28 -- so the body is materialising something the ROM keeps live. That is
+ * the next thing to look at, and it is a lane's job, not the permuter's. */
 /* PORT: the ability lunge coroutine (track action 0x21), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80179370_ovl3.s (via m2c, floats
  * re-derived against kirby_2.rodata). Arms the current ability, freezes
@@ -163,13 +188,14 @@ void func_80179370_ovl3(s32 arg0) {
     extern u8 D_801904B0_ovl3[];
     extern u32 D_80196D80_ovl3[];
     extern s16 D_80198832_ovl3;
-    extern u8 D_80198830_ovl3[];
+    u8 *chargeBlk = (u8 *) &D_80198830_ovl3;
+    struct Player *k;
     f32 spd;
     s32 id;
     s32 pre;
 
     k = &gKirbyState;
-  k->unk30 = 0;
+    k->unk30 = 0;
     gKirbyState.unk4C = 0;
     gKirbyState.unk7 = 0;
     func_8011CF58();
@@ -229,10 +255,10 @@ void func_80179370_ovl3(s32 arg0) {
     } else {
         func_80120A28();
         gKirbyState.abilityInUse = 0;
-        if (*(s16 *) &D_80198830_ovl3[2] > 0) {
-            *(s16 *) &D_80198830_ovl3[2] -= 1;
+        if (*(s16 *) &chargeBlk[2] > 0) {
+            *(s16 *) &chargeBlk[2] -= 1;
         }
-        *(s16 *) &D_80198830_ovl3[0] = 0x1E;
+        *(s16 *) &chargeBlk[0] = 0x1E;
         func_8011D614();
         id = omCurrentObj->objId;
         if (!(D_800E8AE0[id] & 6)) {
@@ -412,7 +438,14 @@ void func_8017982C_ovl3(s32 arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 36/422, whole-function callee-saved permutation (same floor class documented across this cluster). Queued for the permuter. */
+/* MEASURED FOR THE FIRST TIME 2026-08-25. The note this replaces was
+ * written while this file DID NOT COMPILE with the draft un-guarded, so
+ * its number came from somewhere other than verify.py. See the block
+ * comment over func_80179370_ovl3 for the whole story.
+ *
+ * Real residue 386/422. Un-guarded it failed on `func_8017A2C0_ovl3`
+ * undefined -- the file declares it in ANOTHER function's body further down
+ * (and stores it into D_800DF310 twice), so this one never saw it. */
 /* PORT: the stone-form coroutine (track action 0x22), from
  * asm/nonmatchings/ovl3/ovl3_6/func_80179C28_ovl3.s (via m2c, floats from
  * kirby_2.rodata). First entry (ability not yet armed) sets up the
@@ -438,6 +471,7 @@ void func_8017982C_ovl3(s32 arg0) {
  * func_8017A2C0_ovl3 is forward-declared -- it is defined later in this
  * TU with exactly the D_800DF310 slot signature. */
 void func_80179C28_ovl3(GObj *arg0) {
+    extern void func_8017A2C0_ovl3(s32, s32, f32);
     extern u8 D_80190518_ovl3[];
     s32 id;
     f32 vel;
@@ -745,7 +779,14 @@ void func_8017A2C0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 28/821, whole-function callee-saved permutation (same floor class documented across this cluster, jump table included). Queued for the permuter. */
+/* MEASURED FOR THE FIRST TIME 2026-08-25. The note this replaces was
+ * written while this file DID NOT COMPILE with the draft un-guarded, so
+ * its number came from somewhere other than verify.py. See the block
+ * comment over func_80179370_ovl3 for the whole story.
+ *
+ * Real residue 793/821 -- 821 words, and it is not close. Un-guarded it
+ * failed on `gEntityGObjProcessArray` undefined, declared in two other
+ * function bodies in this file but not this one. */
 /* PORT: the stone-form (action 0x22) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017A390_ovl3.s (via m2c with the
  * kirby_2.rodata jump table). Runs the tick prologue and water-scaled
@@ -783,6 +824,7 @@ void func_8017A2C0_ovl3(s32 arg0, s32 arg1, f32 arg2) {
  * `&D_800D71E8 + 0x50` is the f32 scratch D_800D7238;
  * `D_800DFBD0[...]->unk4->unk30` is DObj list entry [1]'s angle.v.x. */
 void func_8017A390_ovl3(s32 arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
     /* NOT hoisted to file scope: the NON_MATCHING draft of
      * func_80175FA0_ovl3 calls func_80120AF8 with two arguments, and the
      * tree's gcc lint pass builds that arm (-DNON_MATCHING). It only
@@ -1381,7 +1423,16 @@ void func_8017B068_ovl3(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 16/242, whole-function callee-saved permutation (same floor
+/* MEASURED FOR THE FIRST TIME 2026-08-25. The note this replaces was
+ * written while this file DID NOT COMPILE with the draft un-guarded, so
+ * its number came from somewhere other than verify.py. See the block
+ * comment over func_80179370_ovl3 for the whole story.
+ *
+ * Real residue 226/242. Un-guarded it failed twice: a body-local
+ * `extern s32 D_8012E80C;` contradicting the file-scope `extern s32
+ * D_8012E80C[];`, and `D_8012E7E8` undefined (declared in another body).
+ * The old text follows, unverified.
+ * OLD: 16/242, whole-function callee-saved permutation (same floor
  * class documented in ovl3_1.c/plyshot.c -- correct instruction count
  * and control flow, near-total register-naming/frame mismatch, -0x40
  * vs -0x38 frame). Queued for the permuter. */
@@ -1407,6 +1458,7 @@ void func_8017B068_ovl3(GObj *arg0) {
  * m2c's `->unk8/unk24/unk38/unk4` DObj-list reads are entries [2]/[9]/
  * [14]/[1] (4-byte N64 pointers); 0x3F800000 is 1.0f. */
 void func_8017B3C4_ovl3(s32 arg0) {
+    extern s32 D_8012E7E8;
     typedef struct PcNeedleEmitter {
         /* 0x00 */ struct PcNeedleEmitter *next;
         /* 0x08 */ Vector pos;
@@ -1417,7 +1469,6 @@ void func_8017B3C4_ovl3(s32 arg0) {
         /* 0x58 */ PcNeedleEmitter *xf;
     } PcNeedleGen;
     extern f32 D_800D7238;
-    extern s32 D_8012E80C;
     extern u8 D_801911E0_ovl3[];
     extern u8 D_80193B34_ovl3[];
     PcNeedleGen *gen;
@@ -2232,7 +2283,14 @@ void func_8017C418_ovl3(s32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 55/283, whole-function callee-saved permutation (same floor class documented across ovl3_1.c/plyshot.c/ovl3_6.c -- correct instruction count and control flow including the jump table, near-total register-naming mismatch). Queued for the permuter. */
+/* MEASURED FOR THE FIRST TIME 2026-08-25. The note this replaces was
+ * written while this file DID NOT COMPILE with the draft un-guarded, so
+ * its number came from somewhere other than verify.py. See the block
+ * comment over func_80179370_ovl3 for the whole story.
+ *
+ * Real residue 228/283. Same cause as func_8017A390_ovl3 above:
+ * `gEntityGObjProcessArray` undefined in this body. The claim of "correct
+ * instruction count and control flow" was not checkable. */
 /* PORT: the mounted-friend ride (action 0x27) per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017CAF8_ovl3.s (via m2c with the
  * kirby_2.rodata jump table). Snapshots the pace word unk150 into
@@ -2257,6 +2315,7 @@ void func_8017C418_ovl3(s32 arg0) {
  * 6U is a leftover register); func_8011D858 takes three arguments (the
  * trailing &gKirbyState is leftover $a3) and 0x3F800000 is 1.0f. */
 void func_8017CAF8_ovl3(s32 arg0) {
+    extern struct GObjProcess *gEntityGObjProcessArray[];
     extern s32 D_80198834_ovl3;
     extern u32 D_80192330_ovl3[];
     s32 next;
@@ -3655,6 +3714,12 @@ void func_8017EA0C_ovl3(s32 arg0) {
  * D_80198830_ovl3 a local-scope view (LocalUnk80198830) since the real
  * typedef/extern pair lives inside an #ifdef NON_MATCHING block
  * elsewhere in this file. Queued for the permuter. */
+/* MEASURED FOR THE FIRST TIME 2026-08-25: 208/248. Un-guarded, this failed on
+ * a body-local `typedef struct LocalUnk80198830 { ... }` plus
+ * `extern LocalUnk80198830 D_80198830_ovl3;` contradicting the file-scope
+ * `extern Unk80198830 D_80198830_ovl3;`. The two struct definitions were
+ * byte-identical, so the local view bought nothing and cost the compile; it
+ * is deleted. See the block over func_80179370_ovl3. */
 /* PORT: the wheel-form (action 0x2C) per-tick handler (paired with the
  * func_8017EA0C_ovl3 gear-shift coroutine above), from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017EDDC_ovl3.s (via m2c). When the
@@ -3677,12 +3742,6 @@ void func_8017EA0C_ovl3(s32 arg0) {
  * func_8016C510_ovl3 are declared locally because the file's own externs
  * for them only appear further down. */
 void func_8017EDDC_ovl3(s32 arg0) {
-    typedef struct LocalUnk80198830 {
-        u8 pad0[8];
-        s16 unk8;
-        s16 unkA;
-    } LocalUnk80198830;
-    extern LocalUnk80198830 D_80198830_ovl3;
     extern struct GObjProcess *gEntityGObjProcessArray[];
     s32 id;
     f32 drift;
