@@ -199,9 +199,30 @@ def main():
     if r.returncode != 0:
         raise SystemExit('as failed:\n' + r.stderr[-2000:])
 
+    # THE COMPILER MUST BE THE ONE THE MAKEFILE GIVES THIS FILE.
+    #
+    # IDO_FLAGS above says -O2, and the 13 files in N_AUDIO_O_FILES are built
+    # at -O3 through tools/decomp/cc_o3.py. verify.py learned that the hard way
+    # -- it scored the whole of main against the wrong compiler for months and
+    # reported phantom diffs on already-matched functions -- and reads the
+    # Makefile now instead of copying literals. The permuter never learned it
+    # at all: every libn_audio draft it has ever been handed was optimised
+    # against -O2 while the target was compiled at -O3, so a "score 0" there
+    # meant nothing about the ROM and a plateau meant nothing about the draft.
+    # Reuse verify.py's parse rather than copying the rule a third time.
+    cc, opt = 'tools/ido-7.1recomp/cc', IDO_FLAGS
+    try:
+        from verify import CC_OVERRIDES, OPT_OVERRIDES
+        rel = os.path.relpath(os.path.abspath(cfile), REPO)
+        cc = CC_OVERRIDES.get(rel, cc)
+        if rel in OPT_OVERRIDES:
+            opt = opt.replace('-O2', OPT_OVERRIDES[rel])
+    except Exception as e:                        # noqa: BLE001
+        print(f'WARNING: could not read the Makefile compiler overrides ({e}); '
+              f'falling back to {cc} {IDO_FLAGS.split()[0]}')
     compile_sh = f'{outdir}/compile.sh'
     open(compile_sh, 'w').write(
-        f'#!/bin/bash\ncd {REPO} && tools/ido-7.1recomp/cc {IDO_FLAGS} "$@"\n')
+        f'#!/bin/bash\ncd {REPO} && {cc} {opt} "$@"\n')
     os.chmod(compile_sh, 0o755)
 
     # sanity: does the starting point compile?

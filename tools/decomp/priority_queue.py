@@ -61,7 +61,12 @@ TARGETS = [
     # docstring. priority_queue skips any entry whose function no longer has a
     # guarded draft, so a stale line costs a log message rather than a slot.
     (  2, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),   # of 88
-    (  2, 'src/ovl5/ovl5_5.c', 'func_8017232C_ovl5'),   # of 88
+    # func_8017232C_ovl5 WAS HERE at "2 diffs of 88", which is func_801721CC's
+    # row copied onto the line below it. Re-measured 2026-08-25: 328/508. It
+    # also could not be set up at all until setup_permuter learned to find a
+    # guard opened with `#if defined(...)`, so it burned a slot twice over --
+    # once on a wrong number and once on a one-second crash. Do not re-add it
+    # without a fresh measurement.
     (  4, 'src/ovl1/ovl1_3.c', 'func_800A84F0'),   # of 10, one-slot temp rotation, no frame
     (  4, 'src/ovl1/save_file.c', 'func_800B9FE0'),   # of 169
     (  4, 'src/ovl5/ovl5_4.c', 'func_801668E0_ovl5'),   # of 146

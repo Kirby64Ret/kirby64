@@ -49,6 +49,8 @@ os.chdir(ROOT)
 from measure_seeds import guard_blocks, cut_draft   # noqa: E402
 
 DIFF = re.compile(r':\s*DIFF\s+(\d+)/(\d+)\s+insns')
+# The two words IDO leaves behind when it deletes a function outright.
+STUB = re.compile(r'\[\s*0\]\s.*\|\s*current=03E00008')
 # Pairs the assembler picks freely. A run whose every disagreement is one of
 # these is not a shape difference and must not be counted as one.
 ALIAS = {frozenset(p) for p in
@@ -112,12 +114,25 @@ def main():
                 pos, tot = int(m.group(1)), int(m.group(2))
                 body = '\n'.join(l for l in r.stdout.split('\n')
                                  if l.startswith('  ['))
-                rows.append((shape_runs(listing, body), pos, tot, func, c))
+                # A draft measured ALONE that compiled to `jr $ra / nop` was
+                # DELETED, not written badly: `static` whose only callers are
+                # still GLOBAL_ASM pragmas is dead to uopt, because
+                # asm-processor injects those references after the C compiler
+                # has run (LEVER 75). Its shape distance is then whatever
+                # difflib makes of a two-word stream -- often 1 -- and it would
+                # rank at the very top of this list as the closest draft in the
+                # file. func_80023B34 is the worked example: 68/68 positional,
+                # shape 1, and its own FACTORY note already says it cannot be
+                # measured alone. Flag it instead of ranking it.
+                stub = bool(STUB.search(body)) and pos == tot
+                rows.append((shape_runs(listing, body), pos, tot, func, c, stub))
     rows.sort()
     print(f'{len(rows)} guarded draft(s), ranked by SHAPE distance')
     print(' shape  positional  function                     file')
-    for runs, pos, tot, func, c in rows:
-        print(f'{runs:6d}  {pos:5d}/{tot:<5d}  {func:28s} {c}')
+    for runs, pos, tot, func, c, stub in rows:
+        note = ('   <-- DELETED when measured alone (static, callers still '
+                'pragmas); the shape number is meaningless' if stub else '')
+        print(f'{runs:6d}  {pos:5d}/{tot:<5d}  {func:28s} {c}{note}')
     return 0
 
 
