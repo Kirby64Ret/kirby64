@@ -340,8 +340,19 @@ void func_801B2D90_ovl7(GObj *arg0) {
     utilFuncTableJump(D_800DDFD0[omCurrentObj->objId], 2, &D_801CD60C_ovl7);
 }
 
-#ifdef NON_MATCHING
-/* 15/118 */
+/* MATCHED 2026-08-25 (was 15/118).  Harvested from a permuter output-0-1 that
+   the queue had scored zero and never published.
+   The whole residue was a $v0/$v1 rotation across the second wait loop and
+   everything after it (15 words: the objId reload, its sll, the two addu base
+   forms and the lwc1/swc1 through them).  It is LEVER 61: an empty-bodied
+   `do { ... } while (0);` wrapped around the loop's single statement is a
+   SCHEDULING BARRIER.  It emits no instruction of its own -- 118 words either
+   way -- and it stops IDO folding the loop's own objId read into the block
+   after the loop, which is what frees $v0 for the ROM's addressing.
+   Negative measured on the way, so nobody retries it: LEVER 56's unbraced
+   loop body (`while (...) ohSleep(1);` with no braces at all) is NOT
+   equivalent here and scores the original 15/118.  Only the do-while wrapper
+   moves it. */
 void func_801B2DD8_ovl7(GObj *arg0) {
     s32 func_800AF230();
     extern struct EnemyEventTable D_801CB7D0_ovl7;
@@ -361,16 +372,13 @@ void func_801B2DD8_ovl7(GObj *arg0) {
         ohSleep(1);
     }
     while (D_800EA6E0[omCurrentObj->objId] < gEntitiesNextPosYArray[omCurrentObj->objId]) {
-        ohSleep(1);
+        do { ohSleep(1); } while (0);
     }
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
     func_800B33F4();
     func_800AA154(0x1009C);
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_9/func_801B2DD8_ovl7.s")
-#endif
 
 void func_801B2FB0_ovl7(GObj *arg0) {
     if (D_800E7880[omCurrentObj->objId] != 1) {
