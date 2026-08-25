@@ -715,10 +715,20 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 156/184 [was noted 28/184], $a2/$a3 transposition from the first omCurrentObj load on
-   (the ROM materialises the pointer in $a2 and the scaled index in $a3, ours
-   the other way round).  The first 13 instructions and the overall structure
-   are the ROM's. */
+/* FACTORY: 10/185 [was 156/184, and noted 28/184 before that].  The
+   "$a2/$a3 transposition" the old note recorded was the symptom of ONE source
+   shape, which aligndiff (LEVER 104) named in one run: the ROM re-reads
+   `omCurrentObj->objId` at the END OF EVERY ARM of the rising-off-the-ground
+   `if / else if / else` -- three copies of
+   `lui $a2; lw $a2; lw $v1, 0($a2); sll $a3, $v1, 2`, two of them ending in a
+   `b` to the merge -- where this draft had one copy after the `if`.  Writing
+   `id = omCurrentObj->objId;` as the last statement of each of the three arms
+   is 156 -> 10 on one edit, and it is what puts the pointer in $a2 and the
+   index in $a3.  LEVER 97(a) says to count the ROM's objId READS; this is the
+   same rule applied to where they sit rather than how many there are.
+   Left: one `lui %hi(D_801CA550)` emitted one word early, and a $v1/$a3 pair
+   in the SECOND arm, where the ROM reuses $a3 for the shifted index and the
+   other two arms keep both live.  barrier_sweep negative. */
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern s32 D_801CA550;
 extern s32 D_801CA598;
@@ -758,13 +768,15 @@ void func_801DDF9C_ovl9(GObj *arg0) {
     if (gEntitiesPosYArray[id] < gEntitiesNextPosYArray[id]) {
         if (D_800E7880[id] == 3) {
             func_801DF29C_ovl9(arg0);
+            id = omCurrentObj->objId;
         } else if (D_800E9E20[id] >= 5) {
             gEntityFuncListIDArray[id] = 7;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801DCA78_ovl9);
+            id = omCurrentObj->objId;
         } else {
             func_801DF29C_ovl9(arg0);
+            id = omCurrentObj->objId;
         }
-        id = omCurrentObj->objId;
     }
     switch (D_800E7880[id]) {
         case 3:
