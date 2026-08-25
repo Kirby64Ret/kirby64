@@ -230,13 +230,35 @@ void func_801DB378_ovl15(struct GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* FACTORY: 131/228 (was 201/252, a raw m2c goto transcription).  Two
+   findings, both structural:
+   1. THE `sltiu $at, $v1, 0xA` AT THE LOOP HEAD IS THE JUMP TABLE'S OWN
+      BOUNDS CHECK, NOT A SOURCE-LEVEL `while (state < 10)`.  .L801DB728 --
+      curObjSleepForever, reload unk3C, branch back to the head -- is the
+      switch's `default:` arm.  Writing it as a range test instead costs a
+      duplicated `sltiu`/`beqz` pair at the head, because the guard and the
+      loop head then have to be two different blocks (measured: the nested
+      `while (1) { while (state < 10U) ... }` and the equivalent
+      `while (1) { if (state < 10U) ... else ... }` both give 142/220, with
+      that pair present and the ROM's two trailing dead nops absent).
+   2. the nine waits are `while (state == N) { ohSleep(1); state =
+      D_800D7098.unk3C; }`, and the constants 2..9 that the ROM parks in
+      $fp/$s7..$s1 fall out of that on their own.
+   The remaining residue is ONE register split and its cost: IDO keeps
+   `state` in $v0 and lands every `D_800D7098.unk3C` read in $v1, so each
+   case ends with a `move $v0, $v1` (9 words, which is the whole count
+   overshoot) and the guards spell the constants as fresh `li $at, N`
+   instead of the held saved registers.  The ROM uses $v1 for both.  Swept
+   and inert: `s32 state` instead of `u32` (134), dropping the `temp` local
+   for a chained `D_800D7098.unk30 = D_800EBBE0[..] = f()` (131), declaring
+   `state` first (131), and the m2c `if (..) do { } while (..)` spelling of
+   the waits (131).  Much worse: rewriting the wait as
+   `if ((state = unk3C) != N) break;` (173/268), and the literal m2c goto
+   transcription with `loop_1`/`loop_2` labels (158/228, which additionally
+   hoists &D_800EC120 and &D_800EBBE0 into saved registers). */
 void func_801DB400_ovl15(s32 arg0) {
-    s32 temp_v0;
-    s32 temp_v0_2;
-    u32 temp_a0;
-    u32 var_v1;
+    s32 temp;
+    u32 state;
 
     func_800B19F4(0x79, omCurrentObj->objId);
     func_800AFBB4(0, omCurrentObj);
@@ -245,115 +267,88 @@ void func_801DB400_ovl15(s32 arg0) {
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B33F4();
     D_800D7098.unk3C = 0;
-    var_v1 = 0;
     D_800D7098.unk2C = 0;
     D_800D7098.unk28 = 0;
     D_800D7098.unkC = 0;
     D_800D7098.unk8 = 0;
     D_800D7098.unk38 = omCurrentObj->objId;
-loop_1:
-    if (var_v1 < 0xAU) {
-loop_2:
-        switch (var_v1) {
+    state = 0;
+    while (1) {
+        switch (state) {
         case 0:
-            temp_v0 = func_8019E0A4_ovl7(4, 3);
-            D_800EBBE0[omCurrentObj->objId] = temp_v0;
-            D_800D7098.unk30 = (u32) temp_v0;
-            temp_v0_2 = func_8019E0A4_ovl7(4, 1);
-            D_800EC120[omCurrentObj->objId] = temp_v0_2;
-            D_800D7098.unk34 = (u32) temp_v0_2;
-            temp_a0 = omCurrentObj->objId;
-            D_800EBBE0[D_800EBBE0[temp_a0]] = D_800EC120[temp_a0];
-            var_v1 = D_800D7098.unk3C;
-            if (var_v1 == 0) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 0);
+            temp = func_8019E0A4_ovl7(4, 3);
+            D_800EBBE0[omCurrentObj->objId] = temp;
+            D_800D7098.unk30 = temp;
+            temp = func_8019E0A4_ovl7(4, 1);
+            D_800EC120[omCurrentObj->objId] = temp;
+            D_800D7098.unk34 = temp;
+            D_800EBBE0[D_800EBBE0[omCurrentObj->objId]] = D_800EC120[omCurrentObj->objId];
+            state = D_800D7098.unk3C;
+            while (state == 0) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 1:
-            if (var_v1 == 1) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 1);
+            while (state == 1) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 2:
-            if (var_v1 == 2) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 2);
+            while (state == 2) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 3:
-            if (var_v1 == 3) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 3);
+            while (state == 3) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 4:
-            if (var_v1 == 4) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 4);
+            while (state == 4) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 5:
-            if (var_v1 == 5) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 5);
+            while (state == 5) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 6:
-            if (var_v1 == 6) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 6);
+            while (state == 6) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 7:
-            if (var_v1 == 7) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 7);
+            while (state == 7) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 8:
-            if (var_v1 == 8) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 8);
+            while (state == 8) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
-            goto loop_1;
+            break;
         case 9:
-            if (var_v1 == 9) {
-                do {
-                    ohSleep(1);
-                    var_v1 = D_800D7098.unk3C;
-                } while (var_v1 == 9);
-                if (var_v1 < 0xAU) {
-                    goto loop_2;
-                }
-            } else {
-                goto loop_1;
+            while (state == 9) {
+                ohSleep(1);
+                state = D_800D7098.unk3C;
             }
+            break;
+        default:
+            curObjSleepForever();
+            state = D_800D7098.unk3C;
             break;
         }
     }
-    curObjSleepForever();
-    var_v1 = D_800D7098.unk3C;
-    goto loop_1;
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
