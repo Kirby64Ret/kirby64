@@ -2539,7 +2539,15 @@ void func_8017485C_ovl5(GObj *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* 116/120: same length, whole-function register permutation. */
+/* rettype_screen.py FALSE POSITIVE, settled 2026-08-25: it flags
+   `b .L80174AB4_ovl5` with `addiu $v0, $v0, 0x2` in the delay slot as a
+   returned value.  .L80174AB4_ovl5 is the LOOP HEADER, not the epilogue --
+   the very next word is `bne $v0, $at, .L8017496C_ovl5`, and the epilogue
+   starts one word later at 80174ABC and never touches $v0.  $v0 is the loop
+   induction variable, and it steps by 2 because IDO UNROLLED the four-lane
+   loop by two: $s2 holds arg0 and $s3 holds arg0 - 1, so the two copies skip
+   on `i == arg0` and `i + 1 == arg0` respectively.  `void` is right.
+   116/120: same length, whole-function register permutation. */
 void func_80174900_ovl5(s32 arg0, s32 arg1) {
     s32 i;
     s32 id;

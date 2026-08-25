@@ -21,7 +21,7 @@ extern void func_801A32EC(u8 *);
 extern void func_801A3938(s32);
 /* D_80197278_ovl3 now emitted by this TU */
 
-extern void func_8016BD24_ovl3(s32);
+extern s32 func_8016BD24_ovl3(s32);
 extern void func_801696F0_ovl3(s32);
 
 extern struct GObjProcess *gEntityGObjProcessArray[];
@@ -1105,7 +1105,17 @@ void func_8016BC00_ovl3(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: ~119/130, residue -- measured by hand, see below.  Compiles now;
+/* RETURN TYPE CORRECTED 2026-08-25 (rettype_screen.py): this is `s32`, not
+ * `void`.  The listing's early exit is `b .L8016BF1C_ovl3` with
+ * `addiu $v0, $zero, 0x1` in the delay slot, straight after
+ * func_80152348_ovl3(5.0f), and the fallthrough tail sets `or $v0,$zero,$zero`
+ * at 8016BF18 before the same epilogue.  Every one of the six call sites in
+ * this TU discards the value, which is why it went unnoticed; it is also a
+ * PORT bug, since the PORT arm compiled the same wrong signature.  The
+ * correction is unmeasurable HERE -- see the padding trap below -- so it is
+ * recorded rather than scored.
+ *
+ * FACTORY: ~119/130, residue -- measured by hand, see below.  Compiles now;
  * see func_80169C10_ovl3's note for why the recorded declaration blocker
  * was a misdiagnosis.
  *
@@ -1120,7 +1130,7 @@ void func_8016BC00_ovl3(void) {
  * against the draft's own 130-word window with only HI16 masked, so it is
  * a crude upper bound on the residue.  The draft is 117 words against 130,
  * so 13 words of shape are still missing before colouring matters. */
-void func_8016BD24_ovl3(s32 arg0) {
+s32 func_8016BD24_ovl3(s32 arg0) {
 
     s32 id = omCurrentObj->objId;
 
@@ -1147,10 +1157,11 @@ void func_8016BD24_ovl3(s32 arg0) {
         D_800E7CE0[id] = 0x2D;
         D_800E0D50[id] = -1;
         func_80152348_ovl3(5.0f);
-        return;
+        return 1;
     }
     func_800FD570(0, 0, 0.0f, 0.0f, 0.0f);
     func_800B1900((u16) omCurrentObj->objId);
+    return 0;
 }
 #elif defined(PORT)
 /* PORT: release-from-grab dispatcher (via m2c). For a normal grab (high
@@ -1164,7 +1175,7 @@ void func_8016BD24_ovl3(s32 arg0) {
  * the object's own track (func_800FD570 reset + func_800B1900 on the low
  * half of objId). */
 
-void func_8016BD24_ovl3(s32 arg0) {
+s32 func_8016BD24_ovl3(s32 arg0) {
     s32 id = omCurrentObj->objId;
 
     if (!((D_800EA520[id] >> 8) & 0xFF)) {
@@ -1190,10 +1201,11 @@ void func_8016BD24_ovl3(s32 arg0) {
         D_800E7CE0[id] = 0x2D;
         D_800E0D50[id] = -1;
         func_80152348_ovl3(5.0f);
-        return;
+        return 1;
     }
     func_800FD570(0, 0, 0.0f, 0.0f, 0.0f);
     func_800B1900((u16) omCurrentObj->objId);
+    return 0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016BD24_ovl3.s")

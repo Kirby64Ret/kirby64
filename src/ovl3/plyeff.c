@@ -776,7 +776,14 @@ void func_80164130_ovl3(struct GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/plyeff/func_80164130_ovl3.s")
 #endif
 #ifdef NON_MATCHING
-/* 1 real diff (the rest of the 58/119 is the resulting one-instruction shift):
+/* rettype_screen.py FALSE POSITIVE, settled 2026-08-25: it flags
+   `b .L801644A0_ovl3` with `lhu $v0, 0x0($s0)` in the delay slot as a value
+   returned to the epilogue.  .L801644A0_ovl3 is not the epilogue -- it is the
+   inner wait loop's OWN header, and the `lhu` is that loop's re-read of
+   gPlayerControllers[0].buttonHeld.  The function is `for (;;)` around
+   ohSleep, so the block at 801644C0 is unreachable dead code and $v0 never
+   reaches it.  `void` is right; do not retype it.
+   1 real diff (the rest of the 58/119 is the resulting one-instruction shift):
    the ROM materialises gPlayerControllers TWICE -- `lui $v0; lhu %lo(...)` for
    the pre-loop read and a separate `lui/addiu $s0` base for the three reads
    inside the loop.  IDO promotes the base in the preheader and uses it for the
