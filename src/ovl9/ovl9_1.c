@@ -1134,105 +1134,59 @@ void func_801D4594_ovl9(struct GObj *arg0) {
     func_801D4C50_ovl9();
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Rotating-platform / pendulum carrier main loop: the entity orbits at
+ * D_800EB320 radians, with D_800EAFA0 * D_800EB160 as the arm length.  Each
+ * frame it samples the arm at the CURRENT angle, advances the angle by 3
+ * degrees (kind 5 forward, kind 6 back) wrapped into [0, 2pi), samples the
+ * arm again at the NEW angle, re-seeds the position from the parked
+ * D_800E98E0 / D_800EA6E0 / D_800EAA60 values, rotates it about the pivot
+ * with func_800F9974, and publishes the per-frame delta (new sample minus
+ * old) into D_800E64D0 / D_800E3210 for the riders to follow. */
 void func_801D47D4_ovl9(s32 arg0) {
-    GObj *temp_s1;
-    f32 *temp_v0_2;
-    f32 *temp_v0_3;
-    f32 *temp_v0_4;
-    f32 *var_v0;
-    f32 temp_f0;
-    f32 temp_f24;
-    f32 temp_f26;
-    f32 temp_f28;
-    f32 temp_f30;
-    f32 var_f12;
-    s32 var_s0;
-    u32 temp_s0;
-    u32 temp_s0_2;
-    u32 temp_s0_3;
-    u32 temp_s0_4;
-    u32 temp_s0_5;
-    u32 temp_s0_6;
-    u32 temp_s0_7;
-    u32 temp_s0_8;
-    u32 temp_s0_9;
-    u32 temp_v0;
-    u8 temp_v1;
+    extern f32 sinf(f32);
+    extern f32 cosf(f32);
+    void func_800F9974(f32 *, f32 *, f32);
+    f32 sn;
+    f32 cs;
+    f32 sn2;
+    f32 cs2;
 
     func_801A3280_ovl7();
     D_800DDFD0[omCurrentObj->objId] = 2;
     func_800A9EA4(0x1001F);
-    temp_s1 = omCurrentObj;
-    D_800EAFA0[temp_s1->objId] = 0.0f;
-loop_1:
-    temp_s0 = omCurrentObj->objId;
-    temp_f30 = D_800EAFA0[temp_s0] * D_800EB160[temp_s0] * sinf(D_800EB320[temp_s1->objId]);
-    temp_v0 = omCurrentObj->objId;
-    var_s0 = temp_v0 * 4;
-    temp_v1 = D_800E7880[temp_v0];
-    temp_v0_2 = &D_800EB320[temp_v0];
-    temp_f28 = D_800EAFA0[temp_v0] * D_800EB160[temp_v0] * cosf(D_800EB320[temp_s0]);
-    if (temp_v1 != 5) {
-        temp_v0_3 = &D_800EB320[temp_v0];
-        if (temp_v1 != 6) {
-
-        } else {
-            *temp_v0_3 -= 0.05235988f;
-            goto block_6;
+    D_800EAFA0[omCurrentObj->objId] = 0.0f;
+    while (1) {
+        sn = sinf(D_800EB320[omCurrentObj->objId]) * (D_800EB160[omCurrentObj->objId] * D_800EAFA0[omCurrentObj->objId]);
+        cs = cosf(D_800EB320[omCurrentObj->objId]) * (D_800EB160[omCurrentObj->objId] * D_800EAFA0[omCurrentObj->objId]);
+        switch (D_800E7880[omCurrentObj->objId]) {
+            case 5:
+                D_800EB320[omCurrentObj->objId] += 0.05235988f;
+                break;
+            case 6:
+                D_800EB320[omCurrentObj->objId] -= 0.05235988f;
+                break;
         }
-    } else {
-        *temp_v0_2 += 0.05235988f;
-block_6:
-        var_s0 = omCurrentObj->objId * 4;
+        while (D_800EB320[omCurrentObj->objId] >= 6.2831855f) {
+            D_800EB320[omCurrentObj->objId] -= 6.2831855f;
+        }
+        while (D_800EB320[omCurrentObj->objId] < 0.0f) {
+            D_800EB320[omCurrentObj->objId] += 6.2831855f;
+        }
+        sn2 = sinf(D_800EB320[omCurrentObj->objId]) * (D_800EB160[omCurrentObj->objId] * D_800EAFA0[omCurrentObj->objId]);
+        cs2 = cosf(D_800EB320[omCurrentObj->objId]) * (D_800EB160[omCurrentObj->objId] * D_800EAFA0[omCurrentObj->objId]);
+        D_800E5F90[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+        D_800E6BD0[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+        gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        func_800F9974(&D_800E5F90[omCurrentObj->objId], &D_800E6BD0[omCurrentObj->objId], sn);
+        gEntitiesNextPosYArray[omCurrentObj->objId] += cs;
+        D_800E6150[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+        D_800E6D90[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+        gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+        D_800E64D0[omCurrentObj->objId] = sn2 - sn;
+        D_800E3210[omCurrentObj->objId] = cs2 - cs;
+        ohSleep(1);
     }
-    var_v0 = D_800EB320 + var_s0;
-    var_f12 = *var_v0;
-    if (var_f12 >= 6.2831855f) {
-        do {
-            *var_v0 = var_f12 - 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f12 = *var_v0;
-        } while (var_f12 >= 6.2831855f);
-    }
-    if (var_f12 < 0.0f) {
-        do {
-            *var_v0 = var_f12 + 6.2831855f;
-            var_v0 = &D_800EB320[omCurrentObj->objId];
-            var_f12 = *var_v0;
-        } while (var_f12 < 0.0f);
-    }
-    temp_s0_2 = omCurrentObj->objId;
-    temp_f24 = D_800EAFA0[temp_s0_2] * D_800EB160[temp_s0_2] * sinf(var_f12);
-    temp_f0 = cosf(D_800EB320[temp_s0_2]);
-    temp_s0_3 = omCurrentObj->objId;
-    D_800E5F90[temp_s0_3] = D_800E98E0[temp_s0_3];
-    temp_s0_4 = omCurrentObj->objId;
-    D_800E6BD0[temp_s0_4] = D_800EA6E0[temp_s0_4];
-    temp_s0_5 = omCurrentObj->objId;
-    temp_f26 = D_800EAFA0[temp_s0_3] * D_800EB160[temp_s0_3] * temp_f0;
-    gEntitiesNextPosYArray[temp_s0_5] = D_800EAA60[temp_s0_5];
-    temp_s0_6 = omCurrentObj->objId;
-    func_800F9974(&D_800E5F90[temp_s0_6], &D_800E6BD0[temp_s0_6], temp_f30);
-    temp_v0_4 = &gEntitiesNextPosYArray[omCurrentObj->objId];
-    *temp_v0_4 += temp_f28;
-    temp_s0_7 = omCurrentObj->objId;
-    D_800E6150[temp_s0_7] = D_800E5F90[temp_s0_7];
-    temp_s0_8 = omCurrentObj->objId;
-    D_800E6D90[temp_s0_8] = D_800E6BD0[temp_s0_8];
-    temp_s0_9 = omCurrentObj->objId;
-    gEntitiesPosYArray[temp_s0_9] = gEntitiesNextPosYArray[temp_s0_9];
-    D_800E64D0[omCurrentObj->objId] = temp_f24 - temp_f30;
-    D_800E3210[omCurrentObj->objId] = temp_f26 - temp_f28;
-    ohSleep(1);
-    goto loop_1;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D47D4_ovl9.s")
-#endif
 
 /* D_8021CEA0_ovl9: literal, this TU owns its .rodata */
 void func_8019F3F0_ovl7(void);
