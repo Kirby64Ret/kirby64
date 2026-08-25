@@ -1261,7 +1261,28 @@ void func_801DF588_ovl13(s32 arg0, s32 arg1, f32 arg2) {
      - `utilGetTransformSRT` takes TWO arguments and its first is a Vector, so
        m2c's sp54/sp58/sp5C are that Vector's x/y/z;
      - `--(x)` is not C; the listing has two neg.s, i.e. `-(-(x))`.
-   The residue is again the frame and a register-name cascade. */
+   The residue is the FRAME, and the frame alone is the reason nothing else
+   can be measured here.  Diff 0 is `addiu $sp, -408` against the ROM's
+   `addiu $sp, -0x70` (112): m2c declares ~60 locals and most of them are
+   IDO's own spill slots (LEVER 31), so every stack offset in the function is
+   wrong and the positional score is near-total by construction.  Fix the
+   declaration count first -- LEVER 57's frame law, not a spelling sweep --
+   and only then read anything else off the score.
+
+   LEVER 70 SURVEYED HERE 2026-08-25 AND IT IS CONFIRMED BUT WORTHLESS UNTIL
+   THE FRAME MOVES.  The listing holds 14 ABSF expansions.  Two of them take a
+   CALL as the operand, and because the macro names its argument three times
+   the ROM really does contain SIX `jal func_8019DA70_ovl7` for those two
+   sites -- that is LEVER 40 visible in the listing, and it is the cleanest
+   confirmation of the macro reading anywhere in this overlay.  Converting the
+   6 sites whose m2c form is mechanically recognisable
+   (`if (x < 0.0f) v = -x; else v = x;` and the folded
+   `if (a < b) v = -(a - b); else v = a - b;`) scores exactly 1147/1239,
+   unchanged, so do not re-spend it.  The other 8 sites have the difference
+   already hoisted into a named local (`var_f14`, `var_f18`), which per the
+   func_801B9E80_ovl7 measurement is precisely the spelling the macro must NOT
+   have -- worth fixing, but only after the declaration count is right, since
+   deleting those locals is itself part of the frame work. */
 extern f32 *D_801DAAF0;
 
 void func_801DF5D0_ovl13(GObj *arg0) {

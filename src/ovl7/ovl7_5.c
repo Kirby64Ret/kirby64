@@ -276,7 +276,20 @@ loop_3:
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801A7104_ovl7.s")
 #endif
-// m2c draft, measured 1421/1441 diffs
+/* FACTORY: 1421/1441 words DIFFER, re-measured 2026-08-25.
+   The residue is the FRAME and nothing downstream of it can be read.  Diff 0
+   is `addiu $sp, -600` against the ROM's `addiu $sp, -0xB8` (184): m2c has
+   turned IDO's spill slots into declarations (LEVER 31), so every stack
+   offset in the function is wrong and the positional score is near-total by
+   construction (LEVER 48).  Cut the declaration count onto LEVER 57's frame
+   law before measuring anything else here.
+
+   LEVER 70 SURVEYED 2026-08-25 -- confirmed present, deliberately NOT applied.
+   absf_sweep.py ranks this the second strongest candidate in the tree
+   (23 compares / 22 neg.s) and the macro reading is right, but with the frame
+   this far off an ABSF edit cannot show up in the score at all.  It is not a
+   negative result for the lever; it is an unmeasurable one.  Do the frame
+   first, re-measure, and only then convert the abs sites. */
 #ifdef NON_MATCHING
 void func_801A7524_ovl7(GObj *arg0) {
     s32 spB4;
