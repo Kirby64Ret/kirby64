@@ -1311,7 +1311,31 @@ void func_80218520_ovl9(s32 arg0) {
         func_800AF27C();
         var_v0 = omCurrentObj->objId * 4;
     }
-    *(gEntityFuncListIDArray + var_v0) = 0;
+    /* var_v0 IS A BYTE OFFSET, NOT AN ELEMENT INDEX, and the draft dropped
+     * that distinction. The listing's tail is
+     *
+     *     sll  $v0, $v0, 2                          # v0 = objId * 4 (BYTES)
+     *     lui  $at, %hi(gEntityFuncListIDArray)
+     *     addu $at, $at, $v0
+     *     sw   $zero, %lo(gEntityFuncListIDArray)($at)
+     *
+     * -- i.e. gEntityFuncListIDArray[objId] = 0. gEntityFuncListIDArray is
+     * `s32[]`, so `*(gEntityFuncListIDArray + objId * 4)` clears element
+     * objId*4, four times too far, and THIS OBJECT'S state id is never
+     * cleared. func_802180D8_ovl9 (src/ovl9/ovl9_15.c) is a `while (1)` that
+     * re-dispatches on that id every iteration, so state 1 re-enters here for
+     * ever; on the frame where timeRemaining == -FLT_MAX the func_800AF27C
+     * yield above is skipped too, and the loop then spins WITHOUT yielding.
+     * That starves the whole cooperative scheduler: measured on the PC port
+     * as a total wedge of world 1-1 at x = -536.54 (gdb, three stack samples
+     * two seconds apart, all identical: func_80218520_ovl9 <-
+     * utilFuncTableJump(idx=1, max=3, D_8021CDA0_ovl9) <- func_802180D8_ovl9
+     * <- func_8021817C_ovl9 <- func_80218020_ovl9 <- func_800FCF0C).
+     * The byte-offset spelling below is the one the rest of the tree already
+     * uses for this array (src/ovl11/ovl11.c:1690, src/ovl18/code_236F20.c).
+     * N64 build unaffected: this arm is NON_MATCHING, the ROM takes the
+     * pragma. */
+    *(s32 *) ((u8 *) gEntityFuncListIDArray + var_v0) = 0;
 }
 /* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
