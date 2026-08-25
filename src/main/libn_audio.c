@@ -728,16 +728,23 @@ void func_80023990(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/main/libn_audio/func_80023990.s")
 #endif
 
-/* 27/47 at -O3, instruction sequence EXACT -- every opcode, operand shape and
+/* FACTORY: 24/47 -- MEASURED 2026-08-25, was 27/47.
+ * The instruction sequence was already EXACT -- every opcode, operand shape and
  * displacement matches and only the register numbers differ, rotated one slot
- * DOWN this time (ROM $t0/$a1/$a2/$a0 -> IDO $a3/$a0/$a1/$v0), i.e. the ROM
- * reserves one more register at the bottom than IDO does.  The usual cure for
- * "temps UP a slot" is a non-void callee, but the only callee here is
- * osSetIntMask, which is already non-void and header-declared.  Swept with no
- * effect: all 72 declaration permutations that put a pointer first, one and two
- * leading dead scalars, a leading dead pointer, `for` vs `while`, dropping the
- * `next` and `voice` locals, assignment order of node/prev, and an s32 return
- * (29). */
+ * DOWN (ROM $t0/$a1/$a2/$a0 -> IDO $a3/$a0/$a1/$v0), i.e. the ROM reserves one
+ * more register at the bottom than IDO does.  Three of the 27 come off with
+ * LEVER 61's barrier at the top of the loop body, found by barrier_sweep.py,
+ * which reported this placement at 24 and three neighbours at 24 as well.  The
+ * rotation is narrower after it but not gone: the head is still
+ * ROM $t0/$a3/$t2 against IDO $a3/$a2/$t1.
+ *
+ * The usual cure for "temps UP a slot" is a non-void callee, but the only
+ * callee here is osSetIntMask, which is already non-void and header-declared.
+ * Swept with no effect: all 72 declaration permutations that put a pointer
+ * first, one and two leading dead scalars, a leading dead pointer, `for` vs
+ * `while`, dropping the `next` and `voice` locals, assignment order of
+ * node/prev, and an s32 return (29).  Permuter fuel -- a pure register
+ * rotation over a matching instruction stream is exactly what it is good at. */
 #ifdef NON_MATCHING
 typedef struct KToneA28 {
     /* 0x00 */ struct KToneA28 *next;
@@ -762,6 +769,7 @@ void func_80023A28(KToneA28 *arg0) {
     node = D_800978E0.unk40;
     while (node != NULL) {
         next = node->next;
+        do { } while (0);
         if ((node == arg0) || (arg0 == node->unk04)) {
             voice = node->unk28;
             node->unk10 = 0;
@@ -1348,10 +1356,25 @@ void func_80025874(void) {
  * `.s`.  The uninitialised `track` is real: the ROM reads its stack home at
  * 0x24($sp) before the scan loop has written it.
  *
- * FACTORY: 98 as of 2026-08-25, measured after __readVarLen and __getTrackByte
- * were sealed `static` -- their custom convention is now real in the object, so
- * this function's ten `jal`s no longer force the o32 homing.  The 209 below was
- * measured before that and is kept only for the reasoning.
+ * FACTORY: 71/190 as of 2026-08-25, was 98 the same day and 209 before
+ * __readVarLen and __getTrackByte were sealed `static` (their custom convention
+ * is now real in the object, so this function's ten `jal`s no longer force the
+ * o32 homing).  The 209 reasoning below is kept only for the history.
+ *
+ * The last 27 came off with LEVER 61's barrier at the top of the track-scan
+ * loop body, found by barrier_sweep.py.  The sweep is unambiguous about the
+ * placement: 71 there, 72 at the delta accumulate near the end, 75 and 76 one
+ * and two statements further into the loop, and 197-199 at any of the
+ * __getTrackByte calls in the event bodies -- those last raise the instruction
+ * COUNT (203-205 against the ROM's 190), so a barrier inside an event body
+ * costs real instructions rather than moving existing ones.  Running the sweep
+ * again over the fixed draft finds nothing further: 71 is its floor.
+ *
+ * RE-MEASURED and still worthless after the sealing: hoisting
+ * `seq->lastDeltaTicks` into a local before the scan loop, which is what the
+ * ROM's `lw $a2, 0x10($a0)` at index 6 looks like.  Byte-identical at 71.  The
+ * old note recorded that at 209/210 and the seal did not change it, so the
+ * hoist really is IDO's own and the upstream spelling stays.
  *
  * PREVIOUSLY: 209 of 210 words DIFFER against a 190-word ROM.  The 20-word excess
  * is one cause, ten times over: `minDelta` and `track` live in $t1/$t3 in the
@@ -1379,6 +1402,7 @@ void alCSeqNextEvent(ALCSeq *seq, ALEvent *event) {
 
     for (i = 0; i < 16; i++) {
         if ((seq->validTracks >> i) & 1) {
+            do { } while (0);
             if (seq->deltaFlag) {
                 seq->evtDeltaTicks[i] -= seq->lastDeltaTicks;
             }
