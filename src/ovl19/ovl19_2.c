@@ -3074,7 +3074,24 @@ void func_80227C88_ovl19(void) {
    left un-guarded and non-matching, which shifts every segment after it. */
 /* 12/123, structurally complete; residue is the likely-branch transform on the
  * collisionParameter test (ROM bnel + duplicated store, IDO bnez + nop) and the
- * return-0 block ordering that follows. */
+ * return-0 block ordering that follows.
+ *
+ * The draft is ONE WORD SHORT, and the missing word is the ROM's DEAD copy of
+ * 'gKirbyState.unk44 = 7' at 80227F24 -- unreachable code that only exists
+ * because IDO turned the branch to the else-block into a branch-LIKELY,
+ * inlined that block's single store into the delay slot, and retargeted it
+ * past the (now orphaned) block to the epilogue. Everything either side of it
+ * already matches: $v0=1 and $t9=7 are both hoisted above the test exactly as
+ * the ROM does them. So what is missing is the transform, not a value.
+ *
+ * Measured this session:
+ *   - testing 'collisionParameter != 0' first (store+return as the THEN arm,
+ *     the temp block falling through) is 33/123 -- IDO then emits beqz, a b,
+ *     and the store as a plain block, i.e. it moves further from the likely.
+ *   - the 'if (== 0) {...} else {store; return 1;}' form written here and the
+ *     earlier 'if (== 0) {...; goto done;} store; return 1;' form are
+ *     byte-identical at 12/123, so the goto bought nothing and the structured
+ *     form is kept for readability. */
 s32 func_80227D4C_ovl19(void) {
     Vector sp44;
     Vector sp38;
@@ -3113,12 +3130,11 @@ s32 func_80227D4C_ovl19(void) {
                 D_800EBBE0[temp] = omCurrentObj->objId;
                 D_800E9FE0[omCurrentObj->objId].as_s32 = temp;
             }
-            goto done;
+        } else {
+            gKirbyState.unk44 = 7;
+            return 1;
         }
-        gKirbyState.unk44 = 7;
-        return 1;
     }
-done:
     return 0;
 }
 #else

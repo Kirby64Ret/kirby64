@@ -1102,19 +1102,14 @@ void func_801A0D74_ovl7();
 void func_8019F3F0_ovl7(void);
 void func_801D4C50_ovl9(void);
 
-#ifdef NON_MATCHING
-/* 21/144: a pervasive whole-function $a0/$a1 register-naming swap -- the
- * ROM holds omCurrentObj in $a1 and D_800E9AA0's base in $a0 throughout;
- * this draft gets the same shape with the pair swapped. All 21 diffs are
- * that one swap (lw/addu/lwc1/swc1 pairs), nothing else moves. Re-measured
- * this session: swapping the two leading statement's order (D_800E9AA0
- * clear before/after D_800E8920 clear) is inert, still 21. Reads as the
- * LEVERS "second variant" floor (whole-function register permutation),
- * not a source-spelling residue. */
-void func_801D4594_ovl9(void) {
+/* The proc's own GObj is what func_801A0D74_ovl7 is called with: the ROM never
+ * writes $a0 before that jal and never homes it, so $a0 is the live incoming
+ * parameter. That is why omCurrentObj sits in $a1 up to the call and the
+ * D_800E9AA0 base only takes $a0 after it (LEVERS 58). */
+void func_801D4594_ovl9(struct GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     D_800E9AA0[omCurrentObj->objId].as_s32 = 0;
-    func_801A0D74_ovl7();
+    func_801A0D74_ovl7(arg0);
     switch (D_800E7880[omCurrentObj->objId]) {
         case 3:
             if (((D_800E9AA0[omCurrentObj->objId].as_s32 & 2) != 0) || (gEntitiesNextPosYArray[omCurrentObj->objId] != D_800EAFA0[omCurrentObj->objId])) {
@@ -1138,9 +1133,6 @@ void func_801D4594_ovl9(void) {
     func_8019F3F0_ovl7();
     func_801D4C50_ovl9();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D4594_ovl9.s")
-#endif
 
 #ifdef NON_MATCHING
 /* m2c draft, for the PORT only. Not byte-exact and not
