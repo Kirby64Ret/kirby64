@@ -79,6 +79,7 @@ TARGETS = [
     ( 13, 'src/ovl7/ovl7_3.c', 'func_801A1B6C_ovl7'),   # of 318
     ( 14, 'src/ovl7/ovl7_17.c', 'func_801C02D0_ovl7'),   # of 174
     ( 17, 'src/ovl1/ovl1.c', 'func_800A238C'),   # of 45
+    ( 18, 'src/ovl1/ovl1.c', 'func_8009BA74'),   # of 117, one missing `or $v0,$zero,$zero` plus a temp rotation
     ( 18, 'src/ovl1/ovl1_7.c', 'func_800B158C'),   # of 116, one-slot base register rotation
     ( 18, 'src/ovl1/ovl1.c', 'func_8009BA74'),   # of 117
     ( 19, 'src/ovl2/ovl2_7.c', 'func_80109504'),   # of 123

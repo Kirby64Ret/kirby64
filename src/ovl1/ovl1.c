@@ -708,6 +708,27 @@ void func_8009BA68(s32 arg0) {
  * post-merge statement (WORSE, 35/117 -- rotates $v0/$a0 through most of
  * the function). Not source-reachable within the swept forms. */
 #ifdef NON_MATCHING
+/* FACTORY: 18/117 -- MEASURED 2026-08-25. Structure, count and every store
+ * offset match; the residue is ONE MISSING INSTRUCTION and a one-slot temp
+ * rotation, and the missing instruction is what shifts everything after it.
+ *
+ * The ROM materialises zero into a register -- `or $v0, $zero, $zero` at index
+ * 105 -- and stores $v0 to envColor[2], [1], [0] (0x56/0x55/0x54), then stores
+ * literal `$zero` to 0xB and 0x57. The draft stores `$zero` to all five, so it
+ * is one word short from index 105 on. Separately, at indices 64/65 and 90-97
+ * the ROM's `ori $t6, $a2, 0x10` and `addiu $t7, 1` are one temp register
+ * higher than the draft's $t5/$t6.
+ *
+ * Measured 2026-08-25 and byte-identical at 18/117, so do not retry: hoisting
+ * `val = 0` above the if/else instead of assigning it in both arms; declaring
+ * `val` as u8 rather than s32; reversing the envColor chain; extending the
+ * chain to textureFrame; and assigning the chain's result back into val.
+ * Measured and WORSE: moving `val = 0` below the if/else, 35/117 -- that one
+ * really does change the live range and the wrong way.
+ *
+ * IDO folds `val` to $zero in every spelling because both arms of the if
+ * assign 0 to it, and nothing in the source can make it un-foldable while
+ * keeping the semantics. Permuter fuel; queued in priority_queue.py. */
 UnkParticle *func_8009BA74(UnkParticle *this_pc, s32 bank_id, u32 flags, u16 texture_id, u8 *bytecode, s32 lifetime, f32 pos_x, f32 pos_y, f32 pos_z, f32 vel_x, f32 vel_y, f32 vel_z, f32 size, f32 gravity, f32 friction, u32 texture_flags, UnkGenerator *gn) {
     UnkParticle *new_pc;
     s32 val;
