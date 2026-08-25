@@ -2611,19 +2611,20 @@ void func_801E2D88_ovl16(s32 arg0) {
     gEntityFuncListIDArray[omCurrentObj->objId] = D_801EF920_ovl16[D_800D7098.unk8];
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Spin-up state: pick a rotation sign, then run 330 ticks stepping the frame
+   counter by 2 (mod 30), firing func_8019E0A4_ovl7 every 60 ticks and spawning
+   a type-0x32 child on the odd 30s, and finally hand over to func list 0xF.
+
+   Byte-exact.  It carried "m2c draft, for the PORT only. Not byte-exact and
+   not claimed to be" (LEVER 88's shape) and measured 141/220 with a shape
+   distance of 11.  It needed NO lever: deleting m2c's nine `temp_*`/`var_*`
+   declarations and writing every subscript `omCurrentObj->objId` is MATCH on
+   the first compile.  Every one of those temporaries -- the cached objId, the
+   `var_a0 = objId * 4` byte offset carried round the loop, the
+   `temp_v0 = D_800E98E0 + var_a0` pointer -- is IDO's own CSE written back out
+   as source, and naming them is what stopped IDO forming them. */
 void func_801E2E44_ovl16(s32 arg0) {
-    s32 *temp_v0;
-    s32 *temp_v0_3;
-    s32 temp_v0_2;
-    s32 temp_v1;
-    s32 var_a0;
-    u32 temp_a0;
-    u32 temp_a0_2;
-    u32 temp_a0_3;
-    u32 temp_a0_4;
+    s32 t;
 
     D_800DDFD0[omCurrentObj->objId] = 0xB;
     D_800EA6E0[omCurrentObj->objId] = 0.0f;
@@ -2637,51 +2638,36 @@ void func_801E2E44_ovl16(s32 arg0) {
     D_800E9AA0[omCurrentObj->objId] = NULL;
     D_800E9C60[omCurrentObj->objId] = 0;
     D_800E98E0[omCurrentObj->objId] = 0;
-    temp_a0 = omCurrentObj->objId;
-    D_800E9E20[temp_a0] = D_800E98E0[temp_a0];
-    temp_a0_2 = omCurrentObj->objId;
-    var_a0 = temp_a0_2 * 4;
-    if (D_800E9E20[temp_a0_2] < 0x14A) {
-        do {
-            temp_v0 = D_800E98E0 + var_a0;
-            *temp_v0 = (s32) (*temp_v0 + 2) % 30;
-            temp_a0_4 = omCurrentObj->objId;
-            temp_v1 = D_800E9E20[temp_a0_4];
-            switch (temp_v1) {                      /* irregular */
-            case 0x0:
-            case 0x3C:
-            case 0x78:
-                func_8019E0A4_ovl7(5, 7);
-                break;
-            case 0x1E:
-            case 0x5A:
-            case 0x96:
-                temp_v0_2 = func_801ACC34_ovl7(0x32, 0);
-                if (temp_v0_2 != 0) {
-                    D_800E8E60[temp_v0_2] = 1;
-                    D_800E0D50[temp_v0_2] = (s32) omCurrentObj->objId;
-                    D_800EA1A0[temp_v0_2] = (s32) D_800E9E20[omCurrentObj->objId] / 60;
-                    play_sound(0x1B7);
-                }
-                break;
-            case 0xF0:
-                D_800EAC20[temp_a0_4] = -1.0f;
-                break;
+    D_800E9E20[omCurrentObj->objId] = D_800E98E0[omCurrentObj->objId];
+    while (D_800E9E20[omCurrentObj->objId] < 0x14A) {
+        D_800E98E0[omCurrentObj->objId] = (D_800E98E0[omCurrentObj->objId] + 2) % 30;
+        switch (D_800E9E20[omCurrentObj->objId]) {
+        case 0x0:
+        case 0x3C:
+        case 0x78:
+            func_8019E0A4_ovl7(5, 7);
+            break;
+        case 0x1E:
+        case 0x5A:
+        case 0x96:
+            t = func_801ACC34_ovl7(0x32, 0);
+            if (t != 0) {
+                D_800E8E60[t] = 1;
+                D_800E0D50[t] = omCurrentObj->objId;
+                D_800EA1A0[t] = D_800E9E20[omCurrentObj->objId] / 60;
+                play_sound(0x1B7);
             }
-            ohSleep(1U);
-            temp_v0_3 = &D_800E9E20[omCurrentObj->objId];
-            *temp_v0_3 += 1;
-            temp_a0_3 = omCurrentObj->objId;
-            var_a0 = temp_a0_3 * 4;
-        } while (D_800E9E20[temp_a0_3] < 0x14A);
+            break;
+        case 0xF0:
+            D_800EAC20[omCurrentObj->objId] = -1.0f;
+            break;
+        }
+        ohSleep(1);
+        D_800E9E20[omCurrentObj->objId] += 1;
     }
-    *(D_800E9AA0 + var_a0) = 0xA;
+    D_800E9AA0[omCurrentObj->objId] = 0xA;
     gEntityFuncListIDArray[omCurrentObj->objId] = 0xF;
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl16/ovl16/func_801E2E44_ovl16.s")
-#endif
 
 void func_801E31A4_ovl16(s32 arg0) {
     func_801DF62C_ovl16();
