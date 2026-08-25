@@ -1230,23 +1230,35 @@ s32 func_80153AD4_ovl3(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 275/277, RE-MEASURED -- the prior "2/277" note was stale/wrong;
- * verify.py shows total mismatch from insn [0]. Frame is -0x40 with s0
- * saved (ROM, s0 = &omCurrentObj held across the whole function) vs this
- * draft's -0x30 with no saved regs -- same no-id-caching finding as
- * func_80152348_ovl3/func_801530BC_ovl3 in this TU: the ROM never hoists
- * `omCurrentObj->objId` into a local, it holds the omCurrentObj POINTER
- * in s0 and re-derives `lw v1,0(s0); lw a0,0(v1)` (objId) at each use.
- * Not attempted here. Leaving guarded. */
+/* FACTORY: 193/268, frame + register permutation (was 275/277, and the
+ * ROM is 268 words, not 277).
+ *
+ * The old note's diagnosis was wrong in an instructive way: $s0 is NOT
+ * &omCurrentObj here, it is &D_8012BCA0, and the reason the draft could
+ * not reproduce it was that the draft reached gPositionState and
+ * D_8012BCA0 through POINTER LOCALS initialised to their addresses. IDO
+ * constant-folds such a local away and then re-CSEs the address inside
+ * every basic block -- two words (lui + %lo) per conditional arm.
+ * Direct symbol accesses give ONE held base across the whole region,
+ * which is what puts &D_8012BCA0 in $s0. Same fix, same file:
+ * func_80153FC8_ovl3.  Also fixed here: the packed flag halfword is at
+ * OFFSET 0 of D_8012BCA0 (the ROM rewrites the TOP halfword of the word
+ * it reads with srl 19), the two scale sums had reversed operands
+ * (LEVER 2, cf. the matched func_80152828_ovl3 twenty lines above), and
+ * `r` is an s32 -- see the func_8010DC24 declaration note at the top of
+ * this file.
+ *
+ * WHAT IS LEFT is the same 0x10 frame shortfall as func_80153FC8_ovl3.
+ * The ROM's locals region is 0x20..0x3C (eight words) and it homes THREE
+ * of them: hits at 0x3C, `fr` at 0x34 and objId at 0x24. Our IDO gives
+ * homes to none of them and lands on a 0x30 frame. Note `fr` is homed
+ * even though it is a pointer -- so it is NOT initialised at its
+ * declaration in the original (LEVER 57's corollary says an
+ * initialised-at-declaration pointer gets no home slot). Splitting the
+ * declaration from the assignment is the next thing to try, on both
+ * mirrors at once. */
 s32 func_80153B98_ovl3(void) {
-    struct PCRec { s32 type; struct CollisionTriangle *tri; void *norm; };
-    struct PCBlk {
-        union { u32 w; struct { u16 hwpad_; u16 hw; }; } flags;
-        struct PCRec rec[5];
-    };
     extern u8 D_8012BCA0[];
-    struct PCBlk *cb = (struct PCBlk *) D_8012BCA0;
-    struct PositionState *st = &gPositionState;
     GObj *obj = omCurrentObj;
     f32 **rec = D_800E0490[obj->objId];
     f32 *fr = rec[1];
@@ -1257,52 +1269,55 @@ s32 func_80153B98_ovl3(void) {
     u32 ceilM;
     u32 floorM;
     struct CollisionTriangle *tri;
-    u16 r;
+    s32 r;
 
-    st->kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
-    st->kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
-    st->kirbyFootPos[2] = gEntitiesNextPosZArray[obj->objId];
-    st->scale[0] = fr[0];
-    st->scale[1] = fr[1] + fr[0];
-    st->scale[2] = fr[2] + fr[0];
+    gPositionState.kirbyFootPos[0] = gEntitiesNextPosXArray[obj->objId];
+    gPositionState.kirbyFootPos[1] = gEntitiesNextPosYArray[obj->objId];
+    gPositionState.kirbyFootPos[2] = gEntitiesNextPosZArray[obj->objId];
+    gPositionState.scale[0] = fr[0];
+    gPositionState.scale[1] = fr[0] + fr[1];
+    gPositionState.scale[2] = fr[0] + fr[2];
     if (D_800E6A10[obj->objId] == 1.0f) {
-        st->faceAngle[0] = fr[3];
-        st->faceAngle[1] = fr[4];
+        gPositionState.faceAngle[0] = fr[3];
+        gPositionState.faceAngle[1] = fr[4];
     } else {
-        st->faceAngle[0] = fr[4];
-        st->faceAngle[1] = fr[3];
+        gPositionState.faceAngle[0] = fr[4];
+        gPositionState.faceAngle[1] = fr[3];
     }
     if (gKirbyState.isTurning & 1) {
-        st->faceAngle[2] = gKirbyState.unk7C;
+        gPositionState.faceAngle[2] = gKirbyState.unk7C;
     } else {
-        st->faceAngle[2] = D_800E17D0[obj->objId];
+        gPositionState.faceAngle[2] = D_800E17D0[obj->objId];
     }
-    func_8010BBD4(st);
-    func_80105238((f32 *) st, D_8012BCA0);
-    hits = func_801128A4(st);
+    func_8010BBD4(&gPositionState);
+    func_80105238((f32 *) &gPositionState, D_8012BCA0);
+    hits = func_801128A4(&gPositionState);
     if (hits != 0) {
-        dx = st->kirbyFootPos[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
-        dz = st->kirbyFootPos[2] - gEntitiesNextPosZArray[omCurrentObj->objId];
+        dx = gPositionState.kirbyFootPos[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+        dz = gPositionState.kirbyFootPos[2] - gEntitiesNextPosZArray[omCurrentObj->objId];
         if ((dx != 0.0f) || (dz != 0.0f)) {
             func_800F8728(omCurrentObj->objId, dx, dz);
-            gEntitiesNextPosXArray[omCurrentObj->objId] = st->kirbyFootPos[0];
-            gEntitiesNextPosZArray[omCurrentObj->objId] = st->kirbyFootPos[2];
+            gEntitiesNextPosXArray[omCurrentObj->objId] = gPositionState.kirbyFootPos[0];
+            gEntitiesNextPosZArray[omCurrentObj->objId] = gPositionState.kirbyFootPos[2];
         }
         if (hits & 1) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 7) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 7) * 8));
         }
         if (hits & 2) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x38) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 0x38) * 8));
         }
         if (hits & 4) {
-            cb->flags.hw = (u16) ((((cb->flags.w >> 0x13) | 0x1C0) * 8) | (cb->flags.hw & 7));
+            *(u16 *) D_8012BCA0 =
+                (u16) ((*(u16 *) D_8012BCA0 & 7) | (((*(u32 *) D_8012BCA0 >> 0x13) | 0x1C0) * 8));
         }
         if (hits & 8) {
             func_8011D40C();
         }
     }
-    gEntitiesNextPosYArray[omCurrentObj->objId] = st->kirbyFootPos[1];
-    f = cb->flags.w >> 0x13;
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gPositionState.kirbyFootPos[1];
+    f = *(u32 *) D_8012BCA0 >> 0x13;
     ceilM = f & 0x1C0;
     floorM = f & 0xE00;
     gKirbyState.ceilingCollisionNext = ceilM;
@@ -1311,7 +1326,7 @@ s32 func_80153B98_ovl3(void) {
     if (floorM != 0) {
         D_800E8920[omCurrentObj->objId] = 1;
     }
-    tri = cb->rec[1].tri;
+    tri = *(struct CollisionTriangle **) &D_8012BCA0[0x14];
     if ((tri != NULL) && (ceilM != 0)) {
         gKirbyState.ceilingType = tri->collisionType;
         gKirbyState.unk108 = tri->Halt_Movement;
@@ -1319,7 +1334,7 @@ s32 func_80153B98_ovl3(void) {
         gKirbyState.ceilingType = 0;
         gKirbyState.unk108 = 0;
     }
-    tri = cb->rec[0].tri;
+    tri = *(struct CollisionTriangle **) &D_8012BCA0[0x8];
     if ((tri != NULL) && (floorM != 0)) {
         gKirbyState.floorType = tri->collisionType;
         gKirbyState.unk10A = tri->Halt_Movement;
@@ -1327,9 +1342,9 @@ s32 func_80153B98_ovl3(void) {
         gKirbyState.floorType = 0;
         gKirbyState.unk10A = 0;
     }
-    if ((ceilM != 0) && ((r = func_8010DC24(cb->rec[1].tri)) != 0)) {
+    if ((ceilM != 0) && ((r = func_8010DC24(*(struct CollisionTriangle **) &D_8012BCA0[0x14])) != 0)) {
         gKirbyState.unk140 = (u32) r | 0x10000;
-    } else if ((gKirbyState.floorCollisionNext != 0) && ((r = func_8010DC24(cb->rec[0].tri)) != 0)) {
+    } else if ((gKirbyState.floorCollisionNext != 0) && ((r = func_8010DC24(*(struct CollisionTriangle **) &D_8012BCA0[0x8])) != 0)) {
         gKirbyState.unk140 = (u32) r | 0x20000;
     } else if (gKirbyState.action != 0x16) {
         gKirbyState.unk140 = 0;
