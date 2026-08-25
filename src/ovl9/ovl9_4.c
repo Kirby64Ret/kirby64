@@ -1856,9 +1856,12 @@ s32 func_801E55C0_ovl9(s32 arg0, void *arg1) {
     return func_80110150(arg1);
 }
 
-#ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* Byte-exact. It always was: the note above this function used to read "not
+ * byte-exact and not claimed to be", but nothing had ever measured it --
+ * func_801E5660_ovl9 is the last function of ovl9_4 and its listing carried
+ * five words of alignment fill, so verify.py refused to score it and
+ * measure_seeds called it UNSCORABLE. `- [0x193760, pad]` in kirby64.yaml
+ * supplies that fill, and the first measurement after the pad was MATCH. */
 s32 func_801E5660_ovl9(s32 arg0) {
     f32 temp_f0;
 
@@ -1870,6 +1873,3 @@ s32 func_801E5660_ovl9(s32 arg0) {
     }
     return 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_4/func_801E5660_ovl9.s")
-#endif

@@ -2259,17 +2259,23 @@ void func_8020FC68_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: PADDING-TRAPPED, 25/141 (scored by hand -- verify.py refuses this
-   listing and reports it unverifiable).
-   padtrap.classify() says `trap, 6`: six words sit after this function's own
-   .size, so even a byte-exact conversion would leave the TU 24 bytes short
-   under kirby.ld's SUBALIGN(16).  DO NOT UN-GUARD IT, whatever the score --
-   closing it needs a `pad` subsegment in kirby64.yaml plus the matching
-   `. += 0x10;` in kirby.ld in the SAME edit, which is outside this lane.
-   Draft state: ours is 147 instructions against the ROM's 141, and the shape
-   is right (the pool-exhausted complaint with its own .asciz, then the clone
-   stamp) but the register colouring diverges from the entry block on. */
+/* Byte-exact, un-guarded 2026-08-25.  It was PADDING-TRAPPED: six words of
+   alignment fill sit past this function's own .size, so verify.py refused the
+   listing and the note here carried a hand-count (25/141) that no tool had
+   ever confirmed.  `- [0x1BDFC0, pad]` in kirby64.yaml supplies that fill;
+   the first real measurement was 101/143, and ONE edit closed it.
+
+   The tell: the two rail-binding lines were spelled as four statements,
+   `D_800E6150[track] = D_800E5F90[objId];` then
+   `D_800E5F90[track] = D_800E6150[track];`.  That names D_800E6150 TWICE, so
+   IDO builds a full base register for it (lui+addiu+addu) and RELOADS the word
+   it just stored.  The ROM names it once -- `lui $at, %hi(D_800E6150)` /
+   `addu $at,$at,$v1` / `sw $a1, %lo(D_800E6150)($at)`, the folded single-use
+   form -- and stores the SAME register into both arrays, while D_800E5F90,
+   which really is used twice, gets the base register.  The chained assignment
+   `A[track] = B[track] = A[objId];` is what spells that: one load, two stores,
+   B referenced once.  Worth 3 words at each of the two sites and every
+   register name after them. */
 extern s32 request_track_general(s32, s32, s32);
 extern void func_800B1900(u16);
 /* Clone spawner: request a fresh enemy track (kind 0x17); when the
@@ -2292,10 +2298,8 @@ void func_8020FD34_ovl9(void) {
     D_800E7730[track] = D_800E7730[omCurrentObj->objId];
     D_800E77A0[track] = D_800E77A0[omCurrentObj->objId];
     D_800E7880[track] = 1;
-    D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
-    D_800E5F90[track] = D_800E6150[track];
-    D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
-    D_800E6BD0[track] = D_800E6D90[track];
+    D_800E5F90[track] = D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
+    D_800E6BD0[track] = D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
     gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
     gEntitiesPosXArray[track] = gEntitiesPosXArray[omCurrentObj->objId];
     gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
@@ -2305,43 +2309,4 @@ void func_8020FD34_ovl9(void) {
     D_800E98E0[track] = 1;
     gEntitiesAngleZArray[track] = gEntitiesAngleZArray[omCurrentObj->objId];
 }
-#elif defined(PORT)
-extern s32 request_track_general(s32, s32, s32);
-extern void func_800B1900(u16);
-/* Clone spawner: request a fresh enemy track (kind 0x17); when the
- * pool is exhausted (slot >= 60 or -1) log the "enemy req over 18"
- * complaint and release it.  Otherwise stamp the clone as mode-1 of
- * the same species -- copying this entity's state id, species words,
- * rail binding (into both current and previous slots), full
- * position/prev-position, roll angle -- and mark it live. */
-void func_8020FD34_ovl9(void) {
-    s32 track;
-
-    track = request_track_general(0x17, 0x1E, 0x50);
-    if ((track >= 0x3C) || (track == -1)) {
-        utilPrintf("enemy req over 18. Track Num:%d\n", track);
-        func_800B1900(track);
-        return;
-    }
-    gEntityFuncListIDArray[track] = gEntityFuncListIDArray[omCurrentObj->objId];
-    D_800E76C0[track] = 0xFF;
-    D_800E7730[track] = D_800E7730[omCurrentObj->objId];
-    D_800E77A0[track] = D_800E77A0[omCurrentObj->objId];
-    D_800E7880[track] = 1;
-    D_800E6150[track] = D_800E5F90[omCurrentObj->objId];
-    D_800E5F90[track] = D_800E6150[track];
-    D_800E6D90[track] = D_800E6BD0[omCurrentObj->objId];
-    D_800E6BD0[track] = D_800E6D90[track];
-    gEntitiesNextPosXArray[track] = gEntitiesNextPosXArray[omCurrentObj->objId];
-    gEntitiesPosXArray[track] = gEntitiesPosXArray[omCurrentObj->objId];
-    gEntitiesNextPosYArray[track] = gEntitiesNextPosYArray[omCurrentObj->objId];
-    gEntitiesPosYArray[track] = gEntitiesPosYArray[omCurrentObj->objId];
-    gEntitiesNextPosZArray[track] = gEntitiesNextPosZArray[omCurrentObj->objId];
-    gEntitiesPosZArray[track] = gEntitiesPosZArray[omCurrentObj->objId];
-    D_800E98E0[track] = 1;
-    gEntitiesAngleZArray[track] = gEntitiesAngleZArray[omCurrentObj->objId];
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_13/func_8020FD34_ovl9.s")
-#endif
 
