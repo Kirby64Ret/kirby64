@@ -584,9 +584,20 @@ void func_801999DC_ovl7(Unused GObj *gobj) {
     assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_8020C710_ovl9);
 }
 
-// m2c draft, measured 198/205 diffs
+// m2c draft, 195/206 (was 198/205 with a (void) head).
+// LEVER 58 in its HOMED form. The ROM's prologue does `sw $a0, 0x28($sp)` at
+// 80199A4C into a 0x28 frame -- that is the incoming-argument slot, which sits
+// at frame+0 -- and NOTHING ever reads it back, so the parameter is present
+// and unused, exactly like the matched func_801DBA8C_ovl17 in ovl17.c.
+// Declaring it reproduces the store (that diff is gone) and is worth 3 words.
+// Its only caller func_80199D50_ovl7, matched, is the same proc one level up:
+// its `jal func_80199A38_ovl7` at +0xAC has a nop delay slot in the arm where
+// nothing has written $a0, so it takes the parameter and hands it on. Retyping
+// it is byte-identical (objdump A/B on .text).
+// The remaining 195 are not the lever's business -- the draft is still raw m2c
+// and it is one word LONGER than the ROM, so read the number against LEVER 48.
 #ifdef NON_MATCHING
-void func_80199A38_ovl7(void) {
+void func_80199A38_ovl7(struct GObj *arg0) {
     EnemyRecord *sp1C;
     GObj *temp_v1;
     EnemyRecord *temp_a3;
@@ -669,7 +680,7 @@ void func_80199A38_ovl7(void) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_80199A38_ovl7.s")
 #endif
-void func_80199D50_ovl7(void) {
+void func_80199D50_ovl7(struct GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
     if (!(D_800E8AE0[omCurrentObj->objId] & 1)) {
@@ -679,7 +690,7 @@ void func_80199D50_ovl7(void) {
         gEntityFuncListIDArray[omCurrentObj->objId] = -1;
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], &func_801A6DF0_ovl7);
     } else {
-        func_80199A38_ovl7();
+        func_80199A38_ovl7(arg0);
     }
 }
 
