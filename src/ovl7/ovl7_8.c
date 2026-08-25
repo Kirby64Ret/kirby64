@@ -42,11 +42,11 @@ void func_800AED20(f32);
 extern f32 gameTicksPerDraw;
 void ohSleep(s32);
 /* D_801CE2B8_ovl7 = 4.2000003f : now emitted by this TU */
-void func_801AC840_ovl7(void);
+void func_801AC840_ovl7(GObj *);
 void func_801ABBA0_ovl7(void);
 void func_800AA018(s32);
 
-void func_801B10EC_ovl7(void);
+void func_801B10EC_ovl7(GObj *);
 void func_80198880_ovl7(void *);
 void func_800B3520(void);
 void func_800AA154(s32);
@@ -71,7 +71,7 @@ void func_801AC364_ovl7(GObj *);
 extern struct EnemyEventTable D_801CD2D0_ovl7;
 void func_800B0F28(struct DObj *, s32, f32);
 
-void func_801AC840_ovl7(void);
+void func_801AC840_ovl7(GObj *);
 
 extern FUNCLIST D_801CD5C0_ovl7;
 void func_800B6FD8(GObj *);
@@ -248,9 +248,18 @@ void func_801B0FCC_ovl7(GObj *arg0) {
     func_801A3E80_ovl7(arg0);
 }
 
-void func_801B10EC_ovl7(void) {
+/* LEVER 68's shape, and the last `(void)` spelling of func_801AC840_ovl7 left
+ * in the tree: this file declared it `void (void)` twice and called it bare,
+ * against the `void (GObj *)` definition at src/ovl7/ovl7_5.c:2422 -- the
+ * LEVER 49 collision. This proc is itself stored into D_800DF150, which is
+ * `void (*[])(struct GObj *)`, so the `(void)` head here was a type error the
+ * same way. Declaring the parameter and handing it on is BYTE-INERT:
+ * build/src/ovl7/ovl7_8.o's .text is identical across the change, objdump
+ * A/B, which is exactly what LEVER 68 predicts for a parameter that is only
+ * ever passed to a call whose $a0 the ROM never writes. */
+void func_801B10EC_ovl7(GObj *arg0) {
     gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
-    func_801AC840_ovl7();
+    func_801AC840_ovl7(arg0);
 }
 
 void func_801B1130_ovl7(GObj *arg0) {
