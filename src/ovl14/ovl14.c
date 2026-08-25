@@ -248,12 +248,29 @@ void func_801DBEA4_ovl14(GObj *arg0) {
 
 }
 
-#ifdef NON_MATCHING
-/* 36/196. Guarded by the manager: converted but not byte-exact, and it
-   grew ovl14.c by 32 bytes, shifting every segment after it. */
+/* MATCHED 2026-08-25, from 30/196 (the old note's 36/196 was stale). The whole
+   residue was ONE declaration: the trailing search loop counts in `r`, the
+   variable the three random draws above it already used, NOT in a second local
+   `i`. With `i` declared, IDO allocated it $a1 -- ahead of the last of the
+   three loop-invariant D_800EB*[objId] loads -- so `func_801DC674_ovl14(2, i)`
+   needed no argument move, the ROM's `or $a1, $a2, $zero` had nothing to put in
+   the jal delay slot, `addiu $a0, 2` went there instead, and the `bnel` that
+   copies it out of the loop-exit block collapsed to `bne`+`nop`. One word
+   short, three branch displacements off by one, and a caller-saved rotation on
+   top -- 30 diffs from one dead declaration. Reusing `r` puts the counter in
+   $a2 AFTER all three hoisted temps and the whole thing falls out.
+   LEVERS 54/60: when a spill or a register lands one slot off, ask which of the
+   ROM's values is a temp rather than a local, and delete rather than add.
+   Negatives measured on the way, none of which moved the base 30:
+     - `for (i = 0;; i++)` instead of `i = 0; while (1) { ... i++; }` -- inert.
+     - the honest `while ((i==a) || (i==b) || (i==c)) i++;` form, as a `for`
+       header and as a plain `while`, is 197/201 BOTH ways: the || chain
+       promotes D_800EBF60's base into a fourth callee-saved register.
+       The nested-if-with-break really is the ROM's shape.
+     - swapping the `s32 r; s32 i;` declaration order costs 6 more (36/196):
+       r's spill slot moves 0x34 -> 0x30, LEVER 57's top-down rule. */
 void func_801DBEAC_ovl14(void *arg0) {
     s32 r;
-    s32 i;
 
     D_800DDFD0[omCurrentObj->objId] = 5;
     D_800EBF60[omCurrentObj->objId] = 0;
@@ -285,27 +302,24 @@ void func_801DBEAC_ovl14(void *arg0) {
             if (D_800EBDA0[omCurrentObj->objId] != -1) {
                 D_800EBF60[omCurrentObj->objId] = r;
                 ohSleep(random_soft_s32_range(0x1E) + 0x1E);
-                i = 0;
+                r = 0;
                 while (1) {
-                    if (i != D_800EBBE0[omCurrentObj->objId]) {
-                        if (i != D_800EBDA0[omCurrentObj->objId]) {
-                            if (i != D_800EBF60[omCurrentObj->objId]) {
+                    if (r != D_800EBBE0[omCurrentObj->objId]) {
+                        if (r != D_800EBDA0[omCurrentObj->objId]) {
+                            if (r != D_800EBF60[omCurrentObj->objId]) {
                                 break;
                             }
                         }
                     }
-                    i++;
+                    r++;
                 }
-                func_801DC674_ovl14(2, i);
+                func_801DC674_ovl14(2, r);
             }
         }
     }
     ohSleep(0x28);
     gEntityFuncListIDArray[omCurrentObj->objId] = 1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl14/ovl14/func_801DBEAC_ovl14.s")
-#endif
 
 void func_801DC1BC_ovl14(GObj *arg0) {
 
