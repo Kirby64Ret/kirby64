@@ -688,11 +688,34 @@ void func_801D5F88_ovl8(struct GObj *arg0) {
 }
 
 
-/* 5/235: residue is one CSE register -- the ROM parks D_800E0D50[objId] in
- * $a2 (also func_800B2340's 3rd argument register) and coalesces; IDO parks
- * it in $a3 and shuffles with a `move $a2,$a3` on the default edge.
- * Swept: named index local (before and after `d`), named funclist local,
- * explicit `default:`, declaration order, hoisting `d` below the test. */
+/* 5/235, AND THE CAUSE IS NOW KNOWN AND PROVEN -- it is not a register floor,
+ * it is func_800B2340's PROTOTYPE, and the fix is outside this file.
+ *
+ * The residue is one CSE register: the ROM parks D_800E0D50[objId] in $a2
+ * (also func_800B2340's 3rd argument register) and coalesces; IDO parks it in
+ * $a3 and shuffles with a `move $a2,$a3` on the default edge.
+ * src/ovl1/ovl1_7.h declares the third parameter `u32 track` while the
+ * argument is an s32 array read, so IDO makes a conversion node and refuses
+ * to coalesce.  MEASURED 2026-08-25: changing that ONE declaration to
+ * `s32 track` (and nothing else -- this draft untouched) takes this function
+ * from 5/235 straight to MATCH.  Confirmed by editing src/ovl1/ovl1_7.h,
+ * re-scoring, and reverting the header.
+ * The permuter found the same thing independently (`int track` in its
+ * standalone copy, perm/func_801D6534_ovl8/output-0-1).
+ *
+ * NOT DONE HERE because it is a cross-file prototype change: the header
+ * declaration, the definition at src/ovl1/ovl1_7.c:1420, and roughly twenty
+ * per-file redeclarations spread over ovl3/ovl5/ovl6/ovl9/ovl15/ovl16/ovl17/
+ * ovl19 all have to move together (several already say `s32` and disagree
+ * with the header today).  Coordinator task.
+ *
+ * Swept and negative, all with the u32 prototype in place: named index local
+ * (before and after `d`), named funclist local, explicit `default:`,
+ * declaration order, hoisting `d` below the test, and -- new, 2026-08-25 --
+ * a `u32 parent` local carrying D_800E0D50[objId] to all four uses so the
+ * argument type matches the parameter exactly: 193/234, far worse, because
+ * the local forces the parameter home store `sw $a1, 0x44($sp)` into the
+ * switch's branch-likely delay slots. */
 #ifdef NON_MATCHING
 void func_801D6534_ovl8(struct GObj *arg0) {
     extern f32 gKirbyHp;
