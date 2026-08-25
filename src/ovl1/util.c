@@ -412,27 +412,39 @@ void utilSetPlayerContPad(void) {
 }
 
 #ifdef NON_MATCHING
+/* FACTORY: 40/69 -- MEASURED 2026-08-25, was 63/69.
+   An atan2 wrapper that resolves the quadrant by hand. The 23 words came from
+   one reading (LEVER 70): the ROM's two `c.lt.s` against the `mtc1 $zero, $f0`
+   at the top of the function are ABSF macros, not sign tests. The tell is
+   arg1's home slot: `lwc1 $f4, 0x24($sp)` feeds the compare and the `neg.s`,
+   and `lwc1 $f14, 0x24($sp)` reloads it for the else arm -- two reads of one
+   value around one compare is what `((x) < 0.0f ? -(x) : (x))` costs, and the
+   draft's `absY = arg1; if (arg1 < 0.0f) { absY = -arg1; }` read it once.
+
+   The 40 that remain are one register-allocation difference, not a shape
+   difference: the ROM promotes arg0 to the callee-saved $f20 (`sdc1 $f20,
+   0x10($sp)`, frame 0x20, arg0 never homed) and re-reads only arg1 from its
+   home slot. Every draft tried homes BOTH floats at frame 0x18 -- ABSF on the
+   parameter directly, ABSF on a copied local, and a copied local plus
+   separate absX/absY locals all produce the identical 40. The copy is
+   coalesced away in all three, so `x` never becomes a distinct value that
+   could claim a saved register. Do not re-run those three.
+
+   Structure is otherwise confirmed against the listing word for word: three
+   rodata slots that all hold 6.283185482 (D_800D5C48/4C/50) are three
+   separate `6.2831855f` literals in three arms, `base = 0.0f` shares the
+   materialised zero in $f2, and the `mov.s $f12, $f2` at 800A53C8 is the
+   dead duplicate a `beql` leaves behind. */
 f32 func_800A52F0(f32 arg0, f32 arg1) {
     f32 x = arg0;
     f32 angle;
-    f32 absX;
-    f32 absY;
     f32 base;
     f32 limit;
     f32 ret;
     s32 yNeg;
     s32 xNeg;
 
-    if (arg0 < 0.0f) {
-        arg0 = -arg0;
-    } else {
-        arg0 = x;
-    }
-    absY = arg1;
-    if (arg1 < 0.0f) {
-        absY = -arg1;
-    }
-    angle = atan2f(arg0, absY);
+    angle = atan2f(ABSF(x), ABSF(arg1));
     yNeg = 0;
     if (arg1 < 0.0f) {
         yNeg = 1;
