@@ -88,6 +88,12 @@ EXCLUDE = {
 }
 
 TARGETS = [
+    # Out of shape order on purpose: 412 words for 23 diffs is the best
+    # words-per-residue row in the tree, and its shape 6 is four ISOLATED
+    # clusters (two scheduling, two register naming) rather than a structural
+    # gap -- see the FACTORY note in src/ovl1/ovl1_6.c. Worth a slot near the
+    # front even though the shape number would bury it.
+    (  6,    23,   412, 'src/ovl1/ovl1_6.c', 'initTrack'),
     (  0,     1,   138, 'src/ovl4/ovl4_3.c', 'func_80157028_ovl4'),
     (  0,     2,    88, 'src/ovl5/ovl5_5.c', 'func_801721CC_ovl5'),
     (  0,     2,    85, 'src/ovl2/ovl2_2.c', 'func_800F72B0'),

@@ -19,6 +19,33 @@ void func_800AE0F0(void) {
     D_800EC9E0 = 0;
 }
 
+/* FACTORY: 23 of 412 words, and shapescan puts the shape distance at 6 --
+ * FOUR isolated clusters in a 412-word body, every one of them scheduling or
+ * register naming. Nothing structural is wrong with this draft, which makes it
+ * the best words-per-diff target left in ovl1.
+ *
+ *   [108-111] the `lwc1 $f12` of 65535.0f is scheduled three words earlier
+ *             here than in the ROM, which shifts the D_800E2090 store one
+ *             slot. Same instruction count, same constant, same symbol.
+ *   [239-252] 0xFF lives in $a2 in the ROM and in $a1 here; the three `sb`
+ *             uses follow it.
+ *   [376-384] the `struct Normal *` lives in $v1 in the ROM and in $a1 here.
+ *   [400-411] the ONLY count difference, and it is one word: the ROM
+ *             materialises the whole base of D_800E9720 (`lui`/`addiu` into
+ *             $t2) and stores through `addu $a1, $v0, $t2` + `sw $zero,
+ *             0($a1)`, where this folds the %lo into the store in the usual
+ *             three-word `lui $at`/`addu $at,$at,$v0`/`sw %lo()($at)` form.
+ *             The ROM's is a word LONGER, so it is IDO's choice and not a
+ *             semantic difference -- the scheduler had put D_800E9720's
+ *             address computation inside the neighbouring D_800E5890 store,
+ *             where $at was already busy.
+ *
+ * Swept 2026-08-25 on that last cluster, all 23/412 and byte-identical:
+ * `*(vs32 *) &D_800E9720[track] = 0` split out of the chain, the same cast
+ * left inside the chain, three separate plain stores, and an `s32 *pz =
+ * &D_800E9720[track]` local. The volatile does NOT force the long form here
+ * (it does in func_802209E4_ovl19, where the target is a scalar), and IDO
+ * folds the pointer local. Permuter target, not a reading one. */
 #ifdef NON_MATCHING
 void initTrack(s32 track) {
     f32 lifeline, l2;
