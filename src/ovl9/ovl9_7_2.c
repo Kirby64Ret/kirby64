@@ -454,9 +454,24 @@ void func_801F3D2C_ovl9(GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 52/154 [was 134/153, 139/153 before that, and noted 14/153 before
-   that].  TWO findings, and the second is the one that mattered.
+/* MATCHED 2026-08-26 (was 52/154).  Three edits on top of the note below,
+   all from the ovl9_10 TrackPosition family (func_802031D4/80203BA8/
+   func_80204D5C, closed the same day):
+   (1) objid_inline_sweep's full inline -- delete `u32 id` and its five
+       re-assignments, write every subscript `omCurrentObj->objId` (52 -> 22;
+       the note's "ROM overwrites the objId with its own shifted index" seal
+       was the cache, LEVERS 4/97/111);
+   (2) `dist = tp.unk4;` moved INSIDE the acc/ang block -- at function scope
+       the copy coalesces into $f14, the atan2f argument register, and every
+       later FP temp rotates one pair; as the block's first statement IDO
+       still hoists the LOAD above the state-transition branch (word 28,
+       speculative, $f4) and parks the STORE at word 80, the ROM's pair.
+       One more reserved word (`reserved1`) pays for the deleted `id` slot,
+       keeping dist on 0x38 (LEVER 97c: the frame moves with the cache);
+   (3) acc stores ordered z, y, x -- the ROM stores 0x34 then 0x30 with the
+       0x2C store in the lbvector_Rotate delay slot.
+   0.4f is the TU's own late_rodata word (D_8021D900_ovl9).
+   The note below is kept for its frame/`dist` findings, which still hold.
 
    (1) THE FRAME, and its POSITION as much as its size (LEVER 78).  Reserved
    `s32` slots take it to the ROM's 0x50 wherever they are declared -- but
@@ -509,24 +524,20 @@ void func_801F3E60_ovl9(GObj *arg0) {
        dist, because that is where the ROM's dead word is -- 0x40, with tp on
        0x44-0x4B above it and dist on 0x38 below. */
     s32 reserved0;
+    /* RESERVED: pays for the deleted `u32 id` slot (LEVER 97c) -- with it,
+       dist stays on the ROM's 0x38. */
+    s32 reserved1;
     f32 dist;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    rec = D_800E1B50[id];
-    if (D_800E9E20[id] != 0) {
-        D_800E98E0[id]--;
+    rec = D_800E1B50[omCurrentObj->objId];
+    if (D_800E9E20[omCurrentObj->objId] != 0) {
+        D_800E98E0[omCurrentObj->objId]--;
         func_8019A900_ovl7(&tp);
-        id = omCurrentObj->objId;
-        dist = tp.unk4;
-        if ((D_800E98E0[id] <= 0) && (rec->unk3C == 0)) {
-            if ((f32) tp.unk0 == D_800E6A10[id]) {
+        if ((D_800E98E0[omCurrentObj->objId] <= 0) && (rec->unk3C == 0)) {
+            if ((f32) tp.unk0 == D_800E6A10[omCurrentObj->objId]) {
                 func_80199F1C_ovl7(arg0);
-                id = omCurrentObj->objId;
-                D_800EA1A0[id] = (s32) -D_800E6A10[id];
-                id = omCurrentObj->objId;
+                D_800EA1A0[omCurrentObj->objId] = (s32) -D_800E6A10[omCurrentObj->objId];
             }
-            gEntityFuncListIDArray[id] = 2;
+            gEntityFuncListIDArray[omCurrentObj->objId] = 2;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F399C_ovl9);
             return;
         }
@@ -534,18 +545,18 @@ void func_801F3E60_ovl9(GObj *arg0) {
             Vector acc;
             f32 ang;
 
+            dist = tp.unk4;
             ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], dist);
-            acc.x = 0.4f;
-            acc.y = 0.0f;
             acc.z = 0.0f;
+            acc.y = 0.0f;
+            acc.x = 0.4f;
             lbvector_Rotate(&acc, 4, ang);
             D_800E6690[omCurrentObj->objId] = acc.x;
             D_800E3750[omCurrentObj->objId] = acc.y;
         }
         if (rec->unk3C == 0) {
-            id = omCurrentObj->objId;
-            if ((f32) tp.unk0 != D_800E6A10[id]) {
-                f32 spd = D_800E64D0[id];
+            if ((f32) tp.unk0 != D_800E6A10[omCurrentObj->objId]) {
+                f32 spd = D_800E64D0[omCurrentObj->objId];
 
                 if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
                     func_80199F1C_ovl7(arg0);
@@ -554,73 +565,6 @@ void func_801F3E60_ovl9(GObj *arg0) {
         }
     }
 }
-#elif defined(PORT)
-extern Vector *lbvector_Rotate(Vector *, s32, f32);
-extern f32 eneGetPlayerHeight(void);
-extern void func_80199F1C_ovl7(GObj *);
-extern float atan2f(float, float);
-struct PcTrackPosition {
-    s32 unk0;
-    f32 unk4;
-};
-extern s32 func_8019A900_ovl7(struct PcTrackPosition *);
-void func_801F399C_ovl9(struct GObj *);
-/* Chaser drift hook: while active (D_800E9E20 set), drain the chase
- * timer; when it empties and no turnaround is pending, turn to face
- * Kirby if needed (flipping the sprite row D_800EA1A0) and drop back
- * to state 2 on the normal thread.  Otherwise accelerate 0.4/tick
- * along the bearing to Kirby (rail distance horizontally, player
- * height vertically), and start a turnaround when Kirby is behind
- * and the entity has nearly stopped. */
-void func_801F3E60_ovl9(GObj *arg0) {
-    EnemyRecord *rec;
-    struct PcTrackPosition tp;
-    u32 id;
-
-    id = omCurrentObj->objId;
-    rec = D_800E1B50[id];
-    if (D_800E9E20[id] != 0) {
-        D_800E98E0[id]--;
-        func_8019A900_ovl7(&tp);
-        id = omCurrentObj->objId;
-        if ((D_800E98E0[id] <= 0) && (rec->unk3C == 0)) {
-            if ((f32) tp.unk0 == D_800E6A10[id]) {
-                func_80199F1C_ovl7(arg0);
-                id = omCurrentObj->objId;
-                D_800EA1A0[id] = (s32) -D_800E6A10[id];
-                id = omCurrentObj->objId;
-            }
-            gEntityFuncListIDArray[id] = 2;
-            assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801F399C_ovl9);
-            return;
-        }
-        {
-            Vector acc;
-            f32 ang;
-
-            ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4);
-            acc.x = 0.4f;
-            acc.y = 0.0f;
-            acc.z = 0.0f;
-            lbvector_Rotate(&acc, 4, ang);
-            D_800E6690[omCurrentObj->objId] = acc.x;
-            D_800E3750[omCurrentObj->objId] = acc.y;
-        }
-        if (rec->unk3C == 0) {
-            id = omCurrentObj->objId;
-            if ((f32) tp.unk0 != D_800E6A10[id]) {
-                f32 spd = D_800E64D0[id];
-
-                if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
-                    func_80199F1C_ovl7(arg0);
-                }
-            }
-        }
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_7_2/func_801F3E60_ovl9.s")
-#endif
 
 void func_800A9EA4(s32);
 
