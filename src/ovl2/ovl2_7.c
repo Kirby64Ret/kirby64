@@ -6022,11 +6022,28 @@ s32 func_8010AA80(void *arg0, ? arg1) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 177/177, the SAME shared frame class as func_801073C4 and func_80108E08
- * -- ROM keeps both parameters in callee-saved registers (s0/s1) with a 0x98 frame,
- * every draft variant keeps only one and needs 0xA0, and that offsets every
- * sp-relative word. Fix all three together; this one is the smallest of the set and
- * so the best place to find the lever. Written to the quality bar: named locals
+/* FACTORY: 1/177 (2026-08-26; was 177/177, then 95 after LEVER 117's
+ * func_80108078 prototype fixed the frame class for this member). The last
+ * 94 fell to three source-shape reads off the aligned diff:
+ *   95 -> 19  `result = probe;` -- the ROM word-copies the WHOLE Vector with
+ *             integer lw/sw pairs in case 2 (m2c had spelled three float
+ *             member copies, and its stray early `result.y = probe.y` was
+ *             the tell that y is copied then re-planted).
+ *   19 -> 17  probe.y's addends in ROM load order: scale[2] first.
+ *   17 -> 1   the facing dot spelled Z-product FIRST:
+ *             `(slideZ * fwdZ) + (slideX * fwdX)`.
+ * THE LAST WORD is one mul.s operand slot: ROM `mul.s $f10,$f0,$f18`
+ * (slideX, fwdX -- local,load), ours load,local. Measured and inert or
+ * worse, so do not re-try: spelling that product either way (LEVER 21's
+ * invariance, confirmed both ways at 1 and 2), `0.0f <=` compare order (1),
+ * slideX as the inline sub with the decl kept (1) or dropped (6), the
+ * slide decls swapped (6-20), and a named `fx = BD00.fwdX` local (36 --
+ * it moves the frame). LEVER 21 says the slot moves by operand KIND and
+ * no kind reachable without a frame cost moves this one.
+ * The old note's shared-frame diagnosis still holds for func_801073C4 and
+ * func_80108E08 (253/270 -- the fwd-swap analog there is 252, i.e. noise
+ * under its unsolved frame; the struct-copy lever has no site in it, its
+ * sp8C = sp98 copies were already spelled whole). Written to the quality bar: named locals
  * (probe/walked/result/hitNorm/hitTri/hitType/slideX/limitX/cls) and a real switch
  * with 0 and 1 sharing an arm, instead of m2c's void* + sp94/sp8C names and its
  * "irregular" switch comment. Semantics: the platform-sweep counterpart of
@@ -6058,7 +6075,7 @@ s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1) {
     hitTri = arg1->rec[COL_FLOOR].tri;
     hitType = arg1->rec[COL_FLOOR].type;
     probe.x = arg0->kirbyFootPos[0];
-    probe.y = arg0->kirbyFootPos[1] + arg0->scale[2];
+    probe.y = arg0->scale[2] + arg0->kirbyFootPos[1];
     probe.z = arg0->kirbyFootPos[2];
     if (!((arg1->flags.w >> 0x13) & 0x200)) {
         f32 planeY = -((hitNorm->x * probe.x) + (hitNorm->z * probe.z) +
@@ -6077,15 +6094,13 @@ s32 func_8010AC1C(struct PositionState *arg0, struct CollisionResult *arg1) {
         arg1->flags.f.hits = ((arg1->flags.w >> 0x13) & 0xF1FF) | COLF_FLOOR;
         break;
     case 2:
-        result.x = probe.x;
+        result = probe;
         cls = COLF_FLOOR_FOOT;
-        result.y = probe.y;
-        result.z = probe.z;
         slideX = result.x - walked.x;
         slideZ = result.z - walked.z;
         result.y = -((hitNorm->x * result.x) + (hitNorm->z * result.z) + hitNorm->originOffset) /
                    hitNorm->y;
-        if (((slideX * BD00.fwdX) + (slideZ * BD00.fwdZ)) >= 0.0f) {
+        if (((slideZ * BD00.fwdZ) + (slideX * BD00.fwdX)) >= 0.0f) {
             limitX = BD00.headOffX;
             limitZ = BD00.headOffZ;
             cls = COLF_FLOOR_HEAD;

@@ -927,23 +927,34 @@ s32 func_801A8BAC_ovl7(void) {
     }
     return 0;
 }
-// m2c draft, measured 171/205 diffs
+/* 119/200, from m2c's 171 via three recorded steps (2026-08-26):
+   - LEVER 117: the banked func_800AF408/AECC0/AED20 prototypes (171 -> 143).
+   - objid_inline_sweep: the six objId caches inlined (143 -> 107, with the
+     frame still 0x40 against the ROM's 0x30 -- positional scores across
+     different frames do not compare, LEVER 104).
+   - THE FRAME, by func_801A8BAC's law above (frame = align8(0x1C+4n+4)): the
+     ROM's 0x30 needs n=4 declared scalars and m2c had 8. The f32 store-group
+     temps collapse into assignment CHAINS (right-to-left evaluation gives
+     the ROM's store order) -- EXCEPT the scale group, which the ROM really
+     does RE-READ (`lwc1 $f2` back from D_800EA6E0 after the store), so
+     temp_f2 stays and temp_a2 goes instead (sp2C carries the record). The
+     all-chains n=4 shape is 151-156 across ALL 24 declaration orders; the
+     all-reread n=8 shape is 107 on the wrong frame.
+   Aligned residue at 119: the prologue's two function-pointer address
+   materialisations scheduled two slots apart, `or $a0,$v0` in the
+   func_800A22D4 delay slot where we nop (the null-test shape), and the
+   $v1-for-$a2 naming cascade that follows. */
 #ifdef NON_MATCHING
 void func_801A8CDC_ovl7(GObj *arg0) {
     struct EnemyRecord *sp2C;
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *sp24;
-    f32 temp_f0;
-    f32 temp_f12;
-    f32 temp_f14;
     f32 temp_f2;
     struct Sub800E1B50_Unk34 *temp_v0_2;
-    struct EnemyRecord *temp_a2;
 
-    temp_a2 = D_800E1B50[omCurrentObj->objId];
+    sp2C = D_800E1B50[omCurrentObj->objId];
     D_800DEF90[omCurrentObj->objId] = func_800B4D70;
-    sp24 = temp_a2->unk88->unkC->unk0;
+    sp24 = sp2C->unk88->unkC->unk0;
     D_800DF150[omCurrentObj->objId] = func_801A8FFC_ovl7;
-    sp2C = temp_a2;
     D_800DDA90[omCurrentObj->objId] = 0x23;
     func_800AFBB4(0, omCurrentObj);
     func_800AECC0(0.0f);
@@ -957,28 +968,19 @@ void func_801A8CDC_ovl7(GObj *arg0) {
     D_800E2090[omCurrentObj->objId] = 0.0f;
     D_800E2250[omCurrentObj->objId] = 0.0f;
     D_800E2410[omCurrentObj->objId] = 0.0f;
-    D_800E4E10[omCurrentObj->objId] = 0.0f;
-    D_800E4C50[omCurrentObj->objId] = D_800E4E10[omCurrentObj->objId];
+    D_800E4C50[omCurrentObj->objId] = D_800E4E10[omCurrentObj->objId] = 0.0f;
     D_800EA6E0[omCurrentObj->objId] = sp24->scale;
     temp_f2 = D_800EA6E0[omCurrentObj->objId];
     gEntitiesScaleZArray[omCurrentObj->objId] = temp_f2;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp_f2;
     gEntitiesScaleXArray[omCurrentObj->objId] = temp_f2;
-    D_800E5350[omCurrentObj->objId] = 1.0f;
-    temp_f12 = D_800E5350[omCurrentObj->objId];
-    D_800E5190[omCurrentObj->objId] = temp_f12;
-    D_800E4FD0[omCurrentObj->objId] = temp_f12;
-    D_800E3910[omCurrentObj->objId] = 0.0f;
-    temp_f0 = D_800E3910[omCurrentObj->objId];
-    D_800E3750[omCurrentObj->objId] = temp_f0;
-    D_800E3590[omCurrentObj->objId] = temp_f0;
-    D_800E33D0[omCurrentObj->objId] = temp_f0;
-    D_800E3210[omCurrentObj->objId] = temp_f0;
-    D_800E3050[omCurrentObj->objId] = temp_f0;
-    D_800E3E50[omCurrentObj->objId] = 65535.0f;
-    temp_f14 = D_800E3E50[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = temp_f14;
-    D_800E3AD0[omCurrentObj->objId] = temp_f14;
+    D_800E4FD0[omCurrentObj->objId] = D_800E5190[omCurrentObj->objId] =
+        D_800E5350[omCurrentObj->objId] = 1.0f;
+    D_800E3050[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId] =
+        D_800E33D0[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId] =
+        D_800E3750[omCurrentObj->objId] = D_800E3910[omCurrentObj->objId] = 0.0f;
+    D_800E3AD0[omCurrentObj->objId] = D_800E3C90[omCurrentObj->objId] =
+        D_800E3E50[omCurrentObj->objId] = 65535.0f;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800E8220[omCurrentObj->objId] = 0;
     *(s32 *) &D_8012E860[0xC] = 0;
