@@ -130,10 +130,15 @@ void func_800A9760(s32);
 void func_800A9EA4(s32);
 void func_800AA038(s32, f32, s32);
 void func_800AA0C4(s32, f32);
-/* K&R form is load-bearing here: ovl15.c's own guarded PORT draft (func_801DBEAC_ovl15)
- * calls this with only 1 of its real 2 args (f32, s32); an ANSI prototype breaks the
- * Makefile.pc compile with "too few arguments". */
-void func_800AEDD0();
+/* The ROM's TU declared this ONE-ARG: func_801DBEAC_ovl15's listing passes
+ * gameTicksPerDraw in $f12 with no second argument and no promotion, which
+ * only a (f32) prototype produces.  The old K&R `()` spelling kept the
+ * Makefile.pc compile happy (the real definition is (f32, s32) and the
+ * guarded draft passes 1 arg) but default-promoted the f32 -- a cvt.d.s the
+ * ROM does not have (LEVER 117; flagged by the cvt screen 2026-08-26,
+ * 137/149 -> 136/148 on this line alone).  A 1-arg ANSI prototype accepts
+ * the 1-arg call on pc too; arg1 is garbage there exactly as on N64. */
+void func_800AEDD0(f32);
 s32 func_800AF230(void);
 void func_800B1814(GObj *);
 void func_800B4924(GObj *);

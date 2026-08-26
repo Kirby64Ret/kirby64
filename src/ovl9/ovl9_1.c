@@ -2379,9 +2379,25 @@ void func_801D8478_ovl9(GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 462/471 [was noted 9/471], frame 0x58 vs the ROM's 0x50 and the entry pointer
-   register ($a3 in the ROM, $t6 here).  The largest function in this file;
-   structure and schedule agree throughout. */
+/* FACTORY: 194/472 [was 462/471].  2026-08-26, objid_inline_sweep: deleting
+   the `u32 id` cache and its fifteen re-assignments (every subscript
+   `omCurrentObj->objId`) is 462 -> 194 in one edit and puts the entry
+   pointer in $a3.
+   MEASURED AND PARKED for the next lane, positional score misleads here
+   (LEVER 104): sp30/sp34/sp38 are really ONE `Vector tgt` -- the draft
+   already casts `(Vector *) &sp30` at the func_800B2AD4 call.  Written as
+   the aggregate, the head becomes shape-exact (the ROM's store-immediately/
+   reload-for-the-square pattern at words 18-38 appears, because IDO keeps
+   aggregate members memory-resident), and with `f32 scale; f32 leadY;
+   Vector tgt;` declared in that order the three land in the ROM's relative
+   order -- but 12 bytes HIGH (ROM: tgt 0x30, leadY 0x3C, scale 0x40, top of
+   locals 0x44; three leading pads overshoot the frame to 0x60).  The ROM
+   also holds slots 0x44-0x4C and reloads one at word 336 inside the yaw
+   walk, i.e. pitch/yaw are memory-homed across the wrap loops where this
+   draft keeps them in registers and spills scratch to 0x30 instead; the
+   whole tail past word 226 diverges on that.  The Vector variant measured
+   313/480 positionally FOR THAT REASON, not because it is worse.  Next
+   step is the walk region's source shape, not the declarations. */
 extern void func_800B2AD4(Vector *, s32, u32);
 extern float atan2f(float, float);
 /* Turret/launcher retarget tick: measure the distance to Kirby's foot
@@ -2397,7 +2413,6 @@ extern float atan2f(float, float);
  * flags whether the yaw is inside the firing cone, and bone 2 of the
  * model gets the pitch/yaw as X/Y rotation. */
 void func_801D8520_ovl9(struct GObj *arg0) {
-    u32 id = omCurrentObj->objId;
     f32 sp30;
     f32 sp34;
     f32 sp38;
@@ -2408,41 +2423,32 @@ void func_801D8520_ovl9(struct GObj *arg0) {
     f32 d;
     f32 step;
 
-    sp30 = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[id];
-    sp34 = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[id];
-    sp38 = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[id];
+    sp30 = gEntitiesNextPosXArray[0] - gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp34 = (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId];
+    sp38 = gEntitiesNextPosZArray[0] - gEntitiesNextPosZArray[omCurrentObj->objId];
     scale = (sqrtf((sp30 * sp30) + (sp34 * sp34) + (sp38 * sp38)) / 24.0f) + 3.0f;
     leadY = gEntitiesNextPosYArray[0] - gEntitiesPosYArray[0];
-    id = omCurrentObj->objId;
-    D_800E5F90[id] = D_800E5F90[0];
-    id = omCurrentObj->objId;
-    D_800E6BD0[id] = D_800E6BD0[0];
-    id = omCurrentObj->objId;
-    D_800E6150[id] = D_800E6150[0];
-    id = omCurrentObj->objId;
-    D_800E6D90[id] = D_800E6D90[0];
-    id = omCurrentObj->objId;
-    gEntitiesNextPosXArray[id] = gEntitiesNextPosXArray[0];
-    gEntitiesNextPosYArray[id] = gEntitiesNextPosYArray[0];
-    gEntitiesNextPosZArray[id] = gEntitiesNextPosZArray[0];
-    gEntitiesPosXArray[id] = gEntitiesPosXArray[0];
-    gEntitiesPosYArray[id] = gEntitiesPosYArray[0];
-    gEntitiesPosZArray[id] = gEntitiesPosZArray[0];
-    D_800E64D0[id] = D_800E64D0[0] * scale;
+    D_800E5F90[omCurrentObj->objId] = D_800E5F90[0];
+    D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[0];
+    D_800E6150[omCurrentObj->objId] = D_800E6150[0];
+    D_800E6D90[omCurrentObj->objId] = D_800E6D90[0];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = gEntitiesNextPosXArray[0];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = gEntitiesNextPosZArray[0];
+    gEntitiesPosXArray[omCurrentObj->objId] = gEntitiesPosXArray[0];
+    gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesPosYArray[0];
+    gEntitiesPosZArray[omCurrentObj->objId] = gEntitiesPosZArray[0];
+    D_800E64D0[omCurrentObj->objId] = D_800E64D0[0] * scale;
     func_800F8E6C(arg0);
-    id = omCurrentObj->objId;
-    sp30 = gEntitiesNextPosXArray[id];
-    sp34 = gEntitiesNextPosYArray[id] + (leadY * scale * 0.5f);
-    sp38 = gEntitiesNextPosZArray[id];
-    id = omCurrentObj->objId;
-    gEntitiesPosXArray[id] = D_800EAFA0[id];
-    gEntitiesNextPosXArray[id] = D_800EAFA0[id];
-    id = omCurrentObj->objId;
-    gEntitiesPosYArray[id] = D_800EB160[id];
-    gEntitiesNextPosYArray[id] = D_800EB160[id];
-    id = omCurrentObj->objId;
-    gEntitiesPosZArray[id] = D_800EB320[id];
-    gEntitiesNextPosZArray[id] = D_800EB320[id];
+    sp30 = gEntitiesNextPosXArray[omCurrentObj->objId];
+    sp34 = gEntitiesNextPosYArray[omCurrentObj->objId] + (leadY * scale * 0.5f);
+    sp38 = gEntitiesNextPosZArray[omCurrentObj->objId];
+    gEntitiesPosXArray[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId];
+    gEntitiesNextPosXArray[omCurrentObj->objId] = D_800EAFA0[omCurrentObj->objId];
+    gEntitiesPosYArray[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId];
+    gEntitiesNextPosYArray[omCurrentObj->objId] = D_800EB160[omCurrentObj->objId];
+    gEntitiesPosZArray[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId];
+    gEntitiesNextPosZArray[omCurrentObj->objId] = D_800EB320[omCurrentObj->objId];
     func_800B2AD4((Vector *) &sp30, 0, 0xFFFF);
     pitch = atan2f(sqrtf((sp30 * sp30) + (sp38 * sp38)), sp34);
     yaw = atan2f(sp30, sp38);
@@ -2458,59 +2464,48 @@ void func_801D8520_ovl9(struct GObj *arg0) {
     while (yaw <= -3.1415927f) {
         yaw += 6.2831855f;
     }
-    id = omCurrentObj->objId;
-    if ((pitch + 0.03926991f) < D_800EA6E0[id]) {
-        D_800EA6E0[id] -= 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] < 0.34906587f) {
-            D_800EA6E0[id] = 0.34906587f;
+    if ((pitch + 0.03926991f) < D_800EA6E0[omCurrentObj->objId]) {
+        D_800EA6E0[omCurrentObj->objId] -= 0.03926991f;
+        if (D_800EA6E0[omCurrentObj->objId] < 0.34906587f) {
+            D_800EA6E0[omCurrentObj->objId] = 0.34906587f;
         }
-    } else if (D_800EA6E0[id] < (pitch - 0.03926991f)) {
-        D_800EA6E0[id] += 0.03926991f;
-        id = omCurrentObj->objId;
-        if (D_800EA6E0[id] > 1.5707964f) {
-            D_800EA6E0[id] = 1.5707964f;
+    } else if (D_800EA6E0[omCurrentObj->objId] < (pitch - 0.03926991f)) {
+        D_800EA6E0[omCurrentObj->objId] += 0.03926991f;
+        if (D_800EA6E0[omCurrentObj->objId] > 1.5707964f) {
+            D_800EA6E0[omCurrentObj->objId] = 1.5707964f;
         }
     }
-    id = omCurrentObj->objId;
-    d = yaw - D_800EAC20[id];
+    d = yaw - D_800EAC20[omCurrentObj->objId];
     if (((d < 0.0f) ? -d : d) > 3.1415927f) {
         if (d < 0.0f) {
-            d = (yaw + 6.2831855f) - D_800EAC20[id];
+            d = (yaw + 6.2831855f) - D_800EAC20[omCurrentObj->objId];
         } else {
-            d = yaw - (D_800EAC20[id] + 6.2831855f);
+            d = yaw - (D_800EAC20[omCurrentObj->objId] + 6.2831855f);
         }
     }
     if (((d < 0.0f) ? -d : d) > 0.03926991f) {
         step = (d > 0.0f) ? 0.03926991f : -0.03926991f;
-        D_800EAC20[id] += step;
-        id = omCurrentObj->objId;
+        D_800EAC20[omCurrentObj->objId] += step;
     }
-    while (D_800EAC20[id] > 3.1415927f) {
-        D_800EAC20[id] -= 3.1415927f;
-        id = omCurrentObj->objId;
+    while (D_800EAC20[omCurrentObj->objId] > 3.1415927f) {
+        D_800EAC20[omCurrentObj->objId] -= 3.1415927f;
     }
-    while (D_800EAC20[id] < -3.1415927f) {
-        D_800EAC20[id] += 3.1415927f;
-        id = omCurrentObj->objId;
+    while (D_800EAC20[omCurrentObj->objId] < -3.1415927f) {
+        D_800EAC20[omCurrentObj->objId] += 3.1415927f;
     }
-    if (D_800EAC20[id] < -1.0471976f) {
-        D_800EAC20[id] = -1.0471976f;
-        id = omCurrentObj->objId;
+    if (D_800EAC20[omCurrentObj->objId] < -1.0471976f) {
+        D_800EAC20[omCurrentObj->objId] = -1.0471976f;
     }
-    if (D_800EAC20[id] > 1.0471976f) {
-        D_800EAC20[id] = 1.0471976f;
-        id = omCurrentObj->objId;
+    if (D_800EAC20[omCurrentObj->objId] > 1.0471976f) {
+        D_800EAC20[omCurrentObj->objId] = 1.0471976f;
     }
-    if (((D_800EAC20[id] < 0.0f) ? -D_800EAC20[id] : D_800EAC20[id]) < 1.0471976f) {
-        D_800E98E0[id] = 1;
+    if (((D_800EAC20[omCurrentObj->objId] < 0.0f) ? -D_800EAC20[omCurrentObj->objId] : D_800EAC20[omCurrentObj->objId]) < 1.0471976f) {
+        D_800E98E0[omCurrentObj->objId] = 1;
     } else {
-        D_800E98E0[id] = 0;
+        D_800E98E0[omCurrentObj->objId] = 0;
     }
-    id = omCurrentObj->objId;
-    D_800DFBD0[id][2]->angle.v.x = D_800EA6E0[id];
-    id = omCurrentObj->objId;
-    D_800DFBD0[id][2]->angle.v.y = D_800EAC20[id];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.x = D_800EA6E0[omCurrentObj->objId];
+    D_800DFBD0[omCurrentObj->objId][2]->angle.v.y = D_800EAC20[omCurrentObj->objId];
 }
 #elif defined(PORT)
 extern void func_800B2AD4(Vector *, s32, u32);

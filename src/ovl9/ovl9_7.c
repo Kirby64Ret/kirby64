@@ -7,6 +7,13 @@
 #include "buffers.h"
 #include "ovl1/ovl1_7.h"
 
+/* LEVER 117: func_800A7F74 takes three f32s and was declared NOWHERE in this
+   TU, so its four (guarded) call sites default-promoted them to double --
+   three cvt.d.s and a bigger frame in every draft that calls it.  Prototype
+   as in ovl5_2.c/ovl16.c; byte-inert for the matching build (no unguarded
+   caller here), func_801F0DFC_ovl9 141/147 -> 138/145 on it. */
+void func_800A7F74(s32, s32, s32, f32, f32, f32);
+
 #ifdef MIPS_TO_C
 /* FACTORY: 291/315 [was noted 24/315], frame 0x68 vs the ROM's 0x70 (8 bytes short, arg0 homed
    at 0x68 instead of 0x70) plus the $v0/$v1 pair the objId lands in.  The
@@ -528,7 +535,11 @@ void func_801F0ABC_ovl9(GObj *arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-/* FACTORY: 141/147 [was noted 6/147], frame +8 from one extra saved register.  Instruction count
+/* FACTORY: 138/145 [was 141/147].  2026-08-26: the LEVER 117 prototype for
+   func_800A7F74 at the top of this TU removes the three cvt.d.s and 8 bytes
+   of double-promotion frame from this draft's call.  The note below predates
+   it; its $s1/frame analysis still describes the remaining residue.
+   [was noted 6/147], frame +8 from one extra saved register.  Instruction count
    is exact (147) and the body order is the ROM's, but our IDO keeps `rec` in
    $s1 (frame 0x38, s0+s1 saved) where the ROM saves only $s0 = &omCurrentObj
    and re-materialises the D_800E1B50 base in a temp, so every sp offset and
