@@ -93,3 +93,37 @@ Cheapest first; the ROM sha1 is the final authority.
 
 - `SESSION_SETUP.sh` — bring a fresh checkout to a verified-green tree
   (requires `baserom.us.z64` at the repo root; never committed).
+
+## Operating audit, 2026-08-26 (methodology corrections -- read before starting CPU-heavy work)
+
+Measured over the preceding week of runs and corrected here:
+
+1. **No standing permuter queue.** Lifetime yield of `permute_queue.py` /
+   `priority_queue.py` across every session: 7 published wins, 6 of which never
+   transferred to the tree (scheduling zeros, whitespace zeros, stack-diff
+   artifacts -- see harvest_zero_scores.py's docstring), and the 7th closed by
+   a HAND prototype retype before the permuter diff was ever applied. Landed
+   closures: **zero**, against multiple hours of 3-4-job CPU per boot on a
+   4-core box, which also pushed load to 12-15 and slowed every verify.py
+   measurement the lanes ran. The same day's hand levers (rettype_screen,
+   zerofork_sweep, LEVER 117 prototypes, switch shape, objId inline, frame
+   order) closed ~40 functions. The permuter is now OPT-IN ONLY: run
+   setup_permuter + permuter.py by hand on a single function whose residue is
+   PROVEN to be instruction order (LEVER 65b's opcode test), never as a queue.
+
+2. **Screens are one-shot, their output is the artifact.** shapescan,
+   switch_sweep, zerofork_sweep, rettype_screen, the cvt.d.s grep: each is a
+   few hundred IDO compiles. Run one over a scope ONCE, act on the report, and
+   record exhaustion in the FACTORY notes -- do not re-run tree-wide "to
+   check". The shape ranking lives in priority_queue.py's TARGETS; the
+   rettype and cvt findings live in the notes of the functions they flagged.
+
+3. **A wake is not a rebuild.** Scheduled check-ins rebuilt the whole ROM even
+   when the tree was clean. Gate when COMMITTING; on a wake with a clean tree,
+   verify `git status` and go back to work.
+
+4. **Type-degrading experiments are not levers.** An uncommitted stint edit
+   replacing typed locals with `void *` plus casts at every use scored WORSE
+   (7/43 -> 10/43) and made the source unreadable; reverted. The maintainer
+   explicitly values naming and type clarifications over score movement --
+   a matching experiment that degrades types is slop even when it wins.

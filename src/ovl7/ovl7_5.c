@@ -15,6 +15,12 @@
    but in no header this TU includes, so the call was an implicit `int f()`. */
 s32 func_800F98EC(s32, f32);
 extern void func_801A3864_ovl7(GObj *);
+/* LEVER 117: prototyped in src/ovl14/ovl14.h and src/ovl2/ovl2_10.c, in no
+   header this TU includes, so every `func_800AECC0(<f32>)` here was an
+   implicit `int f()` and K&R-promoted its argument to double. */
+void func_800AECC0(f32);
+void func_800AED20(f32);
+void func_800AF408(void);
 
 // --- declarations used only by the guarded m2c drafts below ---
 struct Unk801D0A78 {
@@ -987,7 +993,7 @@ void func_801A8CDC_ovl7(GObj *arg0) {
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800E8220[omCurrentObj->objId] = 0;
     *(s32 *) &D_8012E860[0xC] = 0;
-    func_800AF408(temp_f12, temp_f14, D_800EA6E0, omCurrentObj, D_800E5350, D_800E3910);
+    func_800AF408();
     curObjSleepForever();
 }
 #else
