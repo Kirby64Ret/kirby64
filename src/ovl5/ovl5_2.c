@@ -2438,7 +2438,7 @@ s32 func_80160A78_ovl5(s32 arg0) {
     return D_800DFBD0[D_8018E030_ovl5[arg0]][sp8.unk0[idx]];
 }
 
-extern s32 D_8018E040_ovl5[];
+extern u32 D_8018E040_ovl5[];
 extern void *D_801868CC_ovl5;
 extern u32 D_801868D0_ovl5[2];
 extern u32 D_801868D8_ovl5[2];
@@ -2613,8 +2613,20 @@ void func_80160E6C_ovl5(GObj *arg0, s32 arg1) {
 //   - the old note's sweeps (17 barrier placements, 24 declaration
 //     permutations, the permuter if (1) {} wrap) were all run against the
 //     named-p body and none of them could have found this.
-#ifdef NON_MATCHING
-extern s32 D_8018E040_ovl5[];
+//
+// MATCHED 2026-08-26. The last register pair (ROM index $v0 / CSE'd address
+// $v1 against $v1/$a3) is the SIGNEDNESS OF THE ARRAY: `extern u32
+// D_8018E040_ovl5[]` colours them the ROM's way, `extern s32` the draft's.
+// The lw/sll/addu words are identical either way -- only uopt's colouring
+// order moves -- so nothing in the listing names the type; same knob family
+// as func_80157028_ovl4's beq operand order (signedness of the compared
+// pair). Measured inert on this residue first: u32 t (9/76), decl order
+// t-last (19) / dobj-first (11), init-at-decl (9), (u32) cast at the call
+// arg (9), named p with the full chain in its initialiser (whole-temp-file
+// rotation, worse), t + p-last (frame 0x48, LEVER 113 folds p but charges
+// the slot). The file-scope extern at the top of the TU was retyped with it;
+// verify.py --all on the TU is 9 match / 0 diff.
+extern u32 D_8018E040_ovl5[];
 extern s32 D_801868FC_ovl5;
 
 void func_80161078_ovl5(GObj *arg0) {
@@ -2634,9 +2646,7 @@ void func_80161078_ovl5(GObj *arg0) {
     gEntitiesAngleYArray[omCurrentObj->objId] = sp24.y;
     gEntitiesAngleZArray[omCurrentObj->objId] = sp24.z;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl5/ovl5_2/func_80161078_ovl5.s")
-#endif
+
 void func_801611A8_ovl5(GObj *arg0, s32 arg1) {
     func_800A9864(D_80186900_ovl5, 0x1869F, 0x10);
     func_800AA018(D_80186908_ovl5);
