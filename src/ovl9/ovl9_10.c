@@ -416,16 +416,38 @@ void func_802030CC_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-/* 88/118 diffs, first 30 instructions exact (frame 0x50, Vector at 0x2C, the
-   sp44/sp48 out-param pair and the tmp spill at 0x4C all land correctly with
-   `tmp` declared FIRST and two pad words).  Residue is basic-block shape: IDO
-   emits `bgtzl` into the big block where the ROM has `bgtz` + nop and hoists
-   the `lwc1 0x48($sp)` above the branch.  Swept with no effect: pad count 0-4,
-   if/else vs early return vs goto, `!(x > 0)`, dropping the sp38 copy, an
-   empty do-block before the branch. */
-#ifdef NON_MATCHING
-extern f32 D_8021DA54_ovl9;
-extern s32 func_8019A900_ovl7(s32 *);
+/* ovl7/enelib.c's two-word track out-param: player facing sign at unk0,
+   rail distance at unk4.  The AGGREGATE is load-bearing for all three users
+   below: &tp escaping is what stops IDO copy-propagating the unk4 read past
+   the next call (see the notes on the functions). */
+struct TrackPosition {
+    s32 unk0;
+    f32 unk4;
+};
+extern s32 func_8019A900_ovl7(struct TrackPosition *);
+
+/* MATCHED 2026-08-26 (was 88/118).  Two edits, and the whole bgtzl/bgtz
+   residue was their symptom:
+   (1) THE OUT-PARAM PAIR IS ONE AGGREGATE.  func_8019A900_ovl7 fills facing
+       at +0 and rail distance at +4 through one pointer; as separate locals
+       (`f32 sp48; s32 sp44;` and the call taking &sp44) IDO treats sp48 as
+       unaliased, copy-propagates `sp38 = sp48` into the atan2f argument, and
+       the store/reload pair through 0x38 can never appear.  As `struct
+       TrackPosition tp` with &tp escaping, the +4 read cannot cross the next
+       call: IDO loads 0x48 before the branch (speculative, both paths) and
+       stores it in eneGetPlayerHeight's delay slot -- the ROM's exact shape.
+   (2) THE ANGLE IS COMPUTED BEFORE THE VECTOR IS FILLED.  atan2f(...) hoisted
+       into `f32 ang` puts the three sp2C stores BETWEEN the two calls, where
+       the ROM has them (z and y share one mtc1 $zero,$f2).  zerofork_sweep
+       flagged this function (88 -> 78 flipping ONE zero to `0`) and that hit
+       was this shape's symptom, not a fork: the ROM SHARES the pair's zero.
+   The copy `railDist = tp.unk4` must be the FIRST statement of the else arm:
+   at function scope IDO coalesces it into $f14 (the atan2f argument register)
+   and every later FP temp rotates one pair -- 19/119 that way, byte-exact
+   inside the arm.  Frame 0x50 with `tmp` first, tp at 0x44/0x48, two pads,
+   railDist 0x38, sp2C 0x2C.  0.4f is the TU's own late_rodata word
+   (D_8021DA54_ovl9); the old extern spelling would leave it undefined once
+   this compiles. */
 extern f32 eneGetPlayerHeight(void);
 extern void func_801A6DF0_ovl7(struct GObj *);
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
@@ -433,28 +455,29 @@ extern f32 atan2f(f32, f32);
 
 void func_802031D4_ovl9(struct GObj *arg0) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
-    f32 sp48;
-    s32 sp44;
+    struct TrackPosition tp;
     s32 pad0;
     s32 pad1;
-    f32 sp38;
+    f32 railDist;
     Vector sp2C;
 
     D_800E9720[omCurrentObj->objId] -= 1;
-    func_8019A900_ovl7(&sp44);
-    sp38 = sp48;
+    func_8019A900_ovl7(&tp);
     if (D_800E9720[omCurrentObj->objId] <= 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
         D_800E9C60[omCurrentObj->objId] = 1;
     } else {
+        f32 ang;
+        railDist = tp.unk4;
+        ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], railDist);
         sp2C.z = 0.0f;
         sp2C.y = 0.0f;
-        sp2C.x = D_8021DA54_ovl9;
-        lbvector_Rotate(&sp2C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp38));
+        sp2C.x = 0.4f;
+        lbvector_Rotate(&sp2C, 4, ang);
         D_800E6690[omCurrentObj->objId] = sp2C.x;
         D_800E3750[omCurrentObj->objId] = sp2C.y;
         if (tmp->unk3C == 0) {
-            if ((f32) sp44 != D_800E6A10[omCurrentObj->objId]) {
+            if ((f32) tp.unk0 != D_800E6A10[omCurrentObj->objId]) {
                 if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
                     func_80199F1C_ovl7(arg0);
                 }
@@ -462,9 +485,6 @@ void func_802031D4_ovl9(struct GObj *arg0) {
         }
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802031D4_ovl9.s")
-#endif
 void func_802033B0_ovl9(GObj *arg0) {
     utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 4, &D_8021C800_ovl9);
 }
@@ -588,47 +608,38 @@ void func_80203A90_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-/* FACTORY: 117/148, but the first 29 instructions and the whole block LAYOUT
-   are now the ROM's -- this corrects the note on its twin func_802031D4.
-   Two findings: (1) the arm order is what picks the layout, `if (x <= 0)
-   {small} else {big}` puts the small arm first and branches over it, which is
-   the ROM; (2) `sp38 = sp48;` belongs BEFORE the if here, which is the
-   opposite of what the twin needs -- the form really is per-function.
-   Sole residue: IDO emits `bgtzl` and pulls `mtc1 $zero,$f0` from the big
-   block into the delay slot where the ROM has a plain `bgtz` + `nop` with the
-   `lwc1 0x48($sp)` hoisted above the branch; everything after is shifted one.
-   Also tried: hoisting the atan2f result into an f32 local (118). */
-#ifdef NON_MATCHING
-extern s32 func_8019A900_ovl7(s32 *);
-extern f32 eneGetPlayerHeight(void);
-extern void func_801A6DF0_ovl7(struct GObj *);
-extern Vector *lbvector_Rotate(Vector *, s32, f32);
-extern f32 atan2f(f32, f32);
-/* D_8021DA60_ovl9: literal, this TU owns its .rodata */
+/* MATCHED 2026-08-26 (was 117/148).  func_802031D4_ovl9's two edits verbatim
+   -- the TrackPosition aggregate and the hoisted angle with the copy first in
+   the else arm; see the note there.  The old note's "sp38 = sp48 belongs
+   BEFORE the if here, opposite of the twin" was measured through the
+   separate-locals spelling and is corrected: with &tp escaping, both twins
+   take the same form and IDO itself hoists the load above the branch.
+   0.4f is the TU's own late_rodata word (D_8021DA60_ovl9). */
 void func_80203BA8_ovl9(struct GObj *arg0) {
     struct EnemyRecord *tmp = D_800E1B50[omCurrentObj->objId];
-    f32 sp48;
-    s32 sp44;
+    struct TrackPosition tp;
     s32 pad0;
     s32 pad1;
-    f32 sp38;
+    f32 railDist;
     Vector sp2C;
 
     D_800E9720[omCurrentObj->objId] -= 1;
-    func_8019A900_ovl7(&sp44);
-    sp38 = sp48;
+    func_8019A900_ovl7(&tp);
     if (D_800E9720[omCurrentObj->objId] <= 0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
         D_800E9C60[omCurrentObj->objId] = 1;
     } else {
+        f32 ang;
+        railDist = tp.unk4;
+        ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], railDist);
         sp2C.z = 0.0f;
         sp2C.y = 0.0f;
         sp2C.x = 0.4f;
-        lbvector_Rotate(&sp2C, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], sp38));
+        lbvector_Rotate(&sp2C, 4, ang);
         D_800E6690[omCurrentObj->objId] = sp2C.x;
         D_800E3750[omCurrentObj->objId] = sp2C.y;
         if (tmp->unk3C == 0) {
-            if ((f32) sp44 != D_800E6A10[omCurrentObj->objId]) {
+            if ((f32) tp.unk0 != D_800E6A10[omCurrentObj->objId]) {
                 if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
                     func_80199F1C_ovl7(arg0);
                 }
@@ -640,11 +651,8 @@ void func_80203BA8_ovl9(struct GObj *arg0) {
                 assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_802033B0_ovl9);
             }
         }
-        }
+    }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80203BA8_ovl9.s")
-#endif
 
 void func_80203DFC_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 3;
@@ -914,18 +922,16 @@ void func_80204C98_ovl9(struct GObj *arg0) {
     curObjSleepForever();
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 77/136 [was noted 59/136], tail scheduling (we run 2 instructions short, so every
-   branch displacement after the first early-exit differs by 2).  Everything
-   through the two give-up exits and the bearing computation is the ROM's.
-   Clone family: this is func_802031D4_ovl9's shape in this same file -- the
-   two-adjacent-words call convention of func_8019A900_ovl7 (facing at +0,
-   rail distance at +4, so the f32 must be declared immediately ABOVE the
-   s32 and the call takes &facing), the two dead pads, the separate railDist
-   copy and ABSF for the speed test all come from there.  Moving the railDist
-   copy below the accel stores is inert -- IDO schedules it into the
-   eneGetPlayerHeight delay slot either way. */
-extern s32 func_8019A900_ovl7(s32 *);
+/* MATCHED 2026-08-26 (was 77/136, "tail scheduling, 2 instructions short").
+   The two missing words were the TrackPosition load/store pair: with the
+   out-params as separate locals IDO copy-propagated the rail-distance read
+   into the atan2f argument and the railDist copy never hit memory.  Same two
+   edits as func_802031D4_ovl9 (aggregate + hoisted angle; note there), with
+   the copy placed at function scope here -- this function has no branch
+   between the filling call and the use, so there is no arm to put it in and
+   no $f14 coalescing to dodge.  0.4f is the TU's own late_rodata word
+   (D_8021DA7C_ovl9).  Frame 0x50: rec spill 0x4C, tp 0x44/0x48, two pads,
+   railDist 0x38, accel 0x2C. */
 extern f32 eneGetPlayerHeight(void);
 extern Vector *lbvector_Rotate(Vector *, s32, f32);
 extern f32 atan2f(f32, f32);
@@ -938,15 +944,12 @@ void func_80204750_ovl9(struct GObj *);
    entity nearly stopped and no turnaround pending, start the turnaround. */
 void func_80204D5C_ovl9(struct GObj *arg0) {
     struct EnemyRecord *rec = D_800E1B50[omCurrentObj->objId];
-    /* func_8019A900_ovl7 fills two adjacent words through one pointer: the
-       player's facing sign at +0 and the rail distance to him at +4, so
-       playerRailDist must stay declared immediately above playerFacing. */
-    f32 playerRailDist;
-    s32 playerFacing;
+    struct TrackPosition tp;
     s32 pad0;
     s32 pad1;
     f32 railDist;
     Vector accel;
+    f32 ang;
 
     if (func_8019A7E8_ovl7(480.0f) == 0) {
         gEntityFuncListIDArray[omCurrentObj->objId] = 3;
@@ -958,73 +961,23 @@ void func_80204D5C_ovl9(struct GObj *arg0) {
         assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
         return;
     }
-    func_8019A900_ovl7(&playerFacing);
+    func_8019A900_ovl7(&tp);
+    railDist = tp.unk4;
+    ang = atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], railDist);
     accel.z = 0.0f;
     accel.y = 0.0f;
     accel.x = 0.4f;
-    railDist = playerRailDist;
-    lbvector_Rotate(&accel, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], railDist));
+    lbvector_Rotate(&accel, 4, ang);
     D_800E6690[omCurrentObj->objId] = accel.x;
     D_800E3750[omCurrentObj->objId] = accel.y;
     if (rec->unk3C == 0) {
-        if ((f32) playerFacing != D_800E6A10[omCurrentObj->objId]) {
+        if ((f32) tp.unk0 != D_800E6A10[omCurrentObj->objId]) {
             if (ABSF(D_800E64D0[omCurrentObj->objId]) < 1.0f) {
                 func_80199F1C_ovl7(arg0);
             }
         }
     }
 }
-#elif defined(PORT)
-struct PcO910TrackPos {
-    s32 unk0;
-    f32 unk4;
-};
-void func_80204750_ovl9(struct GObj *);
-/* Chaser pursuit hook: give up the chase (state 3 on the normal
- * thread) when Kirby leaves the 480-unit box or is no longer on this
- * entity's facing side; otherwise accelerate 0.4/tick along the
- * bearing to Kirby (rail distance horizontally, player height
- * vertically) and, when Kirby is behind with the entity nearly
- * stopped and no turnaround pending, start the turnaround. */
-void func_80204D5C_ovl9(GObj *arg0) {
-    EnemyRecord *rec;
-    struct PcO910TrackPos tp;
-    Vector acc;
-    u32 id;
-
-    rec = D_800E1B50[omCurrentObj->objId];
-    if (func_8019A7E8_ovl7(480.0f) == 0) {
-        gEntityFuncListIDArray[omCurrentObj->objId] = 3;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
-        return;
-    }
-    id = omCurrentObj->objId;
-    if (D_800E6A10[id] != D_800E6A10[0]) {
-        gEntityFuncListIDArray[id] = 3;
-        assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_80204750_ovl9);
-        return;
-    }
-    ((s32 (*)(struct PcO910TrackPos *)) func_8019A900_ovl7)(&tp);
-    acc.z = 0.0f;
-    acc.y = 0.0f;
-    acc.x = 0.4f;
-    lbvector_Rotate(&acc, 4, atan2f(eneGetPlayerHeight() - gEntitiesNextPosYArray[omCurrentObj->objId], tp.unk4));
-    D_800E6690[omCurrentObj->objId] = acc.x;
-    D_800E3750[omCurrentObj->objId] = acc.y;
-    if (rec->unk3C == 0) {
-        id = omCurrentObj->objId;
-        if ((f32) tp.unk0 != D_800E6A10[id]) {
-            f32 spd = D_800E64D0[id];
-
-            if (((spd < 0.0f) ? -spd : spd) < 1.0f) {
-                func_80199F1C_ovl7(arg0);
-            }
-        }
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_80204D5C_ovl9.s")
-#endif
 
 void func_80204F80_ovl9(struct GObj *arg0) {
     D_800DDFD0[omCurrentObj->objId] = 3;
