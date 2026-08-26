@@ -1,9 +1,9 @@
 MATCHING ?= 1
 
 K64_BUILD_DIR := ../build
-BUILD_DIR := $(K64_BUILD_DIR)/assets
-DUMMY != mkdir -p $(BUILD_DIR)
-TARGET = $(BUILD_DIR)/game_assets.o
+ASSET_BUILD_DIR := $(K64_BUILD_DIR)/assets
+DUMMY != mkdir -p $(ASSET_BUILD_DIR)
+TARGET = $(ASSET_BUILD_DIR)/game_assets.o
 
 FILETABLES := filetable_models.mk \
 			  filetable_image.mk \
@@ -14,14 +14,14 @@ FILETABLES := filetable_models.mk \
 
 V := @
 
-BANK_LINKSCRIPTS := $(BUILD_DIR)/bank0.ld \
-					$(BUILD_DIR)/bank1.ld \
-					$(BUILD_DIR)/bank2.ld \
-					$(BUILD_DIR)/bank3.ld \
-					$(BUILD_DIR)/bank4.ld \
-					$(BUILD_DIR)/bank5.ld \
-					$(BUILD_DIR)/bank6.ld \
-					$(BUILD_DIR)/bank7.ld
+BANK_LINKSCRIPTS := $(ASSET_BUILD_DIR)/bank0.ld \
+					$(ASSET_BUILD_DIR)/bank1.ld \
+					$(ASSET_BUILD_DIR)/bank2.ld \
+					$(ASSET_BUILD_DIR)/bank3.ld \
+					$(ASSET_BUILD_DIR)/bank4.ld \
+					$(ASSET_BUILD_DIR)/bank5.ld \
+					$(ASSET_BUILD_DIR)/bank6.ld \
+					$(ASSET_BUILD_DIR)/bank7.ld
 BANK_FILETABLES := $(foreach file, $(BANK_LINKSCRIPTS), $(file:.ld=.filetable.c))
 BANK_HEADERS := $(foreach file, $(BANK_LINKSCRIPTS), $(file:.ld=.h))
 
@@ -47,17 +47,17 @@ ALL_FILES := $(MODEL_FILES) $(IMAGE_FILES) $(ANIM_FILES) $(MISC_FILES)
 _BIN2C := $(foreach file,$(ALL_FILES), $(file:.bin=.o))
 _PNG2C := $(foreach file,$(_BIN2C), $(file:.png=.o))
 _C2C := $(foreach file,$(_PNG2C), $(file:.c=.o))
-O_FILES := $(foreach file, $(_C2C), $(BUILD_DIR)/$(file))
+O_FILES := $(foreach file, $(_C2C), $(ASSET_BUILD_DIR)/$(file))
 
 CC := $(CROSS)gcc
 AS := $(CROSS)as
 PYTHON := uv run
 
 clean:
-	rm -f -r $(BUILD_DIR)
+	rm -f -r $(ASSET_BUILD_DIR)
 
 clean-tables:
-	rm -f $(BUILD_DIR)/*.{c,h,ld}
+	rm -f $(ASSET_BUILD_DIR)/*.{c,h,ld}
 	rm -f $(TARGET)
 
 ## in memoriam:
@@ -84,8 +84,8 @@ clean-tables:
 # Destroyed for being too incompatible despite being almost entirely POSIX commands
 
 _BG_IMGS := $(wildcard image/**/**/*background*.png) $(wildcard image/**/*background*.png)
-BG_OBJECTS := $(foreach file, $(_BG_IMGS), $(BUILD_DIR)/$(file:.png=.o))
-$(BG_OBJECTS): $(BUILD_DIR)/%.o: %.png
+BG_OBJECTS := $(foreach file, $(_BG_IMGS), $(ASSET_BUILD_DIR)/$(file:.png=.o))
+$(BG_OBJECTS): $(ASSET_BUILD_DIR)/%.o: %.png
 	$(V)mkdir -p $(@D)
 ifeq ($(MATCHING), 1)
 	$(V)../tools/rgb2c -G $(lastword $(subst ., ,$*)) -B $(shell ../tools/img_getprop $<) -o RAW $< > $(@:.o=.bin)
@@ -94,49 +94,49 @@ else
 endif
 	$(V)$(CROSS)ld -r -b binary -o $@ $(@:.o=.bin)
 
-$(BUILD_DIR)/%.o: %.png
+$(ASSET_BUILD_DIR)/%.o: %.png
 	@printf "    [Asset:PNG] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)../tools/rgb2c -G $(lastword $(subst ., ,$*)) -o RAW $< > $(@:.o=.bin)
 	$(V)$(CROSS)ld -r -b binary -o $@ $(@:.o=.bin)
 
-# $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.bin
+# $(ASSET_BUILD_DIR)/%.o: $(ASSET_BUILD_DIR)/%.bin
 # 	@printf "    [Asset:BIN] $<\n"
 # 	$(V)mkdir -p $(@D)
 # 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 
-$(BUILD_DIR)/%.o: %.c
+$(ASSET_BUILD_DIR)/%.o: %.c
 	@printf "    [Asset:CC] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CC) -c $(GCC_CFLAGS) -D__sgi -o $@ $<
 
-$(BUILD_DIR)/%.o: %.s
+$(ASSET_BUILD_DIR)/%.o: %.s
 	@printf "    [Asset:ASM] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(AS) $(ASFLAGS) -o $@ $<
 
-$(BUILD_DIR)/%.o: %.bin
+$(ASSET_BUILD_DIR)/%.o: %.bin
 	@printf "    [Asset:BIN] $<\n"
 	$(V)mkdir -p $(@D)
 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 
-$(BUILD_DIR)/%.ld: $(FILETABLES) $(O_FILES)
+$(ASSET_BUILD_DIR)/%.ld: $(FILETABLES) $(O_FILES)
 	@printf "    [Asset:LINKSCRIPT] $<\n"
 	$(V)$(PYTHON) tools/make_file_ldscript.py $@
 
-$(BUILD_DIR)/%.filetable.c: $(BUILD_DIR)/%.ld
+$(ASSET_BUILD_DIR)/%.filetable.c: $(ASSET_BUILD_DIR)/%.ld
 	@printf "    [Asset:FILETABLE] $<\n"
-	$(V)$(PYTHON) tools/make_bank_filetable.py $(CROSS) $(BUILD_DIR)/ $@
+	$(V)$(PYTHON) tools/make_bank_filetable.py $(CROSS) $(ASSET_BUILD_DIR)/ $@
 
-$(BUILD_DIR)/%.h: $(BUILD_DIR)/%.filetable.c
+$(ASSET_BUILD_DIR)/%.h: $(ASSET_BUILD_DIR)/%.filetable.c
 	@printf "    [Asset:HEADER] $<\n"
-	$(V)$(PYTHON) tools/make_bank_header.py $(BUILD_DIR)/ $@
+	$(V)$(PYTHON) tools/make_bank_header.py $(ASSET_BUILD_DIR)/ $@
 
-$(BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
-	$(V)cp bank_header.ld.in $(BUILD_DIR)
+$(ASSET_BUILD_DIR)/assets.ld: assets.ld $(BANK_LINKSCRIPTS) bank_header.ld.in
+	$(V)cp bank_header.ld.in $(ASSET_BUILD_DIR)
 	$(CROSS)cpp -P -I$(K64_BUILD_DIR) -MMD -MP -MT $@ -MF $@.d -o $@ $< -DBUILD_DIR=$(K64_BUILD_DIR) -Umips
 
-$(TARGET): $(BUILD_DIR)/assets.ld $(BANK_HEADERS)
+$(TARGET): $(ASSET_BUILD_DIR)/assets.ld $(BANK_HEADERS)
 	@printf "    [Asset:LINK] $<\n"
 	$(V)$(CROSS)ld -r -L $(K64_BUILD_DIR) -T $< -o $@
 

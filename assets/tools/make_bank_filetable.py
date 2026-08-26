@@ -59,16 +59,16 @@ def write_table(filetype, fil, bank):
 	global totSize
 	if filetype == "geo":
 		fil.write(fheader % bank)
-		fil.write("u32 *bank_%s_geo_table[] = {\n" % bank)
+		fil.write(f"u32 *bank_{bank}_geo_table[] = {{\n")
 	elif filetype == "image":
 		totSize = 0
-		fil.write("u32 bank_%s_image_table[] = {\n" % bank)
+		fil.write(f"u32 bank_{bank}_image_table[] = {{\n")
 	elif filetype == "anim":
 		totSize = 0
-		fil.write("u32 bank_%s_anim_table[] = {\n" % bank)
+		fil.write(f"u32 bank_{bank}_anim_table[] = {{\n")
 	elif filetype == "misc":
 		totSize = 0
-		fil.write("u32 bank_%s_misc_table[] = {\n" % bank)
+		fil.write(f"u32 bank_{bank}_misc_table[] = {{\n")
 	else:
 		print("what")
 		exit(1)
