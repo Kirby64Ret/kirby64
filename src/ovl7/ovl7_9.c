@@ -144,7 +144,6 @@ void func_801B22D0_ovl7(s32 arg0) {
     f32 var_f0_2;
     s32 var_s0;
     u32 temp_v0;
-    u32 temp_v0_2;
     u32 temp_v0_4;
     u32 temp_v0_5;
 
@@ -165,8 +164,7 @@ void func_801B22D0_ovl7(s32 arg0) {
         }
         temp_v1 = &D_800E9020[temp_v0];
         *temp_v1 += var_f0;
-        temp_v0_2 = omCurrentObj->objId;
-        D_800E64D0[temp_v0_2] = D_800E6A10[temp_v0_2] * (1.6f + (-0.1f * (f32) var_s0));
+        D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (1.6f + (-0.1f * (f32) var_s0));
         ohSleep(1, omCurrentObj);
         var_s0 += 1;
     } while (var_s0 != 0x10);

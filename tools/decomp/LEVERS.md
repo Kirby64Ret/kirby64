@@ -2641,3 +2641,27 @@ the pool allocator's real stride is 0x78.
         NOT compile, and the screen read that quotation as a bare call site.
     Strip comments and cut to the first arm and the same run gives 10 instead
     of 11, all real.
+
+119. **THE ONE-SHOT SCREENS ARE SPENT OVER ovl2/ovl7/ovl11/ovl13/ovl14
+    (2026-08-26) -- these are the reports, do not re-run them there.**
+      - rettype_screen: EMPTY. 192 guarded drafts, zero hits in any of the
+        three classes. The scope's rettype work is done (func_801C1BB8_ovl7
+        and func_801C02D0_ovl7, both since MATCHED, were the last).
+      - zerofork_sweep: 11 finds, all acted on. One was a whole closure
+        (func_801B7C30_ovl7, 65 -> MATCH on `angle.v.x = 0`); nine landed as
+        draft moves; the eleventh (func_8019CFD0_ovl7) took `v.x = 0.0f`
+        alone at 104 -> 51/145 with every other grouping measured worse (its
+        note in enelib.c carries the full grouping table -- the ROM splits
+        its zeros STORES-vs-COMPARES and nothing spells that split yet).
+      - objid_inline_sweep: 26 finds in scope, every one re-measured at apply
+        time and kept (biggest: func_801DF5D0_ovl13 1147 -> 980,
+        func_80116508 373 -> 328, func_801A8CDC_ovl7 143 -> 107,
+        func_801BE79C_ovl7 404 -> 380). Three kept despite the word count
+        moving past the ROM's by 1-6 words (801A7104/801A7524/801BE79C):
+        inlining re-reads every use where the ROM re-reads only some, so on
+        those the next lever is which SUBSET of uses stays cached.
+      - the cvt.d.s grep (LEVER 117) was already spent by the entry itself;
+        its 117c leftovers are resolved: func_801A8CDC_ovl7's second callee
+        was func_800AF408 (banked prototype fixed it), func_801A7524_ovl7's
+        is func_801A0D74_ovl7 called with six m2c-invented arguments (noted
+        in ovl7_5.c, unmeasurable until that draft's LEVER 31 frame pass).

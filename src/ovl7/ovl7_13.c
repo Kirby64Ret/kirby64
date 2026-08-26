@@ -107,7 +107,6 @@ void func_801B8F20_ovl7(s32 arg0) {
     f32 temp_f12;
     f32 var_f0;
     s32 var_v1;
-    u32 temp_t0;
     u32 temp_t0_2;
     u32 temp_v1;
     u32 temp_v1_2;
@@ -120,10 +119,9 @@ void func_801B8F20_ovl7(s32 arg0) {
     D_800E1B50[temp_v1]->unk39 = -1;
     D_800EB160[omCurrentObj->objId] = 0.0f;
     D_800EB320[omCurrentObj->objId] = 0.0f;
-    temp_t0 = omCurrentObj->objId;
-    temp_a0 = D_800E7880[temp_t0];
-    var_v1 = temp_t0 * 4;
-    if (((temp_a0 == 1) && (D_800E98E0[temp_t0] != 0)) || (var_v1 = temp_t0 * 4, (temp_a0 == 0))) {
+    temp_a0 = D_800E7880[omCurrentObj->objId];
+    var_v1 = omCurrentObj->objId * 4;
+    if (((temp_a0 == 1) && (D_800E98E0[omCurrentObj->objId] != 0)) || (var_v1 = omCurrentObj->objId * 4, (temp_a0 == 0))) {
         var_v0 = gEntitiesAngleZArray + var_v1;
         var_f0 = *var_v0;
         if (var_f0 > 6.2831855f) {
@@ -149,7 +147,7 @@ void func_801B8F20_ovl7(s32 arg0) {
         D_800EB320[omCurrentObj->objId] = temp_f12;
         D_800E6A10[omCurrentObj->objId] = 1.0f;
     } else {
-        D_800EA6E0[temp_t0] = 1.5707964f;
+        D_800EA6E0[omCurrentObj->objId] = 1.5707964f;
         temp_v1_4 = omCurrentObj->objId;
         D_800EB320[temp_v1_4] = D_800EA6E0[temp_v1_4];
     }
@@ -786,7 +784,6 @@ void func_801BB3D4_ovl7(s32 arg0) {
     f32 var_f2_3;
     u32 temp_a0;
     u32 temp_v0;
-    u32 temp_v0_2;
     u32 temp_v0_3;
     u32 temp_v0_4;
 
@@ -813,8 +810,7 @@ void func_801BB3D4_ovl7(s32 arg0) {
     temp_a0_2 = &D_800E3210[temp_v1->objId];
     *temp_a0_2 = -*temp_a0_2;
     D_800E3750[temp_v1->objId] = -0.325f;
-    temp_v0_2 = temp_v1->objId;
-    temp_f0 = D_800E3210[temp_v0_2];
+    temp_f0 = D_800E3210[temp_v1->objId];
     if (temp_f0 < 0.0f) {
         var_f2 = -temp_f0;
     } else {
@@ -826,14 +822,14 @@ void func_801BB3D4_ovl7(s32 arg0) {
         } else {
             var_f2_2 = temp_f0;
         }
-        D_800E3C90[temp_v0_2] = -var_f2_2;
+        D_800E3C90[temp_v1->objId] = -var_f2_2;
     } else {
         if (temp_f0 < 0.0f) {
             var_f2_3 = -temp_f0;
         } else {
             var_f2_3 = temp_f0;
         }
-        D_800E3C90[temp_v0_2] = var_f2_3;
+        D_800E3C90[temp_v1->objId] = var_f2_3;
     }
 loop_15:
     temp_v0_3 = temp_v1->objId;

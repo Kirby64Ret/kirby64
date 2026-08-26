@@ -213,10 +213,6 @@ void func_801A7104_ovl7(GObj *arg0) {
     struct EnemyRecord *ent;
     u32 temp_a1;
     u32 temp_v0;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
     u32 temp_v0_6;
     u32 temp_v0_7;
 
@@ -233,16 +229,12 @@ void func_801A7104_ovl7(GObj *arg0) {
     D_800E8920[omCurrentObj->objId] = 0;
     temp_a3 = sp34->unk0;
     D_800E2090[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId] - gEntitiesNextPosXArray[D_800E0D50[omCurrentObj->objId]];
-    temp_v0_2 = omCurrentObj->objId;
     temp_f14 = *gEntitiesNextPosYArray + 20.0f;
-    D_800E2250[temp_v0_2] = gEntitiesNextPosYArray[temp_v0_2] - temp_f14;
-    temp_v0_3 = omCurrentObj->objId;
+    D_800E2250[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - temp_f14;
     temp_f18 = gEntitiesNextPosZArray[D_800E0D50[omCurrentObj->objId]];
-    D_800E2410[temp_v0_3] = gEntitiesNextPosZArray[temp_v0_3] - temp_f18;
-    temp_v0_4 = omCurrentObj->objId;
-    D_800E4C50[temp_v0_4] = gEntitiesAngleYArray[temp_v0_4];
-    temp_v0_5 = omCurrentObj->objId;
-    D_800E4E10[temp_v0_5] = gEntitiesAngleZArray[temp_v0_5];
+    D_800E2410[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId] - temp_f18;
+    D_800E4C50[omCurrentObj->objId] = gEntitiesAngleYArray[omCurrentObj->objId];
+    D_800E4E10[omCurrentObj->objId] = gEntitiesAngleZArray[omCurrentObj->objId];
     D_800E3050[omCurrentObj->objId] =
     D_800E3210[omCurrentObj->objId] =
     D_800E33D0[omCurrentObj->objId] = 0.0f;
@@ -298,7 +290,18 @@ loop_3:
    (23 compares / 22 neg.s) and the macro reading is right, but with the frame
    this far off an ABSF edit cannot show up in the score at all.  It is not a
    negative result for the lever; it is an unmeasurable one.  Do the frame
-   first, re-measure, and only then convert the abs sites. */
+   first, re-measure, and only then convert the abs sites.
+
+   LEVER 117c RESOLVED 2026-08-26: the "second undeclared callee" this draft
+   still shows cvt.d.s for is func_801A0D74_ovl7 -- declared s32(GObj *) in
+   ovl7_17.c, called here (line ~661) with SIX m2c-invented arguments
+   including floats, so K&R promotion doubles them (cvt.d.s at diff words
+   749/758 and 939/943). Same class as func_801ABBA0_ovl7's invented third
+   argument. When the frame pass happens, fix the call to one GObj* argument
+   and declare it at file scope; it cannot be measured before then for the
+   same reason as LEVER 70 above. (func_801A8CDC_ovl7's cvt.d.s, the other
+   117c leftover, is GONE -- the banked func_800AF408 prototype was its
+   second callee.) */
 #ifdef NON_MATCHING
 void func_801A7524_ovl7(GObj *arg0) {
     s32 spB4;
@@ -431,7 +434,6 @@ void func_801A7524_ovl7(GObj *arg0) {
     u32 temp_v0_5;
     u32 temp_v0_6;
     u32 temp_v0_7;
-    u32 temp_v0_8;
     u32 temp_v0_9;
     u32 temp_v1;
     u32 temp_v1_3;
@@ -579,15 +581,14 @@ block_32:
     } else {
         D_800E3AD0[omCurrentObj->objId] = *var_a0;
     }
-    temp_v0_8 = omCurrentObj->objId;
-    temp_f0_3 = D_800E2410[temp_v0_8];
+    temp_f0_3 = D_800E2410[omCurrentObj->objId];
     if (temp_f0_3 < 0.0f) {
         var_f2_5 = -temp_f0_3;
     } else {
         var_f2_5 = temp_f0_3;
     }
     if (var_f16 < var_f2_5) {
-        *var_v1 = (*(gEntitiesNextPosZArray + sp3C) - gEntitiesNextPosZArray[temp_v0_8]) * 0.4f;
+        *var_v1 = (*(gEntitiesNextPosZArray + sp3C) - gEntitiesNextPosZArray[omCurrentObj->objId]) * 0.4f;
         temp_f2_2 = *var_v1;
         if (temp_f2_2 > 10.0f) {
             *var_v1 = 10.0f;
@@ -937,16 +938,9 @@ void func_801A8CDC_ovl7(GObj *arg0) {
     f32 temp_f2;
     struct Sub800E1B50_Unk34 *temp_v0_2;
     struct EnemyRecord *temp_a2;
-    u32 temp_v0;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
-    u32 temp_v0_7;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a2 = D_800E1B50[temp_v0];
-    D_800DEF90[temp_v0] = func_800B4D70;
+    temp_a2 = D_800E1B50[omCurrentObj->objId];
+    D_800DEF90[omCurrentObj->objId] = func_800B4D70;
     sp24 = temp_a2->unk88->unkC->unk0;
     D_800DF150[omCurrentObj->objId] = func_801A8FFC_ovl7;
     sp2C = temp_a2;
@@ -964,31 +958,26 @@ void func_801A8CDC_ovl7(GObj *arg0) {
     D_800E2250[omCurrentObj->objId] = 0.0f;
     D_800E2410[omCurrentObj->objId] = 0.0f;
     D_800E4E10[omCurrentObj->objId] = 0.0f;
-    temp_v0_3 = omCurrentObj->objId;
-    D_800E4C50[temp_v0_3] = D_800E4E10[temp_v0_3];
+    D_800E4C50[omCurrentObj->objId] = D_800E4E10[omCurrentObj->objId];
     D_800EA6E0[omCurrentObj->objId] = sp24->scale;
-    temp_v0_4 = omCurrentObj->objId;
-    temp_f2 = D_800EA6E0[temp_v0_4];
-    gEntitiesScaleZArray[temp_v0_4] = temp_f2;
+    temp_f2 = D_800EA6E0[omCurrentObj->objId];
+    gEntitiesScaleZArray[omCurrentObj->objId] = temp_f2;
     gEntitiesScaleYArray[omCurrentObj->objId] = temp_f2;
     gEntitiesScaleXArray[omCurrentObj->objId] = temp_f2;
     D_800E5350[omCurrentObj->objId] = 1.0f;
-    temp_v0_5 = omCurrentObj->objId;
-    temp_f12 = D_800E5350[temp_v0_5];
-    D_800E5190[temp_v0_5] = temp_f12;
+    temp_f12 = D_800E5350[omCurrentObj->objId];
+    D_800E5190[omCurrentObj->objId] = temp_f12;
     D_800E4FD0[omCurrentObj->objId] = temp_f12;
     D_800E3910[omCurrentObj->objId] = 0.0f;
-    temp_v0_6 = omCurrentObj->objId;
-    temp_f0 = D_800E3910[temp_v0_6];
-    D_800E3750[temp_v0_6] = temp_f0;
+    temp_f0 = D_800E3910[omCurrentObj->objId];
+    D_800E3750[omCurrentObj->objId] = temp_f0;
     D_800E3590[omCurrentObj->objId] = temp_f0;
     D_800E33D0[omCurrentObj->objId] = temp_f0;
     D_800E3210[omCurrentObj->objId] = temp_f0;
     D_800E3050[omCurrentObj->objId] = temp_f0;
     D_800E3E50[omCurrentObj->objId] = 65535.0f;
-    temp_v0_7 = omCurrentObj->objId;
-    temp_f14 = D_800E3E50[temp_v0_7];
-    D_800E3C90[temp_v0_7] = temp_f14;
+    temp_f14 = D_800E3E50[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = temp_f14;
     D_800E3AD0[omCurrentObj->objId] = temp_f14;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800E8220[omCurrentObj->objId] = 0;
@@ -1210,16 +1199,14 @@ void func_801A96C4_ovl7(GObj *arg0) {
     s32 sp44;
     s32 var_v1;
     s32 var_v1_2;
-    u32 temp_v0;
     u32 temp_v0_2;
     u32 temp_v0_3;
     u32 temp_v0_4;
     u8 temp_t2;
     struct EneInfo *temp_a1;
 
-    temp_v0 = omCurrentObj->objId;
-    temp_a1 = ((struct EneAnimSetup *) D_800E1B50[temp_v0]->unk88->unkC->unk4)->unk1C;
-    D_800DF150[temp_v0] = func_801A9930_ovl7;
+    temp_a1 = ((struct EneAnimSetup *) D_800E1B50[omCurrentObj->objId]->unk88->unkC->unk4)->unk1C;
+    D_800DF150[omCurrentObj->objId] = func_801A9930_ovl7;
     sp44 = temp_a1->unk14;
     /* $a0 is still the incoming GObj at the ROM's jal (it was only copied
        to $s0 at 801A9724, never overwritten); m2c's temp_a1 was $a1, a
@@ -1300,42 +1287,30 @@ void func_801A9930_ovl7(s32 arg0) {
     struct SubSub800E1B50_Unk88_UnkC_Unk0 *temp_t2;
     struct EneAnimSetup *temp_t1;
     struct EnemyRecord *temp_v1;
-    u32 temp_v0;
-    u32 temp_v0_10;
-    u32 temp_v0_11;
-    u32 temp_v0_2;
-    u32 temp_v0_3;
-    u32 temp_v0_4;
-    u32 temp_v0_5;
-    u32 temp_v0_6;
-    u32 temp_v0_7;
-    u32 temp_v0_8;
     struct EneInfo *temp_a3;
     struct EneVtable *temp_t3;
 
     temp_t0 = omCurrentObj;
-    temp_v0 = temp_t0->objId;
-    temp_v1 = D_800E1B50[temp_v0];
+    temp_v1 = D_800E1B50[temp_t0->objId];
     temp_a2 = temp_v1->unk88->unkC;
     temp_t1 = temp_a2->unk4;
     temp_t2 = temp_a2->unk0;
     temp_a3 = temp_t1->unk1C;
     temp_t3 = temp_a3->unk14;
     sp1C = temp_v1->unk84;
-    if (D_800E83E0[temp_v0] != 0) {
+    if (D_800E83E0[temp_t0->objId] != 0) {
         gKirbyState.unkD = -2;
-        temp_v0_2 = temp_t0->objId;
-        if (D_800E83E0[temp_v0_2] == 0x12) {
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC33C_ovl7);
+        if (D_800E83E0[temp_t0->objId] == 0x12) {
+            assign_new_process_entry(gEntityGObjProcessArray[temp_t0->objId], &func_801AC33C_ovl7);
             return;
         }
-        assign_new_process_entry(gEntityGObjProcessArray[temp_v0_2], &func_801AC448_ovl7);
+        assign_new_process_entry(gEntityGObjProcessArray[temp_t0->objId], &func_801AC448_ovl7);
         return;
     }
     temp_a0 = gKirbyState.unkD;
     switch (temp_a0) {
         case 4:
-            D_800EA6E0[temp_v0] = temp_t1->unk10;
+            D_800EA6E0[temp_t0->objId] = temp_t1->unk10;
 block_17:
             if (temp_a0 == 2) {
                 temp_t8 = D_801D0AA4_ovl7 - 1;
@@ -1353,29 +1328,23 @@ block_17:
                     }
                 }
             }
-            temp_v0_3 = temp_t0->objId;
-            gEntitiesAngleYArray[temp_v0_3] = gEntitiesAngleYArray[D_800E0D50[temp_v0_3]];
-            temp_v0_4 = temp_t0->objId;
-            D_800E5F90[temp_v0_4] = D_800E5F90[D_800E0D50[temp_v0_4]];
-            temp_v0_5 = temp_t0->objId;
-            D_800E6BD0[temp_v0_5] = D_800E6BD0[D_800E0D50[temp_v0_5]];
+            gEntitiesAngleYArray[temp_t0->objId] = gEntitiesAngleYArray[D_800E0D50[temp_t0->objId]];
+            D_800E5F90[temp_t0->objId] = D_800E5F90[D_800E0D50[temp_t0->objId]];
+            D_800E6BD0[temp_t0->objId] = D_800E6BD0[D_800E0D50[temp_t0->objId]];
             if (temp_a0 == 3) {
-                temp_v0_6 = temp_t0->objId;
-                temp_v1_2 = &gEntitiesScaleXArray[temp_v0_6];
+                temp_v1_2 = &gEntitiesScaleXArray[temp_t0->objId];
                 temp_f2 = *temp_v1_2;
-                if ((D_800EA6E0[temp_v0_6] - 0.001f) < temp_f2) {
+                if ((D_800EA6E0[temp_t0->objId] - 0.001f) < temp_f2) {
                     *temp_v1_2 = temp_f2 - ((temp_t1->unk10 - temp_t2->scale) / 5.0f);
                 }
             }
-            temp_v0_7 = temp_t0->objId;
-            var_v0 = temp_v0_7 * 4;
-            temp_v1_3 = &gEntitiesScaleXArray[temp_v0_7];
+            var_v0 = temp_t0->objId * 4;
+            temp_v1_3 = &gEntitiesScaleXArray[temp_t0->objId];
             var_f2 = *temp_v1_3;
-            if ((temp_a0 == 1) && (var_f2 < (D_800EA6E0[temp_v0_7] + 0.001f))) {
+            if ((temp_a0 == 1) && (var_f2 < (D_800EA6E0[temp_t0->objId] + 0.001f))) {
                 *temp_v1_3 = var_f2 + ((temp_t1->unk10 - temp_t2->scale) / 5.0f);
-                temp_v0_8 = temp_t0->objId;
-                var_v0 = temp_v0_8 * 4;
-                var_f2 = gEntitiesScaleXArray[temp_v0_8];
+                var_v0 = temp_t0->objId * 4;
+                var_f2 = gEntitiesScaleXArray[temp_t0->objId];
             }
             *(gEntitiesScaleZArray + var_v0) = var_f2;
             gEntitiesScaleYArray[temp_t0->objId] = var_f2;
@@ -1385,13 +1354,11 @@ block_17:
                     temp_v0_9(arg0, D_800E0D50, D_800E5F90, D_800E6BD0);
                 }
             }
-            temp_v0_10 = temp_t0->objId;
-            D_800E6A10[temp_v0_10] = D_800E6A10[D_800E0D50[temp_v0_10]];
-            temp_v0_11 = temp_t0->objId;
-            if (D_800E6A10[temp_v0_11] == 1.0f) {
-                D_800E17D0[temp_v0_11] = D_800E17D0[D_800E0D50[temp_v0_11]];
+            D_800E6A10[temp_t0->objId] = D_800E6A10[D_800E0D50[temp_t0->objId]];
+            if (D_800E6A10[temp_t0->objId] == 1.0f) {
+                D_800E17D0[temp_t0->objId] = D_800E17D0[D_800E0D50[temp_t0->objId]];
             } else {
-                D_800E17D0[temp_v0_11] = D_800E17D0[D_800E0D50[temp_v0_11]] + 3.1415927f;
+                D_800E17D0[temp_t0->objId] = D_800E17D0[D_800E0D50[temp_t0->objId]] + 3.1415927f;
             }
             if ((temp_a0 == 2) && ((gKirbyState.action != 0x1D) || (gKirbyState.unkB != 1)) && (gKirbyState.unkB != 2)) {
                 if (func_801A0D74_ovl7(arg0, D_800E0D50) != 0) {
@@ -1413,16 +1380,16 @@ block_17:
             }
             return;
         case 5:
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AA1D4_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_t0->objId], &func_801AA1D4_ovl7);
             return;
         case 3:
-            if (temp_t1->unk10 == gEntitiesScaleXArray[temp_v0]) {
-                D_800EA6E0[temp_v0] = temp_t2->scale;
+            if (temp_t1->unk10 == gEntitiesScaleXArray[temp_t0->objId]) {
+                D_800EA6E0[temp_t0->objId] = temp_t2->scale;
             }
             goto block_17;
         case -1:
             sp30 = temp_a2;
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801A8CDC_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_t0->objId], &func_801A8CDC_ovl7);
             gKirbyState.currentInhale = temp_a2->unk0->unk1C->unk4;
             return;
         case 8:
@@ -1434,16 +1401,16 @@ block_17:
             }
             break;
         case -3:
-            assign_new_process_entry(gEntityGObjProcessArray[temp_v0], &func_801AC448_ovl7);
+            assign_new_process_entry(gEntityGObjProcessArray[temp_t0->objId], &func_801AC448_ovl7);
             return;
         case 1:
-            if (temp_t2->scale == gEntitiesScaleXArray[temp_v0]) {
-                D_800EA6E0[temp_v0] = temp_t1->unk10;
+            if (temp_t2->scale == gEntitiesScaleXArray[temp_t0->objId]) {
+                D_800EA6E0[temp_t0->objId] = temp_t1->unk10;
             }
             goto block_17;
         default:
             temp_f0 = temp_t1->unk10;
-            D_800EA6E0[temp_v0] = temp_f0;
+            D_800EA6E0[temp_t0->objId] = temp_f0;
             gEntitiesScaleZArray[temp_t0->objId] = temp_f0;
             gEntitiesScaleYArray[temp_t0->objId] = temp_f0;
             gEntitiesScaleXArray[temp_t0->objId] = temp_f0;
@@ -1506,13 +1473,11 @@ void func_801AA1D4_ovl7(GObj *gobj) {
     struct EneVtable *sp1C;
     struct SubSub800E1B50_Unk88_UnkC *temp_v1;
     struct Sub800E1B50_Unk34 *temp_v0_2;
-    u32 temp_v0;
 
-    temp_v0 = omCurrentObj->objId;
-    sp2C = D_800E1B50[temp_v0];
+    sp2C = D_800E1B50[omCurrentObj->objId];
     temp_v1 = sp2C->unk88->unkC;
     sp24 = (struct EneAnimSetup *)temp_v1->unk4;
-    D_800DF150[temp_v0] = func_801AA33C_ovl7;
+    D_800DF150[omCurrentObj->objId] = func_801AA33C_ovl7;
     sp1C = ((struct EneAnimSetup *)temp_v1->unk4)->unk1C->unk14;
     func_800AF408();
     D_800DF310[omCurrentObj->objId] = NULL;
@@ -2002,16 +1967,14 @@ void func_801AB5A4_ovl7(GObj *arg0) {
     struct SubSub800E1B50_Unk88_UnkC *temp_a3;
     struct EneAnimSetup *temp_a2;
     struct EnemyRecord *temp_a1;
-    u32 temp_v1;
     u32 temp_v1_2;
     u32 temp_v1_3;
     u32 temp_v1_4;
 
-    temp_v1 = omCurrentObj->objId;
-    temp_a1 = D_800E1B50[temp_v1];
+    temp_a1 = D_800E1B50[omCurrentObj->objId];
     temp_a3 = temp_a1->unk88->unkC;
     temp_a2 = temp_a3->unk4;
-    D_800EC660[temp_v1] = 0.0f;
+    D_800EC660[omCurrentObj->objId] = 0.0f;
     sp24 = temp_a1;
     sp1C = temp_a2;
     D_800EC820[omCurrentObj->objId] = 25.0f;
@@ -2210,7 +2173,6 @@ void func_801ABBA0_ovl7(GObj *arg0) {
         temp_a1 = D_800E77A0[var_a2];
         if ((temp_a1 > 0) && (temp_a1 < 8)) {
             func_801BC1AC_ovl7(temp_a1, temp_a1, var_a2);
-            D_800D7090 = omCurrentObj->objId;
             goto block_17;
         }
     }
@@ -2218,7 +2180,6 @@ void func_801ABBA0_ovl7(GObj *arg0) {
         temp_a1_2 = D_800E77A0[var_a2];
         if ((temp_a1_2 >= 8) && (temp_a1_2 < 0x24)) {
             func_801BC44C_ovl7(temp_a1_2, temp_a1_2, var_a2);
-            D_800D7090 = omCurrentObj->objId;
             goto block_17;
         }
     }
@@ -2226,7 +2187,6 @@ void func_801ABBA0_ovl7(GObj *arg0) {
         temp_a1_3 = D_800E77A0[var_a2];
         if ((temp_a1_3 >= 0x24) && (temp_a1_3 < 0x2C)) {
             func_801BC72C_ovl7(temp_a1_3 - 0x24, temp_a1_3, var_a2);
-            D_800D7090 = omCurrentObj->objId;
 block_17:
             var_a2 = omCurrentObj->objId;
         }

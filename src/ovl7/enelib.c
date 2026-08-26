@@ -613,15 +613,12 @@ void func_80199A38_ovl7(struct GObj *arg0) {
     f32 var_f2;
     f32 var_f2_2;
     u32 temp_a0;
-    u32 temp_a2;
-    u32 temp_a2_2;
     u32 temp_v0;
 
     temp_v1 = omCurrentObj;
-    temp_a2 = temp_v1->objId;
     temp_v0 = D_8012BCA0 >> 0x13;
-    temp_a3 = D_800E1B50[temp_a2];
-    D_800E8920[temp_a2] = 0;
+    temp_a3 = D_800E1B50[temp_v1->objId];
+    D_800E8920[temp_v1->objId] = 0;
     if (temp_v0 & 0xE3F) {
         if (temp_v0 & 0xE00) {
             temp_a0 = temp_a3->unk78;
@@ -636,8 +633,7 @@ void func_80199A38_ovl7(struct GObj *arg0) {
         } else {
             var_f12 = -1.5707964f;
         }
-        temp_a2_2 = temp_v1->objId;
-        var_f0 = D_800EB320[temp_a2_2] + var_f12;
+        var_f0 = D_800EB320[temp_v1->objId] + var_f12;
         if (var_f0 > 6.2831855f) {
             do {
                 var_f0 -= 6.2831855f;
@@ -649,14 +645,14 @@ void func_80199A38_ovl7(struct GObj *arg0) {
             } while (var_f0 < 0.0f);
         }
         if ((var_f0 >= 2.3561945f) && (var_f0 < 3.9269907f)) {
-            D_800E83E0[temp_a2_2] = 1;
+            D_800E83E0[temp_v1->objId] = 1;
             temp_a3->unk44 = 1;
             gEntityFuncListIDArray[omCurrentObj->objId] = -1;
             assign_new_process_entry(gEntityGObjProcessArray[omCurrentObj->objId], func_801A6DF0_ovl7);
             return;
         }
         if ((var_f0 >= 1.9198622f) && (var_f0 < 4.363323f)) {
-            D_800E9AA0[temp_a2_2] = 0xF;
+            D_800E9AA0[temp_v1->objId] = 0xF;
             if (var_f0 < 3.1415927f) {
                 if (var_f0 < 1.5707964f) {
                     var_f2 = -(var_f0 - 1.5707964f);
@@ -1783,21 +1779,19 @@ void eneTurnCommon2(s32 arg0) {
     f32 var_f2_2;
     s32 var_a1;
     s32 var_a2;
-    u32 temp_a1;
     u32 temp_a1_2;
     u32 temp_a1_3;
     u32 temp_a1_4;
     u8 var_a0;
     u8 var_v0;
 
-    temp_a1 = omCurrentObj->objId;
     var_a2 = arg0;
-    var_a1 = temp_a1 * 4;
-    temp_a3 = D_800E1B50[temp_a1];
+    var_a1 = omCurrentObj->objId * 4;
+    temp_a3 = D_800E1B50[omCurrentObj->objId];
     var_v0 = temp_a3->unk3C;
     if (var_v0 != 0) {
         if (arg0 == 1) {
-            temp_v0 = &D_800E6A10[temp_a1];
+            temp_v0 = &D_800E6A10[omCurrentObj->objId];
             *temp_v0 *= -1.0f;
             temp_a1_2 = omCurrentObj->objId;
             temp_a0 = &D_800E64D0[temp_a1_2];
@@ -1977,7 +1971,6 @@ void func_8019C9B0_ovl7(f32 arg0, u8 arg1) {
     u32 temp_v1;
     u32 temp_v1_2;
     u32 temp_v1_3;
-    u32 temp_v1_4;
     u8 temp_v0;
     u8 temp_v0_2;
     u8 var_a1;
@@ -2035,10 +2028,9 @@ block_21:
             } else {
                 temp_a2->unk3C = 0;
                 D_800E9020[omCurrentObj->objId] = 0.0f;
-                temp_v1_4 = omCurrentObj->objId;
-                temp_v0_9 = &D_800E9020[temp_v1_4];
-                if (D_800E6A10[temp_v1_4] == 1.0f) {
-                    temp_v0_10 = &D_800E9020[temp_v1_4];
+                temp_v0_9 = &D_800E9020[omCurrentObj->objId];
+                if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+                    temp_v0_10 = &D_800E9020[omCurrentObj->objId];
                     *temp_v0_10 += 3.1415927f;
                     return;
                 }
@@ -2108,14 +2100,12 @@ s32 func_8019CE28_ovl7(void) {
     f32 var_f12;
     f32 var_f12_2;
     s32 var_a0;
-    u32 temp_v1;
 
-    temp_v1 = omCurrentObj->objId;
     var_a0 = 0;
-    temp_v0 = D_800E1B50[temp_v1];
-    temp_f0 = gEntitiesNextPosXArray[temp_v1] - *(f32 *) &temp_v0->unkC;
-    temp_f2 = gEntitiesNextPosZArray[temp_v1] - *(f32 *) &temp_v0->unk14;
-    if (D_800E6A10[temp_v1] == 1.0f) {
+    temp_v0 = D_800E1B50[omCurrentObj->objId];
+    temp_f0 = gEntitiesNextPosXArray[omCurrentObj->objId] - *(f32 *) &temp_v0->unkC;
+    temp_f2 = gEntitiesNextPosZArray[omCurrentObj->objId] - *(f32 *) &temp_v0->unk14;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
         if (!(temp_f0 >= 0.0f)) {
             if (temp_f0 < 0.0f) {
                 var_f12 = -temp_f0;
@@ -2893,14 +2883,12 @@ void func_8019ED58_ovl7(EneCurve *arg0) {
     f32 var_f14;
     f32 var_f16;
     s32 temp_v0;
-    u32 temp_a1;
     u32 temp_a1_2;
     u32 temp_a1_3;
 
     temp_v0 = arg0->unk2C;
-    temp_a1 = omCurrentObj->objId;
     temp_f0 = temp_v0 + 1;
-    D_800E3050[temp_a1] = (*gEntitiesNextPosXArray - gEntitiesNextPosXArray[temp_a1]) / temp_v0;
+    D_800E3050[omCurrentObj->objId] = (*gEntitiesNextPosXArray - gEntitiesNextPosXArray[omCurrentObj->objId]) / temp_v0;
     temp_a1_2 = omCurrentObj->objId;
     D_800E33D0[temp_a1_2] = (*gEntitiesNextPosZArray - gEntitiesNextPosZArray[temp_a1_2]) / arg0->unk2C;
     temp_a1_3 = omCurrentObj->objId;

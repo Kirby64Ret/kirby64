@@ -430,11 +430,25 @@ extern s32 D_801DAA48;
    it (that is `rec`, reloaded at the end), so three of those four words are
    RESERVED AND NEVER WRITTEN. Ours had 0x40..0x47. Two words short, two pads,
    and LEVER 57's top-down order says they go above `rec`, i.e. FIRST.
-   Remaining 266 is THREE words short plus a whole-function $t renaming: the
+   Remaining 266 was THREE words short plus a whole-function $t renaming: the
    ROM re-reads `omCurrentObj->objId` (lw+sll) for stores our draft folds onto
    a held $s0 -- e.g. at target word 342 it reloads for the D_800E9C60 store
    where we are already at the `jal ohSleep`. That is the next thing to attack
-   and it is now readable, which it was not through a wrong prologue. */
+   and it is now readable, which it was not through a wrong prologue.
+
+   THE THREE WORDS FOUND, 266 -> 196 (2026-08-26). aligndiff pinned them at
+   the D_800E3210 store: the ROM has `mtc1` 16.0 + `mul.s` + an extra objId
+   `lw` there, because it MULTIPLIES AT RUNTIME -- the late-rodata pool holds
+   BOTH `.float 2.133333445` AND `.float -2.133333445`, so the +2.1333 is a
+   loaded value, not a foldable literal. The file's own hoisted-literal idiom
+   (`c`/`z`) extends: `f32 k;` declared IN PLACE OF pad1 (it is
+   register-allocated, so it owns pad1's reserved slot and the frame stays
+   0x50), `k = 2.133333445f;` just before the store, `k * 16.0f` emits the
+   ROM's mul, and the -2.133333445f literal below stays a literal for the
+   pool's second word. Declaring k as an EXTRA local beside both pads is 198
+   and moves the frame. Remaining 196: the $t/$f renaming cascade from the
+   entry block's schedule (the c/other/EC2E0 loads issue in a different
+   order), plus the tail's genuinely-aligned li/or spelling noise. */
 #if defined(MIPS_TO_C) || defined(PORT)
 /* The PORT arm is this same body: nothing here is N64-only -- every array is
    indexed through its declared type, the only pointer written is
@@ -442,7 +456,7 @@ extern s32 D_801DAA48;
    struct.  One arm rather than two duplicated copies. */
 void func_801E1728_ovl14(GObj *arg0) {
     s32 pad0;
-    s32 pad1;
+    f32 k;
     struct EnemyRecord *rec;
     f32 c;
     f32 z;
@@ -476,7 +490,8 @@ void func_801E1728_ovl14(GObj *arg0) {
     D_800E3590[omCurrentObj->objId] = z;
     D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
     D_800E3AD0[omCurrentObj->objId] = c;
-    D_800E3210[omCurrentObj->objId] = 2.133333445f * 16.0f;
+    k = 2.133333445f;
+    D_800E3210[omCurrentObj->objId] = k * 16.0f;
     D_800E3750[omCurrentObj->objId] = -2.133333445f;
     D_800E33D0[omCurrentObj->objId] = z;
     D_800E3910[omCurrentObj->objId] = z;

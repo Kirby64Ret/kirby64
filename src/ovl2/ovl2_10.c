@@ -2570,7 +2570,6 @@ void func_80116508(struct GObj *arg0) {
     f32 *anchorY;
     s32 *command;
     s32 cmd;
-    s32 slot;
     f32 rest;
     f32 openCap;
 
@@ -2598,8 +2597,7 @@ void func_80116508(struct GObj *arg0) {
         if (cmd == 1) {
             /* Hop: launch, coast under gravity, freeze, then fall from rest. */
             D_800E3590[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            D_800E3050[slot] = D_800E3590[slot];
+            D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
             D_800E3AD0[omCurrentObj->objId] = 65535.0f;
             D_800E3210[omCurrentObj->objId] = 2.1333334f * 16.0f;
             D_800E3750[omCurrentObj->objId] = -2.1333334f;
@@ -2608,22 +2606,19 @@ void func_80116508(struct GObj *arg0) {
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
             ohSleep(0xF);
             D_800E3910[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            rest = D_800E3910[slot];
-            D_800E3750[slot] = rest;
+            rest = D_800E3910[omCurrentObj->objId];
+            D_800E3750[omCurrentObj->objId] = rest;
             D_800E3590[omCurrentObj->objId] = rest;
             D_800E33D0[omCurrentObj->objId] = rest;
             D_800E3210[omCurrentObj->objId] = rest;
             D_800E3050[omCurrentObj->objId] = rest;
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
-            slot = omCurrentObj->objId;
-            openCap = D_800E3E50[slot];
-            D_800E3C90[slot] = openCap;
+            openCap = D_800E3E50[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = openCap;
             D_800E3AD0[omCurrentObj->objId] = openCap;
             ohSleep(1);
             D_800E3590[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            D_800E3050[slot] = D_800E3590[slot];
+            D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
             D_800E3AD0[omCurrentObj->objId] = 65535.0f;
             D_800E3210[omCurrentObj->objId] = 0.0f;
             D_800E3750[omCurrentObj->objId] = -0.9917355f;
@@ -2632,24 +2627,21 @@ void func_80116508(struct GObj *arg0) {
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
             ohSleep(0x16);
             D_800E3910[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            rest = D_800E3910[slot];
-            D_800E3750[slot] = rest;
+            rest = D_800E3910[omCurrentObj->objId];
+            D_800E3750[omCurrentObj->objId] = rest;
             D_800E3590[omCurrentObj->objId] = rest;
             D_800E33D0[omCurrentObj->objId] = rest;
             D_800E3210[omCurrentObj->objId] = rest;
             D_800E3050[omCurrentObj->objId] = rest;
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
-            slot = omCurrentObj->objId;
-            openCap = D_800E3E50[slot];
-            D_800E3C90[slot] = openCap;
+            openCap = D_800E3E50[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = openCap;
             D_800E3AD0[omCurrentObj->objId] = openCap;
             *command = 0;
         } else if (cmd == 2) {
             /* Death drop: sink at a fixed rate, freeze, and never wake. */
             D_800E3590[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            D_800E3050[slot] = D_800E3590[slot];
+            D_800E3050[omCurrentObj->objId] = D_800E3590[omCurrentObj->objId];
             D_800E3AD0[omCurrentObj->objId] = 65535.0f;
             D_800E3210[omCurrentObj->objId] = -8.0f;
             D_800E33D0[omCurrentObj->objId] = 0.0f;
@@ -2657,17 +2649,15 @@ void func_80116508(struct GObj *arg0) {
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
             ohSleep(0xA);
             D_800E3910[omCurrentObj->objId] = 0.0f;
-            slot = omCurrentObj->objId;
-            rest = D_800E3910[slot];
-            D_800E3750[slot] = rest;
+            rest = D_800E3910[omCurrentObj->objId];
+            D_800E3750[omCurrentObj->objId] = rest;
             D_800E3590[omCurrentObj->objId] = rest;
             D_800E33D0[omCurrentObj->objId] = rest;
             D_800E3210[omCurrentObj->objId] = rest;
             D_800E3050[omCurrentObj->objId] = rest;
             D_800E3E50[omCurrentObj->objId] = 65535.0f;
-            slot = omCurrentObj->objId;
-            openCap = D_800E3E50[slot];
-            D_800E3C90[slot] = openCap;
+            openCap = D_800E3E50[omCurrentObj->objId];
+            D_800E3C90[omCurrentObj->objId] = openCap;
             D_800E3AD0[omCurrentObj->objId] = openCap;
             curObjSleepForever();
         }

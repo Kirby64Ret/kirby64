@@ -390,12 +390,11 @@ void func_801BE79C_ovl7(GObj *arg0) {
     extern u8 D_8012E7C5[];
     extern s16 D_8012E828;
     extern f32 D_800E9020[];
-    u32 id = omCurrentObj->objId;
-    struct EnemyRecord *ent = D_800E1B50[id];
+    struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
     Vector srt;
     u16 kind;
 
-    D_800DEF90[id] = func_800B7138;
+    D_800DEF90[omCurrentObj->objId] = func_800B7138;
     D_800DF150[omCurrentObj->objId] = func_801BEE54_ovl7;
     gEntitiesScaleXArray[omCurrentObj->objId] = 1.0f;
     gEntitiesScaleYArray[omCurrentObj->objId] = 1.0f;
@@ -406,16 +405,15 @@ void func_801BE79C_ovl7(GObj *arg0) {
     }
     func_800A2300(arg0);
     ent->unk34 = NULL;
-    id = omCurrentObj->objId;
-    kind = D_800E77A0[id];
+    kind = D_800E77A0[omCurrentObj->objId];
     if (kind == 7) {
-        func_800B9CB4(saveCurrentFileNum, ((s32 *) &D_800E9020[0x70])[id]);
+        func_800B9CB4(saveCurrentFileNum, ((s32 *) &D_800E9020[0x70])[omCurrentObj->objId]);
         D_800D6E30[D_800BE508] += 1;
         play_sound(0xCB);
         func_800BB468(0xC, 0);
     } else if (kind == 8) {
-        if ((s32) D_800E7880[id] < 6) {
-            switch (D_800EA520[id]) {
+        if ((s32) D_800E7880[omCurrentObj->objId] < 6) {
+            switch (D_800EA520[omCurrentObj->objId]) {
             case 0:
                 D_800D6BC0[D_800BE500] = 1;
                 play_sound(0xCE);
@@ -436,8 +434,7 @@ void func_801BE79C_ovl7(GObj *arg0) {
             D_8012E828 = 1;
         }
     }
-    id = omCurrentObj->objId;
-    if (D_800EA520[id] != 0) {
+    if (D_800EA520[omCurrentObj->objId] != 0) {
         func_8019BB58_ovl7();
         if (ent->unk34 != NULL) {
             func_800A22D4(ent->unk34);
@@ -449,9 +446,8 @@ void func_801BE79C_ovl7(GObj *arg0) {
         ohSleep(0x1E);
         D_8012E7C5[0xF] = 2;
         curObjSleepForever();
-        id = omCurrentObj->objId;
     }
-    D_800E98E0[id] = 0;
+    D_800E98E0[omCurrentObj->objId] = 0;
     D_800E5F90[omCurrentObj->objId] = D_800E5F90[0];
     D_800E6BD0[omCurrentObj->objId] = D_800E6BD0[0];
     gEntitiesNextPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[0];
@@ -494,35 +490,29 @@ void func_801BE79C_ovl7(GObj *arg0) {
     func_800B3520();
     D_800DF150[omCurrentObj->objId] = NULL;
     func_800B19F4(0x7D, omCurrentObj->objId);
-    id = omCurrentObj->objId;
-    kind = D_800E77A0[id];
+    kind = D_800E77A0[omCurrentObj->objId];
     if (kind == 7) {
         ohSleep(0xF);
-        id = omCurrentObj->objId;
     } else if (kind == 8) {
-        switch (D_800E7880[id]) {
+        switch (D_800E7880[omCurrentObj->objId]) {
         case 6:
             func_800F6C40(D_800BE508 + 1, 0);
             func_800B9CB4(saveCurrentFileNum, 2);
-            id = omCurrentObj->objId;
             break;
         case 7:
             func_800F6C40(D_800BE508 + 1, 0);
             func_800B9CB4(saveCurrentFileNum, 5);
-            id = omCurrentObj->objId;
             break;
         case 8:
             func_800F6C40(D_800BE508 + 1, 0);
             func_800B9CB4(saveCurrentFileNum, 8);
-            id = omCurrentObj->objId;
             break;
         default:
             D_8012E7C5[0xF] = 2;
-            id = omCurrentObj->objId;
             break;
         }
     }
-    func_8019D958_ovl7((u16) id);
+    func_8019D958_ovl7((u16) omCurrentObj->objId);
 }
 #elif defined(PORT)
 /* Crystal-shard / prize collection sequence (ported from m2c).  Award the
