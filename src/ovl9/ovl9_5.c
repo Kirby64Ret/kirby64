@@ -914,10 +914,28 @@ void func_801E7F0C_ovl9(void) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 111/215 [was noted 104/215], saved-register choice: the ROM keeps &omCurrentObj in
-   $s2 with the save block at 0x44, ours picks $s1 at 0x40.  Clone family of
-   the sibling twenty lines up in this file (same unk8C/unk98 install from
-   D_801C8880_ovl7 / D_801CBBC0), whose spelling this draft follows. */
+/* FACTORY: 2/215 [was 111/215, "saved-register choice" -- that seal was the
+   id cache].  2026-08-26, four edits:
+   (1) objid_inline_sweep's full inline: delete `u32 id` and its six
+       re-assignments, every subscript `omCurrentObj->objId` (111 -> 21) --
+       LEVERS 4/97/111; the &omCurrentObj/$s2 shape falls out;
+   (2) `s32 reserved0` declared FIRST pays for the deleted id slot and puts
+       sp68 back on the ROM's 0x68 (LEVER 97c; declared after `roll` it
+       lands below sp68 and is worth nothing);
+   (3) the pitch expression's two terms swapped -- the ROM evaluates
+       `value * -0.17453294f` first: `(-1.2217305f * v) + (v * -0.17453294f
+       * step)` spelled in THAT order is 19 -> 12 (LEVER 2's evaluation-order
+       family);
+   (4) launch-speed mul operands swapped -- `D_800E6A10[id] *
+       D_8021BF6C_ovl9[roll]` (facing first) colours the table load into $f4
+       and the whole tail's registers with it, 12 -> 2 with (3) (measured
+       through the tree file; on an isolated scratch the two late_rodata
+       words D_8021D07C/D_8021D080 add two artifact rows).
+   Residue: 2 words -- `addu $t3,$v0,$a1` / `addu $t5,$s1,$a1` (the hoisted
+   &D_800E9FE0 and &D_800E6A10 address adds above the >= 9 branch) come out
+   transposed.  Scheduler tie: barrier_sweep on THIS state (all placements)
+   best 4, compare-arm swap 13, LEVER 16 local for the compare operand 22
+   (frame moves). */
 extern f32 D_8021BF6C_ovl9[];
 extern f32 D_8021BF9C_ovl9[];
 extern s32 func_8019A900_ovl7(s32 *);
@@ -934,10 +952,12 @@ void ohSleep(s32);
 extern s32 D_801C8880_ovl7[];
 extern s32 D_801CBBC0;
 void func_801E7F34_ovl9(struct GObj *arg0) {
+    /* RESERVED: pays for the deleted `u32 id` slot (LEVER 97c); declared
+       first so sp68 stays on the ROM's 0x68. */
+    s32 reserved0;
     s32 sp68;
     f32 dir;
     s32 roll;
-    u32 id;
 
     D_800DDFD0[omCurrentObj->objId] = 0;
     D_800E1B50[omCurrentObj->objId]->unk8C = D_801C8880_ovl7;
@@ -959,33 +979,27 @@ void func_801E7F34_ovl9(struct GObj *arg0) {
     }
     D_800E98E0[omCurrentObj->objId] = roll;
     D_800E9C60[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    if (D_800E98E0[id] >= 9) {
+    if (D_800E98E0[omCurrentObj->objId] >= 9) {
         dir = -dir;
     }
-    if (dir != D_800E6A10[id]) {
-        D_800E9FE0[id].as_u32 = 1;
+    if (dir != D_800E6A10[omCurrentObj->objId]) {
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 1;
     } else {
-        D_800E9FE0[id].as_u32 = 0;
+        D_800E9FE0[omCurrentObj->objId].as_u32 = 0;
     }
     D_800E6A10[omCurrentObj->objId] = dir;
-    id = omCurrentObj->objId;
-    if (D_800E9FE0[id].as_u32 != 0) {
+    if (D_800E9FE0[omCurrentObj->objId].as_u32 != 0) {
         f32 step;
 
         for (step = 3.0f; step >= 0.0f; step -= 1.0f) {
-            id = omCurrentObj->objId;
-            D_800E4C50[id] = (D_800E6A10[id] * -0.17453294f * step) + (-1.2217305f * D_800E6A10[id]);
+            D_800E4C50[omCurrentObj->objId] = (-1.2217305f * D_800E6A10[omCurrentObj->objId]) + (D_800E6A10[omCurrentObj->objId] * -0.17453294f * step);
             ohSleep(1);
         }
-        id = omCurrentObj->objId;
     } else {
         ohSleep(4);
-        id = omCurrentObj->objId;
     }
-    D_800E64D0[id] = D_8021BF6C_ovl9[D_800E98E0[id]] * D_800E6A10[id];
-    id = omCurrentObj->objId;
-    D_800E3210[id] = D_8021BF9C_ovl9[D_800E98E0[id]];
+    D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * D_8021BF6C_ovl9[D_800E98E0[omCurrentObj->objId]];
+    D_800E3210[omCurrentObj->objId] = D_8021BF9C_ovl9[D_800E98E0[omCurrentObj->objId]];
     gEntityFuncListIDArray[omCurrentObj->objId] = 2;
 }
 #elif defined(PORT)
