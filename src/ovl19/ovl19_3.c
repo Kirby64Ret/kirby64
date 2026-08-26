@@ -529,6 +529,16 @@ void func_8022A8FC_ovl19(GObj *g) {
     curObjSleepForever();
 }
 
+/* FACTORY: 116/163 (was 146 before the LEVER 90 integer zero landed). The
+ * count is exact and aligndiff shows ONE shifted block: ours fills the
+ * `bnez $v0` delay slot with `lui gKirbyState` (hoisted from the final else
+ * arm) where the ROM fills it with the `lui gKirbyController+2` of the taken
+ * path. Swept 2026-08-26, all worse: inverting the arms so the else body
+ * comes first (150), `gKirbyState.unk38 = 0.0f` (151 -- the ROM WANTS the
+ * double literal, LEVER 7), and 0.0f on the D_800E3750/D_800E3C90 stores
+ * (146/164, count grows). The three `= 0.0` doubles are correct as written.
+ * What is left is which arm's address computation IDO sinks into one delay
+ * slot; no source spelling tried reaches it. */
 #ifdef NON_MATCHING
 void func_8022A9E8_ovl19(GObj *g) {
     u8 cmd[] = {1, 9, 8, 7, 6, 15};
