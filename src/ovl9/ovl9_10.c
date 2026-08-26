@@ -1625,73 +1625,38 @@ void func_8020705C_ovl9(struct GObj *arg0) {
     }
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 12/67 [was noted 55/67], v0/v1/a0 rotation plus one delay-slot hoist. Re-measured
-   this session against the real listing: true residue is 12/67, not 55 (the
-   old note's number was wrong -- see the file header warning). All three
-   depth arms, the default's utilPrintf and the shared tail are the ROM's.
-   Residues: the ROM keeps objId<<2 in $v0 and the D_800EA520 read in $v1
-   where this draft uses $v0/$a0 (dropping the `var` local and switching on
-   D_800EA520[id] directly is inert, still 12), and the ROM materialises
-   %hi(D_8021DA20_ovl9) -- the utilPrintf string -- in the third case's beq
-   delay slot, speculatively, since the default arm needs it; this draft
-   leaves that slot a nop and computes the address later. Same $v0/v1/a0
-   CSE-neighbour floor as this file's func_802052E8_ovl9 family; the
-   delay-slot placement is downstream of that same register choice, not an
-   independent residue.
-   NOTE: the draft must be declared s32, not void -- line 1380 of this TU
-   calls func_802071AC_ovl9() with no prototype in scope, so the implicit
-   int() declaration makes a void definition a hard error.  Do not "fix"
-   that by adding a file-scope prototype. */
-s32 func_802071AC_ovl9(void) {
-    u32 id;
-    s32 var;
-
-    id = omCurrentObj->objId;
-    var = D_800EA520[id];
-    switch (var) {
-        case 1:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 100.0f;
-            break;
-        case 2:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 140.0f;
-            break;
-        case 3:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
-            break;
-        default:
-            utilPrintf("=== No!! MINO_Var Over!! ===\n");
-            id = omCurrentObj->objId;
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
-            break;
-    }
-}
-#elif defined(PORT)
+/* MATCHED 2026-08-26 (was 12/67, sealed as a "$v0/v1/a0 CSE-neighbour
+   floor").  objid_inline_sweep.py: the floor was the `u32 id` cache
+   (LEVERS 4/97/111) -- deleting it and writing the subscripts
+   `omCurrentObj->objId` produces the ROM's $v0/$v1 pair AND the speculative
+   %hi(D_8021DA20_ovl9) in the third case's beq delay slot; both residues
+   were downstream of the cache.  `var` stays (the old note measured
+   dropping it inert, and it reads better).
+   NOTE kept from before: this must be declared s32, not void -- an earlier
+   line of this TU calls func_802071AC_ovl9() with no prototype in scope, so
+   the implicit int() declaration makes a void definition a hard error.  Do
+   not "fix" that by adding a file-scope prototype. */
 /* Mino depth selector: latch the burrow floor D_800EA8A0 at 100/140/
  * 180 units below the current height for variants 1/2/3; any other
  * variant logs the "MINO_Var Over" complaint and uses the 180 depth. */
-void func_802071AC_ovl9(void) {
-    u32 id;
+s32 func_802071AC_ovl9(void) {
+    s32 var;
 
-    id = omCurrentObj->objId;
-    switch (D_800EA520[id]) {
+    var = D_800EA520[omCurrentObj->objId];
+    switch (var) {
         case 1:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 100.0f;
+            D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 100.0f;
             break;
         case 2:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 140.0f;
+            D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 140.0f;
             break;
         case 3:
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
+            D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 180.0f;
             break;
         default:
             utilPrintf("=== No!! MINO_Var Over!! ===\n");
-            id = omCurrentObj->objId;
-            D_800EA8A0[id] = gEntitiesNextPosYArray[id] - 180.0f;
+                    D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId] - 180.0f;
             break;
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_10/func_802071AC_ovl9.s")
-#endif
 

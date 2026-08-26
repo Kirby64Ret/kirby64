@@ -1778,10 +1778,13 @@ f32 func_801D650C_ovl9(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D650C_ovl9.s")
 #endif
 
-#ifdef MIPS_TO_C
-/* FACTORY: 189/206 [was noted 17/206], frame 0x40 vs the ROM's 0x28.  Sibling of
-   func_801D74EC_ovl9 below -- same 24-byte over-reservation, same two-local
-   body -- so whatever sheds the frame there sheds it here too. */
+/* MATCHED 2026-08-26 (was 189/206, sealed as "frame 0x40 vs the ROM's 0x28,
+   24-byte over-reservation").  objid_inline_sweep.py: the whole seal was the
+   `u32 id` cache (LEVERS 4/97/111) -- deleting the declaration and its seven
+   re-assignments and writing every subscript `omCurrentObj->objId` sheds the
+   frame AND the register rotation in one edit.  `ang` stays: it carries a
+   computed value between three statements (LEVER 108's caveat).  The three
+   fp literals are the TU's own late_rodata words (D_8021CED0/CED4/CED8). */
 extern FUNCLIST D_8021BBF0_ovl9;
 extern FUNCLIST D_8021BBF4_ovl9;
 extern void func_8019BB58_ovl7(void);
@@ -1798,39 +1801,29 @@ void func_801D69D8_ovl9(struct GObj *);
  * table D_8021BBF0 once before looping the 3-entry state table
  * D_8021BBF4 forever (handlers block on ohSleep). */
 void func_801D66A0_ovl9(struct GObj *arg0) {
-    u32 id = omCurrentObj->objId;
     f32 ang;
 
-    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
-    id = omCurrentObj->objId;
-    D_800E9C60[id] = D_800E5F90[id];
-    id = omCurrentObj->objId;
-    D_800EAA60[id] = D_800E6BD0[id];
-    id = omCurrentObj->objId;
-    D_800EAC20[id] = gEntitiesNextPosXArray[id];
-    id = omCurrentObj->objId;
-    D_800EADE0[id] = gEntitiesNextPosZArray[id];
+    D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800E9C60[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EAA60[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EAC20[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800EADE0[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
     func_8019BB58_ovl7();
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800E64D0[omCurrentObj->objId] = 0.001f;
     func_800F8E6C(arg0);
     func_800B33F4();
-    id = omCurrentObj->objId;
-    while (D_800E17D0[id] >= 6.2831855f) {
-        D_800E17D0[id] -= 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    while (D_800E17D0[id] < 0.0f) {
-        D_800E17D0[id] += 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    ang = D_800E17D0[id] + 1.5707964f;
-    gEntitiesAngleYArray[id] = ang;
-    D_800EA6E0[id] = ang;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 200.0f;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 200.0f;
+    while (D_800E17D0[omCurrentObj->objId] >= 6.2831855f) {
+        D_800E17D0[omCurrentObj->objId] -= 6.2831855f;
+        }
+    while (D_800E17D0[omCurrentObj->objId] < 0.0f) {
+        D_800E17D0[omCurrentObj->objId] += 6.2831855f;
+        }
+    ang = D_800E17D0[omCurrentObj->objId] + 1.5707964f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = ang;
+    D_800EA6E0[omCurrentObj->objId] = ang;
+    gEntitiesNextPosXArray[omCurrentObj->objId] += sinf(D_800EA6E0[omCurrentObj->objId]) * 200.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] += cosf(D_800EA6E0[omCurrentObj->objId]) * 200.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B7674;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800DF150[omCurrentObj->objId] = func_801D6A94_ovl9;
@@ -1840,68 +1833,6 @@ void func_801D66A0_ovl9(struct GObj *arg0) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BBF4_ovl9);
     }
 }
-#elif defined(PORT)
-extern FUNCLIST D_8021BBF0_ovl9;
-extern FUNCLIST D_8021BBF4_ovl9;
-extern void func_8019BB58_ovl7(void);
-extern void func_800F8E6C(struct GObj *);
-extern void func_800B33F4(void);
-void func_800B7674(s32);
-void func_801D6A94_ovl9(struct GObj *);
-void func_801D69D8_ovl9(struct GObj *);
-/* Circler main: latch the spawn point (home Y/X/Z into
- * D_800EA8A0/D_800EAC20/D_800EADE0, path params into D_800E9C60 and
- * D_800EAA60), init facing and a tiny push, then place the entity 200
- * units out along its wrapped spawn heading D_800E17D0 (+90 degrees),
- * install the shared mover/draw hooks and dispatch the spawn-mode
- * table D_8021BBF0 once before looping the 3-entry state table
- * D_8021BBF4 forever (handlers block on ohSleep). */
-void func_801D66A0_ovl9(struct GObj *arg0) {
-    u32 id = omCurrentObj->objId;
-    f32 ang;
-
-    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
-    id = omCurrentObj->objId;
-    D_800E9C60[id] = D_800E5F90[id];
-    id = omCurrentObj->objId;
-    D_800EAA60[id] = D_800E6BD0[id];
-    id = omCurrentObj->objId;
-    D_800EAC20[id] = gEntitiesNextPosXArray[id];
-    id = omCurrentObj->objId;
-    D_800EADE0[id] = gEntitiesNextPosZArray[id];
-    func_8019BB58_ovl7();
-    D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800E64D0[omCurrentObj->objId] = 0.001f;
-    func_800F8E6C(arg0);
-    func_800B33F4();
-    id = omCurrentObj->objId;
-    while (D_800E17D0[id] >= 6.2831855f) {
-        D_800E17D0[id] -= 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    while (D_800E17D0[id] < 0.0f) {
-        D_800E17D0[id] += 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    ang = D_800E17D0[id] + 1.5707964f;
-    gEntitiesAngleYArray[id] = ang;
-    D_800EA6E0[id] = ang;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 200.0f;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 200.0f;
-    D_800DEF90[omCurrentObj->objId] = func_800B7674;
-    D_800E8E60[omCurrentObj->objId] = 1;
-    D_800DF150[omCurrentObj->objId] = func_801D6A94_ovl9;
-    func_801A0D50_ovl7(func_801D69D8_ovl9);
-    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021BBF0_ovl9);
-    while (1) {
-        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 3, D_8021BBF4_ovl9);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D66A0_ovl9.s")
-#endif
 
 extern FUNCLIST D_8021BBF4_ovl9;
 
@@ -2169,11 +2100,13 @@ s32 func_801D7330_ovl9(void) {
     return 0;
 }
 
-#ifdef MIPS_TO_C
-/* FACTORY: 88/211, frame 0x40 vs the ROM's 0x28 plus the $a1/$a2 pair the
-   omCurrentObj load lands in.  The function only has two locals, so the extra
-   24 bytes are IDO reserving argument/spill space the ROM does not; that is
-   the one thing to attack, and it also fixes func_801D66A0_ovl9 above. */
+/* MATCHED 2026-08-26 (was 88/211).  Same edit as its clone func_801D66A0_ovl9
+   above: delete the `u32 id` cache and write every subscript
+   `omCurrentObj->objId` (LEVERS 4/97/111); the "24-byte over-reservation" the
+   old note wanted to attack was that cache's frame cost.  objid_inline_sweep
+   found the twin and skipped this one only because its isolated cut lacks
+   func_800B7674's declaration (it lives in the twin's block above).  fp
+   literals are the TU's own late_rodata (D_8021CEDC/CEE0/CEE4). */
 extern FUNCLIST D_8021BC08_ovl9;
 extern FUNCLIST D_8021BC0C_ovl9;
 extern void func_801A3280_ovl7(void);
@@ -2185,40 +2118,30 @@ void func_801D7838_ovl9(struct GObj *);
  * offset instead of 200, its own mover/draw hooks and the
  * D_8021BC08 (spawn) / D_8021BC0C (5-state) dispatch tables. */
 void func_801D74EC_ovl9(struct GObj *arg0) {
-    u32 id = omCurrentObj->objId;
     f32 ang;
 
-    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
-    id = omCurrentObj->objId;
-    D_800E9C60[id] = D_800E5F90[id];
-    id = omCurrentObj->objId;
-    D_800EAA60[id] = D_800E6BD0[id];
-    id = omCurrentObj->objId;
-    D_800EAC20[id] = gEntitiesNextPosXArray[id];
-    id = omCurrentObj->objId;
-    D_800EADE0[id] = gEntitiesNextPosZArray[id];
+    D_800EA8A0[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    D_800E9C60[omCurrentObj->objId] = D_800E5F90[omCurrentObj->objId];
+    D_800EAA60[omCurrentObj->objId] = D_800E6BD0[omCurrentObj->objId];
+    D_800EAC20[omCurrentObj->objId] = gEntitiesNextPosXArray[omCurrentObj->objId];
+    D_800EADE0[omCurrentObj->objId] = gEntitiesNextPosZArray[omCurrentObj->objId];
     func_801A3280_ovl7();
     func_8019BB58_ovl7();
     D_800E6A10[omCurrentObj->objId] = 1.0f;
     D_800E64D0[omCurrentObj->objId] = 0.001f;
     func_800F8E6C(arg0);
     func_800B33F4();
-    id = omCurrentObj->objId;
-    while (D_800E17D0[id] >= 6.2831855f) {
-        D_800E17D0[id] -= 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    while (D_800E17D0[id] < 0.0f) {
-        D_800E17D0[id] += 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    ang = D_800E17D0[id] + 1.5707964f;
-    gEntitiesAngleYArray[id] = ang;
-    D_800EA6E0[id] = ang;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 120.0f;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 120.0f;
+    while (D_800E17D0[omCurrentObj->objId] >= 6.2831855f) {
+        D_800E17D0[omCurrentObj->objId] -= 6.2831855f;
+        }
+    while (D_800E17D0[omCurrentObj->objId] < 0.0f) {
+        D_800E17D0[omCurrentObj->objId] += 6.2831855f;
+        }
+    ang = D_800E17D0[omCurrentObj->objId] + 1.5707964f;
+    gEntitiesAngleYArray[omCurrentObj->objId] = ang;
+    D_800EA6E0[omCurrentObj->objId] = ang;
+    gEntitiesNextPosXArray[omCurrentObj->objId] += sinf(D_800EA6E0[omCurrentObj->objId]) * 120.0f;
+    gEntitiesNextPosZArray[omCurrentObj->objId] += cosf(D_800EA6E0[omCurrentObj->objId]) * 120.0f;
     D_800DEF90[omCurrentObj->objId] = func_800B7674;
     D_800E8E60[omCurrentObj->objId] = 1;
     D_800DF150[omCurrentObj->objId] = func_801D78F0_ovl9;
@@ -2228,64 +2151,6 @@ void func_801D74EC_ovl9(struct GObj *arg0) {
         utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, D_8021BC0C_ovl9);
     }
 }
-#elif defined(PORT)
-extern FUNCLIST D_8021BC08_ovl9;
-extern FUNCLIST D_8021BC0C_ovl9;
-extern void func_801A3280_ovl7(void);
-void func_801D78F0_ovl9(struct GObj *);
-void func_801D7838_ovl9(struct GObj *);
-/* Second circler variant main: same setup as func_801D66A0 (latch the
- * spawn point and path params, wrap the spawn heading, face +90
- * degrees) but with the ovl7 aux init func_801A3280, a 120-unit
- * offset instead of 200, its own mover/draw hooks and the
- * D_8021BC08 (spawn) / D_8021BC0C (5-state) dispatch tables. */
-void func_801D74EC_ovl9(struct GObj *arg0) {
-    u32 id = omCurrentObj->objId;
-    f32 ang;
-
-    D_800EA8A0[id] = gEntitiesNextPosYArray[id];
-    id = omCurrentObj->objId;
-    D_800E9C60[id] = D_800E5F90[id];
-    id = omCurrentObj->objId;
-    D_800EAA60[id] = D_800E6BD0[id];
-    id = omCurrentObj->objId;
-    D_800EAC20[id] = gEntitiesNextPosXArray[id];
-    id = omCurrentObj->objId;
-    D_800EADE0[id] = gEntitiesNextPosZArray[id];
-    func_801A3280_ovl7();
-    func_8019BB58_ovl7();
-    D_800E6A10[omCurrentObj->objId] = 1.0f;
-    D_800E64D0[omCurrentObj->objId] = 0.001f;
-    func_800F8E6C(arg0);
-    func_800B33F4();
-    id = omCurrentObj->objId;
-    while (D_800E17D0[id] >= 6.2831855f) {
-        D_800E17D0[id] -= 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    while (D_800E17D0[id] < 0.0f) {
-        D_800E17D0[id] += 6.2831855f;
-        id = omCurrentObj->objId;
-    }
-    ang = D_800E17D0[id] + 1.5707964f;
-    gEntitiesAngleYArray[id] = ang;
-    D_800EA6E0[id] = ang;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosXArray[id] += sinf(D_800EA6E0[id]) * 120.0f;
-    id = omCurrentObj->objId;
-    gEntitiesNextPosZArray[id] += cosf(D_800EA6E0[id]) * 120.0f;
-    D_800DEF90[omCurrentObj->objId] = func_800B7674;
-    D_800E8E60[omCurrentObj->objId] = 1;
-    D_800DF150[omCurrentObj->objId] = func_801D78F0_ovl9;
-    func_801A0D50_ovl7(func_801D7838_ovl9);
-    utilFuncTableJump(D_800E7880[omCurrentObj->objId], 1, D_8021BC08_ovl9);
-    while (1) {
-        utilFuncTableJump(gEntityFuncListIDArray[omCurrentObj->objId], 5, D_8021BC0C_ovl9);
-    }
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl9/ovl9_1/func_801D74EC_ovl9.s")
-#endif
 
 extern FUNCLIST D_8021BC0C_ovl9;
 
