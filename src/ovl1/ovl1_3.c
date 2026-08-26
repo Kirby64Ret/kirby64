@@ -3019,7 +3019,7 @@ void func_800AA3F0(DObj *arg0) {
     D_800DFD90[omCurrentObj->objId] = (u32 *)temp_v0[1];
 }
 
-#ifdef MIPS_TO_C
+#ifndef PORT
 /* FACTORY: DIFF 24/74, pure one-slot temp-register rotation. From the
  * D_800D00C4 lookup onward IDO numbers every scratch register one higher
  * than the ROM (t4/t0/t1/t5/t2 vs t5/t1/t2/t6/t3); the instruction stream,
@@ -3032,13 +3032,13 @@ void func_800AA3F0(DObj *arg0) {
  * loads 0(v1) twice), func_800A9250 takes 2 args, and the tail passes
  * *D_800DF690[objId] and *(u32 *)D_800DFA10[objId] -- both dereferenced
  * once, not the array cells themselves.
- * Re-confirmed 2026-08-23 via verify.py in-place: still exactly 24/74, the
- * same whole-body one-slot temp rotation (t4/t0/t1/t5/t2/... vs ROM's
- * t5/t1/t2/t6/t3/...). Genuine temp-rotation floor. */
+ * MATCHED 2026-08-26: the "genuine temp-rotation floor" was the m2c
+ * `id = omCurrentObj->objId` cache for the tail call (LEVER 4/97, found by
+ * objid_inline_sweep). Spelling the field at both tail uses is 24 -> 0:
+ * the re-read is what makes IDO number the scratch registers the ROM's way. */
 void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
     u32 *slot;
     u32 loaded;
-    u32 id;
 
     D_800E02D0[omCurrentObj->objId] = arg3;
     slot = (u32 *) (D_800D00C4[arg3 >> 0x10] + (arg3 & 0xFFFF));
@@ -3052,10 +3052,10 @@ void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
         D_800DFA10[omCurrentObj->objId] = loaded;
     }
     func_800A9B48(arg1);
-    id = omCurrentObj->objId;
-    func_800B1FD0(arg0, *D_800DF690[id].as_u32p, arg2, *(u32 *) D_800DFA10[id], arg4);
+    func_800B1FD0(arg0, *D_800DF690[omCurrentObj->objId].as_u32p, arg2,
+                  *(u32 *) D_800DFA10[omCurrentObj->objId], arg4);
 }
-#elif defined(PORT)
+#else
 /* Bind animation bank arg3 to the current object (draft above, completed):
  * record the id and root DObj, fetch-or-load the bank through the
  * D_800D00C4 cache (func_800A8564 ref / func_800A9250 load), then start
@@ -3081,8 +3081,6 @@ void func_800AA49C(DObj *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
     func_800B1FD0(arg0, *(u32 *) (uintptr_t) D_800DF690[objId].as_u32, arg2,
                   *(u32 *) (uintptr_t) D_800DFA10[objId], arg4);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA49C.s")
 #endif
 
 void func_800AA5C4(s32 arg0, u32 arg1, f32 arg2) {
