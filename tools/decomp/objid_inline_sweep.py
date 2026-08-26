@@ -137,8 +137,12 @@ def main():
                     na = apply_inline(arm, names, found) + rest
                     cand = lines[:st + 1] + na + lines[en:]
                     dl = len(cand) - len(lines)
+                    # any pragma BELOW the edited arm shifts with the deleted
+                    # declarations -- including one inside the guard itself
+                    # (pi <= en), which the first version forgot and crashed
+                    # cut_draft on (func_8018F368_ovl3: pi = en - 1, dl = -2).
                     got = score(cand, st, en + dl,
-                                pi + dl if pi > en else pi, c, func)
+                                pi + dl if pi > st + ae else pi, c, func)
                     if got[0] is not None and got[0] < best[0]:
                         best, how = got, names
                 if how is not None:

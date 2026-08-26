@@ -1431,20 +1431,17 @@ void func_8017B068_ovl3(GObj *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017B068_ovl3.s")
 #endif
 
-#ifdef MIPS_TO_C
-/* MEASURED FOR THE FIRST TIME 2026-08-25. The note this replaces was
- * written while this file DID NOT COMPILE with the draft un-guarded, so
- * its number came from somewhere other than verify.py. See the block
- * comment over func_80179370_ovl3 for the whole story.
- *
- * Real residue 226/242. Un-guarded it failed twice: a body-local
- * `extern s32 D_8012E80C;` contradicting the file-scope `extern s32
- * D_8012E80C[];`, and `D_8012E7E8` undefined (declared in another body).
- * The old text follows, unverified.
- * OLD: 16/242, whole-function callee-saved permutation (same floor
- * class documented in ovl3_1.c/plyshot.c -- correct instruction count
- * and control flow, near-total register-naming/frame mismatch, -0x40
- * vs -0x38 frame). Queued for the permuter. */
+/* MATCHED 2026-08-26 from the MIPS_TO_C draft, three edits from 226/242:
+ *   226 -> 28  `s32 id = omCurrentObj->objId` spelled inline at every use
+ *              (LEVER 97; found by objid_inline_sweep.py's ovl3 run).  The
+ *              early-return arm's cache went with it.
+ *    28 -> 16  the generator node's `xf` sits at +0x4C on N64 -- the 0x58 in
+ *              the draft was the PORT arm's LP64 mirror layout copied into
+ *              the matching arm.  The typedef below keeps both, guarded.
+ *    16 -> 0   `Vector sp2C` declared ABOVE `gen`: the ROM homes the vector
+ *              at 0x2C with gen's slot below it (LEVER 110's top-down law).
+ * The old "queued for the permuter" note predates the first real
+ * measurement; see the 2026-08-25 note history in git. */
 /* PORT: the needle-spike hold per-tick handler, from
  * asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s (via m2c). While the
  * shared countdown at D_8012E7E8+8 runs it keeps the tick prologue going,
@@ -1461,11 +1458,12 @@ void func_8017B068_ovl3(GObj *arg0) {
  *
  * Port notes: the generator handles are 32-bit pointer cells written by
  * plylib's compiled func_800A8100 stores (all game-visible memory sits
- * below 4 GiB, same treatment as PC_KIRBY_SHADOW above); the local
+ * below 4 GiB, same treatment as PC_KIRBY_SHADOW above); under PORT the
  * PcNeedleGen/PcNeedleEmitter mirror ovl1_2_2.c's LP64 node layout (xf at
- * +0x58, emitter vectors at +0x8/+0x14, locked there by pc_gennode_check).
- * m2c's `->unk8/unk24/unk38/unk4` DObj-list reads are entries [2]/[9]/
- * [14]/[1] (4-byte N64 pointers); 0x3F800000 is 1.0f. */
+ * +0x58, emitter vectors at +0x8/+0x14, locked there by pc_gennode_check),
+ * while the N64 node keeps xf at +0x4C.  m2c's `->unk8/unk24/unk38/unk4`
+ * DObj-list reads are entries [2]/[9]/[14]/[1] (4-byte N64 pointers);
+ * 0x3F800000 is 1.0f. */
 void func_8017B3C4_ovl3(s32 arg0) {
     extern s32 D_8012E7E8;
     typedef struct PcNeedleEmitter {
@@ -1474,169 +1472,73 @@ void func_8017B3C4_ovl3(s32 arg0) {
         /* 0x14 */ Vector vel;
     } PcNeedleEmitter;
     typedef struct PcNeedleGen {
+#ifdef PORT
         /* 0x00 */ u8 pad0[0x58];
         /* 0x58 */ PcNeedleEmitter *xf;
-    } PcNeedleGen;
-    extern f32 D_800D7238;
-    extern u8 D_801911E0_ovl3[];
-    extern u8 D_80193B34_ovl3[];
-    PcNeedleGen *gen;
-    Vector sp2C;
-    s32 id;
-
-    func_80153984_ovl3();
-    func_801217B8();
-    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
-        id = omCurrentObj->objId;
-        D_800E6A10[id] = D_800EAA60[id];
-        if (D_800E6A10[id] == -1.0f) {
-            D_800E17D0[id] += 3.1415927f;
-        }
-        func_8011D67C();
-        return;
-    }
-    id = omCurrentObj->objId;
-    if (D_800E8AE0[id] & 6) {
-        D_800EAC20[id] = 0.15707964f;
-    } else {
-        D_800EAC20[id] = 0.31415927f;
-    }
-    func_8016854C_ovl3((s32) (uintptr_t) D_801911E0_ovl3,
-                       (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2], 1.0f);
-    D_800D7238 = D_800DFBD0[omCurrentObj->objId][1]->angle.v.y;
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_800D7238 += 1.5707964f;
-    } else {
-        D_800D7238 -= 1.5707964f;
-    }
-    func_80154578_ovl3(D_80193B34_ovl3, 0, D_800D7238);
-    if (*(u32 *) ((u8 *) &D_8012E80C + 0) != 0) {
-        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 0);
-        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
-        gen->xf->pos.x = sp2C.x;
-        gen->xf->pos.y = sp2C.y;
-        gen->xf->pos.z = sp2C.z;
-        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
-        gen->xf->vel.x = sp2C.x;
-        gen->xf->vel.y = sp2C.y;
-        gen->xf->vel.z = sp2C.z;
-        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 4);
-        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
-        gen->xf->pos.x = sp2C.x;
-        gen->xf->pos.y = sp2C.y;
-        gen->xf->pos.z = sp2C.z;
-        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
-        gen->xf->vel.x = sp2C.x;
-        gen->xf->vel.y = sp2C.y;
-        gen->xf->vel.z = sp2C.z;
-    }
-    if ((D_800E8920[omCurrentObj->objId] != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
-        func_8011ED68();
-        if (gKirbyController.buttonHeld & 0x100) {
-            D_800EAA60[omCurrentObj->objId] = 1.0f;
-        } else if (gKirbyController.buttonHeld & 0x200) {
-            D_800EAA60[omCurrentObj->objId] = -1.0f;
-        }
-    }
-}
-#elif defined(PORT)
-/* PORT: the needle-spike hold per-tick handler, from
- * asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s (via m2c). While the
- * shared countdown at D_8012E7E8+8 runs it keeps the tick prologue going,
- * sets the spin step D_800EAC20 (pi/10, water-halved), runs the body
- * hitbox D_801911E0_ovl3 on DObj [2] through the ability-anim helper,
- * mirrors DObj [1]'s yaw +/- pi/2 by facing into the D_800D7238 scratch
- * for the aimed hitbox func_80154578_ovl3(D_80193B34_ovl3), and drags the
- * two spike-effect generators (handles at D_8012E80C / +4) so their
- * emitters follow the hand DObjs [14] and [9] (position via func_800B2340,
- * velocity via func_800B26D8); grounded with the D_8012E7FC+8 latch clear
- * it applies gravity and buffers the held direction into D_800EAA60.
- * When the countdown ends it snaps facing to the buffered direction
- * (flipping yaw by pi for -1) and runs the action-exit hook func_8011D67C.
- *
- * Port notes: the generator handles are 32-bit pointer cells written by
- * plylib's compiled func_800A8100 stores (all game-visible memory sits
- * below 4 GiB, same treatment as PC_KIRBY_SHADOW above); the local
- * PcNeedleGen/PcNeedleEmitter mirror ovl1_2_2.c's LP64 node layout (xf at
- * +0x58, emitter vectors at +0x8/+0x14, locked there by pc_gennode_check).
- * m2c's `->unk8/unk24/unk38/unk4` DObj-list reads are entries [2]/[9]/
- * [14]/[1] (4-byte N64 pointers); 0x3F800000 is 1.0f. */
-void func_8017B3C4_ovl3(s32 arg0) {
-    typedef struct PcNeedleEmitter {
-        /* 0x00 */ struct PcNeedleEmitter *next;
-        /* 0x08 */ Vector pos;
-        /* 0x14 */ Vector vel;
-    } PcNeedleEmitter;
-    typedef struct PcNeedleGen {
-        /* 0x00 */ u8 pad0[0x58];
-        /* 0x58 */ PcNeedleEmitter *xf;
-    } PcNeedleGen;
-    extern f32 D_800D7238;
-    extern s32 D_8012E7E8;
-    extern u8 D_801911E0_ovl3[];
-    extern u8 D_80193B34_ovl3[];
-    PcNeedleGen *gen;
-    Vector sp2C;
-    s32 id;
-
-    func_80153984_ovl3();
-    func_801217B8();
-    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
-        id = omCurrentObj->objId;
-        D_800E6A10[id] = D_800EAA60[id];
-        if (D_800E6A10[id] == -1.0f) {
-            D_800E17D0[id] += 3.1415927f;
-        }
-        func_8011D67C();
-        return;
-    }
-    id = omCurrentObj->objId;
-    if (D_800E8AE0[id] & 6) {
-        D_800EAC20[id] = 0.15707964f;
-    } else {
-        D_800EAC20[id] = 0.31415927f;
-    }
-    func_8016854C_ovl3((s32) (uintptr_t) D_801911E0_ovl3,
-                       (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2], 1.0f);
-    D_800D7238 = D_800DFBD0[omCurrentObj->objId][1]->angle.v.y;
-    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
-        D_800D7238 += 1.5707964f;
-    } else {
-        D_800D7238 -= 1.5707964f;
-    }
-    func_80154578_ovl3(D_80193B34_ovl3, 0, D_800D7238);
-    if (*(u32 *) ((u8 *) &D_8012E80C + 0) != 0) {
-        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 0);
-        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
-        gen->xf->pos.x = sp2C.x;
-        gen->xf->pos.y = sp2C.y;
-        gen->xf->pos.z = sp2C.z;
-        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
-        gen->xf->vel.x = sp2C.x;
-        gen->xf->vel.y = sp2C.y;
-        gen->xf->vel.z = sp2C.z;
-        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 4);
-        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
-        gen->xf->pos.x = sp2C.x;
-        gen->xf->pos.y = sp2C.y;
-        gen->xf->pos.z = sp2C.z;
-        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
-        gen->xf->vel.x = sp2C.x;
-        gen->xf->vel.y = sp2C.y;
-        gen->xf->vel.z = sp2C.z;
-    }
-    if ((D_800E8920[omCurrentObj->objId] != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
-        func_8011ED68();
-        if (gKirbyController.buttonHeld & 0x100) {
-            D_800EAA60[omCurrentObj->objId] = 1.0f;
-        } else if (gKirbyController.buttonHeld & 0x200) {
-            D_800EAA60[omCurrentObj->objId] = -1.0f;
-        }
-    }
-}
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_6/func_8017B3C4_ovl3.s")
+        /* 0x00 */ u8 pad0[0x4C];
+        /* 0x4C */ PcNeedleEmitter *xf;
 #endif
+    } PcNeedleGen;
+    extern f32 D_800D7238;
+    extern u8 D_801911E0_ovl3[];
+    extern u8 D_80193B34_ovl3[];
+    Vector sp2C;
+    PcNeedleGen *gen;
+
+    func_80153984_ovl3();
+    func_801217B8();
+    if (*(s32 *) ((u8 *) &D_8012E7E8 + 8) != 0) {
+        D_800E6A10[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+        if (D_800E6A10[omCurrentObj->objId] == -1.0f) {
+            D_800E17D0[omCurrentObj->objId] += 3.1415927f;
+        }
+        func_8011D67C();
+        return;
+    }
+    if (D_800E8AE0[omCurrentObj->objId] & 6) {
+        D_800EAC20[omCurrentObj->objId] = 0.15707964f;
+    } else {
+        D_800EAC20[omCurrentObj->objId] = 0.31415927f;
+    }
+    func_8016854C_ovl3((s32) (uintptr_t) D_801911E0_ovl3,
+                       (s32) (uintptr_t) D_800DFBD0[omCurrentObj->objId][2], 1.0f);
+    D_800D7238 = D_800DFBD0[omCurrentObj->objId][1]->angle.v.y;
+    if (D_800E6A10[omCurrentObj->objId] == 1.0f) {
+        D_800D7238 += 1.5707964f;
+    } else {
+        D_800D7238 -= 1.5707964f;
+    }
+    func_80154578_ovl3(D_80193B34_ovl3, 0, D_800D7238);
+    if (*(u32 *) ((u8 *) &D_8012E80C + 0) != 0) {
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 0);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][14], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+        gen = (PcNeedleGen *) (uintptr_t) *(u32 *) ((u8 *) &D_8012E80C + 4);
+        func_800B2340(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->pos.x = sp2C.x;
+        gen->xf->pos.y = sp2C.y;
+        gen->xf->pos.z = sp2C.z;
+        func_800B26D8(&sp2C, D_800DFBD0[omCurrentObj->objId][9], 0xFFFFU);
+        gen->xf->vel.x = sp2C.x;
+        gen->xf->vel.y = sp2C.y;
+        gen->xf->vel.z = sp2C.z;
+    }
+    if ((D_800E8920[omCurrentObj->objId] != 0) && (*(s32 *) ((u8 *) &D_8012E7FC + 8) == 0)) {
+        func_8011ED68();
+        if (gKirbyController.buttonHeld & 0x100) {
+            D_800EAA60[omCurrentObj->objId] = 1.0f;
+        } else if (gKirbyController.buttonHeld & 0x200) {
+            D_800EAA60[omCurrentObj->objId] = -1.0f;
+        }
+    }
+}
 
 void func_8017B78C_ovl3(GObj *arg0) {
     extern f32 *D_801928BC_ovl3[];
