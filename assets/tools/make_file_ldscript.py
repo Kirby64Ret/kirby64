@@ -1,6 +1,6 @@
 import sys, os
 
-from khelpers import filename_d, ldscript_d
+from khelpers import filename_d
 
 def write_section(filetype, fil, bank):
 	if filetype == "geo":
