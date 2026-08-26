@@ -262,10 +262,10 @@ GEO_BANK_2_FILES := \
     geo/bank_2/4/geo.bin \
     geo/bank_2/5/geo.bin \
     geo/bank_2/6/geo.bin \
-    geo/bank_2/7/geo.bin \
-    geo/bank_2/8/geo.bin \
-    geo/bank_2/9/geo.bin \
-    geo/bank_2/10/geo.bin \
+    geo/bank_2/kirby_normal.bin \
+    geo/bank_2/kirby_inhale.bin \
+    geo/bank_2/kirby_full.bin \
+    geo/bank_2/kirby_fire.bin \
     geo/bank_2/11/geo.bin \
     geo/bank_2/12/geo.bin \
     geo/bank_2/13/geo.bin \

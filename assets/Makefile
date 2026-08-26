@@ -100,10 +100,10 @@ $(BUILD_DIR)/%.o: %.png
 	$(V)../tools/rgb2c -G $(lastword $(subst ., ,$*)) -o RAW $< > $(@:.o=.bin)
 	$(V)$(CROSS)ld -r -b binary -o $@ $(@:.o=.bin)
 
-$(BUILD_DIR)/%.o: $(BUILD_DIR)/%.bin
-	@printf "    [Asset:BIN] $<\n"
-	$(V)mkdir -p $(@D)
-	$(V)$(CROSS)ld -r -b binary -o $@ $<
+# $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.bin
+# 	@printf "    [Asset:BIN] $<\n"
+# 	$(V)mkdir -p $(@D)
+# 	$(V)$(CROSS)ld -r -b binary -o $@ $<
 
 $(BUILD_DIR)/%.o: %.c
 	@printf "    [Asset:CC] $<\n"

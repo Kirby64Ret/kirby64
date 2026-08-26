@@ -47,22 +47,22 @@
 
 #define GEO(bank, index, filename) \
     START_GEO(bank, index) \
-    BUILD_DIR/filename(.data*);\
+    filename(.data*);\
     END_GEO(bank, index)
 
 #define IMAGE(bank, index, filename) \
     START_IMG(bank, index) \
-    BUILD_DIR/filename(.data*);\
+    filename(.data*);\
     END_IMG(bank, index)
 
 #define ANIM(bank, index, filename) \
     START_ANIM(bank, index) \
-    BUILD_DIR/assets/anim/bank_##bank/index/block.o(.data*);\
+    filename(.data*);\
     END_ANIM(bank, index)
 
 #define MISC(bank, index, filename) \
     START_MISC(bank, index) \
-    BUILD_DIR/filename(.data*);\
+    filename(.data*);\
     END_MISC(bank, index)
 
 #define FILLER(filetype, bank) \
