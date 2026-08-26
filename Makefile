@@ -240,7 +240,7 @@ $(BUILD_DIR)/data/%.o: data/%.c | $(GAME_ASSETS)
 
 # TODO: Fix build system to allow building to /tmp
 $(GAME_ASSETS): assets/assets.ld
-	$(MAKE) -C assets K64_BUILD_DIR=$(BUILD_DIR)
+	$(MAKE) -C assets
 
 # TODO: make this a real dependency
 DUMMY != $(MAKE) -C f3dex2 $(GRUCODE) PARENT_OUTPUT_DIR=../$(BUILD_DIR)/ ARMIPS=../$(LOCAL_ARMIPS)
