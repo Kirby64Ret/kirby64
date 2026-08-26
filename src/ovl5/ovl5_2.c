@@ -79,6 +79,14 @@ extern u8 D_8018E1E3_ovl5;
 extern s32 D_800D6B24;
 extern u32 D_800D6B68;
 extern s32 D_8018E020_ovl5;
+/* LEVER 117 (2026-08-26): this prototype lived only inside the #ifdef PORT
+ * block below, so the guarded drafts' calls promoted their two f32
+ * arguments to doubles (cvt.d.s in every scored diff of
+ * func_8015DA24_ovl5/func_8015DFC8_ovl5). File scope is byte-inert for the
+ * ROM build and removes the promotion from the drafts' measurements.
+ * func_800A9F98's f32 was the same story in func_8015DFC8_ovl5. */
+void func_800AA49C(struct DObj *, s32, f32, u32, f32);
+void func_800A9F98(void *, f32);
 #include "main/contpad.h"
 #include "ovl1/game.h"
 /* Per-racer setup record, filled once in func_80164EA8_ovl5 from pointer

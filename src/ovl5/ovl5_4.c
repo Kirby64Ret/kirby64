@@ -33,6 +33,14 @@ extern void *D_80187398_ovl5;
 void func_800A9864(void *, s32, s32);
 void func_800AA018(void *);
 void func_800AF27C(void);
+/* LEVER 117 (2026-08-26): file-scope, so the guarded drafts that call it
+ * WITHOUT a local prototype (func_8016792C/func_8016A774/func_8016B754)
+ * stop double-promoting the f32 argument (cvt.d.s in every scored diff);
+ * several other drafts already carried the same line inside their guards.
+ * func_800AA608 was the same story (PORT-block-only, line ~561) for the
+ * four two-float calls in func_8016792C_ovl5. */
+void func_800A9F98(s32, f32);
+void func_800AA608(void *, void *, f32, void *, f32);
 void func_8016CC88_ovl5(GObj *);
 extern f32 D_801872FC_ovl5[];
 f32 sqrtf(f32);

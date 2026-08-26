@@ -968,8 +968,24 @@ s32 func_80104AB4(f32 *, f32 *, u16, u16, void *);
 void func_8010DC00(void *, void *);
 
 #ifdef NON_MATCHING
-/* 116/161: one-slot temp-register rotation plus IDO CSEing the four separate
-   mtc1 $zero the ROM materialises per compare. */
+/* 66/162 (was 116/161), 2026-08-26, three edits each measured:
+     116 -> 85  `if (diff1 != 0)` -- the integer literal forks that compare's
+                zero (zerofork_sweep's find; the ROM materialises a FRESH
+                mtc1 $zero for every one of its SEVEN compares, f4/f6/f10
+                twice over plus f18).
+      85 -> 78  region 1's `return 1` written `goto ret1` with `ret1:
+                return 1;` after the final `return 0` -- the ROM's
+                .L8016B9C0 (v0=1 falling into the epilogue) is a SHARED
+                tail block that region 1 reaches by `bc1t`, which the
+                inline return-1 cannot produce.  Word count exact at 161.
+      78 -> 66  `if (diff2 != 0)`, same fork as diff1.
+   Measured worse or inert, do not re-spend: every other compare flipped to
+   the integer 0 (singly 105..121, all seven 120 -- over-forking re-merges
+   the pairs differently); the second `return 1` as `goto ret1` too (101);
+   early-return rewrite of the diff2 half (103); split && (78).  Residue:
+   the f8-vs-f10 naming of two compare zeros, the region-1 return's
+   bc1t-vs-inline word, and the tail bc1tl -- register/layout only,
+   aligndiff shows no other shape. */
 s32 func_8016B74C_ovl3(void) {
     f32 diff1;
     f32 diff2;
@@ -990,7 +1006,7 @@ s32 func_8016B74C_ovl3(void) {
     sp34[1] = gEntitiesNextPosYArray[omCurrentObj->objId] + *temp;
     sp34[2] = gEntitiesNextPosZArray[omCurrentObj->objId];
     diff1 = D_800E6BD0[omCurrentObj->objId] - D_800E6D90[omCurrentObj->objId];
-    if (diff1 != 0.0f) {
+    if (diff1 != 0) {
         if (diff1 > 0.0f) {
             sp30 = D_8012BCC0;
         } else {
@@ -999,12 +1015,12 @@ s32 func_8016B74C_ovl3(void) {
         if (func_80104AB4(sp40, sp34, 1, 8, &sp30) != 0) {
             func_8010DC00(sp30, sp4C);
             if (sp4C[1] == 0.0f) {
-                return 1;
+                goto ret1;
             }
         }
     }
     diff2 = gEntitiesNextPosYArray[omCurrentObj->objId] - gEntitiesPosYArray[omCurrentObj->objId];
-    if (diff2 != 0.0f) {
+    if (diff2 != 0) {
         if (diff2 > 0.0f) {
             sp30 = D_8012BCB4;
         } else {
@@ -1018,6 +1034,8 @@ s32 func_8016B74C_ovl3(void) {
         }
     }
     return 0;
+ret1:
+    return 1;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/ovl3_4/func_8016B74C_ovl3.s")
