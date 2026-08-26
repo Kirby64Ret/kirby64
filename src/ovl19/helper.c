@@ -152,6 +152,13 @@ void func_8021F0A4_ovl19(GObj *arg0) {
    difference and not a scheduling one. */
 #ifdef NON_MATCHING
 /* barrier_sweep.py (LEVER 71) 2026-08-25: all 33 statement placements tried, none beats the base 20/144. */
+/* 2026-08-26: shapescan distance 0, and all 20 diffs read off in one pass as
+   a SAVED-BASE assignment rotation -- ROM $s3=&omCurrentObj, $s2=D_800E0D50,
+   $s1=D_800E8060 against IDO $s1/$s3/$s2, every other word identical. The
+   same class func_801DDAC8_ovl10's note seals with measurements: the base
+   order is neither first-use nor last-use and no spelling of the addresses
+   reaches it (indexed, volatile, pointer-local forms all measured there).
+   Sealed on that precedent rather than re-spending the sweep here. */
 void func_8021F174_ovl19(GObj *arg0) {
     func_8021DFD0_ovl19();
     D_800DF150[omCurrentObj->objId] = NULL;
