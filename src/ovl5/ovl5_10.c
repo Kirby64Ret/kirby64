@@ -196,8 +196,15 @@ SPObj *func_8017FBA4_ovl5(GObj *arg0, s32 arg1, f32 arg2, f32 arg3) {
 }
 
 #ifdef NON_MATCHING
-/* 18/75: s0/s1/s2 rotated (ROM s0=done, s1=arg1, s2=const 1) and the 0.0f
-   constant shares accum's register. */
+/* 17/75 (was 18): `accum = 0` -- the integer literal forks the init off the
+   compare zero (LEVER 90; zerofork_sweep 2026-08-26).  What is left is a
+   pure colouring rotation, both files at once: ROM s0=done/s1=arg1/s2=1
+   against s0=1/s1=done/s2=arg1, and f22=arg2/f24=zero against the swap.
+   The tell in the diff: the ROM's `done = 1` is a FRESH `addiu $s0,$zero,1`
+   while this C copies it out of the held 1 (`move s1,s0`), so the ROM's
+   const-1 web has one fewer use and colours LAST.  Measured inert trying
+   to fork it: u32 done, done = 1U, init order swapped.  No spelling found
+   that detaches done=1 from the shared 1 web. */
 void func_8017FC58_ovl5(GObj *arg0, s32 arg1, f32 arg2) {
     s32 done;
     SPObj *sp;
@@ -206,7 +213,7 @@ void func_8017FC58_ovl5(GObj *arg0, s32 arg1, f32 arg2) {
     f32 t;
 
     done = 0;
-    accum = 0.0f;
+    accum = 0;
     do {
         if (arg1 == 1) {
             delta = arg2;

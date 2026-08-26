@@ -192,6 +192,12 @@ extern s32 func_801BC580_ovl7(s32);
         is NOT true here -- `s32 *fl = gEntityFuncListIDArray;` used at all
         nine sites is folded away by IDO and emits the identical %lo-folded
         stores (261 against 260, and the same aligned-diff runs).
+        Two more spellings measured 2026-08-26, both dead: the ASSIGNMENT
+        form (`s32 *fl; ... fl = gEntityFuncListIDArray;`) folds identically
+        (261), and LEVER 45's cast-at-store (`*(u32 *) &...[objId] = N`, one
+        site and all nine) is exactly inert at 260.  Whatever makes uopt
+        build the nine-site base web, no pointer or type spelling tried so
+        far is it.
      b) each `(s32) raw < 0` arm has the ROM doing `sll $tN, $v0, 0` (a
         register copy) before `bgez`, filling the delay slot with the next
         arm's `lui`, where this C emits a bare `bgezl $v0`.  That is a
@@ -3408,7 +3414,7 @@ void func_801717F0_ovl3(s32 arg0) {
             func_8011E0E8();
             if (gKirbyController.buttonPressed & 0x4000) {
                 id = omCurrentObj->objId;
-                D_800E3750[id] = 0.0f;
+                D_800E3750[id] = 0; /* LEVER 90: integer 0 forks this store zero; 383 -> 379 (any single site here is -4, all three are 381) */
                 D_800E3210[id] = D_800E3750[id];
                 D_800E3C90[id] = 65535.0f;
             }
@@ -3755,7 +3761,7 @@ void func_80172234_ovl3(s32 arg0) {
                 func_8011E0E8();
                 if (gKirbyController.buttonPressed & 0x4000) {
                     id = omCurrentObj->objId;
-                    D_800E3750[id] = 0.0f;
+                    D_800E3750[id] = 0; /* LEVER 90: integer 0 forks this store zero; 353 -> 350 (the pair with D_800E6690 is 353) */
                     D_800E3210[id] = D_800E3750[id];
                     D_800E3C90[id] = 65535.0f;
                 }

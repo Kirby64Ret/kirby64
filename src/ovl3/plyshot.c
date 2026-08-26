@@ -1180,7 +1180,7 @@ void func_8015C00C_ovl3(s32 arg0) {
    Measured inert, do not re-cost: spelling the mode word three ways --
    `*(s32 *) &D_8012E7FC[2]` (f32 extern), `D_8012E7FC[2]` (s32 extern array,
    what ovl19_2.c uses) and `*(s32 *) ((u8 *) &D_8012E7FC + 8)` (s32 extern
-   scalar, what ovl3_6.c uses) -- all three score 180.  The array form does
+   scalar, what ovl3_6.c uses) -- all three score 180. (2026-08-26: the ovl5 signedness knob is also inert on the temp permutation -- u32 kind, u32 r, both together, 180 each.)  The array form does
    drop two positional diffs at 137/139 and gains two elsewhere.  The ROM's
    `lui $t9, %hi(D_8012E7FC + 0x8)` against this C's `lui/lw 8($t4)` is
    LEVER 101's residual: same linked address, different place for the +8, and
