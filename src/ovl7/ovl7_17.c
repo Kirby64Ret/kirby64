@@ -395,7 +395,9 @@ void func_801C010C_ovl7(GObj *arg0) {
     }
 }
 
-/* FACTORY: 3 of 174, and the last three words are one register: the ROM
+/* MATCHED (verify.py MATCH, 174 insns; re-confirmed 2026-08-26) -- the
+   history below is kept for the levers it documents.
+   FACTORY: was 3 of 174, and the last three words were one register: the ROM
    loads objId into $v0 and copies it (`or $a0, $v0, $zero`) into the
    func_80111550 delay slot, where our IDO loads it straight into $a0 and
    nops the slot.  Everything else -- frame 0x58, info at sp+0x38, $s0=ent,
@@ -895,7 +897,9 @@ void func_801C1A90_ovl7(GObj *arg0) {
     }
 }
 
-/* FACTORY: 143/147 [was noted 4/147] structurally, one register transposition.  Frame (0x50),
+/* MATCHED (verify.py MATCH, 148 insns; re-confirmed 2026-08-26) -- the s32
+   rettype + the `u32 id` local landed it with the orphan-recovery commit.
+   History: was 143/147 [noted 4/147] structurally, one register transposition.  Frame (0x50),
    info struct at 0x30, ent spill at 0x28, all four event arms, the u32
    switch and both dispatch tails are the ROM's -- `u32 id` must be a real
    local here (the ROM materialises objId in $v0 and copies `or $a0,$v0`

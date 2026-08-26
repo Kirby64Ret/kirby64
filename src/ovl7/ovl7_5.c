@@ -1692,7 +1692,10 @@ void func_801AA850_ovl7(struct AnimReqSet *arg0) {
     }
 }
 
-// m2c draft, measured 106/120 diffs
+// m2c draft, measured 106/120 diffs; 89/121 after zerofork_sweep 2026-08-26:
+// `D_800EC660[..] = 0` (integer, first of the adjacent pair -- flipping
+// D_800EC820 instead scores the same 89 with different bytes; the third
+// zero D_800E4C50 is inert). 121 is the ROM's true count (tail jr/nop).
 #ifdef NON_MATCHING
 void func_801AA914_ovl7(GObj *arg0) {
     struct EnemyRecord *sp24;
@@ -1709,7 +1712,7 @@ void func_801AA914_ovl7(GObj *arg0) {
     temp_s0 = temp_a2->unk0;
     sp24 = temp_v1;
     func_800B19F4(0, temp_a1, temp_a2);
-    D_800EC660[omCurrentObj->objId] = 0.0f;
+    D_800EC660[omCurrentObj->objId] = 0;
     D_800EC820[omCurrentObj->objId] = 0.0f;
     func_801ABBA0_ovl7(arg0);
     D_800DF150[omCurrentObj->objId] = func_801AAAF8_ovl7;
@@ -2137,7 +2140,9 @@ void func_801AB884_ovl7(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_5/func_801AB884_ovl7.s")
 #endif
-// m2c draft, measured 349/365 diffs
+// m2c draft, measured 349/365 diffs; 348/360 with the LEVER 117 prototypes
+// banked 2026-08-26 plus zerofork's `temp_f0 != 0` (integer) in the first
+// guard -- the four zeros in the second guard block all measured worse.
 #ifdef NON_MATCHING
 void func_801ABBA0_ovl7(GObj *arg0) {
     struct EnemyRecord *sp24;
@@ -2238,7 +2243,7 @@ block_17:
     func_80161CE0_ovl3(arg0);
     temp_a2 = omCurrentObj->objId;
     temp_f0 = D_800EC660[temp_a2];
-    if ((temp_f0 != 0.0f) && (func_800F98EC(temp_a2, D_800E6A10[temp_a2] * temp_f0) != 0)) {
+    if ((temp_f0 != 0) && (func_800F98EC(temp_a2, D_800E6A10[temp_a2] * temp_f0) != 0)) {
         func_801AC11C_ovl7(arg0);
     }
     temp_v1 = omCurrentObj;

@@ -203,6 +203,8 @@ void func_800FE0AC(f32 arg0, f32 arg1) {
 }
 
 #ifdef MIPS_TO_C
+/* 2026-08-26 zerofork_sweep: `tB = 0` (integer) is 796 -> 793 diffs; the
+ * other five zero sites measured inert or worse. */
 /* FACTORY: 41/837 instructions match (796 diffs), and the number is one
  * uniform stack-base offset: the frame size (0x198) and the argument
  * homes are right, but IDO puts the local block 4 bytes LOW, so every
@@ -374,7 +376,7 @@ void func_800FE154(void *arg0, s32 *flagOut, void *castFn) {
                                 + planeB->originOffset) / planeB->y;
                     hasEdgeB = func_80104468(&hitB, &flatB, planeB, &tB, &edgeB, NULL, 0, 0);
                     if (hasEdgeB == 0) {
-                        tB = 0.0f;
+                        tB = 0;
                     } else {
                         tB = 1.0f - tB;
                     }

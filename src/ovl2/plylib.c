@@ -577,6 +577,10 @@ void vec3_cross_product(Vector *v1, Vector *v2, Vector *dst) {
     dst->z = (v1->x * v2->y) - (v1->y * v2->x);
 }
 
+/* 56/106 after zerofork_sweep 2026-08-26 (was 63): the sp50[..][3] zero CHAIN
+   assigns the integer `0`, not 0.0f -- the float literal shared a register the
+   ROM materialises separately. Flipping the sp2C zeros or the sp44 compares
+   instead measured worse (76-86). */
 #ifdef NON_MATCHING
 s32 func_8011C344(Mtx *arg0, Vector *arg1, Vector *arg2) {
     Mat4 sp50;
@@ -614,7 +618,7 @@ s32 func_8011C344(Mtx *arg0, Vector *arg1, Vector *arg2) {
 
     sp50[0][3] =
     sp50[1][3] =
-    sp50[2][3] = 0.0f;
+    sp50[2][3] = 0;
 
     vlen /= 20.0f;
     sp50[2][0] = sp44.x * vlen;
@@ -719,7 +723,13 @@ extern Gfx D_80126EB0[];
    the temps. The lever that reaches this function has to delete a compiler
    temp outright, and nothing in the body's own spelling does -- the compiled
    instruction stream is already the ROM's, word for word. Permuter food, and
-   a good one: 8 diffs, all one constant offset. */
+   a good one: 8 diffs, all one constant offset.
+   2026-08-26, one more negative at the one untried position: the ROM's dead
+   word at 0x78 sits directly above pos (0x6C..0x77), so `pos` was tried as a
+   16-byte `struct PlyRibbonPoint` (w unused) instead of a 12-byte Vector --
+   the dead word INSIDE the aggregate rather than between slot owners. Same
+   law, 11/142, frame 0xA8: the 4 bytes still ADD to the total even when they
+   are aggregate padding. n+t stays pinned. */
 void func_8011C4E8(s32 arg0, struct PlyRibbonHolder *arg1) {
     struct PlyRibbon *ribbon;
     struct PlyRibbonPoint *pt;

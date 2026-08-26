@@ -599,6 +599,8 @@ void func_801999DC_ovl7(Unused GObj *gobj) {
 // it is byte-identical (objdump A/B on .text).
 // The remaining 195 are not the lever's business -- the draft is still raw m2c
 // and it is one word LONGER than the ROM, so read the number against LEVER 48.
+// 2026-08-26 zerofork_sweep: `var_f12 = 0` (integer) is 186/201 -> 183/198;
+// the two `var_f0 < 0.0f` loop compares measured worse flipped (188, 184).
 #ifdef NON_MATCHING
 void func_80199A38_ovl7(struct GObj *arg0) {
     EnemyRecord *sp1C;
@@ -627,7 +629,7 @@ void func_80199A38_ovl7(struct GObj *arg0) {
                 sp1C = temp_a3;
                 var_f12 = func_800F8824((Vector *) temp_a0, D_800E17D0[temp_v1->objId]);
             } else {
-                var_f12 = 0.0f;
+                var_f12 = 0;
             }
         } else if (temp_v0 & 7) {
             var_f12 = 1.5707964f;
@@ -1050,11 +1052,20 @@ block_14:
              (`(0.0f - temp_f14)` later keeps its own `mtc1 $zero,$f6` as a
              literal, so the two really are different constants.)
 
-   Left: 21 words of FP-register naming and scheduling in the return
-   expression. Measured on the way, all worse: swapping `sp20`/`temp_f14` back
+   21 -> MATCH (2026-08-26): the last 21 words were the RETURN expression's
+             evaluation ORDER, and the tell was that the ROM finishes
+             `*gEntitiesNextPosYArray + 20.0f + arg2` BEFORE the cos*16+sp18
+             term, where a `temp_f2 = (cosf(..) * 16.0f) + sp18;` statement
+             forces the opposite. Naming the cosf RESULT alone (inert by
+             itself -- byte-identical) and then naming the first bracket in
+             its own local `a`, assigned AFTER the cosf call, flips the whole
+             tail into place. `a` takes the dead slot that the write-only
+             copy `sp20` used to own (dropped -- it was only a slot holder),
+             so the frame stays 0x38 with the same three dead words.
+
+   Measured on the way, all worse: swapping `sp20`/`temp_f14` back
    (22), using `sp20` instead of `temp_f14` in the return (22), merging them
    into one local (22), and moving `zx` after `temp_f2` in the list (22). */
-#ifdef NON_MATCHING
 f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     f32 sp34;
     f32 sp30;
@@ -1062,7 +1073,7 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     f32 zx;
     f32 temp_f2;
     f32 temp_f14;
-    f32 sp20;
+    f32 a;
     f32 sp18;
 
     sp30 = *D_800E6BD0;
@@ -1083,13 +1094,10 @@ f32 func_8019AAD0_ovl7(f32 arg0, f32 arg1, f32 arg2) {
     sp18 = gEntitiesNextPosYArray[omCurrentObj->objId];
     zx = 0.0f;
     temp_f14 = (sinf(arg0) * 16.0f) + zx;
-    sp20 = temp_f14;
-    temp_f2 = (cosf(arg0) * 16.0f) + sp18;
-    return (((*gEntitiesNextPosYArray + 20.0f + arg2) - temp_f2) * (0.0f - temp_f14)) - ((sp34 - temp_f14) * (sp18 - temp_f2));
+    temp_f2 = cosf(arg0);
+    a = *gEntitiesNextPosYArray + 20.0f + arg2;
+    return ((a - ((temp_f2 * 16.0f) + sp18)) * (0.0f - temp_f14)) - ((sp34 - temp_f14) * (sp18 - ((temp_f2 * 16.0f) + sp18)));
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019AAD0_ovl7.s")
-#endif
 /* MATCHED 2026-08-25, from a raw m2c draft at 86/93, in three steps.
  *
  * 86 -> 82: the m2c draft's five locals (two `f32 *` cursors, three f32s) are
@@ -1146,7 +1154,9 @@ s32 func_8019AC60_ovl7(f32 arg0, f32 arg1, f32 arg2, struct TrackPosition *arg3)
     }
     return 1;
 }
-// m2c draft, measured 74/85 diffs
+// m2c draft, measured 74/85 diffs; 71/85 after zerofork_sweep 2026-08-26:
+// ALL FOUR compares against 0.0f flipped to the integer `0` (LEVER 99's
+// pairing rule -- each single flip is 79, the set of four is 71).
 #ifdef NON_MATCHING
 s32 func_8019ADB4_ovl7(f32 arg0, struct TrackPosition *arg1) {
     f32 *temp_v0;
@@ -1159,10 +1169,10 @@ s32 func_8019ADB4_ovl7(f32 arg0, struct TrackPosition *arg1) {
         return 0;
     }
     temp_f0 = func_8019AAD0_ovl7(D_800EB320[omCurrentObj->objId], 0, 0);
-    if (temp_f0 == 0.0f) {
+    if (temp_f0 == 0) {
         return 0;
     }
-    if (temp_f0 > 0.0f) {
+    if (temp_f0 > 0) {
         var_f12 = arg0;
     } else {
         var_f12 = -arg0;
@@ -1178,12 +1188,12 @@ s32 func_8019ADB4_ovl7(f32 arg0, struct TrackPosition *arg1) {
             var_f0 = *var_v0;
         } while (var_f0 > 6.2831855f);
     }
-    if (var_f0 < 0.0f) {
+    if (var_f0 < 0) {
         do {
             *var_v0 = var_f0 + 6.2831855f;
             var_v0 = &D_800EB320[omCurrentObj->objId];
             var_f0 = *var_v0;
-        } while (var_f0 < 0.0f);
+        } while (var_f0 < 0);
     }
     return 1;
 }
@@ -2206,7 +2216,25 @@ block_22:
        only -- is 77/145 with the declaration first and 77/145 with it last.
        Also one word long.
    So the next move is whatever stops IDO hoisting an FP zero out of a
-   successor block, and no lever in LEVERS.md currently names one. */
+   successor block, and no lever in LEVERS.md currently names one.
+
+   2026-08-26, zerofork_sweep + the listing re-read move it 104/144 -> 51/145,
+   and 145 IS the ROM's true count (the tail `jr $ra; nop` pair -- the old
+   "count exact" reading was verify's nop-trimming, the base was one SHORT).
+   The ROM has TWO zeros: $f0 created at the JOIN for all three stores, and a
+   SECOND `mtc1 $zero,$f2` at word 105 for the two `t < 0.0f` compares (t
+   itself lives in $f0, reusing the dead store-zero's register). The fork that
+   pays is `v.x = 0.0f` ALONE (E9020 and v.y stay integer): 51/145. Every
+   other grouping is worse, all measured: any PAIR of float spellings 54/145,
+   all three 107/144, all-int-with-int-compares 107/144, float-stores with
+   int compares 104/144 (int-converted and 0.0f COALESCE here, so the
+   compare spelling is not the fork axis). A named `f32 zero`/reused-t local
+   is hoisted to entry just like the literal (107-109/144), and the m2c
+   `q = &D_800E17D0[id]` shape spelled with an initialised declaration is
+   127/145. Residue at 51: ours still materialises the INT zero in the entry
+   block (word 13) where the ROM creates everything at/after the join, and
+   the float zero lands in $f6 instead of $f0; the whole body's FP naming
+   follows that. */
 #ifdef NON_MATCHING
 void func_8019CFD0_ovl7(Vector *arg0) {
     EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
@@ -2223,7 +2251,7 @@ void func_8019CFD0_ovl7(Vector *arg0) {
     }
     D_800E9020[omCurrentObj->objId] = 0;
     v.z = 1.0f;
-    v.x = 0;
+    v.x = 0.0f;
     v.y = 0;
     D_800E6A10[omCurrentObj->objId] = -D_800E6A10[omCurrentObj->objId];
     lbvector_Rotate(&v, 2, gEntitiesAngleYArray[omCurrentObj->objId]);
@@ -2902,7 +2930,9 @@ void func_8019ED58_ovl7(EneCurve *arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl7/enelib/func_8019ED58_ovl7.s")
 #endif
-// m2c draft, measured 39/71 diffs
+// m2c draft, measured 39/71 diffs; 27/71 after zerofork_sweep 2026-08-26:
+// `temp_f2 < 0` (integer) in the ABS guard. The other two zeros measured
+// worse flipped (var_f14 41, unk24 58/72).
 #ifdef NON_MATCHING
 void func_8019EEE4_ovl7(EneCurve *arg0) {
     f32 temp_f18;
@@ -2925,7 +2955,7 @@ void func_8019EEE4_ovl7(EneCurve *arg0) {
         var_f0 = temp_v0;
     }
     temp_f2 = arg0->unk28;
-    if (temp_f2 < 0.0f) {
+    if (temp_f2 < 0) {
         var_f12 = -temp_f2;
     } else {
         var_f12 = temp_f2;

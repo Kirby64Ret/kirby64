@@ -21,7 +21,8 @@ void func_801B84B4_ovl7(void);
 void func_801AC364_ovl7(GObj *);
 void func_801B8068_ovl7(GObj *);
 extern struct EnemyEventTable D_801CB56C_ovl7;
-extern f32 D_801CE368_ovl7; /* D_801CE36C_ovl7 = 65535.0f : now emitted by this TU */
+/* D_801CE368_ovl7 = 65535.0f : now emitted by this TU */
+/* D_801CE36C_ovl7 = 65535.0f : now emitted by this TU */
 void func_801B7E80_ovl7(GObj *);
 extern s32 D_800E8AE0[];
 void func_800AECC0(f32);
@@ -131,15 +132,13 @@ void func_801B79B0_ovl7(GObj *arg0) {
     func_801AC364_ovl7(arg0);
 }
 
-#ifdef NON_MATCHING
-/* 65/147 and one instruction short: everything up to the if matches; the ROM
-   hoists the D_800E3750 base before the if and gets a beql whose delay slot
-   preloads 14.0f.
-   NEGATIVE, 2026-08-25: `func_801ABBA0_ovl7(arg0)` (LEVERS 58/67, worth 39 and
-   48 diffs on func_801B0C20_ovl7 and func_801B1300_ovl7 in ovl7_8.c) is EXACTLY
-   INERT here, 65/147 either way -- this function's ROM listing has no $a0 home
-   store to misplace. The truthful argument is kept anyway; the residue is the
-   beql, not the parameter. */
+/* MATCHED 2026-08-26, 65/147 -> 0 on ONE character found by zerofork_sweep
+   (LEVER 90): `angle.v.x = 0`, the integer, not `0.0f`. The float literal
+   CSE'd with the zeros further down and the whole tail reordered -- with the
+   fork restored, the ROM's beql/14.0f-preload shape falls out on its own.
+   The 2026-08-25 note had pinned the residue on the beql and measured
+   func_801ABBA0_ovl7's argument (LEVERS 58/67) exactly inert; both readings
+   stand, the zero was the cause. */
 void func_801B7C30_ovl7(GObj *arg0) {
     struct EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
 
@@ -153,7 +152,7 @@ void func_801B7C30_ovl7(GObj *arg0) {
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
     func_800AA018(0x100EF);
-    arg0->data.dobj->firstChild->angle.v.x = 0.0f;
+    arg0->data.dobj->firstChild->angle.v.x = 0;
     if (D_800E8AE0[D_800E0D50[omCurrentObj->objId]] & 6) {
         D_800E64D0[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * 7.0f;
         D_800E6690[omCurrentObj->objId] = D_800E6A10[omCurrentObj->objId] * (f32) 0;
@@ -165,13 +164,10 @@ void func_801B7C30_ovl7(GObj *arg0) {
     }
     D_800E3750[omCurrentObj->objId] = 0.0f;
     D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
-    D_800E3C90[omCurrentObj->objId] = D_801CE368_ovl7;
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
     ohSleep(0x3C);
     func_801AC364_ovl7(arg0);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl7/ovl7_12/func_801B7C30_ovl7.s")
-#endif
 void func_801B7E80_ovl7(GObj *arg0) {
     func_801BA240_ovl7();
     func_801AC908_ovl7(arg0);

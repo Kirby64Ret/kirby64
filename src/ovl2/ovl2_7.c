@@ -7723,6 +7723,15 @@ s32 func_8010D668(struct PositionState *arg0, f32 arg1) {
 #endif
 
 #ifdef MIPS_TO_C
+/* 2026-08-26 zerofork_sweep: `sp38.x = 0` (integer) is 76/96 -> 53/97, and 97
+ * is the ROM's true count (tail jr/nop) -- the base was one word short. The
+ * flip buys the ROM's 0x38/0x3C/0x40 slots for sp38 but at a shape cost the
+ * next lane should know: it forks TWO zero constants ($f4 int, $f6 float)
+ * where the ROM shares ONE `mtc1 $zero,$f0` for both stores, so the true
+ * lever is still the frame, not the fork. Flipping sp38.z instead scores the
+ * same 53 with different bytes; the dir.x/dir.z zeros are inert. Reordering
+ * the declarations Vectors-first (0.0f kept) gets the shared zero but puts
+ * the block 4 high (82/96). */
 /* FACTORY: 76/96 [was noted 37/97], $v0 rebase + FP register rotation. Frame (0x60) and every stack slot
  * match. The lever that got it there is LEVERS 12, and it is worth recording precisely:
  * declaring the lone scalar sp34 BEFORE the three Vectors (not after) moved the whole
@@ -7740,7 +7749,7 @@ s32 func_8010D8A4(struct PositionState *arg0) {
     f32 *temp_v0;
 
     func_80104FB8(arg0);
-    sp38.x = 0.0f;
+    sp38.x = 0;
     sp38.z = 0.0f;
     sp38.y = -1.0f;
     temp_v0 = arg0->scale;
@@ -7802,6 +7811,9 @@ s32 func_8010D8A4(struct PositionState *arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl2/ovl2_7/func_8010D8A4.s")
 #endif
 
+/* 2026-08-26 zerofork_sweep: `sp38.x = 0` (integer), 66/78 -> 50/79 with 79
+   the ROM's true count -- same shape and same caveat as func_8010D8A4 above
+   (ROM shares one FP zero; the flip forks two but fixes the slots). */
 #ifdef NON_MATCHING
 s32 func_8010DA28(struct PositionState *arg0) {
     Vector sp50;
@@ -7809,7 +7821,7 @@ s32 func_8010DA28(struct PositionState *arg0) {
     Vector sp38;
 
     func_80104FB8(arg0);
-    sp38.x = 0.0f;
+    sp38.x = 0;
     sp38.z = 0.0f;
     sp38.y = 1.0f;
     sp50.x = arg0->kirbyFootPos[0] + BD00.footOffX;
