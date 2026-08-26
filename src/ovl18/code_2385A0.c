@@ -160,6 +160,15 @@ void func_80225EB8_ovl18(s32 arg0) {
    The 45 that remain are register class: the ROM reads D_800E1B50[objId] into
    $v0 and the draft into $t9, and the temps below follow. Permuter fuel. */
 #ifdef NON_MATCHING
+/* shapescan 2026-08-26: shape distance 1. The two real words are the ROM
+   holding func_80111C88's result in TWO names -- `or $a1,$v0` after the call,
+   reads through $v0, and `or $a0,$a1` in the final jal's delay slot -- where
+   IDO passes one name early and fills the slot with a nop. A second local for
+   the call, a chained `slot2 = temp_v0_2 = ...`, and reads split across the
+   two names are ALL coalesced to the identical 45/97 (same law measured on
+   func_800BAEB0 in ovl1_10.c: a source-level copy is coalesced, the surviving
+   `or` is the allocator's own). The other 43 positional diffs are the rename
+   cascade from those two words. Sealed as an allocator artifact. */
 void func_80225FA8_ovl18(struct GObj *arg0) {
     s32 pad0;
     s32 pad1;
