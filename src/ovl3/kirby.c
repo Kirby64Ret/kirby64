@@ -2033,139 +2033,123 @@ void func_8016E638_ovl3(GObj *arg0) {
 #endif
 
 #ifdef NON_MATCHING
-/* m2c draft, for the PORT only. Not byte-exact and not
-   claimed to be: the N64 build takes the pragma below. */
+/* FACTORY: 118/367 (was an untouched m2c dump at 364/370), reworked
+   2026-08-26 by LEVER 108's cleanup, each step measured:
+     364 -> 362  every temp_ / var_ prefix deleted: the objId caches spelled
+                 omCurrentObj->objId at every use, temp_a2 (a cached
+                 omCurrentObj) gone, var_v1's objId*4 byte-index gone --
+                 which also fixes a live PORT bug: `*(D_800E3210 + var_v1)`
+                 scaled objId by 16 on the s32* (LEVER 108c), and the
+                 3-argument `ohSleep(1, D_800E9720, temp_a2)` artefact.
+     362 -> 313  `launched` written as an if/else with BOTH constant arms
+                 (LEVER 109: the ROM's `or $v0,$zero` default-hoist plus
+                 the redundant `b` is the two-armed form), and the frame
+                 came back to the ROM's -0x20 with it -- the direct
+                 one-armed spelling made IDO hoist &D_800E3210 into a
+                 third saved register.
+     313 -> 123  the LEVER 90/99 zero pair: `D_800E3750[objId] = 0` and
+                 `D_800E6690[objId] = 0` as integer literals, TOGETHER
+                 (zerofork_sweep flagged the pair's worth on the raw dump).
+     123 -> 118  `u32 snd` NAMED for the D_800EC2E0 read (m2c's temp_a0 is
+                 a genuine value-carrying temp, LEVER 108's caveat): the
+                 ROM tests $v0 and fills the play_sound delay slot with
+                 `nop`, which the re-read spelling cannot produce.
+   aligndiff on the residue prints only li/addiu aliases: the 118 is the
+   whole-function one-slot temp rotation (ROM's first temp is $t7, this
+   C's is $t6) -- the same +1 ucode-temp shift recorded on
+   func_80161058_ovl3/func_8015BBE4_ovl3 in plyshot.c, still unreached
+   from source. */
 void func_8016E8A0_ovl3(s32 arg0) {
-    GObj *temp_a2;
-    s32 *temp_v0_2;
-    s32 var_v0;
-    s32 var_v1;
-    s32 var_v1_2;
-    u32 temp_a0;
-    u32 temp_v1;
-    u32 temp_v1_10;
-    u32 temp_v1_11;
-    u32 temp_v1_12;
-    u32 temp_v1_2;
-    u32 temp_v1_3;
-    u32 temp_v1_4;
-    u32 temp_v1_5;
-    u32 temp_v1_6;
-    u32 temp_v1_7;
-    u32 temp_v1_8;
-    u32 temp_v1_9;
-    u8 temp_v0;
+    s32 launched;
+    u32 snd;
 
     gKirbyState.unk44 = 0;
     gKirbyState.unk30 = 0;
     gKirbyState.isFullJump = 1;
     func_8011CF58();
-    temp_a2 = omCurrentObj;
-    D_800DDFD0[temp_a2->objId] = 4;
-    temp_v0 = gKirbyState.unk4;
-    if (temp_v0 == 1) {
+    D_800DDFD0[omCurrentObj->objId] = 4;
+    if (gKirbyState.unk4 == 1) {
         gKirbyState.unk15C = (u32) D_801903E0_ovl3;
     } else {
         gKirbyState.unk15C = (u32) D_80190358_ovl3;
     }
-    temp_v1 = temp_a2->objId;
-    D_800EA6E0[temp_v1] = D_800E3210[temp_v1];
-    temp_v1_2 = temp_a2->objId;
-    D_800EA8A0[temp_v1_2] = D_800E64D0[temp_v1_2];
-    temp_v1_3 = temp_a2->objId;
-    D_800EAA60[temp_v1_3] = D_800E6690[temp_v1_3];
-    temp_v1_4 = temp_a2->objId;
-    D_800EAC20[temp_v1_4] = D_800E6850[temp_v1_4];
-    D_800E3750[temp_a2->objId] = 0.0f;
-    temp_v1_5 = temp_a2->objId;
-    D_800E3210[temp_v1_5] = D_800E3750[temp_v1_5];
-    D_800E3C90[temp_a2->objId] = 65535.0f;
-    D_800E6690[temp_a2->objId] = 0.0f;
-    temp_v1_6 = temp_a2->objId;
-    D_800E64D0[temp_v1_6] = D_800E6690[temp_v1_6];
-    D_800E6850[temp_a2->objId] = 65535.0f;
-    D_800E9720[temp_a2->objId] = 0;
-    temp_v1_7 = temp_a2->objId;
-    var_v1 = temp_v1_7 * 4;
-    if (D_800E9720[temp_v1_7] < 2) {
-        do {
-            ohSleep(1, D_800E9720, temp_a2);
-            temp_v0_2 = &D_800E9720[omCurrentObj->objId];
-            *temp_v0_2 += 1;
-            temp_v1_8 = omCurrentObj->objId;
-            var_v1 = temp_v1_8 * 4;
-        } while (D_800E9720[temp_v1_8] < 2);
+    D_800EA6E0[omCurrentObj->objId] = D_800E3210[omCurrentObj->objId];
+    D_800EA8A0[omCurrentObj->objId] = D_800E64D0[omCurrentObj->objId];
+    D_800EAA60[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800EAC20[omCurrentObj->objId] = D_800E6850[omCurrentObj->objId];
+    D_800E3750[omCurrentObj->objId] = 0;
+    D_800E3210[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
+    D_800E3C90[omCurrentObj->objId] = 65535.0f;
+    D_800E6690[omCurrentObj->objId] = 0;
+    D_800E64D0[omCurrentObj->objId] = D_800E6690[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = 65535.0f;
+    D_800E9720[omCurrentObj->objId] = 0;
+    while (D_800E9720[omCurrentObj->objId] < 2) {
+        ohSleep(1);
+        D_800E9720[omCurrentObj->objId] += 1;
     }
-    *(D_800E3210 + var_v1) = *(D_800EA6E0 + var_v1);
-    temp_v1_9 = temp_a2->objId;
-    D_800E64D0[temp_v1_9] = D_800EA8A0[temp_v1_9];
-    temp_v1_10 = temp_a2->objId;
-    D_800E6690[temp_v1_10] = D_800EAA60[temp_v1_10];
-    temp_v1_11 = temp_a2->objId;
-    D_800E6850[temp_v1_11] = D_800EAC20[temp_v1_11];
-    D_800DDFD0[temp_a2->objId] = 3;
-    D_800E8920[temp_a2->objId] = 0;
-    if (temp_v0 == 1) {
+    D_800E3210[omCurrentObj->objId] = D_800EA6E0[omCurrentObj->objId];
+    D_800E64D0[omCurrentObj->objId] = D_800EA8A0[omCurrentObj->objId];
+    D_800E6690[omCurrentObj->objId] = D_800EAA60[omCurrentObj->objId];
+    D_800E6850[omCurrentObj->objId] = D_800EAC20[omCurrentObj->objId];
+    D_800DDFD0[omCurrentObj->objId] = 3;
+    D_800E8920[omCurrentObj->objId] = 0;
+    if (gKirbyState.unk4 == 1) {
         gKirbyState.unk15C = (u32) D_801903E0_ovl3;
     } else {
         gKirbyState.unk15C = (u32) D_80190358_ovl3;
     }
-    temp_v1_12 = temp_a2->objId;
-    var_v1_2 = temp_v1_12 * 4;
-    temp_a0 = D_800EC2E0[temp_v1_12].as_u32;
-    if (temp_a0 != 0x80000000) {
-        play_sound((s32) temp_a0);
-        var_v1_2 = omCurrentObj->objId * 4;
+    snd = D_800EC2E0[omCurrentObj->objId].as_u32;
+    if (snd != 0x80000000) {
+        play_sound(snd);
     }
-    var_v0 = 0;
-    if ((*(D_800E8AE0 + var_v1_2) & 6) == 6) {
-        var_v0 = 1;
+    if ((D_800E8AE0[omCurrentObj->objId] & 6) == 6) {
+        launched = 1;
+    } else {
+        launched = 0;
     }
-    if (var_v0 != 0) {
+    if (launched != 0) {
         gKirbyState.unkCC = 4.0f;
-        *(D_800E3750 + (temp_a2->objId * 4)) = -0.4f;
-        D_800E3C90[temp_a2->objId] = 8.5f;
+        D_800E3750[omCurrentObj->objId] = -0.4f;
+        D_800E3C90[omCurrentObj->objId] = 8.5f;
     } else {
         gKirbyState.unkCC = 8.0f;
-        *(D_800E3750 + (temp_a2->objId * 4)) = -0.980665f;
+        D_800E3750[omCurrentObj->objId] = -0.980665f;
         if (func_80123144(17.0f) < 0.0f) {
             D_800E3C90[omCurrentObj->objId] = -func_80123144(17.0f);
         } else {
             D_800E3C90[omCurrentObj->objId] = func_80123144(17.0f);
         }
     }
-    func_800AFA54(D_800DFA10[temp_a2->objId]);
-    switch (gKirbyState.unk4) {                     /* switch 1; irregular */
-    case 0:                                         /* switch 1 */
+    func_800AFA54(D_800DFA10[omCurrentObj->objId]);
+    switch (gKirbyState.unk4) {
+    case 0:
         func_801230E8(0x2009F, 0x200A0, 0);
         break;
-    case 1:                                         /* switch 1 */
+    case 1:
         func_801230E8(0x2016D, 0x2016E, 0);
         break;
-    case 2:                                         /* switch 1 */
+    case 2:
         func_801230E8(0x200C7, 0x200C8, 0);
         break;
     }
-    if (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
-        do {
-            ohSleep(1);
-        } while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]);
+    while (gKirbyState.unkCC < D_800E3210[omCurrentObj->objId]) {
+        ohSleep(1);
     }
-    switch (gKirbyState.unk4) {                     /* switch 2; irregular */
-    case 0:                                         /* switch 2 */
+    switch (gKirbyState.unk4) {
+    case 0:
         func_801230E8(0x200A1, 0x200A2, 1);
         break;
-    case 1:                                         /* switch 2 */
+    case 1:
         func_801230E8(0x2016F, 0x20170, 1);
         break;
-    case 2:                                         /* switch 2 */
+    case 2:
         func_801230E8(0x200C9, 0x200CA, 1);
         break;
     }
     gKirbyState.unk30 += 1;
     curObjSleepForever();
 }
-/* Warning: struct AnimCmd is not defined (only forward-declared) */
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl3/kirby/func_8016E8A0_ovl3.s")
 #endif

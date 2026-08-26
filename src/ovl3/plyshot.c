@@ -2030,7 +2030,18 @@ extern f32 D_80196764_ovl3[][2];
 extern f32 **D_801967A4_ovl3[];
 void func_8015E754_ovl3(s32);
 #ifdef NON_MATCHING
-/* 65/197. */
+/* 9/198 (was 65/197): the LEVER 90/99 zero pair, BOTH stores together --
+   `D_800E6690[objId] = 0` and `D_800E3750[objId] = 0` as integer literals
+   fork the two store zeros off the two `< 0.0f` compare zeros the ROM keeps
+   in $f12/$f14 (either store alone is 14 and 38; found by zerofork_sweep's
+   2026-08-26 ovl3-6 run).  aligndiff.py prints NOTHING on the residue: what
+   is left is the $f12<->$f14 assignment of the two shared zeros (ROM wants
+   compare=f12, store=f14; this C colours them the other way) plus the p
+   spill slot 0x18 vs 0x1C.  Measured inert or worse on that residue:
+   stores as 0U (9), compares as `< 0` (65/197 -- it merges the pairs),
+   decl orders s/idx/c/p +-pad (12, 13), s,pad,idx,c,p (13, frame 0x38),
+   deleting `c` to reuse `s` (76 -- the cosf call needs c's own web for the
+   ROM's schedule). */
 void func_8015E43C_ovl3(s32 arg0) {
     f32 s;
     f32 *p;
@@ -2060,14 +2071,14 @@ void func_8015E43C_ovl3(s32 arg0) {
     s = sinf(p[0]) * 18.0f;
     c = cosf(p[0]) * 18.0f;
     D_800E64D0[omCurrentObj->objId] = s;
-    D_800E6690[omCurrentObj->objId] = 0.0f;
+    D_800E6690[omCurrentObj->objId] = 0;
     if (s < 0.0f) {
         D_800E6850[omCurrentObj->objId] = -s;
     } else {
         D_800E6850[omCurrentObj->objId] = s;
     }
     D_800E3210[omCurrentObj->objId] = c;
-    D_800E3750[omCurrentObj->objId] = 0.0f;
+    D_800E3750[omCurrentObj->objId] = 0;
     if (c < 0.0f) {
         D_800E3C90[omCurrentObj->objId] = -c;
     } else {
@@ -3287,6 +3298,17 @@ void func_80160D84_ovl3(s32 arg0) {
  *               also the 8 bytes of frame: with it gone the only declared
  *               local is the 8-byte `sndpair`, which the ROM parks at
  *               0x30/0x34 at the very top of a 0x38 frame.
+ *
+ * 2026-08-26, the signedness knob that closed func_80161078_ovl5 (array
+ * type flips uopt's colouring) does NOT reach this rotation.  Measured
+ * exactly inert at 133, all seven: func_80161EC0's args spelled
+ * (0,0,20.0f) / (0U,0.0f,20.0f) / (0,0.0f,20.0) / (0,0.0,20.0f) /
+ * (arg0*0,0.0f,20.0f); the entry store's subscript as
+ * (s32) omCurrentObj->objId; and its rhs as 1U.  The one-slot temp shift
+ * means the ROM's ucode allocated ONE more temp than this C somewhere in
+ * words 0-19 (entry + the two calls -- the sibling func_8015BBE4_ovl3
+ * shares the residue with the E0650 store on the OTHER side of the calls,
+ * so the store is exonerated), and none of the spellings there reach it.
  */
 /* PORT: forward-shot init coroutine (anim 0x20040), from asm/nonmatchings/
  * ovl3/plyshot/func_80161058_ovl3.s -- same family as the decompiled
