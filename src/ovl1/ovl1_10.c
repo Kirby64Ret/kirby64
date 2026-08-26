@@ -645,7 +645,17 @@ void func_800BB198(s32 arg0, s32 arg1) {
  * inductions and not a source-order fact.
  * barrier_sweep.py (LEVER 71) run over the whole draft: no placement beats
  * 8/70 either. */
-/* FACTORY: 8/70 */
+/* FACTORY: 8/70. The tail swept 2026-08-26: the ROM's last six words are the
+ * SHAPE of a u64 store -- `addiu $t4,$zero,0` (hi) / lui+ori $t5 (lo) / two
+ * %lo-folded sw through $at at D_800ECF58/D_800ECF5C -- and `*(u64 *)
+ * D_800ECF58 = 0xFEDCBA98;` reproduces the registers, the materialised zero
+ * and both folded stores EXACTLY, but IDO schedules it store-as-you-go where
+ * the ROM builds both registers first: positionally 15/70, structurally the
+ * closest form (LEVER 104 -- the 15 is one two-word transposition). A u64
+ * local, an `extern u64` declaration, two separate s32 scalars (9/70), a
+ * local zero, and swapping the two array stores (8/70) all measured; nothing
+ * beats 8. The 8 = the two induction bumps at 33/34 (recorded above as IDO
+ * scheduling) plus this six-word tail, and both residues are pure schedule. */
 #ifdef NON_MATCHING
 extern RumbleItem D_800ED320[][3];
 extern RumbleNode D_800ED410[][3];
