@@ -715,20 +715,29 @@ void func_801DDDD0_ovl9(struct GObj *arg0) {
 }
 
 #ifdef MIPS_TO_C
-/* FACTORY: 10/185 [was 156/184, and noted 28/184 before that].  The
-   "$a2/$a3 transposition" the old note recorded was the symptom of ONE source
-   shape, which aligndiff (LEVER 104) named in one run: the ROM re-reads
-   `omCurrentObj->objId` at the END OF EVERY ARM of the rising-off-the-ground
-   `if / else if / else` -- three copies of
-   `lui $a2; lw $a2; lw $v1, 0($a2); sll $a3, $v1, 2`, two of them ending in a
-   `b` to the merge -- where this draft had one copy after the `if`.  Writing
-   `id = omCurrentObj->objId;` as the last statement of each of the three arms
-   is 156 -> 10 on one edit, and it is what puts the pointer in $a2 and the
-   index in $a3.  LEVER 97(a) says to count the ROM's objId READS; this is the
-   same rule applied to where they sit rather than how many there are.
-   Left: one `lui %hi(D_801CA550)` emitted one word early, and a $v1/$a3 pair
-   in the SECOND arm, where the ROM reuses $a3 for the shifted index and the
-   other two arms keep both live.  barrier_sweep negative. */
+/* FACTORY: 6/185 [was 10/185; 156/184 and 28/184 before that].
+   2026-08-26: THE STRUCT WAS 4 BYTES TOO BIG.  PcOvl9AnimInfo's filler10 was
+   a guessed 0x10; the ROM places sp2C at 0x2C under a 0x48 frame with the
+   `sp2C.unkC` argument reload at 0x38(sp), which only fits a 0x1C struct.
+   filler10[0xC] puts every sp offset on the ROM's slot, 10 -> 6 (both arms'
+   declarations shrunk; func_801DF588_ovl9's out-buffer is bounded by the
+   ROM's own frame).
+   Earlier finding kept: the ROM re-reads `omCurrentObj->objId` at the END OF
+   EVERY ARM of the rising-off-the-ground if/else if/else (156 -> 10), LEVER
+   97(a) applied to WHERE the reads sit.
+   Residue, 6 words in two clusters, both coloring ties: (a) the timeout
+   arm's post-call re-read is `lw $a3/sll $a3,$a3` in the ROM (raw id dead at
+   the shift) against `lw $v1/sll $a3,$v1` here; (b) the CA550/CA598 arm's
+   two D_800E1B50 luis come t9-then-t7 with `addu $t9` before `lui $t6` in
+   the ROM, swapped here.  Measured at the CORRECTED frame, all inert or
+   worse, so nobody re-spends them: deleting the timeout re-read (97/184,
+   IDO spills $a3 around the call); spelling every post-switch subscript
+   `omCurrentObj->objId` inline and dropping the re-read (163/186, the head
+   comes apart -- the dispatch needs the raw local); s32 id for u32 (6,
+   inert); `0.0f < D_800E64D0[id]` (6, inert); swapping the CA550/CA598 arms
+   with `<=` (9); barrier_sweep re-run at the new frame, 22 placements, best
+   8/185.  The old barrier_sweep negative predates the frame fix and is
+   superseded by this one. */
 extern struct GObjProcess *gEntityGObjProcessArray[];
 extern s32 D_801CA550;
 extern s32 D_801CA598;
@@ -745,7 +754,7 @@ struct PcOvl9AnimInfo {
     u8 unk3;
     u8 filler4[8];
     s32 unkC;
-    u8 filler10[0x10];
+    u8 filler10[0xC];
 };
 /* Stun-state per-frame hook: age the stun timer D_800E9E20, run the
  * shared mover, and while rising off the ground either shake in place
@@ -829,7 +838,7 @@ struct PcOvl9AnimInfo {
     u8 unk3;
     u8 filler4[8];
     s32 unkC;
-    u8 filler10[0x10];
+    u8 filler10[0xC];
 };
 /* Stun-state per-frame hook: age the stun timer D_800E9E20, run the
  * shared mover, and while rising off the ground either shake in place
