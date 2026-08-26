@@ -743,6 +743,15 @@ void func_80023990(void) {
  * which reported this placement at 24 and three neighbours at 24 as well.  The
  * rotation is narrower after it but not gone: the head is still
  * ROM $t0/$a3/$t2 against IDO $a3/$a2/$t1.
+ * 24 -> 22 on 2026-08-26: the unlink polarity. The ROM lays the arms
+ * else-first -- `beql prev,0` jumps forward to the head store and the
+ * prev->next store falls through -- which is `if (prev != NULL)` first in
+ * source, the same polarity func_80023884's note records. With it the
+ * structure is word-exact and all 22 remaining diffs are the one-slot
+ * rotation (ROM t0/a3/t2/a2/a0/t1 vs IDO a3/a2/t1/a0/v0/t0): IDO reuses
+ * $v0 for `voice` where the ROM leaves $v0 untouched after the mask call
+ * and spends $a0. The -O3 bottom-register floor this file's other notes
+ * name; nothing structural is left.
  *
  * The usual cure for "temps UP a slot" is a non-void callee, but the only
  * callee here is osSetIntMask, which is already non-void and header-declared.
@@ -785,10 +794,10 @@ void func_80023A28(KToneA28 *arg0) {
                 voice->unk2A = 2;
                 voice->unk48 = 0;
             }
-            if (prev == NULL) {
-                D_800978E0.unk40 = node->next;
-            } else {
+            if (prev != NULL) {
                 prev->next = node->next;
+            } else {
+                D_800978E0.unk40 = node->next;
             }
             node->next = D_800978E0.unk38;
             D_800978E0.unk38 = node;
