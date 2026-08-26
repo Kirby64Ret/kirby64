@@ -919,8 +919,27 @@ extern u32 func_800FD570(s32, u32, f32, f32, f32);
 void func_801ACF84_ovl7(GObj *);
 void func_800B7514(s32);
 void ohSleep(s32);
-/* FACTORY: 36/313, $s0/$s1 transposition for &omCurrentObj with the rest
-   renamed to follow.  Frame and save set are the ROM's. */
+/* FACTORY: 122/316 [note previously claimed 36/313; measured 277/313 before
+   this pass -- see the file header warning about stale numbers].
+   2026-08-26, two edits, both measured:
+   (1) objid_inline_sweep's full inline -- delete `u32 id` and its five
+       re-assignments, every subscript `omCurrentObj->objId` (277 -> 183,
+       LEVERS 4/97/111);
+   (2) the sign fold is ABSF AROUND THE WHOLE atan2f CALL (183 -> 124):
+       the ROM calls func_8019DA50_ovl7/atan2f THREE times -- LEVER 40's
+       macro re-expansion -- so `ang = ABSF(atan2f(...))`, not
+       `if (ang < 0) ang = -ang;`, and 20.0f rides in $f20 across the
+       repeats.  (183 -> 124 on the isolated scratch; 122 measured through
+       the tree file.)
+   Residue, ~40 real words: each sinf block's schedule -- the ROM
+   materialises the inline 25/10/-1 constant and runs `mul sin*const`
+   BEFORE the D_800E6A10 address computation, ours hoists the next call's
+   `mov.s $f12,$f20` and the array load first and eats a nop per block
+   (three words long overall).  Measured inert or worse on THIS state, so
+   nobody re-spends them: splitting the product into `f32 spd = sinf(ang)
+   * K;` (exactly 124), barrier_sweep all 23 placements (best 124; the
+   `-= 5.0f` line 149, ohSleep(8) 128).  The next knob is whatever makes
+   uopt defer the cos-arg staging, not the declaration list. */
 extern s32 D_801C9A4C_ovl7;
 extern void func_800B6E84(struct GObj *);
 void func_801F1C68_ovl9(void);
@@ -938,7 +957,6 @@ extern void func_801A3E80_ovl7(GObj *);
 void func_801F1784_ovl9(GObj *arg0) {
     EnemyRecord *rec;
     f32 ang;
-    u32 id;
 
     rec = D_800E1B50[omCurrentObj->objId];
     func_8019BAC8_ovl7();
@@ -954,36 +972,27 @@ void func_801F1784_ovl9(GObj *arg0) {
     D_800E98E0[omCurrentObj->objId] = 1;
     D_800E9AA0[omCurrentObj->objId].as_u32 = 2;
     D_800E9C60[omCurrentObj->objId] = 0;
-    id = omCurrentObj->objId;
-    D_800E6A10[id] = D_800E6A10[D_800E0D50[id]];
+    D_800E6A10[omCurrentObj->objId] = D_800E6A10[D_800E0D50[omCurrentObj->objId]];
     gEntitiesNextPosYArray[omCurrentObj->objId] -= 5.0f;
-    id = omCurrentObj->objId;
-    gEntitiesPosYArray[id] = gEntitiesNextPosYArray[id];
-    ang = atan2f(func_8019DA50_ovl7(),
-                 (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]);
-    if (ang < 0.0f) {
-        ang = -ang;
-    }
+    gEntitiesPosYArray[omCurrentObj->objId] = gEntitiesNextPosYArray[omCurrentObj->objId];
+    ang = ABSF(atan2f(func_8019DA50_ovl7(),
+                      (gEntitiesNextPosYArray[0] + 20.0f) - gEntitiesNextPosYArray[omCurrentObj->objId]));
     if (ang < 1.0471976f) {
         ang = 1.0471976f;
     }
     if (ang > 2.0943952f) {
         ang = 2.0943952f;
     }
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = sinf(ang) * 25.0f * D_800E6A10[id];
+    D_800E64D0[omCurrentObj->objId] = sinf(ang) * 25.0f * D_800E6A10[omCurrentObj->objId];
     D_800E3210[omCurrentObj->objId] = cosf(ang) * 25.0f;
     ohSleep(1);
-    id = omCurrentObj->objId;
-    D_800E64D0[id] = sinf(ang) * 10.0f * D_800E6A10[id];
+    D_800E64D0[omCurrentObj->objId] = sinf(ang) * 10.0f * D_800E6A10[omCurrentObj->objId];
     D_800E3210[omCurrentObj->objId] = cosf(ang) * 10.0f;
-    id = omCurrentObj->objId;
-    D_800E6690[id] = sinf(ang) * -1.0f * D_800E6A10[id];
+    D_800E6690[omCurrentObj->objId] = sinf(ang) * -1.0f * D_800E6A10[omCurrentObj->objId];
     D_800E3750[omCurrentObj->objId] = cosf(ang) * -1.0f;
     ohSleep(8);
     D_800E3750[omCurrentObj->objId] = 0.0f;
-    id = omCurrentObj->objId;
-    D_800E6690[id] = D_800E3750[id];
+    D_800E6690[omCurrentObj->objId] = D_800E3750[omCurrentObj->objId];
     ohSleep(0x18);
     func_800AECC0(gameTicksPerDraw);
     func_800AED20(gameTicksPerDraw);
