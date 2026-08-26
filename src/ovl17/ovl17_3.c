@@ -1242,7 +1242,10 @@ void func_801E3990_ovl17(struct GObj *arg0) {
     func_801E3A20_ovl17();
 }
 
-#ifdef MIPS_TO_C
+/* This arm is BOTH the N64 draft and the PORT body: the prototype in
+   src/ovl17/ovl17.h says s32, and the stale void PORT body that used to sit
+   below this one broke the PC build the moment the header was corrected. */
+#if defined(MIPS_TO_C) || defined(PORT)
 /* FACTORY: 374/387 [was noted 13/387].  The first 10 instructions are exact.  Two residues:
    the record spill sits at 0x54 where the ROM uses 0x50 (our locals block is
    4 bytes larger, and it is NOT the anim record -- a 0x1C local view in place
@@ -1353,77 +1356,6 @@ s32 func_801E3A20_ovl17(void) {
     return 0;
 }
 
-#elif defined(PORT)
-/* PORT: wing-segment collision service, from asm/nonmatchings/ovl17/
- * ovl17_3/func_801E3A20_ovl17.s -- same shape as func_801E373C above but
- * for a wing piece: registers via the ovl7 helper, sweeps, then on a
- * kill (1) folds the parent's wing (flap counter D_800E9C60 or D_800E9E20
- * by side D_800E7880, set to 1), hands this track to func_801A3E80_ovl7
- * and flags D_800E98E0[info.unkC]; on a hit (2) plays 0x1BD, sets the
- * counter to 3 (flare) and sparks effect 6/3/2 on one random DObj of each
- * of the parent wing's three segment pairs; otherwise clears the counter. */
-void func_801E3A20_ovl17(void) {
-    struct EnemyRecord *ent;
-    struct DObj **pd;
-    struct Ovl17AnimInfo sp2C;
-    s32 objId;
-    s32 kind;
-    s32 parent;
-
-    ent = D_800E1B50[omCurrentObj->objId];
-    func_80111ECC(func_801A0464_ovl7());
-    if (ent->unk8C == NULL) {
-        return;
-    }
-    if (func_80110B00(&sp2C) != 0) {
-        D_800E83E0[omCurrentObj->objId] = sp2C.unk2;
-        ent->unk43 = sp2C.unk3;
-    } else {
-        D_800E83E0[omCurrentObj->objId] = 0;
-        ent->unk43 = 0;
-    }
-    objId = omCurrentObj->objId;
-    kind = D_800E83E0[objId];
-    parent = D_800E0D50[objId];
-    if (kind == 1) {
-        if (D_800E7880[objId] == 0) {
-            D_800E9C60[parent] = 1;
-        } else {
-            D_800E9E20[parent] = 1;
-        }
-        assign_new_process_entry(gEntityGObjProcessArray[objId], func_801A3E80_ovl7);
-        if (sp2C.unkC != 0) {
-            D_800E98E0[sp2C.unkC] = 1;
-        }
-    } else if (kind == 2) {
-        D_800E7CE0[objId] = 1;
-        play_sound(0x1BD);
-        if (sp2C.unkC != 0) {
-            D_800E98E0[sp2C.unkC] = 1;
-        }
-        if (D_800E7880[objId] == 0) {
-            D_800E9C60[parent] = 3;
-        } else {
-            D_800E9E20[parent] = 3;
-        }
-        pd = D_800DFBD0[parent];
-        if (D_800E7880[objId] == 0) {
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[5] : pd[6]);
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[8] : pd[9]);
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0xB] : pd[0xC]);
-        } else {
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0x10] : pd[0x11]);
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0x13] : pd[0x14]);
-            func_800A8100(6, 3, 2, (random_soft_s32_range(2) != 0) ? pd[0x16] : pd[0x17]);
-        }
-    } else {
-        if (D_800E7880[objId] == 0) {
-            D_800E9C60[parent] = 0;
-        } else {
-            D_800E9E20[parent] = 0;
-        }
-    }
-}
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl17/ovl17_3/func_801E3A20_ovl17.s")
 #endif
