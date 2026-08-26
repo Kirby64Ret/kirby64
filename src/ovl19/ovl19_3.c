@@ -1254,19 +1254,20 @@ void func_8022D13C_ovl19(GObj *g) {
     func_8011DAF8();
 }
 
-#ifdef NON_MATCHING
+/* Kirby 15-frame turn service: MATCHED 2026-08-25 after zerofork_sweep found
+   the `D_800E3750[..] = 0` integer zero (74 -> 48) and the m2c objId cache
+   fell to LEVER 4/97 (48 -> 0): the ROM re-reads omCurrentObj->objId at every
+   use, recomputing the index inside the arm the call clobbers and reusing the
+   head's copy on the skip path, which a cached local deletes. */
 void func_8022D19C_ovl19(GObj *g) {
-    u32 temp_v0;
-
     D_800DDFD0[omCurrentObj->objId] = 0xF;
     if ((D_800E6A10[omCurrentObj->objId] == -1.0f) && !(gKirbyState.isTurning & 1)) {
         gKirbyState.isTurning |= 1;
     }
     gKirbyState.unk2C = 0xF;
-    temp_v0 = omCurrentObj->objId;
-    if (D_800E8920[temp_v0] == 0) {
-        if (D_800E3210[temp_v0] > 0) {
-            D_800E3210[temp_v0] = 0.0f;
+    if (D_800E8920[omCurrentObj->objId] == 0) {
+        if (D_800E3210[omCurrentObj->objId] > 0) {
+            D_800E3210[omCurrentObj->objId] = 0.0f;
             func_801230E8(0x2037C, 0x2037D, 0);
         }
         D_800E6690[omCurrentObj->objId] = 0.0f;
@@ -1283,9 +1284,6 @@ void func_8022D19C_ovl19(GObj *g) {
     func_801230E8(0x2039A, 0x2039B, 0);
     curObjSleepForever();
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl19/ovl19_3/func_8022D19C_ovl19.s")
-#endif
 void func_8022D3A0_ovl19(GObj *g) {
     func_80153984_ovl3();
     D_800E64D0[omCurrentObj->objId] = 6.0f;
