@@ -6039,7 +6039,12 @@ s32 func_8010AA80(void *arg0, ? arg1) {
  * slideX as the inline sub with the decl kept (1) or dropped (6), the
  * slide decls swapped (6-20), and a named `fx = BD00.fwdX` local (36 --
  * it moves the frame). LEVER 21 says the slot moves by operand KIND and
- * no kind reachable without a frame cost moves this one.
+ * no kind reachable without a frame cost moves this one. Eighth spelling
+ * (2026-08-26, fresh read): fwdX routed through the EXISTING local limitX
+ * (`limitX = BD00.fwdX;` before the compare -- two named locals, no new
+ * frame slot) scored 38/177: the assignment hoists the lwc1 above the
+ * subs and the whole tail cascades. SEALED -- the operand-kind space
+ * reachable without a frame cost is exhausted; this word is a floor.
  * The old note's shared-frame diagnosis still holds for func_801073C4 and
  * func_80108E08 (253/270 -- the fwd-swap analog there is 252, i.e. noise
  * under its unsolved frame; the struct-copy lever has no site in it, its

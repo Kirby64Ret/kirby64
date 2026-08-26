@@ -2224,7 +2224,17 @@ block_22:
    127/145. Residue at 51: ours still materialises the INT zero in the entry
    block (word 13) where the ROM creates everything at/after the join, and
    the float zero lands in $f6 instead of $f0; the whole body's FP naming
-   follows that. */
+   follows that.
+   2026-08-26 later stint, one more negative on the hoist: a dependence
+   chain `v.y = v.x;` (after `v.x = 0.0f`, keeping v.y's zero out of the
+   constant pool entirely) is 54/145 -- IDO copy-propagates it back to the
+   float-pair grouping, same score, and the 1.0f moves to $f0. Data
+   dependence cannot stop the hoist because the mtc1 has no inputs. The
+   matched sibling func_8019C844_ovl7 shows a SINGLE-use int zero stays at
+   its store point, so the entry hoist is a multi-use-constant behaviour;
+   nothing in this function can get the join-block zero below two uses.
+   Still blocked on a lever that stops IDO hoisting an FP zero out of a
+   successor block. */
 #ifdef NON_MATCHING
 void func_8019CFD0_ovl7(Vector *arg0) {
     EnemyRecord *ent = D_800E1B50[omCurrentObj->objId];
