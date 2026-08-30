@@ -712,15 +712,15 @@ void func_800B1878(s32 arg0) {
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_7/func_800B18B4.s")
 
 extern struct GObjProcess *D_8004A7D0;
-void func_800A9D64(u16);
-void func_800A99E4(u32);
+void func_800A9D64_u16(u16);
+void func_800A99E4_u16(u32);
 
 // some sort of destructor?
 void func_800B1900(u16 arg0) {
     struct GObj *temp_t7 = D_800DE350[arg0];
 
-    func_800A9D64(arg0);
-    func_800A99E4(arg0);
+    func_800A9D64_u16(arg0);
+    func_800A99E4_u16(arg0);
     if (temp_t7 == omCurrentObj) {
         func_800AE138(omCurrentObj->objId);
         if (D_8004A7D0->kind == 0) {

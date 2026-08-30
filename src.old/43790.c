@@ -356,7 +356,7 @@ void func_800A6B18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9864.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A99E4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A99E4_u16.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9A2C.s")
 
@@ -366,7 +366,7 @@ void func_800A6B18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9C78.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9D64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9D64_u16.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A9DE4.s")
 

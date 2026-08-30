@@ -173,7 +173,7 @@ void func_800AF9B8(u16, u8);
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9864.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A99E4.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A99E4_u16.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9A2C.s")
 
@@ -202,7 +202,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9B48.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9C78.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9D64.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9D64_u16.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9DE4.s")
 

@@ -1,10 +1,11 @@
 #include "common.h"
 #include "track_arrays.h"
+#include "ovl1/util.h"
+#include "ovl1/ovl1_7.h"
 #include "ovl2/ovl2_2.h"
 #include "GObj.h"
 #include "unk_structs/D_800E1B50.h"
 #include "sounds.h"
-
 
 extern struct GObj *D_800DE350[];
 s32 func_800B3234(f32 inputX, f32 inputY, f32 inputZ);

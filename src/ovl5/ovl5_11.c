@@ -26,7 +26,7 @@ extern ScreenSettings D_80189D40_ovl5;
 extern SceneSetup D_80189D5C_ovl5;
 
 extern u8 D_8018A12C_ovl5[];
-extern s32 D_8018EDEC_ovl5; // track
+extern u32 D_8018EDEC_ovl5; // track
 extern SPObj *D_80189DE8_ovl5;
 extern SPObj *D_80189E08_ovl5;
 extern SPObj *D_80189E28_ovl5;

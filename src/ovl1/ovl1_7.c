@@ -1504,7 +1504,7 @@ void func_800B2288(AnimCmd ***arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_7/func_800B2288.s")
 #endif
 
-void func_800B2340(Vector *vec, struct DObj *node, u32 track) {
+void func_800B2340(Vector *vec, struct DObj *node, s32 track) {
     float finalMtx[4][4];
     float tmpMtx[4][4];
 
