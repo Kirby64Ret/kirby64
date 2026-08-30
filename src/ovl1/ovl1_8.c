@@ -5,6 +5,7 @@
 #include "unk_structs/D_800E1B50.h"
 #include "sounds.h"
 
+
 extern struct GObj *D_800DE350[];
 s32 func_800B3234(f32 inputX, f32 inputY, f32 inputZ);
 #define M_TAU (2 * M_PIF)

@@ -1303,7 +1303,7 @@ void func_801A9FC4_ovl7(s32 arg0) {
 
     temp_s4 = D_800E1B50[omCurrentObj->objId]->unk88->unkC->unk4->unk1C->unk14;
     func_800AF408();
-    func_800A9D64(omCurrentObj->objId);
+    func_800A9D64_u16(omCurrentObj->objId);
     temp_s5 = temp_s4 + 0x20;
     func_801AA690_ovl7(temp_s5);
 loop_1:

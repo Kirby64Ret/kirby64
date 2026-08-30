@@ -1130,8 +1130,8 @@ void func_800B1900(u16 track) {
     GObj *gobj;
 
     gobj = D_800DE350[track];
-    func_800A9D64(track);
-    func_800A99E4(track);
+    func_800A9D64_u16(track);
+    func_800A99E4_u16(track);
     if (gobj == omCurrentObj) {
         initTrack(omCurrentObj->objId);
         if (omCurrentProc->kind == 0) { // kind 0 is spawner/initializer?

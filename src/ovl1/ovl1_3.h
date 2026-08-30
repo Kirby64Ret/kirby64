@@ -46,8 +46,10 @@ void func_800AAF34(s32, s32, f32);
 
 // WARNING: functions match taking s32, but we need to pass a u16 instead?
 //  They can't have casted every time right?
-void func_800A99E4(u16);
-void func_800A9D64(u16);
+void func_800A99E4_u16(u16);
+void func_800A9D64_u16(u16);
+void func_800A99E4(s32);
+void func_800A9D64(s32);
 
 // Draw Func List
 void func_800AB110(GObj *);

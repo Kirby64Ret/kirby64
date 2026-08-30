@@ -671,8 +671,8 @@ void func_800A8EC0(u32 file) {
         *modelPtr = func_800A9250(file, 3);
     }
     gEntityGeoDataArray[omCurrentObj->objId] = *modelPtr;
-    func_800A9D64(omCurrentObj->objId);
-    func_800A99E4(omCurrentObj->objId);
+    func_800A9D64_u16(omCurrentObj->objId);
+    func_800A99E4_u16(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
@@ -745,9 +745,9 @@ void func_800A9088(u32 arg0) {
         sp1C = temp_v0;
         gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
     }
-    func_800A9D64(temp_v1->objId);
+    func_800A9D64_u16(temp_v1->objId);
     func_800AF9B8(sp1C->unkA, 0x10);
-    func_800A99E4(omCurrentObj->objId);
+    func_800A99E4_u16(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(sp1C);
 }
@@ -1044,8 +1044,8 @@ void func_800A9760(u32 arg0) {
         *temp_a2 = temp_v0_2;
         gEntityGeoDataArray[omCurrentObj->objId] = temp_v0_2;
     }
-    func_800A9D64(omCurrentObj->objId);
-    func_800A99E4(omCurrentObj->objId);
+    func_800A9D64_u16(omCurrentObj->objId);
+    func_800A99E4_u16(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
@@ -1078,7 +1078,7 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
         sp1C = temp_v0;
         gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
     }
-    func_800A9D64(omCurrentObj->objId);
+    func_800A9D64_u16(omCurrentObj->objId);
     var_f6 = arg1;
     if (arg1 < 0) {
         var_f6 += 4294967296.0f;
@@ -1094,7 +1094,7 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
         arg2 = 0x10;
     }
     func_800AF9B8(arg1, arg2);
-    func_800A99E4(omCurrentObj->objId);
+    func_800A99E4_u16(omCurrentObj->objId);
     func_800A9A2C(omCurrentObj->objId);
     func_800A9648(sp1C);
 }
