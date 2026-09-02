@@ -3,7 +3,7 @@
 
 #include "DObj.h"
 
-void func_800AA78C(s32, s32, f32);
+void func_800AA78C(s32, u32, f32);
 struct UnkWhat {
     u32 unk0;
     u32 unk4;

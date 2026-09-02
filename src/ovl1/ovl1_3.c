@@ -8,7 +8,8 @@
 #include "main/gtl.h"
 #include "main/object_helpers.h"
 
-#include "ovl1/ovl1_7.h"
+#include "ovl1_3.h"
+#include "ovl1_7.h"
 
 // All the filesystem loading magic happens here
 extern struct GeometryBlockHeader **D_800D00C4[];
@@ -69,44 +70,37 @@ s32 func_800A8310(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8310.s")
 #endif
 
-#ifdef MIPS_TO_C
+void *func_800A8358(s32 size) {
+    FileMallocBlock *pool;
+    s32 poolSelect;
+    FileMallocBlock* nextBlock;
 
-void *func_800A8358(s32 arg0) {
-    ? *temp_a2_2;
-    ? *var_a1;
-    s32 temp_v1;
-    u32 temp_a0;
-    void *temp_a2;
 
-    temp_v1 = arg0 & 3;
-    temp_a0 = ((arg0 - temp_v1) + 0xC) & ~0xF;
-    var_a1 = *(&D_800D7BD0 + (temp_v1 * 4));
-loop_1:
-    if (var_a1->unkC != 0) {
-block_3:
-        var_a1 = var_a1->unk4;
-        goto loop_1;
+    poolSelect = size & 3;
+    pool = D_800D7BD0[poolSelect];
+    size = ((size - poolSelect) + 0xC) & ~0xF;
+
+    while (1) {
+        if (pool->used == 0 && pool->size >= (size + 0x10)) {
+            break;
+        }
+        pool = pool->next;
     }
-    if (var_a1->unk8 < (temp_a0 + 0x10)) {
-        goto block_3;
-    }
-    temp_a2 = var_a1 + temp_a0;
-    temp_a2->unk10 = var_a1;
-    temp_a2_2 = temp_a2 + 0x10;
-    temp_a2_2->unk4 = var_a1->unk4;
-    temp_a2_2->unkC = 0;
-    temp_a2_2->unk8 = (var_a1->unk8 - temp_a0) - 0x10;
-    var_a1->unk4 = temp_a2_2;
-    *temp_a2_2->unk4 = temp_a2_2;
-    *(&D_800D7BD0 + (temp_v1 * 4)) = *temp_a2_2->unk4;
-    D_800D7BBC = var_a1;
-    var_a1->unk8 = temp_a0;
-    var_a1->unkC = 1;
-    return var_a1 + 0x10;
+
+    nextBlock = (u32)pool + size + 0x10;
+    nextBlock->prev = pool;
+    nextBlock->next = pool->next;
+    nextBlock->size = (s32) ((pool->size - size) - 0x10);
+    nextBlock->used = 0;
+    pool->next = nextBlock;
+    nextBlock->next->prev = nextBlock;
+    D_800D7BD0[poolSelect] = nextBlock->next->prev;
+    D_800D7BBC = pool;
+    pool->size = size;
+    pool->used = 1;
+
+    return pool->data;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8358.s")
-#endif
 
 #ifdef MIPS_TO_C
 
