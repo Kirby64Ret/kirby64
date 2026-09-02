@@ -27,6 +27,7 @@ void func_800A9DE4(s32 file, f32 arg1);
 s32 func_800A9B48(s32 arg0);
 s32 func_800A9C78(s32 arg0, s32 arg1);
 
+#define ALIGN(x, align) (((x) + (align - 1)) & ~(align - 1))
 #define FILE_ALIGN4(x) (((x) + 3) & 0xFFFFFC)
 #define FILE_MASK4(x) ((x) & 0xFFFFFC)
 
@@ -37,16 +38,15 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header);
 #ifdef MIPS_TO_C
 
 void func_800A82C0(void) {
-    s32 temp_t8;
+    s32 temp_t8 = ALIGN(gDynamicBuffer2.top, 256);
 
-    temp_t8 = (gDynamicBuffer2.top + 0xFF) & ~0xFF;
     D_800D7BB4 = temp_t8;
     D_800D7BB0 = temp_t8;
     D_800D7BB8 = gDynamicBuffer2.poolEnd - temp_t8;
-    D_800D7C10 = 0x80400000;
+    D_800D7C10 = RAM_END;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A82C0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A82C0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -67,7 +67,7 @@ s32 func_800A8310(s32 arg0) {
     return temp_t0 - temp_a0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8310.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8310.s")
 #endif
 
 void *fileMalloc(s32 size) {
@@ -136,7 +136,7 @@ void *func_800A840C(u32 arg0, s32 arg1) {
     return sp1C;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A840C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A840C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -145,7 +145,7 @@ void func_800A84F0(s32 arg0) {
     D_800D7C10 += (arg0 + 0xF) & 0xFFFFF0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A84F0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A84F0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -159,7 +159,7 @@ void func_800A8518(s32 arg0) {
     temp_v0->unkC = temp_t7 | 0x99000000;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8518.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8518.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -170,7 +170,7 @@ void func_800A8540(s32 arg0) {
     temp_v0->unkC = temp_v0->unkC & 0xFFFFFF;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8540.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8540.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -178,7 +178,7 @@ void func_800A855C(void *arg0, s32 arg1) {
     arg0->unk-4 = arg1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A855C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A855C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -189,7 +189,7 @@ void func_800A8564(s32 arg0, s32 arg1) {
     temp_v0->unkC = temp_v0->unkC + arg1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8564.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8564.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -236,7 +236,7 @@ u32 func_800A8578(s32 arg0) {
     return 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8578.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8578.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -262,7 +262,7 @@ s32 func_800A8648(void) {
     return var_s3;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8648.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8648.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -289,7 +289,7 @@ s32 func_800A86C8(s32 arg0, s32 *arg1, s32 *arg2) {
     return var_a3;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A86C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A86C8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -388,7 +388,7 @@ s32 func_800A8724(s32 arg0) {
     return var_s6;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8724.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8724.s")
 #endif
 
 #ifdef NON_MATCHING
@@ -410,7 +410,7 @@ u32 func_800A8934(u32 file, u32 offset, u32 size, void *vramAddr) {
     return imageSize;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8934.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8934.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -441,7 +441,7 @@ void *func_800A89E0(u32 arg0) {
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A89E0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A89E0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -468,7 +468,7 @@ s32 func_800A8A7C(u32 arg0) {
     return *(*temp_v1 + temp_a3);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8A7C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8A7C.s")
 #endif
 
 void *func_800A8B0C(u32 file, s32 heapSelect) {
@@ -509,7 +509,7 @@ s32 func_800A8BAC(u32 arg0) {
     return *(*temp_v1 + temp_a3);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8BAC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8BAC.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -537,7 +537,7 @@ s32 func_800A8C40(u32 arg0) {
     return var_a1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8C40.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8C40.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -559,7 +559,7 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8CE0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -598,7 +598,7 @@ void func_800A8D64(u32 arg0, s32 arg1) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8D64.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8D64.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -622,7 +622,7 @@ void func_800A8E54(u32 arg0, s32 arg1) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8E54.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8E54.s")
 #endif
 
 // https://decomp.me/scratch/Bfi6t
@@ -674,7 +674,7 @@ void func_800A8EC0(u32 file) {
     func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8EC0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8EC0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -749,7 +749,7 @@ void func_800A9088(u32 arg0) {
     func_800A9648(sp1C);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9088.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9088.s")
 #endif
 
 #ifdef _NON_MATCHING
@@ -867,7 +867,7 @@ void *func_800A9250(u32 file, s32 arg1) {
     return geoBlockVram;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9250.s")
 #endif
 
 // https://decomp.me/scratch/LTply
@@ -944,7 +944,7 @@ loop_4:
     return sp24;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A94F4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A94F4.s")
 #endif
 
 struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
@@ -1004,7 +1004,7 @@ void func_800A9760(u32 arg0) {
     func_800A9648(gEntityGeoDataArray[omCurrentObj->objId]);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9760.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9760.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1053,7 +1053,7 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     func_800A9648(sp1C);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9864.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9864.s")
 #endif
 
 void func_800A99E4(s32 track) {
@@ -1074,7 +1074,7 @@ void func_800A9A2C(s32 track) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9A2C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9A2C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1100,7 +1100,7 @@ void *func_800A9AA8(u32 arg0, s32 arg1) {
     return temp_v0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9AA8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9AA8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1147,7 +1147,7 @@ s32 func_800A9B48(s32 arg0) {
     return temp_a2;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9B48.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9B48.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1194,7 +1194,7 @@ s32 func_800A9C78(s32 arg0, s32 arg1) {
     return temp_a3;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9C78.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9C78.s")
 #endif
 
 void func_800A9D64(s32 track) {
@@ -1223,7 +1223,7 @@ void func_800A9DE4(s32 file, f32 arg1) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9DE4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9DE4.s")
 #endif
 
 void func_800A9EA4(s32 file) {
@@ -1247,7 +1247,7 @@ void func_800A9EC4(s32 arg0, f32 arg1, u16 arg2) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9EC4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9EC4.s")
 #endif
 
 void func_800A9F98(s32 file, f32 arg1) {
@@ -1272,7 +1272,7 @@ void func_800AA038(s32 arg0, f32 arg1, s32 arg2) {
     func_800AEF0C(*D_800DF690[arg2].as_u32, arg1, D_800DE350[arg2], arg2);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA038.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA038.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1287,7 +1287,7 @@ void func_800AA0C4(s32 arg0, f32 arg1) {
     func_800AF27C();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA0C4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA0C4.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1296,7 +1296,7 @@ void func_800AA154(void) {
     func_800AA0C4(0);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA154.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA154.s")
 #endif
 
 void func_800AA174(void) {
@@ -1318,7 +1318,7 @@ void func_800AA2A0(void) {
     func_800AA174();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA2A0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA2A0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1328,7 +1328,7 @@ void func_800AA2C8(void) {
     func_800AA174();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA2C8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA2C8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1341,7 +1341,7 @@ void func_800AA2F0(s32 arg0, f32 arg1) {
     func_800B21FC(D_800DF690[omCurrentObj->objId].as_u32, arg1);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA2F0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA2F0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1360,7 +1360,7 @@ s32 func_800AA368(void *arg0) {
     return 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA368.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA368.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1380,7 +1380,7 @@ loop_1:
     D_800DFD90[omCurrentObj->objId] = temp_v0->unk4;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA3F0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA3F0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1410,7 +1410,7 @@ void func_800AA49C(u32 *arg0, s32 arg1, f32 arg2, u32 arg3, f32 arg4) {
     func_800B1FD0(arg0, *D_800DF690[temp_v1_2].as_u32, arg2, *D_800DFA10[temp_v1_2], arg4);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA49C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA49C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1419,7 +1419,7 @@ void func_800AA5C4(s32 arg0, ? arg1, f32 arg2) {
     func_800AA49C(arg2, omCurrentObj->data.dobj->firstChild, arg0, 0, arg1, arg2);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA5C4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA5C4.s")
 #endif
 
 // https://decomp.me/scratch/fS0Iu
@@ -1451,10 +1451,11 @@ void func_800AA608(DObj *dobj, s32 arg1, f32 arg2, u32 model, f32 arg4) {
         arg4
     );
 
-sleep_loop:
-    if (dobj->timeRemaining != -FLOAT_MAX) {
+    while (1) {
+        if (dobj->timeRemaining == -FLOAT_MAX) {
+            break;
+        }
         ohSleep(1);
-        goto sleep_loop;
     }
 }
 
@@ -1474,7 +1475,7 @@ void func_800AA7D0(s32 arg0, f32 arg1, u16 arg2) {
     func_800AEFFC(arg2);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA7D0.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA7D0.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1483,7 +1484,7 @@ void func_800AA864(? arg1) {
     func_800AA7D0(0, arg1);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA864.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA864.s")
 #endif
 
 // Is current obj's model loaded?
@@ -1554,7 +1555,7 @@ void func_800AA96C(s32 *arg0, u32 arg1, s32 arg2, ? arg3, f32 arg4) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA96C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AA96C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1571,7 +1572,7 @@ loop_1:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAB3C.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AAB3C.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1612,7 +1613,7 @@ void func_800AABD4(s32 *arg0, f32 arg1, f32 arg2) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AABD4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AABD4.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1697,7 +1698,7 @@ void func_800AACC8(s32 *arg0, s32 arg1, s32 arg2, f32 arg3) {
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AACC8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AACC8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1707,7 +1708,7 @@ void func_800AAF04(? arg3) {
     func_800AF27C();
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF04.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AAF04.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1736,7 +1737,7 @@ void func_800AAF34(s32 arg0, s32 arg1, f32 arg2) {
     animSetCameraAnimation(*(&D_800D79D8 + temp_a3), *temp_v0_2, arg2);
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAF34.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AAF34.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1753,7 +1754,7 @@ loop_1:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AAFC4.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AAFC4.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1769,7 +1770,7 @@ loop_1:
     }
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB040.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AB040.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1778,7 +1779,7 @@ void func_800AB0A8(s32 arg0, f32 arg1) {
     (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk78 = arg1;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0A8.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AB0A8.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -1787,7 +1788,7 @@ void func_800AB0CC(s32 arg0) {
     (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk74 = -3.4028235e38f;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0CC.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800AB0CC.s")
 #endif
 
 s32 func_800AB0F4(GObj *g) {
