@@ -30,6 +30,16 @@ struct BGHeader {
     u32 palOffset;
 };
 
+typedef struct FileMallocBlock {
+    struct FileMallocBlock *prev;
+    struct FileMallocBlock *next;
+    u32 size;
+    u32 used; // possibly also num_entries
+    u8 data[];
+} FileMallocBlock;
+extern FileMallocBlock *D_800D7BD0[4];
+extern FileMallocBlock *D_800D7BBC;
+
 extern struct BGHeader **D_800D0104[];
 
 #define ALIGN100(x) (((u32)x + 0xFF) & ~(0x100))

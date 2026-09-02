@@ -384,9 +384,9 @@ s32 func_800A8724(s32 arg0) {
         var_s3->unk-4 = temp_t9;
     } while (var_s1 < 4);
     D_800D6E78 = 0;
-    D_800D6E68 = 0;
+    *D_800D6E68 = 0;
     D_800D6E7C = 0;
-    D_800D6E6C = 0;
+    *D_800D6E6C = 0;
     D_800D6E80 = 0;
     D_800D6E70 = 0;
     D_800D6E84 = 0;
@@ -477,21 +477,19 @@ s32 func_800A8A7C(u32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8A7C.s")
 #endif
 
-#ifdef NON_MATCHING
-void *func_800A8B0C(u32 file, s32 arg1) {
-    struct BankHeader *bank = gFileTable[file >> 0x10];
-    s32 fileIndex = file & 0xFFFF;
-    u32 *offsets = &bank->imageBlockTable[fileIndex];
-    s32 size = FILE_ALIGN4(offsets[1] - offsets[0]);
-    void *vram = func_800A8358(size | arg1, fileIndex);
+void *func_800A8B0C(u32 file, s32 heapSelect) {
+    s32 size;
+    void *vram;
+    u32 *offsets = gFileTable[file >> 16]->imageBlockTable;
+    u32 *rom = gFileTable[file >> 16]->imageROMOffset;
 
-    dma_read(bank->imageROMOffset + offsets[0], vram, FILE_MASK4(size));
-
+    file &= 0xFFFF;
+    offsets += file;
+    size = FILE_ALIGN4(offsets[1] - offsets[0]);
+    vram = func_800A8358(size | heapSelect);
+    dma_read(offsets[0] + (u32)rom, vram, size & 0xFFFFFC);
     return vram;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8B0C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -512,7 +510,7 @@ s32 func_800A8BAC(u32 arg0) {
     } else {
         sp1C = temp_v1;
         sp18 = temp_a3;
-        *(*temp_v1 + temp_a3) = func_800A8B0C(3, temp_a2, temp_a3);
+        *(*temp_v1 + temp_a3) = func_800A8B0C(arg0, 3);
     }
     return *(*temp_v1 + temp_a3);
 }
@@ -536,7 +534,7 @@ s32 func_800A8C40(u32 arg0) {
     if (var_a1 == 0) {
         sp20 = temp_a2;
         sp1C = temp_a3;
-        *(*temp_a2 + temp_a3) = func_800A8B0C(3, temp_a2, temp_a3);
+        *(*temp_a2 + temp_a3) = func_800A8B0C(arg0, 3);
         temp_v1 = *(*temp_a2 + temp_a3);
         temp_v1->unk8 = temp_v1->unk8 + temp_v1;
         temp_v1->unkC = temp_v1->unkC + temp_v1;
@@ -549,17 +547,22 @@ s32 func_800A8C40(u32 arg0) {
 #endif
 
 #ifdef MIPS_TO_C
-void *func_800A8CE0(u32 file, s32 arg1) {
-    s32 size;
-    s32 index = (file & 0xFFFF) * 2;
-    u32 *offsets = &gFileTable[file >> 0x10]->geoBlockTable[index];
-    void *vram;
+void *func_800A8CE0(u32 arg0, s32 arg1) {
+    s32 sp2C;
+    void *sp20;
+    u32 *sp1C;
+    s32 temp_a0;
+    u32 *temp_v1;
+    void *temp_v0;
 
-    size = (offsets[1] - offsets[0]) | arg1;
-    vram = func_800A8358(size, index);
-    dma_read(offsets[0], vram, size & 0xFFFFFC);
-
-    return vram;
+    temp_v1 = &gFileTable[arg0 >> 0x10]->geoBlockTable[(arg0 & 0xFFFF) * 2];
+    sp1C = temp_v1;
+    temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | arg1;
+    sp2C = temp_a0;
+    temp_v0 = func_800A8358(temp_a0);
+    sp20 = temp_v0;
+    dma_read(temp_v1->unk0, temp_v0, sp2C & 0xFFFFFC);
+    return temp_v0;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8CE0.s")
@@ -755,138 +758,97 @@ void func_800A9088(u32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9088.s")
 #endif
 
-#ifdef MIPS_TO_C
+#ifdef _NON_MATCHING
+// Repoints 
+void *func_800A9250(u32 file, s32 arg1) {
+    s32 index;
+    s32 layoutSize;
+    struct GeometryBlockHeader *geo_blocktable;
+    struct Layout *geoBlockVram;
 
-void *func_800A9250(u32 arg0, s32 arg1) {
-    s32 *temp_a0;
-    s32 *var_s0_3;
-    s32 *var_s0_4;
-    s32 *var_s2;
-    s32 *var_s5;
-    s32 *var_s5_2;
-    s32 *var_v0_4;
-    s32 temp_a2;
-    s32 temp_s0_2;
-    s32 temp_s0_3;
-    s32 temp_s1;
-    s32 temp_s5;
-    s32 temp_s5_2;
-    s32 temp_t1;
-    s32 temp_t4;
-    s32 temp_t9_2;
-    s32 temp_v0_2;
-    s32 var_a0;
-    s32 var_a0_2;
-    s32 var_a0_3;
-    s32 var_s0;
-    s32 var_s0_2;
-    s32 var_v0;
-    s32 var_v0_2;
-    s32 var_v0_3;
-    s32 var_v1;
-    u32 *temp_s0;
-    u32 temp_v0_3;
-    void *temp_s2;
-    void *temp_t9;
-    void *temp_v0;
-    void *temp_v1;
-
-    temp_a2 = (arg0 & 0xFFFF) * 2;
-    temp_s0 = &gFileTable[arg0 >> 0x10]->geoBlockTable[temp_a2];
-    temp_s1 = (temp_s0->unk4 - temp_s0->unk0) | arg1;
-    temp_v0 = func_800A8358(temp_s1, temp_a2);
-    dma_read(temp_s0->unk0, temp_v0, temp_s1 & 0xFFFFFC);
-    temp_s5 = temp_v0->unkC & 0xFFFFFF;
-    var_s5 = temp_s5 + temp_v0;
-    if (temp_s5 != 0) {
-        temp_v0->unkC = var_s5;
+    index = (file & 0xFFFF) * 2;
+    geo_blocktable = &gFileTable[file >> 0x10]->geoBlockTable[index];
+    layoutSize = (geo_blocktable->texScroll - geo_blocktable->layout) | arg1;
+    geoBlockVram = func_800A8358(layoutSize);
+    dma_read(geo_blocktable[0], geoBlockVram, layoutSize & 0xFFFFFC);
+    var_s5 = (geoBlockVram->imgRefs & 0xFFFFFF) + geoBlockVram;
+    if ((geoBlockVram->imgRefs & 0xFFFFFF) != 0) {
+        geoBlockVram->imgRefs = var_s5;
         var_s0 = *var_s5;
-        if (var_s0 != 0) {
-            do {
-                temp_s2 = (var_s0 & 0xFFFFFF) + temp_v0;
-                var_s5->unk0 = temp_s2->unk4;
-                temp_s2->unk4 = func_800A8BAC(temp_s2->unk4);
-                var_s0 = var_s5->unk4;
-                var_s5 += 4;
-            } while (var_s0 != 0);
+        while (var_s0 != 0) {
+            temp_s2 = (var_s0 & 0xFFFFFF) + geoBlockVram;
+            var_s5->unk0 = temp_s2->unk4;
+            temp_s2->unk4 = func_800A8BAC(temp_s2->unk4);
+            var_s0 = var_s5->unk4;
+            var_s5 += 4;
         }
     }
-    temp_s5_2 = temp_v0->unk4 & 0xFFFFFF;
-    var_s5_2 = temp_s5_2 + temp_v0;
+    temp_s5_2 = geoBlockVram->texScroll & 0xFFFFFF;
+    var_s5_2 = temp_s5_2 + geoBlockVram;
     if (temp_s5_2 != 0) {
-        temp_v0->unk4 = var_s5_2;
+        geoBlockVram->texScroll = var_s5_2;
         var_s0_2 = *var_s5_2;
         var_a0 = var_s0_2;
-        if (var_s0_2 != 0x99999999) {
-            do {
-                if (var_s0_2 != 0) {
-                    var_s2 = (var_a0 & 0xFFFFFF) + temp_v0;
-                    var_s5_2->unk0 = var_s2;
-                    var_v1 = *var_s2;
-                    var_v0 = var_v1;
-                    if (var_v1 != 0x99999999) {
-                        do {
-                            if (var_v1 != 0) {
-                                temp_t9 = (var_v0 & 0xFFFFFF) + temp_v0;
-                                var_s2->unk0 = temp_t9;
-                                temp_s0_2 = temp_t9->unk4 & 0xFFFFFF;
-                                var_s0_3 = temp_s0_2 + temp_v0;
-                                if (temp_s0_2 != 0) {
-                                    temp_t9->unk4 = var_s0_3;
-                                    var_v0_2 = *var_s0_3;
-                                    var_a0_2 = var_v0_2;
-                                    if (var_v0_2 != 0x99999999) {
-                                        do {
-                                            if (var_v0_2 != 0) {
-                                                var_s0_3->unk0 = func_800A8BAC(var_a0_2);
-                                            }
-                                            var_v0_2 = var_s0_3->unk4;
-                                            var_s0_3 += 4;
-                                            var_a0_2 = var_v0_2;
-                                        } while (var_v0_2 != 0x99999999);
-                                    }
+        while (var_s0_2 != 0x99999999) {
+            if (var_s0_2 != 0) {
+                var_s2 = (var_a0 & 0xFFFFFF) + geoBlockVram;
+                var_s5_2->unk0 = var_s2;
+                var_v1 = *var_s2;
+                var_v0 = var_v1;
+                while (var_v1 != 0x99999999) {
+                    if (var_v1 != 0) {
+                        temp_t9 = (var_v0 & 0xFFFFFF) + geoBlockVram;
+                        var_s2->unk0 = temp_t9;
+                        temp_s0_2 = temp_t9->unk4 & 0xFFFFFF;
+                        var_s0_3 = temp_s0_2 + geoBlockVram;
+                        if (temp_s0_2 != 0) {
+                            temp_t9->unk4 = var_s0_3;
+                            var_v0_2 = *var_s0_3;
+                            var_a0_2 = var_v0_2;
+                            while (var_v0_2 != 0x99999999) {
+                                if (var_v0_2 != 0) {
+                                    var_s0_3->unk0 = func_800A8BAC(var_a0_2);
                                 }
-                                temp_v1 = var_s2->unk0;
-                                temp_s0_3 = temp_v1->unk2C & 0xFFFFFF;
-                                var_s0_4 = temp_s0_3 + temp_v0;
-                                if (temp_s0_3 != 0) {
-                                    temp_v1->unk2C = var_s0_4;
-                                    var_v0_3 = *var_s0_4;
-                                    var_a0_3 = var_v0_3;
-                                    if (var_v0_3 != 0x99999999) {
-                                        do {
-                                            if (var_v0_3 != 0) {
-                                                var_s0_4->unk0 = func_800A8BAC(var_a0_3);
-                                            }
-                                            var_v0_3 = var_s0_4->unk4;
-                                            var_s0_4 += 4;
-                                            var_a0_3 = var_v0_3;
-                                        } while (var_v0_3 != 0x99999999);
-                                    }
-                                }
+                                var_v0_2 = var_s0_3->unk4;
+                                var_s0_3 += 4;
+                                var_a0_2 = var_v0_2;
                             }
-                            var_v1 = var_s2->unk4;
-                            var_s2 += 4;
-                            var_v0 = var_v1;
-                        } while (var_v1 != 0x99999999);
+                        }
+                        temp_v1 = var_s2->unk0;
+                        temp_s0_3 = temp_v1->unk2C & 0xFFFFFF;
+                        var_s0_4 = temp_s0_3 + geoBlockVram;
+                        if (temp_s0_3 != 0) {
+                            temp_v1->unk2C = var_s0_4;
+                            var_v0_3 = *var_s0_4;
+                            var_a0_3 = var_v0_3;
+                            while (var_v0_3 != 0x99999999) {
+                                if (var_v0_3 != 0) {
+                                    var_s0_4->unk0 = func_800A8BAC(var_a0_3);
+                                }
+                                var_v0_3 = var_s0_4->unk4;
+                                var_s0_4 += 4;
+                                var_a0_3 = var_v0_3;
+                            }
+                        }
                     }
+                    var_v1 = var_s2->unk4;
+                    var_s2 += 4;
+                    var_v0 = var_v1;
                 }
-                var_s0_2 = var_s5_2->unk4;
-                var_s5_2 += 4;
-                var_a0 = var_s0_2;
-            } while (var_s0_2 != 0x99999999);
+            }
+            var_s0_2 = var_s5_2->unk4;
+            var_s5_2 += 4;
+            var_a0 = var_s0_2;
         }
     }
-    temp_a0 = temp_v0 + (temp_v0->unk0 & 0xFFFFFF);
-    temp_v0->unk0 = temp_a0;
-    if (temp_v0->unk14 != 0) {
-        temp_v0_2 = temp_v0->unk18;
-        if (temp_v0_2 != 0) {
-            temp_v0->unk18 = temp_v0 + (temp_v0_2 & 0xFFFFFF);
+    temp_a0 = geoBlockVram + (geoBlockVram->layout & 0xFFFFFF);
+    geoBlockVram->layout = temp_a0;
+    if (geoBlockVram->numAnimations != 0) {
+        if (geoBlockVram->Animations != 0) {
+            geoBlockVram->Animations = geoBlockVram + (geoBlockVram->Animations & 0xFFFFFF);
         }
     }
-    temp_v0_3 = temp_v0->unk8;
-    switch (temp_v0_3) {                            /* irregular */
+    switch (geoBlockVram->layoutMode) {
         case 0x18:
         case 0x1A:
         case 0x1B:
@@ -900,7 +862,7 @@ void *func_800A9250(u32 arg0, s32 arg1) {
                     temp_t1 = temp_t9_2 & 0xFFFFFF;
                     if (temp_t9_2 != 0) {
                         var_v0_4->unk4 = temp_t1;
-                        var_v0_4->unk4 = temp_t1 + temp_v0;
+                        var_v0_4->unk4 = temp_t1 + geoBlockVram;
                     }
                     temp_t4 = var_v0_4->unk2C;
                     var_v0_4 += 0x2C;
@@ -908,15 +870,13 @@ void *func_800A9250(u32 arg0, s32 arg1) {
             }
             break;
     }
-    return temp_v0;
+    return geoBlockVram;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s")
-#endif
 
 // https://decomp.me/scratch/LTply
 #ifdef MIPS_TO_C
-
 void *func_800A94F4(s32 arg0) {
     s32 sp2C;
     void *sp24;
@@ -925,7 +885,6 @@ void *func_800A94F4(s32 arg0) {
     s32 *var_v0;
     s32 temp_a0;
     s32 temp_a1;
-    s32 temp_a1_2;
     s32 temp_t0;
     s32 temp_t6;
     s32 temp_v1_2;
@@ -940,13 +899,12 @@ void *func_800A94F4(s32 arg0) {
     void *temp_v0_2;
 
     temp_v0 = gFileTable[arg0 >> 0x10];
-    temp_a1 = arg0 & 0xFFFF;
-    temp_v1 = &temp_v0->animBlockTable[temp_a1];
+    temp_v1 = &temp_v0->animBlockTable[arg0 & 0xFFFF];
     sp18 = temp_v0->animROMOffset;
     sp1C = temp_v1;
     temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | 2;
     sp2C = temp_a0;
-    temp_v0_2 = func_800A8358(temp_a0, temp_a1);
+    temp_v0_2 = func_800A8358(temp_a0);
     sp24 = temp_v0_2;
     dma_read(temp_v1->unk0 + sp18, temp_v0_2, sp2C & 0xFFFFFC);
     var_a0 = sp24->unk8;
@@ -954,7 +912,7 @@ void *func_800A94F4(s32 arg0) {
     sp24->unk0 = sp24->unk0 + sp24;
     if (var_a0 != 0) {
         temp_v1_2 = -(var_a0 & 3);
-        temp_a1_2 = temp_v1_2 + var_a0;
+        temp_a1 = temp_v1_2 + var_a0;
         if (temp_v1_2 != 0) {
             do {
                 temp_t6 = *var_v0;
@@ -963,7 +921,7 @@ void *func_800A94F4(s32 arg0) {
                 temp_t7 = temp_t6 + sp24;
                 var_v0->unk-4 = temp_t7;
                 *temp_t7 += sp24;
-            } while (temp_a1_2 != var_a0);
+            } while (temp_a1 != var_a0);
             if (var_a0 != 0) {
                 goto loop_4;
             }
@@ -1026,6 +984,7 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header) {
 }
 
 #ifdef MIPS_TO_C
+
 void func_800A9760(u32 arg0) {
     struct GeometryBlockHeader **sp1C;
     struct GeometryBlockHeader **temp_a2;
@@ -1124,26 +1083,23 @@ void func_800A9A2C(s32 track) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void *func_800A9AA8(u32 arg0, s32 arg1) {
     s32 sp24;
     void *sp20;
     u32 *sp1C;
     u32 *sp18;
-    s32 temp_a2;
     s32 temp_a3;
     struct BankHeader *temp_v0_2;
     u32 *temp_v1;
     void *temp_v0;
 
     temp_v0_2 = gFileTable[arg0 >> 0x10];
-    temp_a2 = arg0 & 0xFFFF;
-    temp_v1 = &temp_v0_2->miscBlockTable[temp_a2];
+    temp_v1 = &temp_v0_2->miscBlockTable[arg0 & 0xFFFF];
     sp18 = temp_v0_2->miscROMOffset;
     temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
     sp24 = temp_a3;
     sp1C = temp_v1;
-    temp_v0 = func_800A8358(temp_a3 | arg1, temp_a2, temp_a3);
+    temp_v0 = func_800A8358(temp_a3 | arg1);
     sp20 = temp_v0;
     dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC);
     return temp_v0;
@@ -1507,13 +1463,9 @@ sleep_loop:
     }
 }
 
-#ifdef MIPS_TO_C
 void func_800AA78C(s32 arg0, u32 arg1, f32 arg2) {
     func_800AA608(omCurrentObj->data.dobj->firstChild, arg0, 0.0f, arg1, arg2);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AA78C.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -1834,89 +1786,3 @@ void func_800AB0A8(s32 arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0A8.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-void func_800AB0CC(s32 arg0) {
-    (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk74 = -3.4028235e38f;
-}
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0CC.s")
-#endif
-
-s32 func_800AB0F4(GObj *g) {
-    u32 **buf = gEntityGeoDataArray[g->objId];
-
-    return buf[2];
-}
-
-void func_800AB110(GObj *g) {
-
-}
-
-void func_800AB118(GObj *g) {
-
-}
-
-void func_800AB120(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawGObjList0(g);
-}
-
-void func_800AB174(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawObject_TypeC(g);
-}
-
-void func_800AB1F0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawGObjWithDObjTypeE(g);
-}
-
-void func_800AB244(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawObject_TypeG(g);
-}
-
-void func_800AB2C0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawDObjFromGObj(g);
-}
-
-void func_800AB314(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
-    renderDrawObject_TypeD(g);
-}
-
-void func_800AB390(GObj *g) {
-
-}
-
-void func_800AB398(GObj *g) {
-
-}
-
-void func_800AB3A0(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    func_8001585C(g);
-}
-
-void func_800AB3F4(GObj *g) {
-    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
-    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
-    func_80015BCC(g);
-}
-
-void func_800AB470(GObj *g) {
-
-}
-
-void func_800AB478(GObj *g) {
-
-}
-
-void func_800AB480(GObj *g) {
-
-}
