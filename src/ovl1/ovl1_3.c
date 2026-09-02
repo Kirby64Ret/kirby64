@@ -874,6 +874,7 @@ void *func_800A9250(u32 file, s32 arg1) {
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A9250.s")
+#endif
 
 // https://decomp.me/scratch/LTply
 #ifdef MIPS_TO_C
@@ -1786,3 +1787,89 @@ void func_800AB0A8(s32 arg0, f32 arg1) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0A8.s")
 #endif
 
+#ifdef MIPS_TO_C
+
+void func_800AB0CC(s32 arg0) {
+    (*(&D_800D79D8 + (((arg0 - 0xA) >> 1) * 4)))->unk74 = -3.4028235e38f;
+}
+#else
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800AB0CC.s")
+#endif
+
+s32 func_800AB0F4(GObj *g) {
+    u32 **buf = gEntityGeoDataArray[g->objId];
+
+    return buf[2];
+}
+
+void func_800AB110(GObj *g) {
+
+}
+
+void func_800AB118(GObj *g) {
+
+}
+
+void func_800AB120(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawGObjList0(g);
+}
+
+void func_800AB174(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawObject_TypeC(g);
+}
+
+void func_800AB1F0(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawGObjWithDObjTypeE(g);
+}
+
+void func_800AB244(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawObject_TypeG(g);
+}
+
+void func_800AB2C0(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawDObjFromGObj(g);
+}
+
+void func_800AB314(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
+    renderDrawObject_TypeD(g);
+}
+
+void func_800AB390(GObj *g) {
+
+}
+
+void func_800AB398(GObj *g) {
+
+}
+
+void func_800AB3A0(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    func_8001585C(g);
+}
+
+void func_800AB3F4(GObj *g) {
+    gSPSegment(gDisplayListHeads[0]++, 4, gEntityGeoDataArray[g->objId]);
+    gSPSegment(gDisplayListHeads[1]++, 4, gEntityGeoDataArray[g->objId]);
+    func_80015BCC(g);
+}
+
+void func_800AB470(GObj *g) {
+
+}
+
+void func_800AB478(GObj *g) {
+
+}
+
+void func_800AB480(GObj *g) {
+
+}
