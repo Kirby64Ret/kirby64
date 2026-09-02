@@ -37,8 +37,8 @@ typedef struct FileMallocBlock {
     u32 used; // possibly also num_entries
     u8 data[];
 } FileMallocBlock;
-extern FileMallocBlock *D_800D7BD0[4];
-extern FileMallocBlock *D_800D7BBC;
+extern FileMallocBlock *fileHeapList[4];
+extern FileMallocBlock *fileLastAllocatedPool;
 
 extern struct BGHeader **D_800D0104[];
 

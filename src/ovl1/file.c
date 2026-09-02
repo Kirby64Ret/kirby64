@@ -70,14 +70,14 @@ s32 func_800A8310(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_3/func_800A8310.s")
 #endif
 
-void *func_800A8358(s32 size) {
+void *fileMalloc(s32 size) {
     FileMallocBlock *pool;
     s32 poolSelect;
     FileMallocBlock* nextBlock;
 
 
     poolSelect = size & 3;
-    pool = D_800D7BD0[poolSelect];
+    pool = fileHeapList[poolSelect];
     size = ((size - poolSelect) + 0xC) & ~0xF;
 
     while (1) {
@@ -94,8 +94,8 @@ void *func_800A8358(s32 size) {
     nextBlock->used = 0;
     pool->next = nextBlock;
     nextBlock->next->prev = nextBlock;
-    D_800D7BD0[poolSelect] = nextBlock->next->prev;
-    D_800D7BBC = pool;
+    fileHeapList[poolSelect] = nextBlock->next->prev;
+    fileLastAllocatedPool = pool;
     pool->size = size;
     pool->used = 1;
 
@@ -110,7 +110,7 @@ void *func_800A840C(u32 arg0, s32 arg1) {
     void *temp_v0;
     void *temp_v0_2;
 
-    if (*(&D_800D7BD0 + ((arg1 & 3) * 4)) != 0) {
+    if (*(&fileHeapList + ((arg1 & 3) * 4)) != 0) {
         return NULL;
     }
     if (arg0 < 0x40) {
@@ -120,7 +120,7 @@ void *func_800A840C(u32 arg0, s32 arg1) {
     if (temp_v0 == NULL) {
         return NULL;
     }
-    *(&D_800D7BD0 + (arg1 * 4)) = temp_v0;
+    *(&fileHeapList + (arg1 * 4)) = temp_v0;
     temp_v0_2 = (temp_v0 + arg0) - 0x20;
     temp_v0->unk0 = temp_v0_2;
     temp_v0->unk4 = temp_v0_2;
@@ -220,7 +220,7 @@ u32 func_800A8578(s32 arg0) {
         var_v0 = temp_a1_2;
     }
     var_v1 = var_v0->unk4;
-    temp_a1_3 = ((arg0 & 3) * 4) + &D_800D7BD0;
+    temp_a1_3 = ((arg0 & 3) * 4) + &fileHeapList;
     if (var_v1->unkC == 0) {
         do {
             if (var_v1 == *temp_a1_3) {
@@ -346,7 +346,7 @@ s32 func_800A8724(s32 arg0) {
     var_s3 = &D_800D7BC0;
     var_s2 = (arg0 * 0x10) + &D_800C4654;
     var_a0 = D_800D7BB8;
-    var_s0 = &D_800D7BD0;
+    var_s0 = &fileHeapList;
     var_s1 = 0;
     do {
         temp_a2 = *var_s2;
@@ -480,7 +480,7 @@ void *func_800A8B0C(u32 file, s32 heapSelect) {
     file &= 0xFFFF;
     offsets += file;
     size = FILE_ALIGN4(offsets[1] - offsets[0]);
-    vram = func_800A8358(size | heapSelect);
+    vram = fileMalloc(size | heapSelect);
     dma_read(offsets[0] + (u32)rom, vram, size & 0xFFFFFC);
     return vram;
 }
@@ -553,7 +553,7 @@ void *func_800A8CE0(u32 arg0, s32 arg1) {
     sp1C = temp_v1;
     temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | arg1;
     sp2C = temp_a0;
-    temp_v0 = func_800A8358(temp_a0);
+    temp_v0 = fileMalloc(temp_a0);
     sp20 = temp_v0;
     dma_read(temp_v1->unk0, temp_v0, sp2C & 0xFFFFFC);
     return temp_v0;
@@ -763,7 +763,7 @@ void *func_800A9250(u32 file, s32 arg1) {
     index = (file & 0xFFFF) * 2;
     geo_blocktable = &gFileTable[file >> 0x10]->geoBlockTable[index];
     layoutSize = (geo_blocktable->texScroll - geo_blocktable->layout) | arg1;
-    geoBlockVram = func_800A8358(layoutSize);
+    geoBlockVram = fileMalloc(layoutSize);
     dma_read(geo_blocktable[0], geoBlockVram, layoutSize & 0xFFFFFC);
     var_s5 = (geoBlockVram->imgRefs & 0xFFFFFF) + geoBlockVram;
     if ((geoBlockVram->imgRefs & 0xFFFFFF) != 0) {
@@ -899,7 +899,7 @@ void *func_800A94F4(s32 arg0) {
     sp1C = temp_v1;
     temp_a0 = (temp_v1->unk4 - temp_v1->unk0) | 2;
     sp2C = temp_a0;
-    temp_v0_2 = func_800A8358(temp_a0);
+    temp_v0_2 = fileMalloc(temp_a0);
     sp24 = temp_v0_2;
     dma_read(temp_v1->unk0 + sp18, temp_v0_2, sp2C & 0xFFFFFC);
     var_a0 = sp24->unk8;
@@ -1070,7 +1070,7 @@ void func_800A9A2C(s32 track) {
     if (lenLayout == 0) {
         D_800DFBD0[omCurrentObj->objId] = -1;
     } else {
-        D_800DFBD0[omCurrentObj->objId] = func_800A8358((lenLayout * 4) | 1);
+        D_800DFBD0[omCurrentObj->objId] = fileMalloc((lenLayout * 4) | 1);
     }
 }
 #else
@@ -1094,7 +1094,7 @@ void *func_800A9AA8(u32 arg0, s32 arg1) {
     temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
     sp24 = temp_a3;
     sp1C = temp_v1;
-    temp_v0 = func_800A8358(temp_a3 | arg1);
+    temp_v0 = fileMalloc(temp_a3 | arg1);
     sp20 = temp_v0;
     dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC);
     return temp_v0;

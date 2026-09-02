@@ -302,7 +302,7 @@ void func_800A6B18(void) {
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A8310.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A8358.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/43790/fileMalloc.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/43790/func_800A840C.s")
 

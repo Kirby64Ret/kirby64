@@ -9,7 +9,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A82C0.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A8310.s")
 
-GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A8358.s")
+GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/fileMalloc.s")
 
 GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A840C.s")
 
@@ -66,7 +66,7 @@ struct UnkStruct800C4654{
 };
 extern struct UnkStruct800C4654 D_800C4654[5];
 extern u32 D_800D7BC0[];
-extern u32 D_800D7BD0[];
+extern u32 fileHeapList[];
 extern u32 D_800D7BE0[];
 
 extern u32 D_800D0144;
@@ -96,21 +96,21 @@ s32 func_800A8724(s32 arg0) {
             if (D_800C4654[arg0].unk0 != -1) {
                 s32 tmp = func_800A840C(D_800D7BB8, i, D_800C4654[arg0]);
 
-                D_800D7BD0[i] = tmp;
+                fileHeapList[i] = tmp;
                 if (tmp == 0) {
                     ret++;
                 }
             } else {
                 s32 tmp = func_800A840C(D_800C4654[arg0], i, D_800C4654[arg0]);
 
-                D_800D7BD0[i] = tmp;
+                fileHeapList[i] = tmp;
                 if (tmp == 0) {
                     ret++;
                 }
             }
         }
         D_800D7BE0[i] = D_800D7BB8 - D_800D7BB8;
-        D_800D7BC0[i] = D_800D7BD0[i];
+        D_800D7BC0[i] = fileHeapList[i];
     }
     D_800D6E78 = 0;
     D_800D6E68 = 0;
@@ -180,7 +180,7 @@ GLOBAL_ASM("asm/non_matchings/ovl1/ovl1_3/func_800A9A2C.s")
 extern struct BankHeader *gFileTable[];
 #ifdef NON_MATCHING
 // regalloc moment
-s32 func_800A8358(u32);
+s32 fileMalloc(u32);
 s32 func_800A9AA8(u32 bankIndex, u32 arg1) {
     u32 sp18;
     s32 temp_a3;
@@ -190,7 +190,7 @@ s32 func_800A9AA8(u32 bankIndex, u32 arg1) {
     miscTable = &gFileTable[bankIndex >> 0x10]->miscBlockTable[bankIndex & 0xFFFF];
     sp18 = gFileTable[bankIndex >> 0x10]->miscROMOffset;
     temp_a3 = ((miscTable[1] - miscTable[0]) + 3) & 0xFFFFFC;
-    temp_v0 = func_800A8358(temp_a3 | arg1);
+    temp_v0 = fileMalloc(temp_a3 | arg1);
     dma_read(miscTable[0] + sp18, temp_v0, temp_a3 & 0xFFFFFC);
     return temp_v0;
 }

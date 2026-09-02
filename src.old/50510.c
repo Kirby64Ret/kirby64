@@ -4,7 +4,7 @@
 
 #pragma GLOBAL_ASM("asm/nonmatchings/50510/func_800A8310.s")
 
-#pragma GLOBAL_ASM("asm/nonmatchings/50510/func_800A8358.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/50510/fileMalloc.s")
 
 #pragma GLOBAL_ASM("asm/nonmatchings/50510/func_800A840C.s")
 
