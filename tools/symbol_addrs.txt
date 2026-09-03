@@ -1132,6 +1132,8 @@ utilCorrectStickY = 0x800A55E0; // type:func
 gOverlayTable = 0x800BE8A0;
 
 // file
+fileRemainingHeapSpace = 0x800D7BB8; 
+fileArenaTop = 0x800D7BB4; 
 fileHeapList = 0x800D7BD0; 
 fileLastAllocatedPool = 0x800D7BBC; 
 fileMalloc = 0x800A8358; // type:func

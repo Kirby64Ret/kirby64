@@ -70,7 +70,7 @@ extern u32 fileHeapList[];
 extern u32 D_800D7BE0[];
 
 extern u32 D_800D0144;
-extern u32 D_800D7BB8;
+extern u32 fileRemainingHeapSpace;
 
 // doozy / 10
 #ifdef ___MIPS_TO_C
@@ -94,7 +94,7 @@ s32 func_800A8724(s32 arg0) {
     for (i = 0; i < 4; i++) {
         if (D_800C4654[arg0].unk0 != 0) {
             if (D_800C4654[arg0].unk0 != -1) {
-                s32 tmp = func_800A840C(D_800D7BB8, i, D_800C4654[arg0]);
+                s32 tmp = func_800A840C(fileRemainingHeapSpace, i, D_800C4654[arg0]);
 
                 fileHeapList[i] = tmp;
                 if (tmp == 0) {
@@ -109,7 +109,7 @@ s32 func_800A8724(s32 arg0) {
                 }
             }
         }
-        D_800D7BE0[i] = D_800D7BB8 - D_800D7BB8;
+        D_800D7BE0[i] = fileRemainingHeapSpace - fileRemainingHeapSpace;
         D_800D7BC0[i] = fileHeapList[i];
     }
     D_800D6E78 = 0;

@@ -47,8 +47,8 @@ extern struct BGHeader **D_800D0104[];
 
 extern u32 D_800D7BB0;
 
-extern s32 D_800D7BB4; // fileArenaTop
-extern s32 D_800D7BB8; // fileRemainingHeapSpace
+extern u8 *fileArenaTop; // fileArenaTop
+extern s32 fileRemainingHeapSpace; // fileRemainingHeapSpace
 
 extern u32 D_800D7C10;
 void func_800AA018(s32 arg0);

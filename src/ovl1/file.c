@@ -39,13 +39,14 @@ s32 func_800A9C78(s32 arg0, s32 arg1);
 void func_800B1FD0(DObj *, u32, f32, u32, f32);
 struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header);
 
+// fileResetMemory?
 #ifdef MIPS_TO_C
 void func_800A82C0(void) {
     s32 temp_t8 = ALIGN(gDynamicBuffer2.top, 256);
 
-    D_800D7BB4 = temp_t8;
+    fileArenaTop = temp_t8;
     D_800D7BB0 = temp_t8;
-    D_800D7BB8 = gDynamicBuffer2.poolEnd - temp_t8;
+    fileRemainingHeapSpace = gDynamicBuffer2.poolEnd - temp_t8;
     D_800D7C10 = RAM_END;
 }
 #else
@@ -54,12 +55,12 @@ void func_800A82C0(void) {
 
 FileMallocBlock* func_800A8310(s32 size) {
     size &= ~0xF;
-    D_800D7BB8 -= size;
-    if (D_800D7BB8 < 0) {
+    fileRemainingHeapSpace -= size;
+    if (fileRemainingHeapSpace < 0) {
         return NULL;
     }
-    D_800D7BB4 += size;
-    return (FileMallocBlock *)(D_800D7BB4 - size);
+    fileArenaTop += size;
+    return (FileMallocBlock *)(fileArenaTop - size);
 }
 
 void *fileMalloc(s32 size) {
@@ -330,7 +331,7 @@ s32 func_800A8724(s32 arg0) {
     var_s4 = &D_800D7BE0;
     var_s3 = &D_800D7BC0;
     var_s2 = (arg0 * 0x10) + &D_800C4654;
-    var_a0 = D_800D7BB8;
+    var_a0 = fileRemainingHeapSpace;
     var_s0 = &fileHeapList;
     var_s1 = 0;
     do {
@@ -351,7 +352,7 @@ s32 func_800A8724(s32 arg0) {
                     var_s6 += 1;
                 }
             }
-            var_a0 = D_800D7BB8;
+            var_a0 = fileRemainingHeapSpace;
         }
         temp_t9 = *var_s0;
         var_s1 += 1;
