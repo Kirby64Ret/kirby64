@@ -42,12 +42,12 @@ struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header);
 // fileResetMemory?
 #ifdef MIPS_TO_C
 void func_800A82C0(void) {
-    s32 temp_t8 = ALIGN(gDynamicBuffer2.top, 256);
+    u8 *temp_t8 = ALIGN((u32)gDynamicBuffer2.top, 256);
 
     fileArenaTop = temp_t8;
     D_800D7BB0 = temp_t8;
-    fileRemainingHeapSpace = gDynamicBuffer2.poolEnd - temp_t8;
-    D_800D7C10 = RAM_END;
+    fileRemainingHeapSpace = (u8 *)gDynamicBuffer2.poolEnd - temp_t8;
+    D_800D7C10 = 0x80400000;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A82C0.s")
@@ -134,6 +134,11 @@ void func_800A84F0(u32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A84F0.s")
 #endif
 
+//-------------------------------------------------
+//                   GIANT TODO:
+//   do these really take/return FileMallocBlock?
+//-------------------------------------------------
+
 #ifdef MIPS_TO_C
 void func_800A8518(s32 arg0) {
     s32 temp_t7;
@@ -148,35 +153,23 @@ void func_800A8518(s32 arg0) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8518.s")
 #endif
 
-#ifdef MIPS_TO_C
-void func_800A8540(s32 arg0) {
-    void *temp_v0;
-
-    temp_v0 = arg0 - 0x10;
-    temp_v0->unkC = temp_v0->unkC & 0xFFFFFF;
+FileMallocBlock *func_800A8540(FileMallocBlock *block) {
+    block--;
+    block->used &= 0xFFFFFF;
+    return block;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8540.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A855C(void *arg0, s32 arg1) {
-    arg0->unk-4 = arg1;
+void func_800A855C(FileMallocBlock *block, s32 arg1) {
+    FileMallocBlock *tempblock = block - 1;
+
+    tempblock->used = arg1;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A855C.s")
-#endif
 
-#ifdef MIPS_TO_C
-void func_800A8564(s32 arg0, s32 arg1) {
-    void *temp_v0;
-
-    temp_v0 = arg0 - 0x10;
-    temp_v0->unkC = temp_v0->unkC + arg1;
+FileMallocBlock *func_800A8564(FileMallocBlock *block, s32 arg1) {
+    block--;
+    block->used += arg1;
+    return block;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8564.s")
-#endif
 
 #ifdef MIPS_TO_C
 
@@ -224,6 +217,10 @@ u32 func_800A8578(s32 arg0) {
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8578.s")
 #endif
+
+//-------------------------------------------------
+//               END GIANT TODO
+//-------------------------------------------------
 
 #ifdef MIPS_TO_C
 

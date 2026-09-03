@@ -1141,7 +1141,7 @@ fileMalloc = 0x800A8358; // type:func
 
 D_800D4FD0 = 0x800D4FD0; // type:s32
 
-// filetables
+// the filetable stuff
 gFileTable = 0x800D0184;
 bank_0_geo_table = 0x800c46a0;
 bank_0_image_table = 0x800c46f8;
