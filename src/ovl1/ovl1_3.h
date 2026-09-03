@@ -45,9 +45,11 @@ extern struct BGHeader **D_800D0104[];
 #define ALIGN100(x) (((u32)x + 0xFF) & ~(0x100))
 
 
-extern u32 D_800D7BB4;
 extern u32 D_800D7BB0;
-extern u32 D_800D7BB8;
+
+extern s32 D_800D7BB4; // fileArenaTop
+extern s32 D_800D7BB8; // fileRemainingHeapSpace
+
 extern u32 D_800D7C10;
 void func_800AA018(s32 arg0);
 void func_800AA864(s32, u32);

@@ -3050,8 +3050,22 @@ u32 D_800D465C = 0x00000000;
 u32 D_800D4660 = 0x00000000;
 u32 D_800D4664 = 0x00000000;
 
+typedef struct {
+    u32 file;
+    u32 type;
+    u16 unk8[4];
+    f32 unk10;
+    f32 unk14;
+    f32 unk18;
+    u32 unk1C;
+    f32 unk20;
+    f32 unk24;
+    f32 unk28;
+    f32 unk2C;
+} Thing800D4668;
+
 // array of pointers to structs
-u32 *D_800D4668[] = {
+Thing800D4668 *D_800D4668[] = {
     NULL,
     &D_800D41E8,
     &D_800D42A8,

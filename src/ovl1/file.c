@@ -11,6 +11,8 @@
 #include "ovl1_3.h"
 #include "ovl1_7.h"
 
+// whoever wrote the loops in this file was evil
+
 // All the filesystem loading magic happens here
 extern struct GeometryBlockHeader **D_800D00C4[];
 
@@ -22,6 +24,7 @@ extern u32 D_800D6E68[];
 extern u32 D_800D6E6C[];
 
 extern struct BankHeader *gFileTable[8];
+extern FileMallocBlock D_800C4640;
 
 void func_800A9DE4(s32 file, f32 arg1);
 s32 func_800A9B48(s32 arg0);
@@ -30,13 +33,13 @@ s32 func_800A9C78(s32 arg0, s32 arg1);
 #define ALIGN(x, align) (((x) + (align - 1)) & ~(align - 1))
 #define FILE_ALIGN4(x) (((x) + 3) & 0xFFFFFC)
 #define FILE_MASK4(x) ((x) & 0xFFFFFC)
+#define FILE_MINIMUM_MALLOC_BLOCK_SIZE 0x40
 
 // In this file
 void func_800B1FD0(DObj *, u32, f32, u32, f32);
 struct GeometryBlockHeader* func_800A9648(struct GeometryBlockHeader* header);
 
 #ifdef MIPS_TO_C
-
 void func_800A82C0(void) {
     s32 temp_t8 = ALIGN(gDynamicBuffer2.top, 256);
 
@@ -49,26 +52,15 @@ void func_800A82C0(void) {
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A82C0.s")
 #endif
 
-#ifdef MIPS_TO_C
-
-s32 func_800A8310(s32 arg0) {
-    s32 temp_a0;
-    s32 temp_t0;
-    s32 temp_t7;
-
-    temp_a0 = arg0 & ~0xF;
-    temp_t7 = D_800D7BB8 - temp_a0;
-    D_800D7BB8 = temp_t7;
-    if (temp_t7 < 0) {
-        return 0;
+FileMallocBlock* func_800A8310(s32 size) {
+    size &= ~0xF;
+    D_800D7BB8 -= size;
+    if (D_800D7BB8 < 0) {
+        return NULL;
     }
-    temp_t0 = D_800D7BB4 + temp_a0;
-    D_800D7BB4 = temp_t0;
-    return temp_t0 - temp_a0;
+    D_800D7BB4 += size;
+    return (FileMallocBlock *)(D_800D7BB4 - size);
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8310.s")
-#endif
 
 void *fileMalloc(s32 size) {
     FileMallocBlock *pool;
@@ -102,46 +94,39 @@ void *fileMalloc(s32 size) {
     return pool->data;
 }
 
-#ifdef MIPS_TO_C
+// fileRealloc? fileFree?
+FileMallocBlock* func_800A840C(u32 size, s32 pool) {
+    FileMallocBlock* block;
+    FileMallocBlock* nextBlock;
 
-void *func_800A840C(u32 arg0, s32 arg1) {
-    void *sp1C;
-    void *temp_a3;
-    void *temp_v0;
-    void *temp_v0_2;
+    if (fileHeapList[pool & 3] != NULL) {
+        return NULL;
+    }
+    if (size < FILE_MINIMUM_MALLOC_BLOCK_SIZE) {
+        return NULL;
+    }
+    block = func_800A8310(size);
+    if (block == NULL) {
+        return NULL;
+    }
 
-    if (*(&fileHeapList + ((arg1 & 3) * 4)) != 0) {
-        return NULL;
-    }
-    if (arg0 < 0x40) {
-        return NULL;
-    }
-    temp_v0 = func_800A8310();
-    if (temp_v0 == NULL) {
-        return NULL;
-    }
-    *(&fileHeapList + (arg1 * 4)) = temp_v0;
-    temp_v0_2 = (temp_v0 + arg0) - 0x20;
-    temp_v0->unk0 = temp_v0_2;
-    temp_v0->unk4 = temp_v0_2;
-    temp_v0->unk8 = arg0 - 0x30;
-    temp_v0->unkC = 0;
-    temp_v0_2->unk4 = temp_v0;
-    temp_a3 = temp_v0->unk4;
-    temp_a3->unk0 = temp_a3->unk4;
-    temp_v0->unk4->unk8 = 0x10;
-    temp_v0->unk4->unkC = 0xFF000000;
-    sp1C = temp_v0;
-    memcpy(temp_v0->unk4 + 0x10, &D_800C4640, 0x10, temp_a3);
-    return sp1C;
+    fileHeapList[pool] = block;
+    nextBlock = ((u32)block + size) - 0x20;
+    block->prev = nextBlock;
+    block->next = nextBlock;
+    block->size = size - 0x30;
+    block->used = 0;
+    nextBlock->next = block;
+    block->next->prev = block->next->next;
+    block->next->size = 0x10;
+    block->next->used = 0xFF000000;
+    memcpy(block->next->data, &D_800C4640, sizeof(FileMallocBlock));
+    return block;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A840C.s")
-#endif
 
-#ifdef MIPS_TO_C
-
-void func_800A84F0(s32 arg0) {
+// regalloc
+#ifdef NON_MATCHING
+void func_800A84F0(u32 arg0) {
     D_800D7C10 += (arg0 + 0xF) & 0xFFFFF0;
 }
 #else
