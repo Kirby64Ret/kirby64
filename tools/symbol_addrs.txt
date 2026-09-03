@@ -1131,6 +1131,11 @@ utilCorrectStickX = 0x800A5560; // type:func
 utilCorrectStickY = 0x800A55E0; // type:func
 gOverlayTable = 0x800BE8A0;
 
+// file
+fileHeapList = 0x800D7BD0; 
+fileLastAllocatedPool = 0x800D7BBC; 
+fileMalloc = 0x800A8358; // type:func
+
 
 D_800D4FD0 = 0x800D4FD0; // type:s32
 
