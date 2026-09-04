@@ -73,7 +73,7 @@ void *fileMalloc(s32 size) {
     pool = fileHeapList[poolSelect];
     size = ((size - poolSelect) + 0xC) & ~0xF;
 
-    while (1) {
+    while (true) {
         if (pool->used == 0 && pool->size >= (size + 0x10)) {
             break;
         }
@@ -90,7 +90,7 @@ void *fileMalloc(s32 size) {
     fileHeapList[poolSelect] = nextBlock->next->prev;
     fileLastAllocatedPool = pool;
     pool->size = size;
-    pool->used = 1;
+    pool->used = FILE_BLOCK_FLAG_USED;
 
     return pool->data;
 }
@@ -127,8 +127,12 @@ FileMallocBlock* func_800A840C(u32 size, s32 pool) {
 
 // regalloc
 #ifdef NON_MATCHING
-void func_800A84F0(u32 arg0) {
+s32 func_800A84F0(u32 arg0) {
+    s32 ret = D_800D7C10;
+
     D_800D7C10 += (arg0 + 0xF) & 0xFFFFF0;
+
+    return ret;
 }
 #else
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A84F0.s")
@@ -139,23 +143,17 @@ void func_800A84F0(u32 arg0) {
 //   do these really take/return FileMallocBlock?
 //-------------------------------------------------
 
-#ifdef MIPS_TO_C
-void func_800A8518(s32 arg0) {
-    s32 temp_t7;
-    void *temp_v0;
+FileMallocBlock *func_800A8518(FileMallocBlock *block) {
+    block--;
+    block->used &= 0x00FFFFFF;
+    block->used |= 0x99000000;
 
-    temp_v0 = arg0 - 0x10;
-    temp_t7 = temp_v0->unkC & 0xFFFFFF;
-    temp_v0->unkC = temp_t7;
-    temp_v0->unkC = temp_t7 | 0x99000000;
+    return block;
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A8518.s")
-#endif
 
 FileMallocBlock *func_800A8540(FileMallocBlock *block) {
     block--;
-    block->used &= 0xFFFFFF;
+    block->used &= 0x00FFFFFF;
     return block;
 }
 
@@ -992,7 +990,7 @@ void func_800A9760(u32 arg0) {
 
 #ifdef MIPS_TO_C
 
-void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
+void func_800A9864(u32 filename, u32 arg1, u32 arg2) {
     struct GeometryBlockHeader *sp1C;
     struct GeometryBlockHeader **sp18;
     f32 var_f16;
@@ -1001,8 +999,8 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
     struct GeometryBlockHeader *temp_t0;
     struct GeometryBlockHeader *temp_v0;
 
-    gEntityGeoFileNameArray[omCurrentObj->objId] = arg0;
-    temp_a3 = &D_800D00C4[arg0 >> 0x10][arg0 & 0xFFFF];
+    gEntityGeoFileNameArray[omCurrentObj->objId] = filename;
+    temp_a3 = &D_800D00C4[filename >> 0x10][filename & 0xFFFF];
     temp_t0 = *temp_a3;
     if (temp_t0 != NULL) {
         sp1C = temp_t0;
@@ -1016,18 +1014,11 @@ void func_800A9864(u32 arg0, s32 arg1, s32 arg2) {
         gEntityGeoDataArray[omCurrentObj->objId] = temp_v0;
     }
     func_800A9D64_u16(omCurrentObj->objId);
-    var_f6 = arg1;
-    if (arg1 < 0) {
-        var_f6 += 4294967296.0f;
-    }
-    if (var_f6 == 99999.0f) {
+    if ((f32)arg1 == 99999.0f) {
         arg1 = sp1C->layoutMode;
     }
     var_f16 = arg2;
-    if (arg2 < 0) {
-        var_f16 += 4294967296.0f;
-    }
-    if (var_f16 == 99999.0f) {
+    if ((f32)arg2 == 99999.0f) {
         arg2 = 0x10;
     }
     func_800AF9B8(arg1, arg2);
@@ -1061,7 +1052,7 @@ void func_800A9A2C(s32 track) {
 #endif
 
 #ifdef MIPS_TO_C
-void *func_800A9AA8(u32 arg0, s32 arg1) {
+void *func_800A9AA8(u32 filename, s32 pool) {
     s32 sp24;
     void *sp20;
     u32 *sp1C;
@@ -1071,13 +1062,13 @@ void *func_800A9AA8(u32 arg0, s32 arg1) {
     u32 *temp_v1;
     void *temp_v0;
 
-    temp_v0_2 = gFileTable[arg0 >> 0x10];
-    temp_v1 = &temp_v0_2->miscBlockTable[arg0 & 0xFFFF];
+    temp_v0_2 = gFileTable[filename >> 0x10];
+    temp_v1 = &temp_v0_2->miscBlockTable[filename & 0xFFFF];
     sp18 = temp_v0_2->miscROMOffset;
     temp_a3 = ((temp_v1->unk4 - temp_v1->unk0) + 3) & 0xFFFFFC;
     sp24 = temp_a3;
     sp1C = temp_v1;
-    temp_v0 = fileMalloc(temp_a3 | arg1);
+    temp_v0 = fileMalloc(temp_a3 | pool);
     sp20 = temp_v0;
     dma_read(temp_v1->unk0 + sp18, temp_v0, temp_a3 & 0xFFFFFC);
     return temp_v0;
@@ -1103,33 +1094,32 @@ s32 func_800A9B48(s32 arg0) {
     temp_v0 = func_800A94F4();
     temp_a2 = temp_v0->unk4;
     if (temp_a2 != 0) {
-        temp_v1 = omCurrentObj;
-        var_a0 = &D_800DF850[temp_v1->objId];
+        var_a0 = &D_800DF850[omCurrentObj->objId];
         temp_v0_2 = var_a0->as_u32;
         if (temp_v0_2 != -1) {
             sp1C = temp_v0;
             sp24 = temp_a2;
-            func_800A8578(temp_v0_2 | 2, temp_v0, temp_a2);
+            func_800A8578(temp_v0_2 | FILE_POOL_2);
             var_a0 = &D_800DF850[omCurrentObj->objId];
         }
         var_a0->as_u32 = temp_v0;
-        D_800E0110[temp_v1->objId] = arg0;
+        D_800E0110[omCurrentObj->objId] = arg0;
     } else {
-        temp_v1_2 = omCurrentObj;
-        var_a0_2 = &D_800DF690[temp_v1_2->objId];
+        var_a0_2 = &D_800DF690[omCurrentObj->objId];
         temp_v0_3 = var_a0_2->as_u32;
         if (temp_v0_3 != -1) {
             sp1C = temp_v0;
             sp24 = temp_a2;
-            func_800A8578(temp_v0_3 | 2, temp_v0, temp_a2);
+            func_800A8578(temp_v0_3 | FILE_POOL_2);
             var_a0_2 = &D_800DF690[omCurrentObj->objId];
         }
         var_a0_2->as_u32 = temp_v0;
-        D_800DFF50[temp_v1_2->objId] = arg0;
+        D_800DFF50[omCurrentObj->objId] = arg0;
     }
     return temp_a2;
 }
 #else
+// s32 func_800A9B48(IntFloat arg0);
 #pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9B48.s")
 #endif
 
@@ -1192,22 +1182,15 @@ void func_800A9D64(s32 track) {
 }
 
 // TODO: arg1 is a real float EXCEPT down the func_800A9B48 path?????
-#ifdef MIPS_TO_C
 void func_800A9DE4(s32 file, f32 arg1) {
-    u32 temp_v0;
-
-    temp_v0 = omCurrentObj->objId;
-    if ((file != D_800DFF50[temp_v0]) && (file != D_800E0110[temp_v0])) {
+    if ((file != D_800DFF50[omCurrentObj->objId]) && (file != D_800E0110[omCurrentObj->objId])) {
         if (func_800A9B48(file) != 0) {
-            func_800AEEB4(*D_800DF850[omCurrentObj->objId].as_u32, arg1);
-            return;
+            func_800AEEB4(*D_800DF850[omCurrentObj->objId].as_u32p, arg1);
+        } else {
+            func_800AEE20(*D_800DF690[omCurrentObj->objId].as_u32p, arg1);
         }
-        func_800AEE20(*D_800DF690[omCurrentObj->objId].as_u32, arg1);
     }
 }
-#else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/file/func_800A9DE4.s")
-#endif
 
 void func_800A9EA4(s32 file) {
     func_800A9DE4(file, 0.0f);

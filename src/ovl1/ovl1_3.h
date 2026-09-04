@@ -30,11 +30,18 @@ struct BGHeader {
     u32 palOffset;
 };
 
+#define FILE_POOL_0 (0)
+#define FILE_POOL_1 (1)
+#define FILE_POOL_2 (2)
+#define FILE_POOL_3 (3)
+
+#define FILE_BLOCK_FLAG_USED (1 << 0)
+
 typedef struct FileMallocBlock {
     struct FileMallocBlock *prev;
     struct FileMallocBlock *next;
     u32 size;
-    u32 used; // possibly also num_entries
+    u32 used; // possibly also num_entries, or also flags?
     u8 data[];
 } FileMallocBlock;
 extern FileMallocBlock *fileHeapList[4];
