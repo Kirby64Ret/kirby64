@@ -35,9 +35,15 @@ def GetGeoVertRefs(rom,start,GH):
     return refs
 
 def GetGeoImgRefs(rom,start,GH):
-    start = start+(GH[3][1][0]&0xFFFFFF)
-    symbols[start | 0x04000000] = "bank_%d_index_%d_tex_img_refs_%08X" % (globBank, globIndex, start | 0x04000000)
-    refs = SegPtrList(start,rom)
+    refStart = start+(GH[3][1][0]&0xFFFFFF)
+    symbols[refStart | 0x04000000] = "bank_%d_index_%d_tex_img_refs_%08X" % (globBank, globIndex, refStart | 0x04000000)
+    refs = SegPtrList(refStart,rom)
+    for r in refs:
+        refAddr = r[0]
+        ptrlocation = start + (refAddr & 0x00FFFFFF)
+        v = struct.unpack(">LL",rom[ptrlocation:ptrlocation + 8])
+        if v[1] != 0 and v[1] & 0xFF000000 == 0:
+            print(f"assets/image/bank_{v[1] >> 16}/{v[1] & 0xFFFF} is a palette!")
     return refs
 
 def GetLayout(rom,start,GH,end):
@@ -883,28 +889,29 @@ def WriteTS(file,GH,TS,THS,H2,tPad,tUnk):
         file.write("\n// No Texture Scroll section\n\n")
         return
 
-def GeometryBlock(stage,Kirb,start,end):
+def GeometryBlock(stage,Kirb,start,end, write: bool = False):
     #Now Testing Formatting Geo Blocks
     GB = GetGeoBlockData(Kirb,start,end)
-    WriteGeoBlock(stage,GB,Kirb)
+    if write:
+        WriteGeoBlock(stage,GB,Kirb)
     return GB
 
 
 import sys
-def SingleGeo(Bank,Index):
+def SingleGeo(filename: str, Bank: int, Index: int, write: bool = False):
     global globBank, globIndex
     globBank = Bank
     globIndex = Index
     #[start,end] = GetPointers(Bank,Index,"Geo_Block",Kirb)
     name = ("Bank_%d_Index_%d_Geo"%(Bank,Index))
-    stage = open(sys.argv[1].split("bin")[0]+"c",'w')
-    Kirb=open(sys.argv[1],'rb')
+    stage = open(filename.split("bin")[0]+"c",'w')
+    Kirb=open(filename,'rb')
     Kirb=Kirb.read()
     stage.write("// Bank " + str(Bank) + " ID " + str(Index) + "\n")
-    GeometryBlock(stage,Kirb,0,len(Kirb))
+    GeometryBlock(stage,Kirb,0,len(Kirb), write)
 
 if __name__=='__main__':
     toks = sys.argv[1].split("/")
-    b = int(toks[2].split("_")[1])
-    i = int(toks[3])
-    SingleGeo(b,i)
+    bank = int(sys.argv[2])
+    index = int(sys.argv[3])
+    SingleGeo(sys.argv[1], bank, index)
