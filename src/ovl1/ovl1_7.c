@@ -319,7 +319,6 @@ void func_800AF4BC(s32 arg0, s32 arg1, s32 arg2) {
 #endif
 
 #ifdef MIPS_TO_C
-
 void func_800AF618(void *arg0, TextureScroll ***arg1, DObj **arg2) {
     s32 sp30;
     s32 sp2C;
@@ -387,11 +386,11 @@ void func_800AF618(void *arg0, TextureScroll ***arg1, DObj **arg2) {
 #endif
 
 void func_800AF7A0(u32 df_idx) {
-    u32 *tmp;
+    struct GeometryBlockHeader *header;
 
     if (df_idx == 99999) {
-        tmp = gEntityGeoDataArray[omCurrentObj->objId];
-        df_idx = tmp[2];
+        header = gEntityGeoDataArray[omCurrentObj->objId];
+        df_idx = header->layoutMode;
     }
     omCurrentObj->onDraw = gDrawFuncList[df_idx];
 }
