@@ -29,6 +29,6 @@ jobs:
     - name: Get the dependency
       run: cp /etc/kirby64/* .
     - name: Prepare Kirby 64 for building
-      run: make setup CROSS=mips64-elf-
+      run: make setup CROSS=/opt/libdragon/bin/mips64-elf-
     - name: Build Kirby 64
-      run: make VERBOSE=1 CROSS=mips64-elf-
+      run: make VERBOSE=1 CROSS=/opt/libdragon/bin/mips64-elf-
