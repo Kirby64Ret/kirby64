@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout reposistory
-      uses: actions/checkout@v7
+      uses: actions/checkout@v10.1.0
       with:
         submodules: recursive
     - name: Download Qemu Irix
