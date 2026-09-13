@@ -25,7 +25,7 @@ jobs:
         wget https://github.com/DragonMinded/libdragon/releases/download/toolchain-continuous-prerelease/gcc-toolchain-mips64-amd64.deb
         sudo dpkg -i gcc-toolchain-mips64-amd64.deb
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v10
     - name: Get the dependency
       run: cp /etc/kirby64/* .
     - name: Prepare Kirby 64 for building
