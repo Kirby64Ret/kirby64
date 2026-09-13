@@ -11,22 +11,24 @@ jobs:
 
     steps:
     - name: Checkout reposistory
-      uses: actions/checkout@v2
+      uses: actions/checkout@v7
       with:
         submodules: recursive
     - name: Download Qemu Irix
       run: |
         wget https://github.com/n64decomp/qemu-irix/releases/download/v2.11-deb/qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
-        sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb 
+        sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
     - name: Install Dependencies
       run: |
         sudo apt update
-        sudo apt install -y binutils-mips-linux-gnu gcc git gcc-mips-linux-gnu
+        sudo apt install -y gcc git python3
+        wget https://github.com/DragonMinded/libdragon/releases/download/toolchain-continuous-prerelease/gcc-toolchain-mips64-amd64.deb
+        sudo dpkg -i gcc-toolchain-mips64-amd64.deb
     - name: Install uv
       uses: astral-sh/setup-uv@v6
     - name: Get the dependency
       run: cp /etc/kirby64/* .
     - name: Prepare Kirby 64 for building
-      run: make setup CROSS=mips-linux-gnu-
+      run: make setup CROSS=mips64-elf-
     - name: Build Kirby 64
-      run: make VERBOSE=1 CROSS=mips-linux-gnu-
+      run: make VERBOSE=1 CROSS=mips64-elf-
