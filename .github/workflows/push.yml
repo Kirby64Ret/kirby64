@@ -3,8 +3,9 @@ name: Kirby 64 Build CI
 on:
   push:
     branches: [ master, splat ]
+  workflow-dispatch:
+    inputs: null
 
-on: workflow-dispatch
 
 jobs:
   build:
