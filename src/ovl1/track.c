@@ -152,7 +152,7 @@ void initTrack(s32 track) {
     D_800E93A0[track] = 0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/initTrack.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/track/initTrack.s")
 #endif
 
 #ifdef MIPS_TO_C
@@ -249,7 +249,7 @@ block_18:
     return var_s0;
 }
 #else
-#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/ovl1_6/request_job.s")
+#pragma GLOBAL_ASM("asm/nonmatchings/ovl1/track/request_job.s")
 #endif
 
 s32 func_800AEA64(s32 id, s32 minIndex, s32 max_index) {
