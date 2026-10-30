@@ -8,6 +8,7 @@ This repository contains a work-in-progress decompilation effort for Kirby 64.
  - I intend for this to be _moddable_ over a _complete_ decomp. Percentage is a number that can go up any time, but what's the point if nobody can read the codebase?
  - Therefore I value things like
    - Correct Names
+     - In most cases jargon is preferred because it will refer to something you can easily look up
    - Explicit Emulator/Console Testing to see what various variables and structures do
 
 ## Installation
