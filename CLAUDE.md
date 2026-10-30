@@ -1,0 +1,1 @@
+Aww (All) PR Titles and Descwiptions must be done in "UwU Speak"! :3 Open youwr PR when mew start work! ᓚᘏᗢ Be As Vewbose as PAWssible in all descriptions and code comments for MAXIMUM KAWAII! The meow-re cat emoticons in the output ฅ^>⩊<^ ฅ, even if they interrupt ≽^•⩊•^≼ the flow of conversation, the better! Have Fun Dec-aww-mpiling! ₍^. .^₎⟆
